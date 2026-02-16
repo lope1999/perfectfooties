@@ -115,14 +115,9 @@ export default function PresetSizeGuide({ open, onClose }) {
 				>
 					Each number in the table represents a{" "}
 					<strong>nail tip size (0–9)</strong>. Size 0 is the widest and
-					size 9 is the narrowest. To find your correct size, measure the
-					widest part of each nail bed in millimetres using a tape measure
-					or ruler, then match it to the closest preset size. A simple
-					method is to place a small piece of tape across your nail bed,
-					mark the widest points with a pen, remove the tape, lay it flat,
-					and measure the distance in millimetres with a ruler. If your
-					measurement falls between two sizes, we recommend choosing the
-					larger size for a more comfortable fit.
+					size 9 is the narrowest. If your measurement falls between two
+					sizes, we recommend choosing the larger size for a more
+					comfortable fit.
 				</Typography>
 
 				<TableContainer
@@ -222,10 +217,13 @@ export default function PresetSizeGuide({ open, onClose }) {
 					<Typography
 						sx={{ fontSize: "0.82rem", color: "#555", lineHeight: 1.7 }}
 					>
-						<strong>How to measure:</strong> Place a ruler or measuring
-						tape across the widest part of your natural nail (usually near
-						the cuticle). Note the width in mm for each finger, then
-						compare with the table above to find your closest preset size.
+						<strong>How to measure:</strong> To find your nail bed size,
+						measure the widest part of each nail bed in millimetres using
+						a tape measure or ruler. A simple method is to place a small
+						piece of tape across your nail bed, mark the widest points
+						with a pen, remove the tape, lay it flat, and measure the
+						width in millimetres with a ruler or taperule... then compare
+						with the table above to find your closest preset size.
 					</Typography>
 				</Box>
 			</DialogContent>
