@@ -22,7 +22,8 @@ export const faqData = [
   {
     question: 'Can I reschedule my appointment?',
     answer:
-      'Yes, you can reschedule your appointment. Please contact us at least 24 hours before your scheduled time via WhatsApp or phone so we can find a new slot that works for you. Note that your 50% booking deposit will be carried over to the rescheduled appointment — no additional deposit is required. However, repeated no-shows or last-minute cancellations may result in forfeiture of the deposit.',
+      'Yes, you can reschedule your appointment. Please contact us at least 24 hours before your scheduled time so we can find a new slot that works for you. Your 50% booking deposit will be carried over to the rescheduled appointment — no additional deposit is required. However, repeated no-shows or last-minute cancellations may result in forfeiture of the deposit. You can use our Reschedule Appointment page to submit your request directly.',
+    hasRescheduleButton: true,
   },
   {
     question: 'Can I get a refund on my order or booking?',

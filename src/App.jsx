@@ -11,6 +11,7 @@ import PlaceOrderPage from './pages/PlaceOrderPage';
 import TestimonialsPage from './pages/TestimonialsPage';
 import GiftCardPage from './pages/GiftCardPage';
 import OurTeamPage from './pages/OurTeamPage';
+import RescheduleAppointmentPage from './pages/RescheduleAppointmentPage';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/services" element={<ServiceMenuPage />} />
         <Route path="/products" element={<ProductsMenuPage />} />
         <Route path="/book" element={<BookAppointmentPage />} />
+        <Route path="/reschedule" element={<RescheduleAppointmentPage />} />
         <Route path="/order" element={<PlaceOrderPage />} />
         <Route path="/our-story" element={<OurStoryPage />} />
         <Route path="/blog" element={<BlogPage />} />

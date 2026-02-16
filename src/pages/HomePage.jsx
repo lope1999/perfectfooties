@@ -357,6 +357,31 @@ export default function HomePage() {
 										>
 											{item.answer}
 										</Typography>
+										{item.hasRescheduleButton && (
+											<Button
+												onClick={() => navigate('/reschedule')}
+												sx={{
+													mt: 2,
+													border: '2px solid #E91E8C',
+													borderRadius: '30px',
+													color: '#000',
+													backgroundColor: 'transparent',
+													px: 3,
+													py: 1,
+													fontSize: '0.85rem',
+													fontFamily: '"Georgia", serif',
+													fontWeight: 600,
+													transition: 'all 0.3s ease',
+													'&:hover': {
+														backgroundColor: '#E91E8C',
+														color: '#fff',
+														borderColor: '#E91E8C',
+													},
+												}}
+											>
+												Reschedule Appointment
+											</Button>
+										)}
 									</Box>
 								</Collapse>
 							</Box>
