@@ -15,16 +15,15 @@ import {
   Select,
   MenuItem,
   Button,
+  TextField,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import { serviceCategories, nailShapes, nailLengths, quantities } from '../data/services';
+import { serviceCategories, nailShapes, nailLengths } from '../data/services';
 import ScrollReveal from '../components/ScrollReveal';
-import Interstitial from '../components/Interstitial';
-import NailBedSizeInput from '../components/NailBedSizeInput';
 
 function formatNaira(amount) {
   return `₦${amount.toLocaleString()}`;
@@ -48,13 +47,21 @@ const confirmButtonSx = {
   },
 };
 
+const textFieldSx = {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 2,
+    '& fieldset': { borderColor: '#F0C0D0' },
+    '&:hover fieldset': { borderColor: '#E91E8C' },
+    '&.Mui-focused fieldset': { borderColor: '#E91E8C' },
+  },
+};
+
 export default function BookAppointmentPage() {
+  const [customerName, setCustomerName] = useState('');
   const [selectedService, setSelectedService] = useState('');
   const [formData, setFormData] = useState({
     nailShape: '',
     nailLength: '',
-    quantity: '',
-    nailBedSize: '',
   });
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -64,7 +71,7 @@ export default function BookAppointmentPage() {
 
   const handleServiceChange = (event) => {
     setSelectedService(event.target.value);
-    setFormData({ nailShape: '', nailLength: '', quantity: '', nailBedSize: '' });
+    setFormData({ nailShape: '', nailLength: '' });
   };
 
   const handleFieldChange = (field) => (event) => {
@@ -78,22 +85,22 @@ export default function BookAppointmentPage() {
   const handleCompleteOrder = () => {
     setModalOpen(false);
     const selected = allServices.find((s) => s.id === selectedService);
-    const message = `Hi! I'd like to book an appointment for ${selected?.name || 'a service'}.\n\nDetails:\n- Nail Shape: ${formData.nailShape}\n- Nail Length: ${formData.nailLength}\n- Quantity: ${formData.quantity}\n- Nail Bed Size: ${formData.nailBedSize}\n\nPlease confirm availability. Thank you!`;
+    const message = `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nService: ${selected?.name || "a service"}\nPrice: ${selected ? formatNaira(selected.price) : ''}\n\nDetails:\n- Nail Shape: ${formData.nailShape}\n- Nail Length: ${formData.nailLength}\n\nPlease confirm availability for this request. Thank you!`;
     const encoded = encodeURIComponent(message);
     window.open(`https://wa.me/message/CHLIAKCZOF4TP1?text=${encoded}`, '_blank');
   };
 
   const isFormValid =
-    selectedService && formData.nailShape && formData.nailLength && formData.quantity;
+    customerName.trim() && selectedService && formData.nailShape && formData.nailLength;
 
   return (
     <Box sx={{ pt: { xs: 7, md: 8 } }}>
       {/* Interstitial banner at top */}
-      <Interstitial
+      {/* <Interstitial
         image="https://images.unsplash.com/photo-1604654894610-df63bc536371?w=1920&q=80"
         text="Hope it's great so far"
         overlayColor="rgba(233, 30, 140, 0.45)"
-      />
+      /> */}
 
       <Box sx={{ py: 8, backgroundColor: '#FFF0F5' }}>
         <Container maxWidth="md">
@@ -116,6 +123,31 @@ export default function BookAppointmentPage() {
                 Select a service below, customize your preferences, and confirm your booking.
                 We will connect you with a stylist on WhatsApp.
               </Typography>
+            </Box>
+          </ScrollReveal>
+
+          {/* Name Field */}
+          <ScrollReveal direction="up" delay={0.05}>
+            <Box sx={{ mb: 4 }}>
+              <Typography
+                sx={{
+                  fontFamily: '"Georgia", serif',
+                  fontWeight: 700,
+                  color: '#4A0E4E',
+                  mb: 1.5,
+                  fontSize: '1.1rem',
+                }}
+              >
+                Your Name
+              </Typography>
+              <TextField
+                fullWidth
+                placeholder="Enter your full name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                size="small"
+                sx={textFieldSx}
+              />
             </Box>
           </ScrollReveal>
 
@@ -212,7 +244,7 @@ export default function BookAppointmentPage() {
                         <Collapse in={selectedService === service.id}>
                           <Box sx={{ px: 3, pb: 3, pt: 1 }} onClick={(e) => e.stopPropagation()}>
                             <Grid container spacing={2}>
-                              <Grid item xs={12} sm={4}>
+                              <Grid item xs={12} sm={6}>
                                 <FormControl fullWidth size="small">
                                   <InputLabel>Nail Shape</InputLabel>
                                   <Select
@@ -229,7 +261,7 @@ export default function BookAppointmentPage() {
                                   </Select>
                                 </FormControl>
                               </Grid>
-                              <Grid item xs={12} sm={4}>
+                              <Grid item xs={12} sm={6}>
                                 <FormControl fullWidth size="small">
                                   <InputLabel>Nail Length</InputLabel>
                                   <Select
@@ -245,32 +277,6 @@ export default function BookAppointmentPage() {
                                     ))}
                                   </Select>
                                 </FormControl>
-                              </Grid>
-                              <Grid item xs={12} sm={4}>
-                                <FormControl fullWidth size="small">
-                                  <InputLabel>Quantity</InputLabel>
-                                  <Select
-                                    value={formData.quantity}
-                                    label="Quantity"
-                                    onChange={handleFieldChange('quantity')}
-                                    sx={{ borderRadius: 2 }}
-                                  >
-                                    {quantities.map((q) => (
-                                      <MenuItem key={q} value={q}>
-                                        {q}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                              <Grid item xs={12}>
-                                <NailBedSizeInput
-                                  value={formData.nailBedSize}
-                                  onChange={(val) =>
-                                    setFormData((prev) => ({ ...prev, nailBedSize: val }))
-                                  }
-
-/>
                               </Grid>
                             </Grid>
                           </Box>

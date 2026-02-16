@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Container, Card, CardContent, Button, Grid } from '@mui/material';
 import { serviceCategories } from '../data/services';
 import ScrollReveal from '../components/ScrollReveal';
-import Interstitial from '../components/Interstitial';
 
 const sectionColors = ['#FFF0F5', '#FCE4EC', '#F3E5F6'];
 
@@ -121,6 +120,7 @@ export default function ServiceMenuPage() {
                           height: '100%',
                           display: 'flex',
                           flexDirection: 'column',
+                          overflow: 'hidden',
                           transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                           '&:hover': {
                             transform: 'translateY(-6px)',
@@ -128,6 +128,16 @@ export default function ServiceMenuPage() {
                           },
                         }}
                       >
+                        <Box
+                          component="img"
+                          src={service.image}
+                          alt={service.name}
+                          sx={{
+                            width: '100%',
+                            height: 180,
+                            objectFit: 'cover',
+                          }}
+                        />
                         <CardContent sx={{ flex: 1, p: 3 }}>
                           <Box
                             sx={{
@@ -181,21 +191,6 @@ export default function ServiceMenuPage() {
               </ScrollReveal>
             </Container>
           </Box>
-
-          {/* Interstitial between service sections */}
-          {index < serviceCategories.length - 1 && (
-            <Interstitial
-              image={
-                index === 0
-                  ? 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=1920&q=80'
-                  : 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=1920&q=80'
-              }
-              text="Hope it's great so far"
-              overlayColor={
-                index === 0 ? 'rgba(233, 30, 140, 0.5)' : 'rgba(74, 14, 78, 0.6)'
-              }
-            />
-          )}
         </Box>
       ))}
     </Box>

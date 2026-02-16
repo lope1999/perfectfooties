@@ -66,7 +66,7 @@ export default function OurStoryPage() {
             <ScrollReveal direction="right" delay={0.2}>
               <Box
                 component="img"
-                src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&q=80"
+                src="/images/story/founder.jpg.jpg"
                 alt="Woman planning with laptop"
                 sx={{
                   width: '100%',

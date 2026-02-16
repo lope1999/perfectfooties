@@ -1,4 +1,19 @@
-import { Box, Typography, Container, Grid, Chip } from '@mui/material';
+import { useState } from 'react';
+import {
+  Box,
+  Typography,
+  Container,
+  Grid,
+  Chip,
+  Dialog,
+  IconButton,
+  Divider,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 import ScrollReveal from '../components/ScrollReveal';
 import { blogPosts } from '../data/blog';
 
@@ -9,6 +24,8 @@ const categoryColors = {
 };
 
 export default function BlogPage() {
+  const [selectedPost, setSelectedPost] = useState(null);
+
   return (
     <Box sx={{ pt: 12, pb: 8, minHeight: '100vh', backgroundColor: '#FAFAFA' }}>
       {/* Header */}
@@ -44,6 +61,7 @@ export default function BlogPage() {
         {/* Featured Post — first item */}
         <ScrollReveal direction="up">
           <Box
+            onClick={() => setSelectedPost(blogPosts[0])}
             sx={{
               mb: 8,
               borderRadius: 4,
@@ -52,6 +70,12 @@ export default function BlogPage() {
               backgroundColor: '#fff',
               display: 'flex',
               flexDirection: { xs: 'column', md: 'row' },
+              cursor: 'pointer',
+              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 16px 40px rgba(233,30,140,0.15)',
+              },
             }}
           >
             <Box
@@ -72,18 +96,22 @@ export default function BlogPage() {
                 justifyContent: 'center',
               }}
             >
-              <Chip
-                label={blogPosts[0].category}
-                size="small"
-                sx={{
-                  backgroundColor: categoryColors[blogPosts[0].category] || '#E91E8C',
-                  color: '#fff',
-                  fontWeight: 600,
-                  mb: 2,
-                  width: 'fit-content',
-                  fontFamily: '"Georgia", serif',
-                }}
-              />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Chip
+                  label={blogPosts[0].category}
+                  size="small"
+                  sx={{
+                    backgroundColor: categoryColors[blogPosts[0].category] || '#E91E8C',
+                    color: '#fff',
+                    fontWeight: 600,
+                    fontFamily: '"Georgia", serif',
+                  }}
+                />
+                <Typography sx={{ color: '#aaa', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <AccessTimeIcon sx={{ fontSize: 14 }} />
+                  {blogPosts[0].readTime}
+                </Typography>
+              </Box>
               <Typography
                 variant="h4"
                 sx={{
@@ -102,6 +130,17 @@ export default function BlogPage() {
               <Typography sx={{ color: '#aaa', fontSize: '0.85rem' }}>
                 {blogPosts[0].date}
               </Typography>
+              <Typography
+                sx={{
+                  color: '#E91E8C',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  fontFamily: '"Georgia", serif',
+                  mt: 2,
+                }}
+              >
+                Read more
+              </Typography>
             </Box>
           </Box>
         </ScrollReveal>
@@ -112,6 +151,7 @@ export default function BlogPage() {
             <Grid item xs={12} sm={6} md={4} key={post.id}>
               <ScrollReveal direction="up" delay={index * 0.1}>
                 <Box
+                  onClick={() => setSelectedPost(post)}
                   sx={{
                     borderRadius: 3,
                     overflow: 'hidden',
@@ -121,6 +161,7 @@ export default function BlogPage() {
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
+                    cursor: 'pointer',
                     '&:hover': {
                       transform: 'translateY(-6px)',
                       boxShadow: '0 12px 32px rgba(233,30,140,0.12)',
@@ -138,19 +179,23 @@ export default function BlogPage() {
                     }}
                   />
                   <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <Chip
-                      label={post.category}
-                      size="small"
-                      sx={{
-                        backgroundColor: categoryColors[post.category] || '#E91E8C',
-                        color: '#fff',
-                        fontWeight: 600,
-                        mb: 1.5,
-                        width: 'fit-content',
-                        fontSize: '0.75rem',
-                        fontFamily: '"Georgia", serif',
-                      }}
-                    />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                      <Chip
+                        label={post.category}
+                        size="small"
+                        sx={{
+                          backgroundColor: categoryColors[post.category] || '#E91E8C',
+                          color: '#fff',
+                          fontWeight: 600,
+                          fontSize: '0.75rem',
+                          fontFamily: '"Georgia", serif',
+                        }}
+                      />
+                      <Typography sx={{ color: '#bbb', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: 0.3 }}>
+                        <AccessTimeIcon sx={{ fontSize: 12 }} />
+                        {post.readTime}
+                      </Typography>
+                    </Box>
                     <Typography
                       variant="h6"
                       sx={{
@@ -175,9 +220,21 @@ export default function BlogPage() {
                     >
                       {post.excerpt}
                     </Typography>
-                    <Typography sx={{ color: '#bbb', fontSize: '0.8rem' }}>
-                      {post.date}
-                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography sx={{ color: '#bbb', fontSize: '0.8rem' }}>
+                        {post.date}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: '#E91E8C',
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                          fontFamily: '"Georgia", serif',
+                        }}
+                      >
+                        Read more
+                      </Typography>
+                    </Box>
                   </Box>
                 </Box>
               </ScrollReveal>
@@ -185,6 +242,195 @@ export default function BlogPage() {
           ))}
         </Grid>
       </Container>
+
+      {/* Blog Detail Modal */}
+      <Dialog
+        open={!!selectedPost}
+        onClose={() => setSelectedPost(null)}
+        maxWidth="md"
+        fullWidth
+        scroll="paper"
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            maxHeight: '90vh',
+            overflowY: 'auto',
+          },
+        }}
+      >
+        {selectedPost && (
+          <>
+            {/* Modal Header Image */}
+            <Box sx={{ position: 'relative' }}>
+              <Box
+                component="img"
+                src={selectedPost.image}
+                alt={selectedPost.title}
+                sx={{
+                  width: '100%',
+                  height: { xs: 200, sm: 280, md: 340 },
+                  objectFit: 'cover',
+                }}
+              />
+              <Box
+                sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)',
+                }}
+              />
+              <IconButton
+                onClick={() => setSelectedPost(null)}
+                sx={{
+                  position: 'absolute',
+                  top: 12,
+                  right: 12,
+                  backgroundColor: 'rgba(255,255,255,0.9)',
+                  '&:hover': { backgroundColor: '#fff' },
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+
+            {/* Modal Content */}
+            <Box sx={{ p: { xs: 3, sm: 4, md: 5 } }}>
+              {/* Category + Read Time */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, flexWrap: 'wrap' }}>
+                <Chip
+                  label={selectedPost.category}
+                  size="small"
+                  sx={{
+                    backgroundColor: categoryColors[selectedPost.category] || '#E91E8C',
+                    color: '#fff',
+                    fontWeight: 600,
+                    fontFamily: '"Georgia", serif',
+                  }}
+                />
+                <Typography sx={{ color: '#999', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <AccessTimeIcon sx={{ fontSize: 16 }} />
+                  {selectedPost.readTime}
+                </Typography>
+              </Box>
+
+              {/* Title */}
+              <Typography
+                variant="h4"
+                sx={{
+                  fontFamily: '"Georgia", serif',
+                  fontWeight: 700,
+                  color: '#000',
+                  mb: 3,
+                  lineHeight: 1.3,
+                  fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.2rem' },
+                }}
+              >
+                {selectedPost.title}
+              </Typography>
+
+              {/* Meta Info */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: { xs: 2, sm: 3 },
+                  mb: 4,
+                  flexWrap: 'wrap',
+                  p: 2,
+                  backgroundColor: '#FFF0F5',
+                  borderRadius: 2,
+                  border: '1px solid #F0C0D0',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                  <PersonOutlineIcon sx={{ color: '#E91E8C', fontSize: 20 }} />
+                  <Box>
+                    <Typography sx={{ fontSize: '0.7rem', color: '#999', lineHeight: 1 }}>
+                      Written by
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#333' }}>
+                      {selectedPost.author}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                  <CalendarTodayIcon sx={{ color: '#E91E8C', fontSize: 18 }} />
+                  <Box>
+                    <Typography sx={{ fontSize: '0.7rem', color: '#999', lineHeight: 1 }}>
+                      Published
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#333' }}>
+                      {selectedPost.date}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                  <AccessTimeIcon sx={{ color: '#E91E8C', fontSize: 18 }} />
+                  <Box>
+                    <Typography sx={{ fontSize: '0.7rem', color: '#999', lineHeight: 1 }}>
+                      Read time
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#333' }}>
+                      {selectedPost.readTime}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+
+              {/* Article Body */}
+              {selectedPost.body.map((paragraph, i) => (
+                <Typography
+                  key={i}
+                  sx={{
+                    color: '#444',
+                    fontSize: '1rem',
+                    lineHeight: 1.85,
+                    mb: 2.5,
+                  }}
+                >
+                  {paragraph}
+                </Typography>
+              ))}
+
+              {/* Sources */}
+              {selectedPost.sources && selectedPost.sources.length > 0 && (
+                <>
+                  <Divider sx={{ my: 4, borderColor: '#F0C0D0' }} />
+                  <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                      <MenuBookIcon sx={{ color: '#E91E8C', fontSize: 22 }} />
+                      <Typography
+                        sx={{
+                          fontFamily: '"Georgia", serif',
+                          fontWeight: 700,
+                          fontSize: '1.1rem',
+                          color: '#000',
+                        }}
+                      >
+                        Sources & References
+                      </Typography>
+                    </Box>
+                    {selectedPost.sources.map((source, i) => (
+                      <Typography
+                        key={i}
+                        sx={{
+                          color: '#777',
+                          fontSize: '0.88rem',
+                          lineHeight: 1.8,
+                          pl: 2,
+                          borderLeft: '2px solid #F0C0D0',
+                          mb: 1,
+                        }}
+                      >
+                        {source}
+                      </Typography>
+                    ))}
+                  </Box>
+                </>
+              )}
+            </Box>
+          </>
+        )}
+      </Dialog>
     </Box>
   );
 }

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx --yes create-vite@5:*)",
+      "Bash(npm install:*)",
+      "Bash(npx vite build:*)",
+      "Bash(npx vite:*)",
+      "Bash(git init:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "mcp__ide__getDiagnostics"
+    ]
+  }
+}
