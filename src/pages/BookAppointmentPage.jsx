@@ -126,30 +126,38 @@ export default function BookAppointmentPage() {
             </Box>
           </ScrollReveal>
 
-          {/* Name Field */}
-          <ScrollReveal direction="up" delay={0.05}>
-            <Box sx={{ mb: 4 }}>
-              <Typography
-                sx={{
-                  fontFamily: '"Georgia", serif',
-                  fontWeight: 700,
-                  color: '#4A0E4E',
-                  mb: 1.5,
-                  fontSize: '1.1rem',
-                }}
-              >
-                Your Name
-              </Typography>
-              <TextField
-                fullWidth
-                placeholder="Enter your full name"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                size="small"
-                sx={textFieldSx}
-              />
-            </Box>
-          </ScrollReveal>
+          {/* Sticky Name Field */}
+          <Box
+            sx={{
+              position: 'sticky',
+              top: { xs: 56, md: 64 },
+              zIndex: 10,
+              backgroundColor: '#FFF0F5',
+              pb: 2,
+              pt: 1,
+              mb: 2,
+            }}
+          >
+            <Typography
+              sx={{
+                fontFamily: '"Georgia", serif',
+                fontWeight: 700,
+                color: '#4A0E4E',
+                mb: 1,
+                fontSize: '1.05rem',
+              }}
+            >
+              Your Name
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter your full name"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              size="small"
+              sx={textFieldSx}
+            />
+          </Box>
 
           {/* Service Selection */}
           <RadioGroup value={selectedService} onChange={handleServiceChange}>

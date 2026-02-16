@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -8,12 +9,16 @@ import {
   Grid,
   Button,
   Chip,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import ScrollReveal from '../components/ScrollReveal';
+import PresetSizeGuide from '../components/PresetSizeGuide';
 import { productCategories } from '../data/products';
 
-const sectionColors = ['#FFF0F5', '#FCE4EC', '#F3E5F6', '#F8E8F0'];
+const sectionColors = ['#FFF0F5', '#FCE4EC', '#F3E5F6', '#F8E8F0', '#FFF5F8'];
 
 function formatNaira(amount) {
   return `₦${amount.toLocaleString()}`;
@@ -40,6 +45,19 @@ const orderButtonSx = {
 
 export default function ProductsMenuPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+
+  const handleContactClick = () => {
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    } else {
+      document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <Box sx={{ pt: 12 }}>
@@ -145,6 +163,64 @@ export default function ProductsMenuPage() {
                 >
                   {category.description}
                 </Typography>
+
+                {/* Preset sizes info for ready-made products */}
+                {category.readyMade && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 1,
+                      mt: 1,
+                      mb: 0.5,
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        color: '#4A0E4E',
+                        fontSize: '0.9rem',
+                        fontWeight: 600,
+                      }}
+                    >
+                      XS, S, M & L preset nail sizes available
+                    </Typography>
+                    <Typography
+                      onClick={() => setSizeGuideOpen(true)}
+                      sx={{
+                        color: '#E91E8C',
+                        fontSize: '0.85rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                        textUnderlineOffset: 2,
+                        '&:hover': { color: '#C2185B' },
+                      }}
+                    >
+                      What are preset sizes?
+                    </Typography>
+                    <Tooltip title="Contact us for help" arrow>
+                      <IconButton
+                        onClick={handleContactClick}
+                        size="small"
+                        sx={{
+                          color: '#E91E8C',
+                          border: '1.5px solid #E91E8C',
+                          width: 30,
+                          height: 30,
+                          '&:hover': {
+                            backgroundColor: '#E91E8C',
+                            color: '#fff',
+                          },
+                        }}
+                      >
+                        <PhoneOutlinedIcon sx={{ fontSize: 16 }} />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                )}
+
                 {category.note && (
                   <Typography
                     sx={{
@@ -163,7 +239,7 @@ export default function ProductsMenuPage() {
 
               <Grid container spacing={3}>
                 {category.products.map((product, pIdx) => (
-                  <Grid item xs={12} sm={6} md={3} key={product.id}>
+                  <Grid item xs={12} sm={6} md={category.readyMade ? 4 : 3} key={product.id}>
                     <ScrollReveal direction="up" delay={pIdx * 0.1}>
                       <Card
                         elevation={0}
@@ -183,16 +259,50 @@ export default function ProductsMenuPage() {
                           },
                         }}
                       >
-                        <Box
-                          component="img"
-                          src={product.image}
-                          alt={product.name}
-                          sx={{
-                            width: '100%',
-                            height: 160,
-                            objectFit: 'cover',
-                          }}
-                        />
+                        <Box sx={{ position: 'relative' }}>
+                          <Box
+                            component="img"
+                            src={product.image}
+                            alt={product.name}
+                            sx={{
+                              width: '100%',
+                              height: 160,
+                              objectFit: 'cover',
+                            }}
+                          />
+                          {product.type && (
+                            <Chip
+                              label={product.type}
+                              size="small"
+                              sx={{
+                                position: 'absolute',
+                                top: 8,
+                                left: 8,
+                                backgroundColor: '#4A0E4E',
+                                color: '#fff',
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                height: 22,
+                              }}
+                            />
+                          )}
+                          {product.stock !== undefined && (
+                            <Chip
+                              label="Ready to ship"
+                              size="small"
+                              sx={{
+                                position: 'absolute',
+                                top: 8,
+                                right: 8,
+                                backgroundColor: '#E91E8C',
+                                color: '#fff',
+                                fontSize: '0.7rem',
+                                fontWeight: 600,
+                                height: 22,
+                              }}
+                            />
+                          )}
+                        </Box>
                         <CardContent sx={{ flex: 1, p: 3 }}>
                           <Typography
                             variant="h6"
@@ -201,11 +311,22 @@ export default function ProductsMenuPage() {
                               fontWeight: 700,
                               color: '#000',
                               fontSize: '1rem',
-                              mb: 1,
+                              mb: 0.5,
                             }}
                           >
                             {product.name}
                           </Typography>
+                          {product.shape && product.length && (
+                            <Typography
+                              sx={{
+                                color: '#999',
+                                fontSize: '0.78rem',
+                                mb: 0.8,
+                              }}
+                            >
+                              {product.shape} · {product.length}
+                            </Typography>
+                          )}
                           <Typography
                             sx={{
                               color: '#666',
@@ -216,16 +337,30 @@ export default function ProductsMenuPage() {
                           >
                             {product.description}
                           </Typography>
-                          <Chip
-                            label={formatNaira(product.price)}
-                            sx={{
-                              backgroundColor: '#E91E8C',
-                              color: '#fff',
-                              fontFamily: '"Georgia", serif',
-                              fontWeight: 700,
-                              fontSize: '0.9rem',
-                            }}
-                          />
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                            <Chip
+                              label={formatNaira(product.price)}
+                              sx={{
+                                backgroundColor: '#E91E8C',
+                                color: '#fff',
+                                fontFamily: '"Georgia", serif',
+                                fontWeight: 700,
+                                fontSize: '0.9rem',
+                              }}
+                            />
+                            {product.stock !== undefined && (
+                              <Typography
+                                sx={{
+                                  color: product.stock <= 2 ? '#E91E8C' : '#999',
+                                  fontSize: '0.78rem',
+                                  fontWeight: product.stock <= 2 ? 600 : 400,
+                                  fontStyle: 'italic',
+                                }}
+                              >
+                                {product.stock} in stock
+                              </Typography>
+                            )}
+                          </Box>
                         </CardContent>
                       </Card>
                     </ScrollReveal>
@@ -244,6 +379,9 @@ export default function ProductsMenuPage() {
           </Box>
         </Box>
       ))}
+
+      {/* Preset Size Guide Modal */}
+      <PresetSizeGuide open={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)} />
     </Box>
   );
 }

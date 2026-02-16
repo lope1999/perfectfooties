@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -19,8 +20,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Chip,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import {
   productCategories,
   pressOnNailShapes,
@@ -29,6 +34,7 @@ import {
 } from '../data/products';
 import ScrollReveal from '../components/ScrollReveal';
 import NailBedSizeInput from '../components/NailBedSizeInput';
+import PresetSizeGuide from '../components/PresetSizeGuide';
 
 function formatNaira(amount) {
   return `₦${amount.toLocaleString()}`;
@@ -62,15 +68,35 @@ const textFieldSx = {
 };
 
 const emptyForm = { nailShape: '', nailLength: '', quantity: '', nailBedSize: '' };
+const readyMadeForm = { quantity: '' };
 
 export default function PlaceOrderPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [customerName, setCustomerName] = useState('');
   const [selectedProducts, setSelectedProducts] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+
+  const handleContactClick = () => {
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    } else {
+      document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const allProducts = productCategories.flatMap((cat) =>
-    cat.products.map((p) => ({ ...p, category: cat.title }))
+    cat.products.map((p) => ({ ...p, category: cat.title, readyMade: !!cat.readyMade }))
   );
+
+  const isReadyMade = (productId) => {
+    const product = allProducts.find((p) => p.id === productId);
+    return product?.readyMade;
+  };
 
   const handleToggleProduct = (productId) => {
     setSelectedProducts((prev) => {
@@ -78,7 +104,7 @@ export default function PlaceOrderPage() {
       if (updated[productId]) {
         delete updated[productId];
       } else {
-        updated[productId] = { ...emptyForm };
+        updated[productId] = isReadyMade(productId) ? { ...readyMadeForm } : { ...emptyForm };
       }
       return updated;
     });
@@ -109,6 +135,9 @@ export default function PlaceOrderPage() {
     const orderLines = selectedIds.map((id, i) => {
       const product = allProducts.find((p) => p.id === id);
       const form = selectedProducts[id];
+      if (product?.readyMade) {
+        return `${i + 1}. ${product?.name || 'Product'} — ${product ? formatNaira(product.price) : ''}\n   - Type: ${product.type || 'N/A'}\n   - Shape: ${product.shape || 'N/A'}\n   - Length: ${product.length || 'N/A'}\n   - Quantity: ${form.quantity} set(s)\n   - (Ready-made — ready to ship)`;
+      }
       return `${i + 1}. ${product?.name || 'Product'} — ${product ? formatNaira(product.price) : ''}\n   - Nail Shape: ${form.nailShape}\n   - Nail Length: ${form.nailLength}\n   - Quantity: ${form.quantity} set(s)\n   - Nail Bed Size: ${form.nailBedSize || 'Not provided'}`;
     });
 
@@ -128,6 +157,9 @@ export default function PlaceOrderPage() {
     selectedIds.length > 0 &&
     selectedIds.every((id) => {
       const f = selectedProducts[id];
+      if (isReadyMade(id)) {
+        return f.quantity;
+      }
       return f.nailShape && f.nailLength && f.quantity;
     });
 
@@ -157,30 +189,38 @@ export default function PlaceOrderPage() {
             </Box>
           </ScrollReveal>
 
-          {/* Name Field */}
-          <ScrollReveal direction="up" delay={0.05}>
-            <Box sx={{ mb: 4 }}>
-              <Typography
-                sx={{
-                  fontFamily: '"Georgia", serif',
-                  fontWeight: 700,
-                  color: '#4A0E4E',
-                  mb: 1.5,
-                  fontSize: '1.1rem',
-                }}
-              >
-                Your Name
-              </Typography>
-              <TextField
-                fullWidth
-                placeholder="Enter your full name"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                size="small"
-                sx={textFieldSx}
-              />
-            </Box>
-          </ScrollReveal>
+          {/* Sticky Name Field */}
+          <Box
+            sx={{
+              position: 'sticky',
+              top: { xs: 56, md: 64 },
+              zIndex: 10,
+              backgroundColor: '#FFF0F5',
+              pb: 2,
+              pt: 1,
+              mb: 2,
+            }}
+          >
+            <Typography
+              sx={{
+                fontFamily: '"Georgia", serif',
+                fontWeight: 700,
+                color: '#4A0E4E',
+                mb: 1,
+                fontSize: '1.05rem',
+              }}
+            >
+              Your Name
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter your full name"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              size="small"
+              sx={textFieldSx}
+            />
+          </Box>
 
           {/* Product Selection */}
           {productCategories.map((category, catIdx) => (
@@ -198,9 +238,64 @@ export default function PlaceOrderPage() {
                   {category.title}
                 </Typography>
 
+                {category.readyMade && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      mb: 1.5,
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        color: '#4A0E4E',
+                        fontSize: '0.85rem',
+                        fontWeight: 600,
+                      }}
+                    >
+                      XS, S, M & L preset sizes available
+                    </Typography>
+                    <Typography
+                      onClick={() => setSizeGuideOpen(true)}
+                      sx={{
+                        color: '#E91E8C',
+                        fontSize: '0.82rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                        textUnderlineOffset: 2,
+                        '&:hover': { color: '#C2185B' },
+                      }}
+                    >
+                      What are preset sizes?
+                    </Typography>
+                    <Tooltip title="Contact us for help" arrow>
+                      <IconButton
+                        onClick={handleContactClick}
+                        size="small"
+                        sx={{
+                          color: '#E91E8C',
+                          border: '1.5px solid #E91E8C',
+                          width: 28,
+                          height: 28,
+                          '&:hover': {
+                            backgroundColor: '#E91E8C',
+                            color: '#fff',
+                          },
+                        }}
+                      >
+                        <PhoneOutlinedIcon sx={{ fontSize: 14 }} />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                )}
+
                 {category.products.map((product) => {
                   const isSelected = !!selectedProducts[product.id];
-                  const formData = selectedProducts[product.id] || emptyForm;
+                  const formData = selectedProducts[product.id] || (category.readyMade ? readyMadeForm : emptyForm);
+                  const isReady = !!category.readyMade;
 
                   return (
                     <Box key={product.id} sx={{ mb: 2 }}>
@@ -240,18 +335,52 @@ export default function PlaceOrderPage() {
                               }
                               label={
                                 <Box>
-                                  <Typography
-                                    sx={{
-                                      fontFamily: '"Georgia", serif',
-                                      fontWeight: 600,
-                                      fontSize: '1rem',
-                                    }}
-                                  >
-                                    {product.name}
-                                  </Typography>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                    <Typography
+                                      sx={{
+                                        fontFamily: '"Georgia", serif',
+                                        fontWeight: 600,
+                                        fontSize: '1rem',
+                                      }}
+                                    >
+                                      {product.name}
+                                    </Typography>
+                                    {product.type && (
+                                      <Chip
+                                        label={product.type}
+                                        size="small"
+                                        sx={{
+                                          backgroundColor: '#4A0E4E',
+                                          color: '#fff',
+                                          fontSize: '0.65rem',
+                                          fontWeight: 700,
+                                          height: 20,
+                                        }}
+                                      />
+                                    )}
+                                  </Box>
                                   <Typography sx={{ color: '#777', fontSize: '0.85rem' }}>
                                     {product.description}
                                   </Typography>
+                                  {isReady && product.shape && product.length && (
+                                    <Typography sx={{ color: '#999', fontSize: '0.78rem', mt: 0.3 }}>
+                                      {product.shape} · {product.length}
+                                      {product.stock !== undefined && (
+                                        <Typography
+                                          component="span"
+                                          sx={{
+                                            color: product.stock <= 2 ? '#E91E8C' : '#999',
+                                            fontSize: '0.78rem',
+                                            fontWeight: product.stock <= 2 ? 600 : 400,
+                                            fontStyle: 'italic',
+                                            ml: 1.5,
+                                          }}
+                                        >
+                                          {product.stock} in stock
+                                        </Typography>
+                                      )}
+                                    </Typography>
+                                  )}
                                 </Box>
                               }
                               sx={{ flex: 1, m: 0 }}
@@ -276,65 +405,103 @@ export default function PlaceOrderPage() {
                         {/* Customization Form */}
                         <Collapse in={isSelected}>
                           <Box sx={{ px: 3, pb: 3, pt: 1 }} onClick={(e) => e.stopPropagation()}>
-                            <Grid container spacing={2}>
-                              <Grid item xs={12} sm={4}>
-                                <FormControl fullWidth size="small">
-                                  <InputLabel>Nail Shape</InputLabel>
-                                  <Select
-                                    value={formData.nailShape}
-                                    label="Nail Shape"
-                                    onChange={handleFieldChange(product.id, 'nailShape')}
-                                    sx={{ borderRadius: 2 }}
+                            {isReady ? (
+                              /* Ready-made: only quantity */
+                              <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                  <FormControl fullWidth size="small">
+                                    <InputLabel>Quantity</InputLabel>
+                                    <Select
+                                      value={formData.quantity}
+                                      label="Quantity"
+                                      onChange={handleFieldChange(product.id, 'quantity')}
+                                      sx={{ borderRadius: 2 }}
+                                    >
+                                      {Array.from({ length: product.stock || 5 }, (_, i) => i + 1).map((q) => (
+                                        <MenuItem key={q} value={q}>
+                                          {q} set{q > 1 ? 's' : ''}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                  <Box
+                                    sx={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      height: '100%',
+                                      px: 1,
+                                    }}
                                   >
-                                    {pressOnNailShapes.map((shape) => (
-                                      <MenuItem key={shape} value={shape}>
-                                        {shape}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                </FormControl>
+                                    <Typography sx={{ color: '#999', fontSize: '0.85rem', fontStyle: 'italic' }}>
+                                      Pre-made set — shape, length & design are as shown.
+                                    </Typography>
+                                  </Box>
+                                </Grid>
                               </Grid>
-                              <Grid item xs={12} sm={4}>
-                                <FormControl fullWidth size="small">
-                                  <InputLabel>Nail Length</InputLabel>
-                                  <Select
-                                    value={formData.nailLength}
-                                    label="Nail Length"
-                                    onChange={handleFieldChange(product.id, 'nailLength')}
-                                    sx={{ borderRadius: 2 }}
-                                  >
-                                    {pressOnLengths.map((len) => (
-                                      <MenuItem key={len} value={len}>
-                                        {len}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                </FormControl>
+                            ) : (
+                              /* Custom: full form */
+                              <Grid container spacing={2}>
+                                <Grid item xs={12} sm={4}>
+                                  <FormControl fullWidth size="small">
+                                    <InputLabel>Nail Shape</InputLabel>
+                                    <Select
+                                      value={formData.nailShape}
+                                      label="Nail Shape"
+                                      onChange={handleFieldChange(product.id, 'nailShape')}
+                                      sx={{ borderRadius: 2 }}
+                                    >
+                                      {pressOnNailShapes.map((shape) => (
+                                        <MenuItem key={shape} value={shape}>
+                                          {shape}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
+                                </Grid>
+                                <Grid item xs={12} sm={4}>
+                                  <FormControl fullWidth size="small">
+                                    <InputLabel>Nail Length</InputLabel>
+                                    <Select
+                                      value={formData.nailLength}
+                                      label="Nail Length"
+                                      onChange={handleFieldChange(product.id, 'nailLength')}
+                                      sx={{ borderRadius: 2 }}
+                                    >
+                                      {pressOnLengths.map((len) => (
+                                        <MenuItem key={len} value={len}>
+                                          {len}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
+                                </Grid>
+                                <Grid item xs={12} sm={4}>
+                                  <FormControl fullWidth size="small">
+                                    <InputLabel>Quantity</InputLabel>
+                                    <Select
+                                      value={formData.quantity}
+                                      label="Quantity"
+                                      onChange={handleFieldChange(product.id, 'quantity')}
+                                      sx={{ borderRadius: 2 }}
+                                    >
+                                      {pressOnQuantities.map((q) => (
+                                        <MenuItem key={q} value={q}>
+                                          {q} set{q > 1 ? 's' : ''}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
+                                </Grid>
+                                <Grid item xs={12}>
+                                  <NailBedSizeInput
+                                    value={formData.nailBedSize}
+                                    onChange={(val) => handleNailBedChange(product.id, val)}
+                                  />
+                                </Grid>
                               </Grid>
-                              <Grid item xs={12} sm={4}>
-                                <FormControl fullWidth size="small">
-                                  <InputLabel>Quantity</InputLabel>
-                                  <Select
-                                    value={formData.quantity}
-                                    label="Quantity"
-                                    onChange={handleFieldChange(product.id, 'quantity')}
-                                    sx={{ borderRadius: 2 }}
-                                  >
-                                    {pressOnQuantities.map((q) => (
-                                      <MenuItem key={q} value={q}>
-                                        {q} set{q > 1 ? 's' : ''}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                              <Grid item xs={12}>
-                                <NailBedSizeInput
-                                  value={formData.nailBedSize}
-                                  onChange={(val) => handleNailBedChange(product.id, val)}
-                                />
-                              </Grid>
-                            </Grid>
+                            )}
                           </Box>
                         </Collapse>
                       </Card>
@@ -453,6 +620,9 @@ export default function PlaceOrderPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Preset Size Guide Modal */}
+      <PresetSizeGuide open={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)} />
     </Box>
   );
 }

@@ -18,7 +18,7 @@ export const serviceCategories = [
         name: 'French Tip Gel X',
         description: 'Elegant French tip design on gel extensions for a timeless look.',
         price: 18000,
-        image: '/images/services/freehand-art.jpg.jpg',
+        image: '/images/services/classic-gel.png',
       },
       {
         id: 'gelx-art',
@@ -62,7 +62,7 @@ export const serviceCategories = [
         name: 'Hard Gel Extension',
         description: 'Full hard gel nail extensions sculpted to your desired shape.',
         price: 18000,
-        image: '/images/services/gel-extensions.jpg.jpg',
+        image: '/images/services/builder-gel.jpg',
       },
       {
         id: 'hardgel-art',
@@ -76,7 +76,7 @@ export const serviceCategories = [
         name: 'Hard Gel Refill',
         description: 'Maintenance refill for existing hard gel extensions.',
         price: 10000,
-        image: '/images/services/chrome-nails.jpg.jpg',
+        image: '/images/services/classic-gel.png',
       },
     ],
   },
@@ -85,35 +85,35 @@ export const serviceCategories = [
     title: 'Pedicure Appointments',
     description:
       'Treat your feet to a luxurious pedicure experience. From basic grooming to full spa treatments, we keep your toes looking and feeling fabulous.',
-    image: '/images/services/freehand-art.jpg.jpg',
+    image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800&q=80',
     services: [
       {
         id: 'pedi-basic',
         name: 'Basic Pedicure',
         description: 'Nail shaping, cuticle care, and a polish of your choice.',
         price: 8000,
-        image: '/images/services/ombre-nails.jpg.jpg',
+        image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=800&q=80',
       },
       {
         id: 'pedi-gel',
         name: 'Gel Pedicure',
         description: 'Full pedicure with long-lasting gel polish finish.',
         price: 12000,
-        image: '/images/services/gel-extensions.jpg.jpg',
+        image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800&q=80',
       },
       {
         id: 'pedi-spa',
         name: 'Spa Pedicure',
         description: 'A relaxing spa experience with exfoliation, mask, and massage.',
         price: 18000,
-        image: '/images/services/freehand-art.jpg.jpg',
+        image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=800&q=80',
       },
       {
         id: 'pedi-art',
         name: 'Pedicure with Nail Art',
         description: 'Pedicure with custom toe nail art designs.',
         price: 15000,
-        image: '/images/services/custom-art.jpg.jpg',
+        image: 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=800&q=80',
       },
     ],
   },
@@ -121,6 +121,6 @@ export const serviceCategories = [
 
 export const nailShapes = ['Almond', 'Coffin', 'Stiletto', 'Square', 'Round', 'Oval', 'Ballerina'];
 
-export const nailLengths = ['XS', 'S', 'M', 'L', 'XL'];
+export const nailLengths = ['XS (Extra Short)', 'S (Short)', 'M (Medium)', 'L (Long)', 'XL (Extra Long)'];
 
 export const quantities = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];

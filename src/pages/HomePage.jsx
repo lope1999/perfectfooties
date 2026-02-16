@@ -51,8 +51,7 @@ export default function HomePage() {
 			<Box
 				sx={{
 					minHeight: "100vh",
-					backgroundImage:
-						'url("/images/hero/hero-bg.jpg.jpg")',
+					backgroundImage: 'url("/images/hero/hero-bg.jpg.jpg")',
 					backgroundSize: "cover",
 					backgroundPosition: "center",
 					display: "flex",
@@ -79,8 +78,8 @@ export default function HomePage() {
 							sx={{
 								fontFamily: '"Georgia", serif',
 								fontWeight: 700,
-								fontSize: { xs: "2rem", sm: "3rem", md: "3.8rem" },
-								color: "#000",
+								fontSize: { xs: "2rem", sm: "2.5rem", md: "3.5rem" },
+								color: "#420035",
 								mb: 4,
 								maxWidth: 800,
 								lineHeight: 1.3,
