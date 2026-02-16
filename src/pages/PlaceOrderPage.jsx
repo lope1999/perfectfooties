@@ -23,13 +23,15 @@ import {
   Chip,
   Tooltip,
   IconButton,
+  Switch,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import {
   productCategories,
   pressOnNailShapes,
-  pressOnLengths,
   pressOnQuantities,
 } from '../data/products';
 import ScrollReveal from '../components/ScrollReveal';
@@ -67,7 +69,7 @@ const textFieldSx = {
   },
 };
 
-const emptyForm = { nailShape: '', nailLength: '', quantity: '', nailBedSize: '' };
+const emptyForm = { nailShape: '', quantity: '', nailBedSize: '', orderingForOthers: false, otherPeople: [] };
 const readyMadeForm = { quantity: '', presetSize: '' };
 const presetSizes = ['XS (Extra Small)', 'S (Small)', 'M (Medium)', 'L (Large)'];
 
@@ -125,6 +127,59 @@ export default function PlaceOrderPage() {
     }));
   };
 
+  const handleToggleOthers = (productId) => {
+    setSelectedProducts((prev) => {
+      const current = prev[productId];
+      const toggled = !current.orderingForOthers;
+      return {
+        ...prev,
+        [productId]: {
+          ...current,
+          orderingForOthers: toggled,
+          otherPeople: toggled && current.otherPeople.length === 0
+            ? [{ name: '', nailShape: '', nailBedSize: '' }]
+            : current.otherPeople,
+        },
+      };
+    });
+  };
+
+  const handleAddPerson = (productId) => {
+    setSelectedProducts((prev) => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        otherPeople: [...prev[productId].otherPeople, { name: '', nailShape: '', nailBedSize: '' }],
+      },
+    }));
+  };
+
+  const handleRemovePerson = (productId, index) => {
+    setSelectedProducts((prev) => {
+      const updated = [...prev[productId].otherPeople];
+      updated.splice(index, 1);
+      return {
+        ...prev,
+        [productId]: {
+          ...prev[productId],
+          otherPeople: updated,
+          orderingForOthers: updated.length > 0,
+        },
+      };
+    });
+  };
+
+  const handleOtherPersonField = (productId, index, field, value) => {
+    setSelectedProducts((prev) => {
+      const updated = [...prev[productId].otherPeople];
+      updated[index] = { ...updated[index], [field]: value };
+      return {
+        ...prev,
+        [productId]: { ...prev[productId], otherPeople: updated },
+      };
+    });
+  };
+
   const handleConfirmOrder = () => {
     setModalOpen(true);
   };
@@ -139,7 +194,14 @@ export default function PlaceOrderPage() {
       if (product?.readyMade) {
         return `${i + 1}. ${product?.name || 'Product'} — ${product ? formatNaira(product.price) : ''}\n   - Type: ${product.type || 'N/A'}\n   - Shape: ${product.shape || 'N/A'}\n   - Length: ${product.length || 'N/A'}\n   - Preset Size: ${form.presetSize}\n   - Quantity: ${form.quantity} set(s)\n   - (Ready-made — ready to ship)`;
       }
-      return `${i + 1}. ${product?.name || 'Product'} — ${product ? formatNaira(product.price) : ''}\n   - Nail Shape: ${form.nailShape}\n   - Nail Length: ${form.nailLength}\n   - Quantity: ${form.quantity} set(s)\n   - Nail Bed Size: ${form.nailBedSize || 'Not provided'}`;
+      let line = `${i + 1}. ${product?.name || 'Product'} — ${product ? formatNaira(product.price) : ''}\n   - Nail Shape: ${form.nailShape}\n   - Quantity: ${form.quantity} set(s)\n   - Nail Bed Size: ${form.nailBedSize || 'Not provided'}`;
+      if (form.orderingForOthers && form.otherPeople?.length > 0) {
+        const othersLines = form.otherPeople.map((p, j) =>
+          `   - Also for: ${p.name || 'N/A'} — Shape: ${p.nailShape || 'Same'} — Nail Bed Size: ${p.nailBedSize || 'Not provided'}`
+        ).join('\n');
+        line += `\n${othersLines}`;
+      }
+      return line;
     });
 
     const total = selectedIds.reduce((sum, id) => {
@@ -149,7 +211,8 @@ export default function PlaceOrderPage() {
 
     const message = `Hi! I'd like to order press-on nails.\n\nName: ${customerName}\n\nProducts (${selectedIds.length}):\n${orderLines.join('\n\n')}\n\nEstimated Total: ${formatNaira(total)}\n\nPlease confirm availability and delivery details. Thank you!`;
     const encoded = encodeURIComponent(message);
-    window.open(`https://wa.me/message/CHLIAKCZOF4TP1?text=${encoded}`, '_blank');
+    window.open(`https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`, '_blank');
+    navigate('/');
   };
 
   const selectedIds = Object.keys(selectedProducts);
@@ -161,7 +224,7 @@ export default function PlaceOrderPage() {
       if (isReadyMade(id)) {
         return f.quantity && f.presetSize;
       }
-      return f.nailShape && f.nailLength && f.quantity;
+      return f.nailShape && f.quantity;
     });
 
   return (
@@ -187,6 +250,23 @@ export default function PlaceOrderPage() {
                 Select one or more press-on nail sets below, customize each,
                 and confirm your order. We will connect you on WhatsApp to finalize.
               </Typography>
+              <Box
+                sx={{
+                  mt: 3,
+                  mx: 'auto',
+                  maxWidth: 520,
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: '#FCE4EC',
+                  border: '1px solid #F0C0D0',
+                }}
+              >
+                <Typography sx={{ fontSize: '0.85rem', color: '#4A0E4E', fontWeight: 600, lineHeight: 1.6 }}>
+                  Order Policy: A 50% non-refundable deposit is required to confirm your order.
+                  Production begins immediately after confirmation, so refunds are not available.
+                  Please review your selections carefully before placing your order.
+                </Typography>
+              </Box>
             </Box>
           </ScrollReveal>
 
@@ -461,7 +541,7 @@ export default function PlaceOrderPage() {
                             ) : (
                               /* Custom: full form */
                               <Grid container spacing={2}>
-                                <Grid item xs={12} sm={4}>
+                                <Grid item xs={12} sm={6}>
                                   <FormControl fullWidth size="small">
                                     <InputLabel>Nail Shape</InputLabel>
                                     <Select
@@ -478,24 +558,7 @@ export default function PlaceOrderPage() {
                                     </Select>
                                   </FormControl>
                                 </Grid>
-                                <Grid item xs={12} sm={4}>
-                                  <FormControl fullWidth size="small">
-                                    <InputLabel>Nail Length</InputLabel>
-                                    <Select
-                                      value={formData.nailLength}
-                                      label="Nail Length"
-                                      onChange={handleFieldChange(product.id, 'nailLength')}
-                                      sx={{ borderRadius: 2 }}
-                                    >
-                                      {pressOnLengths.map((len) => (
-                                        <MenuItem key={len} value={len}>
-                                          {len}
-                                        </MenuItem>
-                                      ))}
-                                    </Select>
-                                  </FormControl>
-                                </Grid>
-                                <Grid item xs={12} sm={4}>
+                                <Grid item xs={12} sm={6}>
                                   <FormControl fullWidth size="small">
                                     <InputLabel>Quantity</InputLabel>
                                     <Select
@@ -517,6 +580,104 @@ export default function PlaceOrderPage() {
                                     value={formData.nailBedSize}
                                     onChange={(val) => handleNailBedChange(product.id, val)}
                                   />
+                                </Grid>
+
+                                {/* Ordering for others toggle */}
+                                <Grid item xs={12}>
+                                  <Box
+                                    sx={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      mt: 1,
+                                      p: 1.5,
+                                      borderRadius: 2,
+                                      border: '1px solid #F0C0D0',
+                                      backgroundColor: formData.orderingForOthers ? '#FFF0F5' : '#fff',
+                                    }}
+                                  >
+                                    <Switch
+                                      checked={formData.orderingForOthers || false}
+                                      onChange={() => handleToggleOthers(product.id)}
+                                      sx={{
+                                        '& .MuiSwitch-switchBase.Mui-checked': { color: '#E91E8C' },
+                                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#E91E8C' },
+                                      }}
+                                    />
+                                    <Typography sx={{ fontSize: '0.88rem', color: '#4A0E4E', fontWeight: 600 }}>
+                                      Also ordering for another person
+                                    </Typography>
+                                  </Box>
+
+                                  <Collapse in={formData.orderingForOthers}>
+                                    <Box sx={{ mt: 2 }}>
+                                      {(formData.otherPeople || []).map((person, pIdx) => (
+                                        <Box
+                                          key={pIdx}
+                                          sx={{
+                                            mb: 2,
+                                            p: 2,
+                                            borderRadius: 2,
+                                            border: '1px solid #F0C0D0',
+                                            backgroundColor: '#FFF8FA',
+                                          }}
+                                        >
+                                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+                                            <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#4A0E4E', fontFamily: '"Georgia", serif' }}>
+                                              Person {pIdx + 2}
+                                            </Typography>
+                                            <IconButton
+                                              size="small"
+                                              onClick={() => handleRemovePerson(product.id, pIdx)}
+                                              sx={{ color: '#E91E8C', '&:hover': { backgroundColor: 'rgba(233,30,140,0.08)' } }}
+                                            >
+                                              <DeleteOutlineIcon sx={{ fontSize: 18 }} />
+                                            </IconButton>
+                                          </Box>
+                                          <TextField
+                                            fullWidth
+                                            size="small"
+                                            placeholder="Their full name"
+                                            value={person.name}
+                                            onChange={(e) => handleOtherPersonField(product.id, pIdx, 'name', e.target.value)}
+                                            sx={{ ...textFieldSx, mb: 1.5 }}
+                                          />
+                                          <FormControl fullWidth size="small" sx={{ mb: 1.5 }}>
+                                            <InputLabel>Nail Shape</InputLabel>
+                                            <Select
+                                              value={person.nailShape || ''}
+                                              label="Nail Shape"
+                                              onChange={(e) => handleOtherPersonField(product.id, pIdx, 'nailShape', e.target.value)}
+                                              sx={{ borderRadius: 2 }}
+                                            >
+                                              {pressOnNailShapes.map((shape) => (
+                                                <MenuItem key={shape} value={shape}>
+                                                  {shape}
+                                                </MenuItem>
+                                              ))}
+                                            </Select>
+                                          </FormControl>
+                                          <NailBedSizeInput
+                                            value={person.nailBedSize}
+                                            onChange={(val) => handleOtherPersonField(product.id, pIdx, 'nailBedSize', val)}
+                                          />
+                                        </Box>
+                                      ))}
+                                      <Button
+                                        size="small"
+                                        startIcon={<AddIcon />}
+                                        onClick={() => handleAddPerson(product.id)}
+                                        sx={{
+                                          color: '#E91E8C',
+                                          fontSize: '0.82rem',
+                                          fontWeight: 600,
+                                          textTransform: 'none',
+                                          '&:hover': { backgroundColor: 'rgba(233,30,140,0.06)' },
+                                        }}
+                                      >
+                                        Add another person
+                                      </Button>
+                                    </Box>
+                                  </Collapse>
                                 </Grid>
                               </Grid>
                             )}

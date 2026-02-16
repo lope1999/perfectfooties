@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -57,6 +58,7 @@ const textFieldSx = {
 };
 
 export default function BookAppointmentPage() {
+  const navigate = useNavigate();
   const [customerName, setCustomerName] = useState('');
   const [selectedService, setSelectedService] = useState('');
   const [formData, setFormData] = useState({
@@ -87,7 +89,8 @@ export default function BookAppointmentPage() {
     const selected = allServices.find((s) => s.id === selectedService);
     const message = `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nService: ${selected?.name || "a service"}\nPrice: ${selected ? formatNaira(selected.price) : ''}\n\nDetails:\n- Nail Shape: ${formData.nailShape}\n- Nail Length: ${formData.nailLength}\n\nPlease confirm availability for this request. Thank you!`;
     const encoded = encodeURIComponent(message);
-    window.open(`https://wa.me/message/CHLIAKCZOF4TP1?text=${encoded}`, '_blank');
+    window.open(`https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`, '_blank');
+    navigate('/');
   };
 
   const isFormValid =
@@ -123,6 +126,23 @@ export default function BookAppointmentPage() {
                 Select a service below, customize your preferences, and confirm your booking.
                 We will connect you with a stylist on WhatsApp.
               </Typography>
+              <Box
+                sx={{
+                  mt: 3,
+                  mx: 'auto',
+                  maxWidth: 520,
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: '#FCE4EC',
+                  border: '1px solid #F0C0D0',
+                }}
+              >
+                <Typography sx={{ fontSize: '0.85rem', color: '#4A0E4E', fontWeight: 600, lineHeight: 1.6 }}>
+                  Booking Policy: A 50% non-refundable deposit is required to confirm your appointment.
+                  This covers material preparation and secures your time slot. The remaining balance is
+                  due on the day of your appointment.
+                </Typography>
+              </Box>
             </Box>
           </ScrollReveal>
 

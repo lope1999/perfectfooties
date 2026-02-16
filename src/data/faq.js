@@ -19,4 +19,14 @@ export const faqData = [
     answer:
       'Yes! Every custom press-on order comes with a complimentary nail kit that includes a mini nail file, a cuticle pusher, nail glue, adhesive tabs (for temporary wear), an alcohol prep pad, and a small instruction card with application and removal tips. Everything you need for a salon-quality application at home is included in the package.',
   },
+  {
+    question: 'Can I reschedule my appointment?',
+    answer:
+      'Yes, you can reschedule your appointment. Please contact us at least 24 hours before your scheduled time via WhatsApp or phone so we can find a new slot that works for you. Note that your 50% booking deposit will be carried over to the rescheduled appointment — no additional deposit is required. However, repeated no-shows or last-minute cancellations may result in forfeiture of the deposit.',
+  },
+  {
+    question: 'Can I get a refund on my order or booking?',
+    answer:
+      'Unfortunately, we do not offer refunds on press-on nail orders as production begins immediately once your order is confirmed — each set is handcrafted specifically for you using your measurements and preferences. For appointment bookings, the 50% non-refundable deposit is required to secure your slot and cover material preparation costs. We recommend reviewing your order details carefully before confirming. If you have any concerns, please reach out to us before placing your order and we will be happy to assist.',
+  },
 ];

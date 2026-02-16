@@ -15,17 +15,17 @@ import {
 } from '@mui/material';
 
 const presetSizes = [
-  { label: 'XS', thumb: 3, index: 6, middle: 5, ring: 7, pinky: 9 },
-  { label: 'S', thumb: 2, index: 5, middle: 4, ring: 6, pinky: 8 },
-  { label: 'M', thumb: 1, index: 4, middle: 3, ring: 5, pinky: 7 },
-  { label: 'L', thumb: 0, index: 3, middle: 2, ring: 4, pinky: 6 },
+  { label: 'XS', thumb: 3, index: 7, middle: 5, ring: 6, pinky: 9 },
+  { label: 'S', thumb: 2, index: 6, middle: 4, ring: 5, pinky: 8 },
+  { label: 'M', thumb: 1, index: 5, middle: 3, ring: 4, pinky: 7 },
+  { label: 'L', thumb: 0, index: 4, middle: 2, ring: 3, pinky: 6 },
 ];
 
 const fingerWidths = {
   'Thumb': '~17mm',
-  'Index': '~14mm',
+  'Index': '~13mm',
   'Middle': '~15mm',
-  'Ring': '~13mm',
+  'Ring': '~14mm',
   'Pinky': '~11mm',
 };
 
