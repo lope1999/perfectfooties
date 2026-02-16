@@ -68,7 +68,8 @@ const textFieldSx = {
 };
 
 const emptyForm = { nailShape: '', nailLength: '', quantity: '', nailBedSize: '' };
-const readyMadeForm = { quantity: '' };
+const readyMadeForm = { quantity: '', presetSize: '' };
+const presetSizes = ['XS (Extra Small)', 'S (Small)', 'M (Medium)', 'L (Large)'];
 
 export default function PlaceOrderPage() {
   const navigate = useNavigate();
@@ -136,7 +137,7 @@ export default function PlaceOrderPage() {
       const product = allProducts.find((p) => p.id === id);
       const form = selectedProducts[id];
       if (product?.readyMade) {
-        return `${i + 1}. ${product?.name || 'Product'} — ${product ? formatNaira(product.price) : ''}\n   - Type: ${product.type || 'N/A'}\n   - Shape: ${product.shape || 'N/A'}\n   - Length: ${product.length || 'N/A'}\n   - Quantity: ${form.quantity} set(s)\n   - (Ready-made — ready to ship)`;
+        return `${i + 1}. ${product?.name || 'Product'} — ${product ? formatNaira(product.price) : ''}\n   - Type: ${product.type || 'N/A'}\n   - Shape: ${product.shape || 'N/A'}\n   - Length: ${product.length || 'N/A'}\n   - Preset Size: ${form.presetSize}\n   - Quantity: ${form.quantity} set(s)\n   - (Ready-made — ready to ship)`;
       }
       return `${i + 1}. ${product?.name || 'Product'} — ${product ? formatNaira(product.price) : ''}\n   - Nail Shape: ${form.nailShape}\n   - Nail Length: ${form.nailLength}\n   - Quantity: ${form.quantity} set(s)\n   - Nail Bed Size: ${form.nailBedSize || 'Not provided'}`;
     });
@@ -158,7 +159,7 @@ export default function PlaceOrderPage() {
     selectedIds.every((id) => {
       const f = selectedProducts[id];
       if (isReadyMade(id)) {
-        return f.quantity;
+        return f.quantity && f.presetSize;
       }
       return f.nailShape && f.nailLength && f.quantity;
     });
@@ -406,9 +407,9 @@ export default function PlaceOrderPage() {
                         <Collapse in={isSelected}>
                           <Box sx={{ px: 3, pb: 3, pt: 1 }} onClick={(e) => e.stopPropagation()}>
                             {isReady ? (
-                              /* Ready-made: only quantity */
+                              /* Ready-made: quantity + preset size */
                               <Grid container spacing={2}>
-                                <Grid item xs={12} sm={6}>
+                                <Grid item xs={12} sm={4}>
                                   <FormControl fullWidth size="small">
                                     <InputLabel>Quantity</InputLabel>
                                     <Select
@@ -425,7 +426,24 @@ export default function PlaceOrderPage() {
                                     </Select>
                                   </FormControl>
                                 </Grid>
-                                <Grid item xs={12} sm={6}>
+                                <Grid item xs={12} sm={4}>
+                                  <FormControl fullWidth size="small">
+                                    <InputLabel>Preset Size</InputLabel>
+                                    <Select
+                                      value={formData.presetSize}
+                                      label="Preset Size"
+                                      onChange={handleFieldChange(product.id, 'presetSize')}
+                                      sx={{ borderRadius: 2 }}
+                                    >
+                                      {presetSizes.map((size) => (
+                                        <MenuItem key={size} value={size}>
+                                          {size}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
+                                </Grid>
+                                <Grid item xs={12} sm={4}>
                                   <Box
                                     sx={{
                                       display: 'flex',
