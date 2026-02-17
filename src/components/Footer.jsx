@@ -99,7 +99,7 @@ export default function Footer() {
 							>
 								Reschedule Appointment
 							</MuiLink>
-							<MuiLink sx={linkSx} onClick={() => navigate("/products")}>
+							<MuiLink sx={linkSx} onClick={() => navigate("/shop")}>
 								Shop
 							</MuiLink>
 							<MuiLink

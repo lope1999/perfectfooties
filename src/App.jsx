@@ -12,6 +12,7 @@ import TestimonialsPage from './pages/TestimonialsPage';
 import GiftCardPage from './pages/GiftCardPage';
 import OurTeamPage from './pages/OurTeamPage';
 import RescheduleAppointmentPage from './pages/RescheduleAppointmentPage';
+import NailShopPage from './pages/NailShopPage';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/services" element={<ServiceMenuPage />} />
         <Route path="/products" element={<ProductsMenuPage />} />
+        <Route path="/shop" element={<NailShopPage />} />
         <Route path="/book" element={<BookAppointmentPage />} />
         <Route path="/reschedule" element={<RescheduleAppointmentPage />} />
         <Route path="/order" element={<PlaceOrderPage />} />

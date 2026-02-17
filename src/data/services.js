@@ -11,7 +11,7 @@ export const serviceCategories = [
 				name: "Simple Gel X Manicure",
 				description:
 					"A clean, classic gel extension with a single colour finish.",
-				price: 15000,
+				price: 12000,
 				image: "/images/services/gel-extensions.jpg.jpg",
 			},
 			{
@@ -19,30 +19,23 @@ export const serviceCategories = [
 				name: "French Tip Gel X",
 				description:
 					"Elegant French tip design on gel extensions for a timeless look.",
-				price: 18000,
+				price: 14000,
 				image: "/images/services/classic-gel.png",
 			},
 			{
 				id: "gelx-art",
-				name: "Gel X with Nail Art",
+				name: "Gel X with Minimal Nail Art",
 				description:
-					"Custom nail art designs on gel extensions — from minimalist to bold.",
-				price: 22000,
+					"Custom nail art designs on gel extensions — for my soft, minimalist girlies.",
+				price: 16000,
 				image: "/images/services/custom-art.jpg.jpg",
 			},
 			{
-				id: "gelx-chrome",
-				name: "Complex Gel X",
-				description:
-					"Intricate nail art designs on gel extensions for a high-shine effect.",
-				price: 20000,
-				image: "/images/services/chrome-nails.jpg.jpg",
-			},
-			{
 				id: "gelx-ombre",
-				name: "Ombré Gel X",
-				description: "Beautiful gradient colour blend on gel extensions.",
-				price: 25000,
+				name: "Gel X with more intricate Nail Art & Designs",
+				description:
+					"Beautiful soft glam nails with detailed minimal art formy girls who love bold elegance.",
+				price: 18500,
 				image: "/images/services/ombre-nails.jpg.jpg",
 			},
 		],
@@ -59,7 +52,7 @@ export const serviceCategories = [
 				name: "Hard Gel Overlay",
 				description:
 					"Strengthening hard gel applied over your natural nails.",
-				price: 12000,
+				price: 13000,
 				image: "/images/services/overlay-nails.jpg.jpg",
 			},
 			{
@@ -67,22 +60,22 @@ export const serviceCategories = [
 				name: "Hard Gel Extension",
 				description:
 					"Full hard gel nail extensions sculpted to your desired shape.",
-				price: 18000,
+				price: 16000,
 				image: "/images/services/builder-gel.jpg",
 			},
 			{
 				id: "hardgel-art",
 				name: "Hard Gel with Nail Art",
 				description:
-					"Hard gel extensions with custom art and embellishments.",
-				price: 23000,
+					"Hard gel extensions with custom art and embellishments- minimalist to bold.",
+				price: 20000,
 				image: "/images/services/custom-art.jpg.jpg",
 			},
 			{
 				id: "hardgel-refill",
 				name: "Hard Gel Refill",
 				description: "Maintenance refill for existing hard gel extensions.",
-				price: 10000,
+				price: 15000,
 				image: "/images/services/classic-gel.png",
 			},
 		],
@@ -99,29 +92,21 @@ export const serviceCategories = [
 				name: "Basic Pedicure",
 				description:
 					"Nail shaping, cuticle care, and a polish of your choice.",
-				price: 8000,
+				price: 5000,
 				image: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=800&q=80",
 			},
 			{
 				id: "pedi-gel",
 				name: "Gel Pedicure",
 				description: "Full pedicure with long-lasting gel polish finish.",
-				price: 12000,
+				price: 8000,
 				image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800&q=80",
-			},
-			{
-				id: "pedi-spa",
-				name: "Spa Pedicure",
-				description:
-					"A relaxing spa experience with exfoliation, mask, and massage.",
-				price: 18000,
-				image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=800&q=80",
 			},
 			{
 				id: "pedi-art",
 				name: "Pedicure with Nail Art",
 				description: "Pedicure with custom toe nail art designs.",
-				price: 15000,
+				price: 10000,
 				image: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=800&q=80",
 			},
 		],

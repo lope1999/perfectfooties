@@ -55,6 +55,7 @@ const navItems = [
   { label: 'Contact Us', path: 'contact' },
   { label: 'Testimonials', path: '/testimonials' },
   { label: 'Our Story', path: '/our-story' },
+  { label: 'Shop', path: '/shop' },
 ];
 
 export default function Navbar() {
