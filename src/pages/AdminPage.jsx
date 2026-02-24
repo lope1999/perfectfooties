@@ -107,7 +107,7 @@ export default function AdminPage() {
 
   return (
     <AdminGuard>
-      <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+      <Box sx={{ display: 'flex', minHeight: '100vh', minWidth: 'fit-content', backgroundColor: '#f5f5f5' }}>
         <AdminSidebar
           active={section}
           onSelect={setSection}
@@ -121,6 +121,7 @@ export default function AdminPage() {
             p: { xs: 2, md: 3 },
             pt: { xs: 10, md: 11 },
             minHeight: '100vh',
+            minWidth: 0,
           }}
         >
           {isMobile && (
