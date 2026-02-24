@@ -8,7 +8,6 @@ import {
   deleteDoc,
   setDoc,
   query,
-  orderBy,
   runTransaction,
   serverTimestamp,
 } from 'firebase/firestore';
@@ -17,13 +16,19 @@ import { db } from './firebase';
 // ─── Orders ─────────────────────────────────────────────
 
 export async function fetchAllOrders() {
-  const q = query(collectionGroup(db, 'orders'), orderBy('createdAt', 'desc'));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => {
+  const snap = await getDocs(collectionGroup(db, 'orders'));
+  const orders = snap.docs.map((d) => {
     const pathParts = d.ref.path.split('/');
     const uid = pathParts[1]; // users/{uid}/orders/{orderId}
     return { id: d.id, uid, ...d.data() };
   });
+  // Sort client-side to avoid requiring a Firestore collection group index
+  orders.sort((a, b) => {
+    const aTime = a.createdAt?.toDate?.() || new Date(0);
+    const bTime = b.createdAt?.toDate?.() || new Date(0);
+    return bTime - aTime;
+  });
+  return orders;
 }
 
 export async function updateOrderStatus(uid, orderId, status) {
