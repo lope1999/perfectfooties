@@ -26,7 +26,7 @@ const fingerWidths = {
   'Index': '~13mm',
   'Middle': '~15mm',
   'Ring': '~14mm',
-  'Pinky': '~11mm',
+  'Pinky': '~10mm',
 };
 
 const tipApprox = {

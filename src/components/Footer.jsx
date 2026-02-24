@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, Typography, Container, Grid, Link as MuiLink } from '@mui/material';
 import TermsModal from './TermsModal';
+import PricingTable from './PricingTable';
 
 const linkSx = {
   color: '#4A0E4E',
@@ -20,6 +21,7 @@ export default function Footer() {
   const navigate = useNavigate();
   const location = useLocation();
   const [termsOpen, setTermsOpen] = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(false);
 
   const handleContactClick = () => {
     if (location.pathname !== '/') {
@@ -156,6 +158,9 @@ export default function Footer() {
 							<MuiLink sx={linkSx} onClick={handleFaqClick}>
 								FAQ
 							</MuiLink>
+							<MuiLink sx={linkSx} onClick={() => setPricingOpen(true)}>
+								All Prices
+							</MuiLink>
 							<MuiLink sx={linkSx} onClick={() => setTermsOpen(true)}>
 								T&C
 							</MuiLink>
@@ -185,7 +190,7 @@ export default function Footer() {
 								+234 905 371 419 7
 							</Typography>
 							<Typography sx={{ color: "#1e1e1e", fontSize: "0.9rem" }}>
-								Abule egba, Lagos
+								Cornerstone, Labak Estate, Abule egba, Lagos.
 							</Typography>
 						</Grid>
 					</Grid>
@@ -207,6 +212,7 @@ export default function Footer() {
 			</Box>
 
 			<TermsModal open={termsOpen} onClose={() => setTermsOpen(false)} />
+			<PricingTable open={pricingOpen} onClose={() => setPricingOpen(false)} />
 		</>
   );
 }

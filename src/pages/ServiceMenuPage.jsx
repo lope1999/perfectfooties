@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Container, Card, CardContent, Button, Grid } from '@mui/material';
+import { Box, Typography, Container, Card, CardContent, Button, Grid, CircularProgress } from '@mui/material';
+import LoginIcon from '@mui/icons-material/Login';
 import { serviceCategories } from '../data/services';
+import { useAuth } from '../context/AuthContext';
 import ScrollReveal from '../components/ScrollReveal';
 
 const sectionColors = ['#FFF0F5', '#FCE4EC', '#F3E5F6'];
@@ -30,6 +33,19 @@ function formatNaira(amount) {
 
 export default function ServiceMenuPage() {
   const navigate = useNavigate();
+  const { user, signInWithGoogle } = useAuth();
+  const [signingIn, setSigningIn] = useState(false);
+
+  const handleSignIn = async () => {
+    setSigningIn(true);
+    try {
+      await signInWithGoogle();
+    } catch {
+      // user closed popup
+    } finally {
+      setSigningIn(false);
+    }
+  };
 
   return (
     <Box sx={{ pt: 12 }}>
@@ -65,6 +81,57 @@ export default function ServiceMenuPage() {
             Book your appointment today and let us bring your nail vision to life.
           </Typography>
         </ScrollReveal>
+        {!user && (
+          <ScrollReveal direction="up" delay={0.25}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 1.5,
+                mt: 3,
+                py: 1.5,
+                px: 3,
+                mx: 'auto',
+                maxWidth: 480,
+                backgroundColor: '#FFF0F5',
+                borderRadius: 3,
+                border: '1px solid #F0C0D0',
+              }}
+            >
+              <Typography
+                sx={{ fontFamily: '"Georgia", serif', fontSize: '0.9rem', color: '#555' }}
+              >
+                Sign in to track your appointments
+              </Typography>
+              <Button
+                size="small"
+                startIcon={
+                  signingIn ? (
+                    <CircularProgress size={16} sx={{ color: 'inherit' }} />
+                  ) : (
+                    <LoginIcon sx={{ fontSize: 18 }} />
+                  )
+                }
+                onClick={handleSignIn}
+                disabled={signingIn}
+                sx={{
+                  fontFamily: '"Georgia", serif',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  color: '#E91E8C',
+                  border: '1.5px solid #E91E8C',
+                  borderRadius: '20px',
+                  px: 2,
+                  whiteSpace: 'nowrap',
+                  '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
+                }}
+              >
+                {signingIn ? 'Signing In…' : 'Sign In'}
+              </Button>
+            </Box>
+          </ScrollReveal>
+        )}
       </Box>
 
       {/* Service Sections */}

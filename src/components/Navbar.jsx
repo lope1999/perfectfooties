@@ -13,24 +13,22 @@ import {
   ListItemButton,
   ListItemText,
   Divider,
+  Tooltip,
 } from '@mui/material';
 import SvgIcon from "@mui/material/SvgIcon";
 
-function NailLogo(props) {
-	return (
-		<SvgIcon {...props} viewBox="0 0 1024 1024">
-			<path
-				d="M512.61 766.47c-191.73 0-382.35 23.79-446.14-114.4-21.3-46.15 156.87 53.84 302.12 65.37C269.82 673.22 142.26 612.89 111 502.09 97.46 454 325 655.19 382.14 669.37c-42.61-38.46-223.06-198.32-168.49-294.18 25.18-44.22 184 242.27 184 242.27s-134.75-248.84-58.1-324.95c31-30.76 67.78 276.88 141.38 344.17 0 0-35.83-382.63 30-380.71s51.32 244.19 32 384.55C630 519.4 645.53 315.59 672.64 288.67s69.72 153.82-63.91 332.64c77.47-13.46 197.54-299.95 203.35-251.88 19 157.26-166.55 294.18-166.55 294.18 120.07-38.46 244-188.43 269.19-165.36s-112.33 186.51-292.43 225c211.1-1.92 338.27-127.59 337-84.6-3.78 125.01-254.95 127.82-446.68 127.82z"
-				fill="#E91E8C"
-			/>
-		</SvgIcon>
-	);
-}
+
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import { NailLogo } from "../data/svg.jsx";
+import CartIcon from "./CartIcon";
+import UserMenu from "./UserMenu";
+import { useAuth } from "../context/AuthContext";
 
 const navButtonSx = {
   color: '#000',
@@ -61,6 +59,7 @@ const navItems = [
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, signInWithGoogle, signOut, isAdmin } = useAuth();
   const [hovered, setHovered] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -148,41 +147,63 @@ export default function Navbar() {
 								{item.label}
 							</Button>
 						))}
+						{isAdmin && (
+							<Button
+								sx={{
+									...navButtonSx,
+									borderColor: '#4A0E4E',
+									color: '#4A0E4E',
+									'&:hover': { backgroundColor: '#4A0E4E', color: '#fff' },
+								}}
+								startIcon={<AdminPanelSettingsIcon />}
+								onClick={() => navigate('/admin')}
+							>
+								Admin
+							</Button>
+						)}
 					</Box>
 
-					{/* Right — Social Icons (desktop) + Hamburger (mobile) */}
+					{/* Right — Cart + User + Social Icons (desktop) + Hamburger (mobile) */}
 					<Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+						<CartIcon />
+						<UserMenu />
 						<Box sx={{ display: { xs: "none", md: "flex" }, gap: 0.5 }}>
-							<IconButton
-								href="https://www.instagram.com/chizzys_styles?igsh=YTJ6bzU3ZW82cDFo&utm_source=qr"
-								target="_blank"
-								sx={{
-									color: "#E91E8C",
-									"&:hover": { color: "#4A0E4E" },
-								}}
-							>
-								<InstagramIcon />
-							</IconButton>
-							<IconButton
-								href="https://tiktok.com/@chizzysstyles"
-								target="_blank"
-								sx={{
-									color: "#E91E8C",
-									"&:hover": { color: "#4A0E4E" },
-								}}
-							>
-								<MusicNoteIcon />
-							</IconButton>
-							<IconButton
-								href="https://youtube.com/@chizzysstyles1505?si=pWaiuGVL8D93bQ_i"
-								target="_blank"
-								sx={{
-									color: "#E91E8C",
-									"&:hover": { color: "#4A0E4E" },
-								}}
-							>
-								<YouTubeIcon />
-							</IconButton>
+							<Tooltip title="Instagram" arrow>
+								<IconButton
+									href="https://www.instagram.com/chizzys_styles?igsh=YTJ6bzU3ZW82cDFo&utm_source=qr"
+									target="_blank"
+									sx={{
+										color: "#E91E8C",
+										"&:hover": { color: "#4A0E4E" },
+									}}
+								>
+									<InstagramIcon />
+								</IconButton>
+							</Tooltip>
+							<Tooltip title="TikTok" arrow>
+								<IconButton
+									href="https://tiktok.com/@chizzysstyles"
+									target="_blank"
+									sx={{
+										color: "#E91E8C",
+										"&:hover": { color: "#4A0E4E" },
+									}}
+								>
+									<MusicNoteIcon />
+								</IconButton>
+							</Tooltip>
+							<Tooltip title="YouTube" arrow>
+								<IconButton
+									href="https://youtube.com/@chizzysstyles1505?si=pWaiuGVL8D93bQ_i"
+									target="_blank"
+									sx={{
+										color: "#E91E8C",
+										"&:hover": { color: "#4A0E4E" },
+									}}
+								>
+									<YouTubeIcon />
+								</IconButton>
+							</Tooltip>
 						</Box>
 
 						{/* Hamburger for tablet/mobile */}
@@ -259,7 +280,100 @@ export default function Navbar() {
 							/>
 						</ListItemButton>
 					))}
+					<ListItemButton
+						onClick={() => {
+							setDrawerOpen(false);
+							navigate("/cart");
+						}}
+						sx={{
+							py: 1.5,
+							"&:hover": { backgroundColor: "#FCE4EC" },
+						}}
+					>
+						<ListItemText
+							primary="Cart"
+							primaryTypographyProps={{
+								fontFamily: '"Georgia", serif',
+								fontWeight: 600,
+								color: "#000",
+							}}
+						/>
+					</ListItemButton>
+					{isAdmin && (
+						<ListItemButton
+							onClick={() => {
+								setDrawerOpen(false);
+								navigate("/admin");
+							}}
+							sx={{
+								py: 1.5,
+								"&:hover": { backgroundColor: "#FCE4EC" },
+							}}
+						>
+							<ListItemText
+								primary="Admin Dashboard"
+								primaryTypographyProps={{
+									fontFamily: '"Georgia", serif',
+									fontWeight: 600,
+									color: "#4A0E4E",
+								}}
+							/>
+						</ListItemButton>
+					)}
 				</List>
+				<Divider sx={{ borderColor: "#F0C0D0", my: 1 }} />
+				{/* Auth Section in Drawer */}
+				<Box sx={{ px: 2, py: 1.5 }}>
+					{user ? (
+						<>
+							<Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.5 }}>
+								<Box
+									component="img"
+									src={user.photoURL}
+									alt={user.displayName}
+									sx={{ width: 36, height: 36, borderRadius: "50%", border: "2px solid #E91E8C" }}
+								/>
+								<Box>
+									<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '0.9rem', color: '#000' }}>
+										{user.displayName}
+									</Typography>
+									<Typography sx={{ fontSize: '0.75rem', color: '#777' }}>
+										{user.email}
+									</Typography>
+								</Box>
+							</Box>
+							<ListItemButton
+								onClick={() => { setDrawerOpen(false); navigate('/account'); }}
+								sx={{ py: 1, borderRadius: 1, '&:hover': { backgroundColor: '#FCE4EC' } }}
+							>
+								<ListItemText
+									primary="View Account"
+									primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontWeight: 600, color: '#E91E8C', fontSize: '0.9rem' }}
+								/>
+							</ListItemButton>
+							<ListItemButton
+								onClick={() => { setDrawerOpen(false); signOut(); }}
+								sx={{ py: 1, borderRadius: 1, '&:hover': { backgroundColor: '#FCE4EC' } }}
+							>
+								<ListItemText
+									primary="Sign Out"
+									primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontWeight: 600, color: '#999', fontSize: '0.9rem' }}
+								/>
+							</ListItemButton>
+						</>
+					) : (
+						<ListItemButton
+							onClick={() => { setDrawerOpen(false); signInWithGoogle().catch(() => {}); }}
+							sx={{ py: 1.5, borderRadius: 1, '&:hover': { backgroundColor: '#FCE4EC' } }}
+						>
+							<PersonOutlineIcon sx={{ color: '#E91E8C', mr: 1 }} />
+							<ListItemText
+								primary="Sign In"
+								primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontWeight: 600, color: '#000' }}
+							/>
+						</ListItemButton>
+					)}
+				</Box>
 				<Divider sx={{ borderColor: "#F0C0D0", my: 1 }} />
 				<Box
 					sx={{ display: "flex", justifyContent: "center", gap: 2, py: 2 }}

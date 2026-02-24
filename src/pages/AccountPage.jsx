@@ -1,0 +1,280 @@
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  Container,
+  Button,
+  Avatar,
+  Tabs,
+  Tab,
+  Chip,
+  CircularProgress,
+} from '@mui/material';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import EventNoteIcon from '@mui/icons-material/EventNote';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { useAuth } from '../context/AuthContext';
+import { fetchOrders } from '../lib/orderService';
+
+const TABS = ['profile', 'orders', 'appointments'];
+
+function formatNaira(amount) {
+  return `\u20A6${Number(amount).toLocaleString()}`;
+}
+
+function formatDate(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+export default function AccountPage() {
+  const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const hashTab = location.hash.replace('#', '');
+  const tabIndex = TABS.indexOf(hashTab) >= 0 ? TABS.indexOf(hashTab) : 0;
+
+  const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    setOrdersLoading(true);
+    fetchOrders(user.uid)
+      .then(setOrders)
+      .catch(() => {})
+      .finally(() => setOrdersLoading(false));
+  }, [user]);
+
+  const handleTabChange = (_, newVal) => {
+    navigate(`/account#${TABS[newVal]}`, { replace: true });
+  };
+
+  if (authLoading) {
+    return (
+      <Box sx={{ pt: 16, textAlign: 'center' }}>
+        <CircularProgress sx={{ color: '#E91E8C' }} />
+      </Box>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Box sx={{ pt: { xs: 12, md: 14 }, pb: 10, minHeight: '100vh', backgroundColor: '#FFF0F5' }}>
+        <Container maxWidth="sm" sx={{ textAlign: 'center' }}>
+          <PersonOutlineIcon sx={{ fontSize: 64, color: '#E91E8C', mb: 2 }} />
+          <Typography
+            variant="h4"
+            sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, mb: 2 }}
+          >
+            Sign in to your account
+          </Typography>
+          <Typography sx={{ color: '#555', mb: 4, lineHeight: 1.7 }}>
+            Sign in with Google to view your order history, track appointments, and manage your profile.
+          </Typography>
+          <Button
+            onClick={() => signInWithGoogle().catch(() => {})}
+            sx={{
+              backgroundColor: '#E91E8C',
+              color: '#fff',
+              borderRadius: '30px',
+              px: 4,
+              py: 1.2,
+              fontFamily: '"Georgia", serif',
+              fontWeight: 600,
+              fontSize: '0.95rem',
+              '&:hover': { backgroundColor: '#C2185B' },
+            }}
+          >
+            Sign in with Google
+          </Button>
+        </Container>
+      </Box>
+    );
+  }
+
+  const serviceOrders = orders.filter((o) => o.type === 'service');
+  const otherOrders = orders.filter((o) => o.type !== 'service');
+
+  return (
+    <Box sx={{ pt: { xs: 10, md: 12 }, pb: 10, minHeight: '100vh', backgroundColor: '#FFF0F5' }}>
+      <Container maxWidth="md">
+        <Typography
+          variant="h3"
+          sx={{
+            fontFamily: '"Georgia", serif',
+            fontWeight: 700,
+            color: '#000',
+            mb: 3,
+            textAlign: 'center',
+            fontSize: { xs: '1.8rem', sm: '2.4rem', md: '3rem' },
+          }}
+        >
+          My Account
+        </Typography>
+
+        <Tabs
+          value={tabIndex}
+          onChange={handleTabChange}
+          centered
+          sx={{
+            mb: 4,
+            '& .MuiTab-root': {
+              fontFamily: '"Georgia", serif',
+              fontWeight: 600,
+              textTransform: 'none',
+              fontSize: '0.95rem',
+            },
+            '& .Mui-selected': { color: '#E91E8C' },
+            '& .MuiTabs-indicator': { backgroundColor: '#E91E8C' },
+          }}
+        >
+          <Tab label="Profile" />
+          <Tab label="Orders" />
+          <Tab label="Appointments" />
+        </Tabs>
+
+        {/* Profile Tab */}
+        {tabIndex === 0 && (
+          <Box sx={{ textAlign: 'center' }}>
+            <Avatar
+              src={user.photoURL}
+              alt={user.displayName}
+              sx={{ width: 80, height: 80, mx: 'auto', mb: 2, border: '3px solid #E91E8C' }}
+            />
+            <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.3rem' }}>
+              {user.displayName}
+            </Typography>
+            <Typography sx={{ color: '#777', mb: 3 }}>{user.email}</Typography>
+            <Button
+              startIcon={<LogoutIcon />}
+              onClick={signOut}
+              sx={{
+                border: '2px solid #E91E8C',
+                borderRadius: '30px',
+                color: '#E91E8C',
+                px: 3,
+                py: 1,
+                fontFamily: '"Georgia", serif',
+                fontWeight: 600,
+                '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
+              }}
+            >
+              Sign Out
+            </Button>
+          </Box>
+        )}
+
+        {/* Orders Tab */}
+        {tabIndex === 1 && (
+          <Box>
+            {ordersLoading ? (
+              <Box sx={{ textAlign: 'center', py: 6 }}>
+                <CircularProgress sx={{ color: '#E91E8C' }} />
+              </Box>
+            ) : otherOrders.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 6 }}>
+                <ReceiptLongOutlinedIcon sx={{ fontSize: 48, color: '#ccc', mb: 1 }} />
+                <Typography sx={{ color: '#999' }}>No orders yet.</Typography>
+                <Typography sx={{ color: '#aaa', fontSize: '0.85rem', mt: 0.5 }}>
+                  Orders placed while signed in will appear here.
+                </Typography>
+              </Box>
+            ) : (
+              otherOrders.map((order) => (
+                <OrderCard key={order.id} order={order} />
+              ))
+            )}
+          </Box>
+        )}
+
+        {/* Appointments Tab */}
+        {tabIndex === 2 && (
+          <Box>
+            {ordersLoading ? (
+              <Box sx={{ textAlign: 'center', py: 6 }}>
+                <CircularProgress sx={{ color: '#E91E8C' }} />
+              </Box>
+            ) : serviceOrders.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 6 }}>
+                <EventNoteIcon sx={{ fontSize: 48, color: '#ccc', mb: 1 }} />
+                <Typography sx={{ color: '#999' }}>No appointments yet.</Typography>
+                <Typography sx={{ color: '#aaa', fontSize: '0.85rem', mt: 0.5 }}>
+                  Appointments booked while signed in will appear here.
+                </Typography>
+              </Box>
+            ) : (
+              serviceOrders.map((order) => (
+                <OrderCard key={order.id} order={order} />
+              ))
+            )}
+          </Box>
+        )}
+      </Container>
+    </Box>
+  );
+}
+
+function OrderCard({ order }) {
+  const statusColor = {
+    pending: '#FF9800',
+    confirmed: '#2196F3',
+    completed: '#4CAF50',
+  };
+
+  return (
+    <Box
+      sx={{
+        p: 2.5,
+        mb: 2,
+        borderRadius: 3,
+        border: '1px solid #F0C0D0',
+        backgroundColor: '#fff',
+      }}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+        <Chip
+          label={order.type}
+          size="small"
+          sx={{
+            backgroundColor: '#4A0E4E',
+            color: '#fff',
+            fontWeight: 700,
+            fontSize: '0.7rem',
+            textTransform: 'capitalize',
+          }}
+        />
+        <Chip
+          label={order.status}
+          size="small"
+          sx={{
+            backgroundColor: statusColor[order.status] || '#999',
+            color: '#fff',
+            fontWeight: 600,
+            fontSize: '0.7rem',
+            textTransform: 'capitalize',
+          }}
+        />
+      </Box>
+      <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1rem' }}>
+        {formatNaira(order.total)}
+      </Typography>
+      <Typography sx={{ color: '#777', fontSize: '0.82rem', mt: 0.3 }}>
+        {formatDate(order.createdAt)}
+      </Typography>
+      {order.items && order.items.length > 0 && (
+        <Box sx={{ mt: 1 }}>
+          {order.items.map((item, i) => (
+            <Typography key={i} sx={{ color: '#555', fontSize: '0.82rem' }}>
+              {item.name || item.serviceName || 'Item'}{item.quantity > 1 ? ` x${item.quantity}` : ''}
+            </Typography>
+          ))}
+        </Box>
+      )}
+    </Box>
+  );
+}

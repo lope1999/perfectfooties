@@ -11,7 +11,7 @@ export const retailCategories = [
         description: 'Hydrates cuticles and prevents dryness for healthy nail growth.',
         price: 2500,
         stock: 15,
-        image: '/images/shop/cuticle-oil.webp',
+        image: 'https://images.pexels.com/photos/6954633/pexels-photo-6954633.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-hand-cream',
@@ -19,7 +19,7 @@ export const retailCategories = [
         description: 'Keeps hands soft and moisturized after manicures.',
         price: 3000,
         stock: 10,
-        image: '/images/shop/hand-cream.jpg',
+        image: 'https://images.pexels.com/photos/286951/pexels-photo-286951.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-nail-strengthener',
@@ -27,7 +27,7 @@ export const retailCategories = [
         description: 'Improves weak or brittle nails with a strengthening formula.',
         price: 3500,
         stock: 8,
-        image: '/images/shop/nail-strengthener.jpg',
+        image: 'https://images.pexels.com/photos/3609620/pexels-photo-3609620.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-remover-acetone',
@@ -35,7 +35,7 @@ export const retailCategories = [
         description: 'Fast-acting acetone remover for gel and regular polish.',
         price: 1500,
         stock: 20,
-        image: '/images/shop/remover-acetone.webp',
+        image: 'https://images.pexels.com/photos/1373747/pexels-photo-1373747.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       // {
       //   id: 'rc-remover-non-acetone',
@@ -59,7 +59,7 @@ export const retailCategories = [
         description: 'Deep-moisture glove masks for soft, rejuvenated hands.',
         price: 2000,
         stock: 10,
-        image: '/images/shop/hand-mask.avif',
+        image: 'https://images.pexels.com/photos/3738377/pexels-photo-3738377.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
     ],
   },
@@ -76,7 +76,7 @@ export const retailCategories = [
         description: 'Long-lasting gel polish for a glossy, chip-free finish.',
         price: 3000,
         stock: 18,
-        image: '/images/shop/gel-polish.jpg',
+        image: 'https://images.pexels.com/photos/29229021/pexels-photo-29229021.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       // {
       //   id: 'rc-dip-powder',
@@ -92,7 +92,7 @@ export const retailCategories = [
         description: 'Transform any polish into a trendy matte finish.',
         price: 2000,
         stock: 12,
-        image: '/images/shop/matte-topcoat.jpg',
+        image: 'https://images.pexels.com/photos/6446797/pexels-photo-6446797.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-glossy-topcoat',
@@ -100,7 +100,7 @@ export const retailCategories = [
         description: 'High-shine top coat for a salon-quality glossy seal.',
         price: 2000,
         stock: 15,
-        image: '/images/shop/glossy-topcoat.webp',
+        image: 'https://images.pexels.com/photos/3997347/pexels-photo-3997347.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-builder-gel',
@@ -108,7 +108,7 @@ export const retailCategories = [
         description: 'Professional builder gel for nail extensions and overlays at home.',
         price: 7000,
         stock: 4,
-        image: '/images/shop/builder.gel.jpg',
+        image: 'https://images.pexels.com/photos/2533311/pexels-photo-2533311.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
     ],
   },
@@ -124,7 +124,7 @@ export const retailCategories = [
         description: 'Easy-to-apply decorative stickers in assorted designs.',
         price: 800,
         stock: 30,
-        image: '/images/shop/nail-stickers.webp',
+        image: 'https://images.pexels.com/photos/6429663/pexels-photo-6429663.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-rhinestones',
@@ -132,7 +132,7 @@ export const retailCategories = [
         description: 'Mixed rhinestones, glitter, and foils for dazzling nail art.',
         price: 1500,
         stock: 20,
-        image: '/images/shop/rhinestones.jpg',
+        image: 'https://images.pexels.com/photos/6806707/pexels-photo-6806707.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       // {
       //   id: 'rc-striping-tape',
@@ -148,7 +148,7 @@ export const retailCategories = [
         description: 'Professional fine-tip brushes for detailed freehand nail art.',
         price: 2500,
         stock: 10,
-        image: '/images/shop/art-brushes.jpg',
+        image: 'https://images.pexels.com/photos/2303797/pexels-photo-2303797.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       // {
       //   id: 'rc-stamping-kit',
@@ -172,7 +172,7 @@ export const retailCategories = [
         description: 'Double-sided files and buffers for smooth shaping and shine.',
         price: 1000,
         stock: 20,
-        image: '/images/shop/file-buffer.jpg',
+        image: 'https://images.pexels.com/photos/3997377/pexels-photo-3997377.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-manicure-kit',
@@ -180,7 +180,7 @@ export const retailCategories = [
         description: 'Compact kit with clippers, file, pusher, scissors, and buffer.',
         price: 3500,
         stock: 8,
-        image: '/images/shop/manicure-kit.jpg',
+        image: 'https://images.pexels.com/photos/3997390/pexels-photo-3997390.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-toe-separators',
@@ -188,7 +188,7 @@ export const retailCategories = [
         description: 'Soft foam separators for comfortable pedicures.',
         price: 500,
         stock: 30,
-        image: '/images/shop/toe-separators.jpg',
+        image: 'https://images.pexels.com/photos/5240726/pexels-photo-5240726.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-cuticle-tools',
@@ -196,7 +196,7 @@ export const retailCategories = [
         description: 'Stainless steel cuticle tools and remover for clean, safe cuticle care.',
         price: 10000,
         stock: 12,
-        image: '/images/shop/cuticle-tools.jpg',
+        image: 'https://images.pexels.com/photos/3997385/pexels-photo-3997385.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-uv-lamp',
@@ -204,7 +204,7 @@ export const retailCategories = [
         description: 'Portable UV/LED lamp for curing gel polish at home.',
         price: 8000,
         stock: 4,
-        image: '/images/shop/uv-lamp.webp',
+        image: 'https://images.pexels.com/photos/7755296/pexels-photo-7755296.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
     ],
   },
@@ -220,7 +220,7 @@ export const retailCategories = [
         description: 'Exfoliating foot scrub to remove dead skin and rough patches.',
         price: 2500,
         stock: 10,
-        image: '/images/shop/foot-scrub.jpg',
+        image: 'https://images.pexels.com/photos/6634660/pexels-photo-6634660.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-pumice-stone',
@@ -228,7 +228,7 @@ export const retailCategories = [
         description: 'Natural pumice stone for smoothing calluses and rough heels.',
         price: 800,
         stock: 15,
-        image: '/images/shop/pumice-stone.jpg',
+        image: 'https://images.pexels.com/photos/5240623/pexels-photo-5240623.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-callus-remover',
@@ -236,7 +236,7 @@ export const retailCategories = [
         description: 'Fast-acting gel that softens and removes tough calluses.',
         price: 2000,
         stock: 8,
-        image: '/images/shop/callus-remover.jpg',
+        image: 'https://images.pexels.com/photos/6628700/pexels-photo-6628700.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-foot-mask',
@@ -244,7 +244,7 @@ export const retailCategories = [
         description: 'Deep-moisture masks for baby-soft hands and feet.',
         price: 2500,
         stock: 10,
-        image: '/images/shop/foot-mask.jpg',
+        image: 'https://images.pexels.com/photos/3321416/pexels-photo-3321416.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-pedicure-kit',
@@ -252,7 +252,7 @@ export const retailCategories = [
         description: 'Complete pedicure set with file, buffer, scrub brush, and separator.',
         price: 4500,
         stock: 6,
-        image: '/images/shop/pedicure-kit.jpg',
+        image: 'https://images.pexels.com/photos/3993398/pexels-photo-3993398.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
     ],
   },
@@ -268,7 +268,7 @@ export const retailCategories = [
         description: 'Cuticle oil + hand cream + nail strengthener — everything to start.',
         price: 7500,
         stock: 5,
-        image: '/images/shop/starter-kit.jpg',
+        image: 'https://images.pexels.com/photos/3785147/pexels-photo-3785147.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-polish-gift',
@@ -276,7 +276,7 @@ export const retailCategories = [
         description: '3 trending polishes + glossy top coat in a gift box.',
         price: 6000,
         stock: 6,
-        image: '/images/shop/polish-gift.jpg',
+        image: 'https://images.pexels.com/photos/865635/pexels-photo-865635.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-diy-art-kit',
@@ -284,7 +284,7 @@ export const retailCategories = [
         description: 'Brushes, stickers, rhinestones, and dotting tools — all-in-one.',
         price: 5000,
         stock: 8,
-        image: '/images/shop/diy-art-kit.jpg',
+        image: 'https://images.pexels.com/photos/34121866/pexels-photo-34121866.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
       {
         id: 'rc-selfcare-bundle',
@@ -292,7 +292,7 @@ export const retailCategories = [
         description: 'Hand mask + foot scrub + cuticle oil — the ultimate pamper pack.',
         price: 6500,
         stock: 4,
-        image: '/images/shop/selfcare-bundle.jpg',
+        image: 'https://images.pexels.com/photos/374071/pexels-photo-374071.jpeg?auto=compress&cs=tinysrgb&w=400',
       },
     ],
   },

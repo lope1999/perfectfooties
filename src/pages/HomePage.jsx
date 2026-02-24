@@ -8,6 +8,7 @@ import {
   Grid,
   IconButton,
   Collapse,
+  CircularProgress,
 } from '@mui/material';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
@@ -15,8 +16,12 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import StraightenIcon from '@mui/icons-material/Straighten';
+import LoginIcon from '@mui/icons-material/Login';
 import ScrollReveal from '../components/ScrollReveal';
 import Interstitial from '../components/Interstitial';
+import PresetSizeGuide from '../components/PresetSizeGuide';
+import { useAuth } from '../context/AuthContext';
 import { faqData } from '../data/faq';
 
 const ctaButtonSx = {
@@ -39,7 +44,21 @@ const ctaButtonSx = {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { user, signInWithGoogle } = useAuth();
   const [openFaq, setOpenFaq] = useState(null);
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+
+  const handleSignIn = async () => {
+    setSigningIn(true);
+    try {
+      await signInWithGoogle();
+    } catch {
+      // user closed popup
+    } finally {
+      setSigningIn(false);
+    }
+  };
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -79,7 +98,7 @@ export default function HomePage() {
 								fontFamily: '"Georgia", serif',
 								fontWeight: 700,
 								fontSize: { xs: "2rem", sm: "2.5rem", md: "3.5rem" },
-								color: "#420035",
+								color: "#4e003f",
 								mb: 4,
 								maxWidth: 800,
 								lineHeight: 1.3,
@@ -108,6 +127,31 @@ export default function HomePage() {
 							>
 								View Service Menu
 							</Button>
+							{!user && (
+								<Button
+									sx={{
+										...ctaButtonSx,
+										borderColor: '#4A0E4E',
+										color: '#4A0E4E',
+										'&:hover': {
+											backgroundColor: '#4A0E4E',
+											color: '#fff',
+											borderColor: '#4A0E4E',
+										},
+									}}
+									startIcon={
+										signingIn ? (
+											<CircularProgress size={18} sx={{ color: 'inherit' }} />
+										) : (
+											<LoginIcon />
+										)
+									}
+									onClick={handleSignIn}
+									disabled={signingIn}
+								>
+									{signingIn ? 'Signing In…' : 'Sign In'}
+								</Button>
+							)}
 						</Box>
 					</ScrollReveal>
 				</Box>
@@ -223,7 +267,7 @@ export default function HomePage() {
 									</Typography>
 									<Typography>Cornerstone</Typography>
 									<Typography>
-										Opp car-wash, Bustop, Abule-egba,
+									Labak Estate, Abule-egba,
 									</Typography>
 									<Typography>Lagos, Nigeria</Typography>
 								</Box>
@@ -382,6 +426,32 @@ export default function HomePage() {
 												Reschedule Appointment
 											</Button>
 										)}
+										{item.hasSizeGuideButton && (
+											<Button
+												startIcon={<StraightenIcon />}
+												onClick={() => setSizeGuideOpen(true)}
+												sx={{
+													mt: 2,
+													border: "2px solid #E91E8C",
+													borderRadius: "30px",
+													color: "#000",
+													backgroundColor: "transparent",
+													px: 3,
+													py: 1,
+													fontSize: "0.85rem",
+													fontFamily: '"Georgia", serif',
+													fontWeight: 600,
+													transition: "all 0.3s ease",
+													"&:hover": {
+														backgroundColor: "#E91E8C",
+														color: "#fff",
+														borderColor: "#E91E8C",
+													},
+												}}
+											>
+												View Preset Size Guide
+											</Button>
+										)}
 									</Box>
 								</Collapse>
 							</Box>
@@ -389,6 +459,11 @@ export default function HomePage() {
 					))}
 				</Container>
 			</Box>
+
+			<PresetSizeGuide
+				open={sizeGuideOpen}
+				onClose={() => setSizeGuideOpen(false)}
+			/>
 		</Box>
   );
 }

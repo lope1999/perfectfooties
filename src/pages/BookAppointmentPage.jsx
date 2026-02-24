@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -24,8 +24,12 @@ import {
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EventNoteIcon from '@mui/icons-material/EventNote';
-import { serviceCategories, nailShapes, nailLengths } from '../data/services';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import { serviceCategories, nailShapes, nailLengths, removalNote } from '../data/services';
 import ScrollReveal from '../components/ScrollReveal';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { saveOrder } from '../lib/orderService';
 
 function formatNaira(amount) {
   return `₦${amount.toLocaleString()}`;
@@ -60,7 +64,13 @@ const textFieldSx = {
 
 export default function BookAppointmentPage() {
   const navigate = useNavigate();
+  const { addService: addServiceToCart } = useCart();
+  const { user } = useAuth();
   const [customerName, setCustomerName] = useState('');
+
+  useEffect(() => {
+    if (user?.displayName && !customerName) setCustomerName(user.displayName);
+  }, [user]);
   const [selectedService, setSelectedService] = useState('');
   const [appointmentDate, setAppointmentDate] = useState('');
   const [formData, setFormData] = useState({
@@ -116,7 +126,41 @@ export default function BookAppointmentPage() {
     const message = `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nPreferred Date: ${formatDate(appointmentDate)}\nService: ${selected?.name || "a service"}\nPrice: ${selected ? formatNaira(selected.price) : ''}\n\nDetails:\n- Nail Shape: ${formData.nailShape}\n- Nail Length: ${formData.nailLength}\n\nPlease confirm availability for this request. Thank you!`;
     const encoded = encodeURIComponent(message);
     window.open(`https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`, '_blank');
+
+    if (user) {
+      saveOrder(user.uid, {
+        type: 'service',
+        total: selected?.price || 0,
+        customerName: customerName.trim(),
+        items: [{
+          kind: 'service',
+          serviceName: selected?.name || '',
+          price: selected?.price || 0,
+          date: formatDate(appointmentDate),
+          nailShape: formData.nailShape,
+          nailLength: formData.nailLength,
+        }],
+      }).catch(() => {});
+    }
+
     navigate('/');
+  };
+
+  const handleAddToCart = () => {
+    const selected = allServices.find((s) => s.id === selectedService);
+    if (!selected) return;
+    addServiceToCart({
+      serviceId: selected.id,
+      name: selected.name,
+      price: selected.price,
+      date: formatDate(appointmentDate),
+      nailShape: formData.nailShape,
+      nailLength: formData.nailLength,
+      customerName: customerName.trim(),
+    });
+    setSelectedService('');
+    setAppointmentDate('');
+    setFormData({ nailShape: '', nailLength: '' });
   };
 
   const isFormValid =
@@ -191,6 +235,28 @@ export default function BookAppointmentPage() {
 									material preparation and secures your time slot. The
 									remaining balance is due on the day of your
 									appointment.
+								</Typography>
+							</Box>
+							<Box
+								sx={{
+									mt: 2,
+									mx: "auto",
+									maxWidth: 520,
+									p: 2,
+									borderRadius: 2,
+									backgroundColor: "#FFF8E1",
+									border: "1px solid #FFD54F",
+								}}
+							>
+								<Typography
+									sx={{
+										fontSize: "0.85rem",
+										color: "#5D4037",
+										fontWeight: 600,
+										lineHeight: 1.6,
+									}}
+								>
+									{removalNote}
 								</Typography>
 							</Box>
 						</Box>
@@ -483,16 +549,36 @@ export default function BookAppointmentPage() {
 					textAlign: "center",
 				}}
 			>
-				<Button
-					sx={{
-						...confirmButtonSx,
-						opacity: isFormValid ? 1 : 0.5,
-					}}
-					onClick={handleConfirmBooking}
-					disabled={!isFormValid}
-				>
-					Confirm Booking
-				</Button>
+				<Box sx={{ display: "flex", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
+					<Button
+						sx={{
+							...confirmButtonSx,
+							opacity: isFormValid ? 1 : 0.5,
+						}}
+						onClick={handleConfirmBooking}
+						disabled={!isFormValid}
+					>
+						Confirm Booking
+					</Button>
+					<Button
+						startIcon={<ShoppingCartOutlinedIcon />}
+						sx={{
+							...confirmButtonSx,
+							borderColor: "#4A0E4E",
+							color: "#4A0E4E",
+							opacity: isFormValid ? 1 : 0.5,
+							"&:hover": {
+								backgroundColor: "#4A0E4E",
+								color: "#fff",
+								borderColor: "#4A0E4E",
+							},
+						}}
+						onClick={handleAddToCart}
+						disabled={!isFormValid}
+					>
+						Add to Cart
+					</Button>
+				</Box>
 			</Box>
 
 			{/* Success Modal */}

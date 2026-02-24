@@ -11,12 +11,15 @@ import {
   Chip,
   Tooltip,
   IconButton,
+  CircularProgress,
 } from '@mui/material';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
+import LoginIcon from '@mui/icons-material/Login';
 import ScrollReveal from '../components/ScrollReveal';
 import PresetSizeGuide from '../components/PresetSizeGuide';
-import { productCategories } from '../data/products';
+import useProductCategories from '../hooks/useProductCategories';
+import { useAuth } from '../context/AuthContext';
 
 const sectionColors = ['#FFF0F5', '#FCE4EC', '#F3E5F6', '#F8E8F0', '#FFF5F8'];
 
@@ -46,7 +49,21 @@ const orderButtonSx = {
 export default function ProductsMenuPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, signInWithGoogle } = useAuth();
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+  const { categories: productCategories, loading, error } = useProductCategories();
+
+  const handleSignIn = async () => {
+    setSigningIn(true);
+    try {
+      await signInWithGoogle();
+    } catch {
+      // user closed popup
+    } finally {
+      setSigningIn(false);
+    }
+  };
 
   const handleContactClick = () => {
     if (location.pathname !== '/') {
@@ -114,11 +131,77 @@ export default function ProductsMenuPage() {
                 fontWeight: 600,
               }}
             >
-              Delivery only available only in lagos
+              Delivery only available only within Nigeria
             </Typography>
           </Box>
         </ScrollReveal>
+        {!user && (
+          <ScrollReveal direction="up" delay={0.3}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 1.5,
+                mt: 3,
+                py: 1.5,
+                px: 3,
+                mx: 'auto',
+                maxWidth: 480,
+                backgroundColor: '#FFF0F5',
+                borderRadius: 3,
+                border: '1px solid #F0C0D0',
+              }}
+            >
+              <Typography
+                sx={{ fontFamily: '"Georgia", serif', fontSize: '0.9rem', color: '#555' }}
+              >
+                Sign in to track your orders
+              </Typography>
+              <Button
+                size="small"
+                startIcon={
+                  signingIn ? (
+                    <CircularProgress size={16} sx={{ color: 'inherit' }} />
+                  ) : (
+                    <LoginIcon sx={{ fontSize: 18 }} />
+                  )
+                }
+                onClick={handleSignIn}
+                disabled={signingIn}
+                sx={{
+                  fontFamily: '"Georgia", serif',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  color: '#E91E8C',
+                  border: '1.5px solid #E91E8C',
+                  borderRadius: '20px',
+                  px: 2,
+                  whiteSpace: 'nowrap',
+                  '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
+                }}
+              >
+                {signingIn ? 'Signing In…' : 'Sign In'}
+              </Button>
+            </Box>
+          </ScrollReveal>
+        )}
       </Box>
+
+      {/* Loading / Error */}
+      {loading && (
+        <Box sx={{ textAlign: 'center', py: 10 }}>
+          <CircularProgress sx={{ color: '#E91E8C' }} />
+          <Typography sx={{ mt: 2, color: '#999' }}>Loading products…</Typography>
+        </Box>
+      )}
+      {error && !loading && (
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Typography sx={{ color: '#d32f2f', fontSize: '0.9rem' }}>
+            Could not load products from the server. Showing cached data.
+          </Typography>
+        </Box>
+      )}
 
       {/* Product Sections */}
       {productCategories.map((category, index) => (

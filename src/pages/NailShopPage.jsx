@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  CircularProgress,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -22,8 +23,13 @@ import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import ImageNotSupportedOutlinedIcon from '@mui/icons-material/ImageNotSupportedOutlined';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import ScrollReveal from '../components/ScrollReveal';
-import { retailCategories } from '../data/retailProducts';
+import useRetailCategories from '../hooks/useRetailCategories';
+import { decrementStockBatch } from '../lib/stockService';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { saveOrder } from '../lib/orderService';
 
 const sectionColors = ['#FFF0F5', '#FCE4EC', '#F3E5F6', '#F8E8F0', '#FFF5F8', '#FFF0F5'];
 
@@ -60,12 +66,20 @@ const textFieldSx = {
 
 export default function NailShopPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [cart, setCart] = useState({});
   const [customerName, setCustomerName] = useState('');
+
+  useEffect(() => {
+    if (user?.displayName && !customerName) setCustomerName(user.displayName);
+  }, [user]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const { addProduct: addToGlobalCart } = useCart();
+  const { categories: retailCategories, loading, error } = useRetailCategories();
 
   const allProducts = retailCategories.flatMap((cat) =>
-    cat.products.map((p) => ({ ...p, category: cat.title }))
+    cat.products.map((p) => ({ ...p, category: cat.title, categoryId: cat.id }))
   );
 
   const getQty = (productId) => cart[productId] || 0;
@@ -107,7 +121,27 @@ export default function NailShopPage() {
     setModalOpen(true);
   };
 
-  const handleCompletePurchase = () => {
+  const handleCompletePurchase = async () => {
+    setCheckoutLoading(true);
+    try {
+      // Decrement stock in Firestore
+      const stockItems = cartItems
+        .map(([id, qty]) => {
+          const product = allProducts.find((p) => p.id === id);
+          if (!product || product.stock === undefined) return null;
+          return { collection: 'retailCategories', categoryId: product.categoryId, productId: id, quantity: qty };
+        })
+        .filter(Boolean);
+
+      if (stockItems.length > 0) {
+        await decrementStockBatch(stockItems);
+      }
+    } catch (err) {
+      console.error('Stock decrement failed:', err);
+      // Continue with checkout even if stock decrement fails
+    }
+
+    setCheckoutLoading(false);
     setModalOpen(false);
 
     const orderLines = cartItems.map(([id, qty], i) => {
@@ -122,7 +156,38 @@ export default function NailShopPage() {
       `https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`,
       '_blank'
     );
+
+    if (user) {
+      saveOrder(user.uid, {
+        type: 'retail',
+        total: totalPrice,
+        customerName: customerName.trim(),
+        items: cartItems.map(([id, qty]) => {
+          const product = allProducts.find((p) => p.id === id);
+          return { kind: 'retail', name: product?.name || '', price: product?.price || 0, quantity: qty };
+        }),
+      }).catch(() => {});
+    }
+
     navigate('/');
+  };
+
+  const handleAddToCart = () => {
+    cartItems.forEach(([id, qty]) => {
+      const product = allProducts.find((p) => p.id === id);
+      if (product) {
+        addToGlobalCart({
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: qty,
+          stock: product.stock,
+          categoryId: product.categoryId,
+          customerName: customerName.trim(),
+        });
+      }
+    });
+    setCart({});
   };
 
   return (
@@ -187,6 +252,21 @@ export default function NailShopPage() {
           </Box>
         </ScrollReveal>
       </Box>
+
+      {/* Loading / Error */}
+      {loading && (
+        <Box sx={{ textAlign: 'center', py: 10 }}>
+          <CircularProgress sx={{ color: '#E91E8C' }} />
+          <Typography sx={{ mt: 2, color: '#999' }}>Loading products…</Typography>
+        </Box>
+      )}
+      {error && !loading && (
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Typography sx={{ color: '#d32f2f', fontSize: '0.9rem' }}>
+            Could not load products from the server. Showing cached data.
+          </Typography>
+        </Box>
+      )}
 
       {/* Product Sections */}
       {retailCategories.map((category, index) => (
@@ -501,16 +581,36 @@ export default function NailShopPage() {
             </Typography>
           </Box>
         )}
-        <Button
-          sx={{
-            ...confirmButtonSx,
-            opacity: isFormValid ? 1 : 0.5,
-          }}
-          onClick={handleConfirmPurchase}
-          disabled={!isFormValid}
-        >
-          Confirm Purchase
-        </Button>
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+          <Button
+            sx={{
+              ...confirmButtonSx,
+              opacity: isFormValid ? 1 : 0.5,
+            }}
+            onClick={handleConfirmPurchase}
+            disabled={!isFormValid}
+          >
+            Confirm Purchase
+          </Button>
+          <Button
+            startIcon={<ShoppingCartOutlinedIcon />}
+            sx={{
+              ...confirmButtonSx,
+              borderColor: '#4A0E4E',
+              color: '#4A0E4E',
+              opacity: cartItems.length > 0 ? 1 : 0.5,
+              '&:hover': {
+                backgroundColor: '#4A0E4E',
+                color: '#fff',
+                borderColor: '#4A0E4E',
+              },
+            }}
+            onClick={handleAddToCart}
+            disabled={cartItems.length === 0}
+          >
+            Add to Cart
+          </Button>
+        </Box>
       </Box>
 
       {/* Success Modal */}

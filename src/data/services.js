@@ -20,7 +20,7 @@ export const serviceCategories = [
 				description:
 					"Elegant French tip design on gel extensions for a timeless look.",
 				price: 14000,
-				image: "/images/services/classic-gel.png",
+				image: "/images/services/french-tip.PNG",
 			},
 			{
 				id: "gelx-art",
@@ -36,7 +36,7 @@ export const serviceCategories = [
 				description:
 					"Beautiful soft glam nails with detailed minimal art formy girls who love bold elegance.",
 				price: 18500,
-				image: "/images/services/ombre-nails.jpg.jpg",
+				image: "/images/services/chrome-nails.jpg.jpg",
 			},
 		],
 	},
@@ -53,7 +53,7 @@ export const serviceCategories = [
 				description:
 					"Strengthening hard gel applied over your natural nails.",
 				price: 13000,
-				image: "/images/services/overlay-nails.jpg.jpg",
+				image: "/images/services/simple-overlay.jpg.jpg",
 			},
 			{
 				id: "hardgel-extension",
@@ -61,7 +61,7 @@ export const serviceCategories = [
 				description:
 					"Full hard gel nail extensions sculpted to your desired shape.",
 				price: 16000,
-				image: "/images/services/builder-gel.jpg",
+				image: "/images/services/overlay2.PNG",
 			},
 			{
 				id: "hardgel-art",
@@ -69,7 +69,7 @@ export const serviceCategories = [
 				description:
 					"Hard gel extensions with custom art and embellishments- minimalist to bold.",
 				price: 20000,
-				image: "/images/services/custom-art.jpg.jpg",
+				image: "/images/services/complex-overlay.jpg",
 			},
 			{
 				id: "hardgel-refill",
@@ -112,6 +112,9 @@ export const serviceCategories = [
 		],
 	},
 ];
+
+export const removalNote =
+	"If you're coming in with existing nails (gel, acrylic, polygel, etc.), a removal fee starting from ₦5,000 will apply. The exact cost depends on the product type, nail length, and level of buildup. Please let us know in advance so we can prepare accordingly.";
 
 export const nailShapes = ['Almond', 'Coffin', 'Stiletto', 'Square', 'Round', 'Oval', 'Ballerina'];
 

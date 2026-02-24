@@ -1,5 +1,8 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
+import { CircularProgress, Box } from '@mui/material';
+import ScrollToTop from './components/ScrollToTop';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
@@ -14,10 +17,21 @@ import GiftCardPage from './pages/GiftCardPage';
 import OurTeamPage from './pages/OurTeamPage';
 import RescheduleAppointmentPage from './pages/RescheduleAppointmentPage';
 import NailShopPage from './pages/NailShopPage';
+import CartPage from './pages/CartPage';
+import AccountPage from './pages/AccountPage';
+
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+
+const LazyFallback = (
+  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+    <CircularProgress sx={{ color: '#E91E8C' }} />
+  </Box>
+);
 
 function App() {
   return (
     <>
+      <ScrollToTop />
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -27,11 +41,21 @@ function App() {
         <Route path="/book" element={<BookAppointmentPage />} />
         <Route path="/reschedule" element={<RescheduleAppointmentPage />} />
         <Route path="/order" element={<PlaceOrderPage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/account" element={<AccountPage />} />
         <Route path="/our-story" element={<OurStoryPage />} />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/testimonials" element={<TestimonialsPage />} />
         <Route path="/gift-cards" element={<GiftCardPage />} />
         <Route path="/our-team" element={<OurTeamPage />} />
+        <Route
+          path="/admin"
+          element={
+            <Suspense fallback={LazyFallback}>
+              <AdminPage />
+            </Suspense>
+          }
+        />
       </Routes>
       <Footer />
       <Analytics />
