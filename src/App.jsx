@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { CircularProgress, Box } from '@mui/material';
 import ScrollToTop from './components/ScrollToTop';
 import Navbar from './components/Navbar';
+import AppointmentReminderPopup from './components/AppointmentReminderPopup';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import ServiceMenuPage from './pages/ServiceMenuPage';
@@ -33,6 +34,7 @@ function App() {
     <>
       <ScrollToTop />
       <Navbar />
+      <AppointmentReminderPopup />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/services" element={<ServiceMenuPage />} />

@@ -18,6 +18,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { computeDashboardStats, findLowStockProducts } from '../../lib/adminService';
+import { parseAppointmentDate, isWithinHours, isUpcoming, formatRelativeTime } from '../../lib/appointmentDateUtils';
 
 const fontFamily = '"Georgia", serif';
 
@@ -76,6 +77,19 @@ export default function DashboardSection({ orders, pressOnCategories, retailCate
   const lowStock = findLowStockProducts(allCategories);
   const recentOrders = orders.slice(0, 10);
 
+  // Compute upcoming appointments from service orders
+  const upcomingAppointments = orders
+    .filter((o) => o.type === 'service' && o.status !== 'cancelled' && o.status !== 'completed')
+    .map((o) => {
+      const dateStr = o.appointmentDate || o.items?.[0]?.date;
+      const parsed = parseAppointmentDate(dateStr);
+      return parsed && isUpcoming(parsed) ? { ...o, parsedDate: parsed, dateStr } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.parsedDate - b.parsedDate);
+
+  const imminentAppointments = upcomingAppointments.filter((a) => isWithinHours(a.parsedDate, 24));
+
   return (
     <Box>
       <Typography variant="h5" sx={{ fontFamily, fontWeight: 700, mb: 3 }}>
@@ -89,7 +103,7 @@ export default function DashboardSection({ orders, pressOnCategories, retailCate
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Revenue"
-            value={`$${stats.revenue.toFixed(2)}`}
+            value={`₦${stats.revenue.toLocaleString()}`}
             icon={<AttachMoneyIcon />}
             color="#2e7d32"
           />
@@ -111,6 +125,35 @@ export default function DashboardSection({ orders, pressOnCategories, retailCate
         <Alert severity="warning" sx={{ mb: 3, fontFamily }}>
           <strong>{lowStock.length} product(s)</strong> are low in stock:{' '}
           {lowStock.map((p) => `${p.name} (${p.stock} left)`).join(', ')}
+        </Alert>
+      )}
+
+      {imminentAppointments.length > 0 && (
+        <Alert severity="error" sx={{ mb: 2, fontFamily }}>
+          <strong>{imminentAppointments.length} appointment(s) within 24 hours:</strong>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 20 }}>
+            {imminentAppointments.map((a) => (
+              <li key={a.id}>
+                {a.customerName || a.name || 'Customer'} — {a.dateStr} ({formatRelativeTime(a.parsedDate)})
+              </li>
+            ))}
+          </ul>
+        </Alert>
+      )}
+
+      {upcomingAppointments.length > 0 && (
+        <Alert severity="info" sx={{ mb: 3, fontFamily }}>
+          <strong>{upcomingAppointments.length} upcoming appointment(s):</strong>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 20 }}>
+            {upcomingAppointments.slice(0, 5).map((a) => (
+              <li key={a.id}>
+                {a.customerName || a.name || 'Customer'} — {a.dateStr} ({formatRelativeTime(a.parsedDate)})
+              </li>
+            ))}
+            {upcomingAppointments.length > 5 && (
+              <li>…and {upcomingAppointments.length - 5} more</li>
+            )}
+          </ul>
         </Alert>
       )}
 
@@ -143,7 +186,7 @@ export default function DashboardSection({ orders, pressOnCategories, retailCate
                     color={statusColor[o.status] || 'default'}
                   />
                 </TableCell>
-                <TableCell sx={{ fontFamily }}>${(o.total || 0).toFixed(2)}</TableCell>
+                <TableCell sx={{ fontFamily }}>₦{(o.total || 0).toLocaleString()}</TableCell>
                 <TableCell sx={{ fontFamily, fontSize: '0.8rem' }}>
                   {o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString() : '—'}
                 </TableCell>

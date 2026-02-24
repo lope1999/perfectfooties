@@ -199,7 +199,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
           <TableHead>
             <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 40 }} />
-              {['Order ID', 'Customer', 'Type', 'Status', 'Total', 'Date', 'Actions'].map((h) => (
+              {['Order ID', 'Customer', 'Type', 'Status', 'Total', 'Appointment', 'Date', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
                   {h}
                 </TableCell>
@@ -235,7 +235,10 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                       ))}
                     </Select>
                   </TableCell>
-                  <TableCell sx={{ fontFamily }}>${(o.total || 0).toFixed(2)}</TableCell>
+                  <TableCell sx={{ fontFamily }}>₦{(o.total || 0).toLocaleString()}</TableCell>
+                  <TableCell sx={{ fontFamily, fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                    {o.appointmentDate || o.items?.[0]?.date || '—'}
+                  </TableCell>
                   <TableCell sx={{ fontFamily, fontSize: '0.8rem' }}>
                     {o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString() : '—'}
                   </TableCell>
@@ -257,7 +260,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                   </TableCell>
                 </TableRow>
                 <TableRow key={`${o.id}-detail`}>
-                  <TableCell colSpan={8} sx={{ p: 0, border: 0 }}>
+                  <TableCell colSpan={9} sx={{ p: 0, border: 0 }}>
                     <Collapse in={expandedId === o.id}>
                       <Box sx={{ p: 2, backgroundColor: '#fafafa' }}>
                         {o.appointmentDate && (
@@ -280,7 +283,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                             <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700 }}>Items:</Typography>
                             {o.items.map((item, i) => (
                               <Typography key={i} sx={{ fontFamily, fontSize: '0.8rem', pl: 2 }}>
-                                • {item.name || item.title} × {item.quantity || 1} — ${(item.price || 0).toFixed(2)}
+                                • {item.name || item.title} × {item.quantity || 1} — ₦{(item.price || 0).toLocaleString()}
                               </Typography>
                             ))}
                           </Box>
@@ -313,7 +316,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} sx={{ textAlign: 'center', fontFamily, py: 4 }}>
+                <TableCell colSpan={9} sx={{ textAlign: 'center', fontFamily, py: 4 }}>
                   No {title.toLowerCase()} found
                 </TableCell>
               </TableRow>

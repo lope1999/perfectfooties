@@ -73,10 +73,13 @@ export default function BookAppointmentPage() {
   }, [user]);
   const [selectedService, setSelectedService] = useState('');
   const [appointmentDate, setAppointmentDate] = useState('');
+  const [appointmentTime, setAppointmentTime] = useState('');
   const [formData, setFormData] = useState({
     nailShape: '',
     nailLength: '',
   });
+
+  const timeSlots = ['12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'];
   const [modalOpen, setModalOpen] = useState(false);
 
   const allServices = serviceCategories.flatMap((cat) =>
@@ -123,7 +126,8 @@ export default function BookAppointmentPage() {
   const handleCompleteOrder = () => {
     setModalOpen(false);
     const selected = allServices.find((s) => s.id === selectedService);
-    const message = `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nPreferred Date: ${formatDate(appointmentDate)}\nService: ${selected?.name || "a service"}\nPrice: ${selected ? formatNaira(selected.price) : ''}\n\nDetails:\n- Nail Shape: ${formData.nailShape}\n- Nail Length: ${formData.nailLength}\n\nPlease confirm availability for this request. Thank you!`;
+    const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
+    const message = `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nPreferred Date: ${fullDate}\nService: ${selected?.name || "a service"}\nPrice: ${selected ? formatNaira(selected.price) : ''}\n\nDetails:\n- Nail Shape: ${formData.nailShape}\n- Nail Length: ${formData.nailLength}\n\nPlease confirm availability for this request. Thank you!`;
     const encoded = encodeURIComponent(message);
     window.open(`https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`, '_blank');
 
@@ -133,11 +137,12 @@ export default function BookAppointmentPage() {
         total: selected?.price || 0,
         customerName: customerName.trim(),
         email: user.email || '',
+        appointmentDate: fullDate,
         items: [{
           kind: 'service',
           serviceName: selected?.name || '',
           price: selected?.price || 0,
-          date: formatDate(appointmentDate),
+          date: fullDate,
           nailShape: formData.nailShape,
           nailLength: formData.nailLength,
         }],
@@ -150,22 +155,24 @@ export default function BookAppointmentPage() {
   const handleAddToCart = () => {
     const selected = allServices.find((s) => s.id === selectedService);
     if (!selected) return;
+    const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
     addServiceToCart({
       serviceId: selected.id,
       name: selected.name,
       price: selected.price,
-      date: formatDate(appointmentDate),
+      date: fullDate,
       nailShape: formData.nailShape,
       nailLength: formData.nailLength,
       customerName: customerName.trim(),
     });
     setSelectedService('');
     setAppointmentDate('');
+    setAppointmentTime('');
     setFormData({ nailShape: '', nailLength: '' });
   };
 
   const isFormValid =
-    customerName.trim() && appointmentDate && isWeekend(appointmentDate) && selectedService && formData.nailShape && formData.nailLength;
+    customerName.trim() && appointmentDate && isWeekend(appointmentDate) && appointmentTime && selectedService && formData.nailShape && formData.nailLength;
 
   return (
 		<Box sx={{ pt: { xs: 7, md: 8 } }}>
@@ -341,6 +348,38 @@ export default function BookAppointmentPage() {
 								Please select a Saturday or Sunday.
 							</Typography>
 						)}
+
+						{/* Time Slot */}
+						<Typography
+							sx={{
+								fontFamily: '"Georgia", serif',
+								fontWeight: 700,
+								color: "#4A0E4E",
+								mb: 1,
+								mt: 2.5,
+								fontSize: "1.05rem",
+							}}
+						>
+							Preferred Time
+						</Typography>
+						<FormControl fullWidth size="small">
+							<Select
+								value={appointmentTime}
+								onChange={(e) => setAppointmentTime(e.target.value)}
+								displayEmpty
+								sx={{
+									borderRadius: 2,
+									'& fieldset': { borderColor: '#F0C0D0' },
+									'&:hover fieldset': { borderColor: '#E91E8C' },
+									'&.Mui-focused fieldset': { borderColor: '#E91E8C' },
+								}}
+							>
+								<MenuItem value="" disabled>Select a time slot</MenuItem>
+								{timeSlots.map((slot) => (
+									<MenuItem key={slot} value={slot}>{slot}</MenuItem>
+								))}
+							</Select>
+						</FormControl>
 					</Box>
 
 					{/* Service Selection */}

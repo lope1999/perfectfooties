@@ -210,7 +210,7 @@ export default function ProductsSection({ collectionName, categories, loading, o
                         ) : '—'}
                       </TableCell>
                       <TableCell sx={{ fontFamily }}>{p.name}</TableCell>
-                      <TableCell sx={{ fontFamily }}>${(p.price || 0).toFixed(2)}</TableCell>
+                      <TableCell sx={{ fontFamily }}>₦{(p.price || 0).toLocaleString()}</TableCell>
                       <TableCell>
                         {p.stock !== undefined ? (
                           <Chip

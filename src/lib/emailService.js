@@ -31,11 +31,19 @@ export async function sendConfirmationEmail(order) {
     status: order.status || 'confirmed',
   };
 
+  const appointmentDate = order.appointmentDate || order.items?.[0]?.date || 'TBD';
+
+  const formatNaira = (amount) => `₦${(amount || 0).toLocaleString()}`;
+
   const templateParams = isAppointment
-    ? { ...baseParams, appointment_date: order.appointmentDate || 'TBD' }
+    ? {
+        ...baseParams,
+        appointment_date: appointmentDate,
+        deposit: formatNaira((order.total || 0) * 0.5),
+      }
     : {
         ...baseParams,
-        order_total: `$${(order.total || 0).toFixed(2)}`,
+        order_total: formatNaira(order.total),
         order_items: order.items
           ? order.items.map((i) => `${i.name || i.title} x${i.quantity || 1}`).join(', ')
           : 'N/A',

@@ -27,6 +27,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { NailLogo } from "../data/svg.jsx";
 import CartIcon from "./CartIcon";
+import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
 import { useAuth } from "../context/AuthContext";
 
@@ -166,6 +167,7 @@ export default function Navbar() {
 					{/* Right — Cart + User + Social Icons (desktop) + Hamburger (mobile) */}
 					<Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
 						<CartIcon />
+						<NotificationBell />
 						<UserMenu />
 						<Box sx={{ display: { xs: "none", md: "flex" }, gap: 0.5 }}>
 							<Tooltip title="Instagram" arrow>
