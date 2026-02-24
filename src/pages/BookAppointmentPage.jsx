@@ -132,6 +132,7 @@ export default function BookAppointmentPage() {
         type: 'service',
         total: selected?.price || 0,
         customerName: customerName.trim(),
+        email: user.email || '',
         items: [{
           kind: 'service',
           serviceName: selected?.name || '',

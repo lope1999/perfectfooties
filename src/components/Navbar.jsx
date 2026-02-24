@@ -260,6 +260,60 @@ export default function Navbar() {
 					</IconButton>
 				</Box>
 				<Divider sx={{ borderColor: "#F0C0D0" }} />
+				{/* Account Section — shown first */}
+				<Box sx={{ px: 2, py: 1.5 }}>
+					{user ? (
+						<>
+							<Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.5 }}>
+								<Box
+									component="img"
+									src={user.photoURL}
+									alt={user.displayName}
+									sx={{ width: 36, height: 36, borderRadius: "50%", border: "2px solid #E91E8C" }}
+								/>
+								<Box>
+									<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '0.9rem', color: '#000' }}>
+										{user.displayName}
+									</Typography>
+									<Typography sx={{ fontSize: '0.75rem', color: '#777' }}>
+										{user.email}
+									</Typography>
+								</Box>
+							</Box>
+							<ListItemButton
+								onClick={() => { setDrawerOpen(false); navigate('/account'); }}
+								sx={{ py: 1, borderRadius: 1, '&:hover': { backgroundColor: '#FCE4EC' } }}
+							>
+								<ListItemText
+									primary="View Account"
+									primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontWeight: 600, color: '#E91E8C', fontSize: '0.9rem' }}
+								/>
+							</ListItemButton>
+							<ListItemButton
+								onClick={() => { setDrawerOpen(false); signOut(); }}
+								sx={{ py: 1, borderRadius: 1, '&:hover': { backgroundColor: '#FCE4EC' } }}
+							>
+								<ListItemText
+									primary="Sign Out"
+									primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontWeight: 600, color: '#999', fontSize: '0.9rem' }}
+								/>
+							</ListItemButton>
+						</>
+					) : (
+						<ListItemButton
+							onClick={() => { setDrawerOpen(false); signInWithGoogle().catch(() => {}); }}
+							sx={{ py: 1.5, borderRadius: 1, '&:hover': { backgroundColor: '#FCE4EC' } }}
+						>
+							<PersonOutlineIcon sx={{ color: '#E91E8C', mr: 1 }} />
+							<ListItemText
+								primary="Sign In"
+								primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontWeight: 600, color: '#000' }}
+							/>
+						</ListItemButton>
+					)}
+				</Box>
+				<Divider sx={{ borderColor: "#F0C0D0", my: 1 }} />
+				{/* Navigation Items */}
 				<List>
 					{navItems.map((item) => (
 						<ListItemButton
@@ -321,59 +375,6 @@ export default function Navbar() {
 						</ListItemButton>
 					)}
 				</List>
-				<Divider sx={{ borderColor: "#F0C0D0", my: 1 }} />
-				{/* Auth Section in Drawer */}
-				<Box sx={{ px: 2, py: 1.5 }}>
-					{user ? (
-						<>
-							<Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.5 }}>
-								<Box
-									component="img"
-									src={user.photoURL}
-									alt={user.displayName}
-									sx={{ width: 36, height: 36, borderRadius: "50%", border: "2px solid #E91E8C" }}
-								/>
-								<Box>
-									<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '0.9rem', color: '#000' }}>
-										{user.displayName}
-									</Typography>
-									<Typography sx={{ fontSize: '0.75rem', color: '#777' }}>
-										{user.email}
-									</Typography>
-								</Box>
-							</Box>
-							<ListItemButton
-								onClick={() => { setDrawerOpen(false); navigate('/account'); }}
-								sx={{ py: 1, borderRadius: 1, '&:hover': { backgroundColor: '#FCE4EC' } }}
-							>
-								<ListItemText
-									primary="View Account"
-									primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontWeight: 600, color: '#E91E8C', fontSize: '0.9rem' }}
-								/>
-							</ListItemButton>
-							<ListItemButton
-								onClick={() => { setDrawerOpen(false); signOut(); }}
-								sx={{ py: 1, borderRadius: 1, '&:hover': { backgroundColor: '#FCE4EC' } }}
-							>
-								<ListItemText
-									primary="Sign Out"
-									primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontWeight: 600, color: '#999', fontSize: '0.9rem' }}
-								/>
-							</ListItemButton>
-						</>
-					) : (
-						<ListItemButton
-							onClick={() => { setDrawerOpen(false); signInWithGoogle().catch(() => {}); }}
-							sx={{ py: 1.5, borderRadius: 1, '&:hover': { backgroundColor: '#FCE4EC' } }}
-						>
-							<PersonOutlineIcon sx={{ color: '#E91E8C', mr: 1 }} />
-							<ListItemText
-								primary="Sign In"
-								primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontWeight: 600, color: '#000' }}
-							/>
-						</ListItemButton>
-					)}
-				</Box>
 				<Divider sx={{ borderColor: "#F0C0D0", my: 1 }} />
 				<Box
 					sx={{ display: "flex", justifyContent: "center", gap: 2, py: 2 }}

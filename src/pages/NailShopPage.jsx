@@ -162,6 +162,7 @@ export default function NailShopPage() {
         type: 'retail',
         total: totalPrice,
         customerName: customerName.trim(),
+        email: user.email || '',
         items: cartItems.map(([id, qty]) => {
           const product = allProducts.find((p) => p.id === id);
           return { kind: 'retail', name: product?.name || '', price: product?.price || 0, quantity: qty };

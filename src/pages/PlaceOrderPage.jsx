@@ -251,6 +251,7 @@ export default function PlaceOrderPage() {
         type: 'pressOn',
         total,
         customerName: customerName.trim(),
+        email: user.email || '',
         items: selectedIds.map((id) => {
           const product = allProducts.find((p) => p.id === id);
           const form = selectedProducts[id];

@@ -136,6 +136,7 @@ export default function CartPage() {
         type: 'mixed',
         total,
         customerName: user.displayName || '',
+        email: user.email || '',
         items: allItems,
       }).catch(() => {});
     }
