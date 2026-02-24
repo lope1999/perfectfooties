@@ -2,6 +2,7 @@ import {
   collectionGroup,
   collection,
   doc,
+  addDoc,
   getDocs,
   getDoc,
   updateDoc,
@@ -10,6 +11,7 @@ import {
   query,
   runTransaction,
   serverTimestamp,
+  Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -29,6 +31,26 @@ export async function fetchAllOrders() {
     return bTime - aTime;
   });
   return orders;
+}
+
+export async function createAdminOrder(data) {
+  const colRef = collection(db, 'users', 'admin-legacy', 'orders');
+  const orderData = {
+    uid: 'admin-legacy',
+    customerName: data.customerName || '',
+    email: data.email || '',
+    phone: data.phone || '',
+    status: data.status || 'pending',
+    total: data.total || 0,
+    notes: data.notes || '',
+    type: data.type || '',
+    items: data.items || [],
+    createdAt: data.createdAt ? Timestamp.fromDate(data.createdAt) : serverTimestamp(),
+  };
+  if (data.appointmentDate) {
+    orderData.appointmentDate = data.appointmentDate;
+  }
+  return addDoc(colRef, orderData);
 }
 
 export async function updateOrderStatus(uid, orderId, status) {
@@ -149,8 +171,8 @@ export function computeDashboardStats(orders) {
   const revenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
   const pending = orders.filter((o) => o.status === 'pending').length;
   const confirmed = orders.filter((o) => o.status === 'confirmed').length;
-  const completed = orders.filter((o) => o.status === 'completed').length;
-  return { total, revenue, pending, confirmed, completed };
+  const received = orders.filter((o) => o.status === 'received').length;
+  return { total, revenue, pending, confirmed, received };
 }
 
 export function findLowStockProducts(categories, threshold = 5) {

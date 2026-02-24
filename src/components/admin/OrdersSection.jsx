@@ -30,24 +30,31 @@ import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { updateOrderStatus, deleteOrder, addOrderNote } from '../../lib/adminService';
+import AddIcon from '@mui/icons-material/Add';
+import { updateOrderStatus, deleteOrder, addOrderNote, createAdminOrder } from '../../lib/adminService';
 import { exportOrdersToCSV } from '../../lib/csvExport';
 import { sendConfirmationEmail } from '../../lib/emailService';
 
 const fontFamily = '"Georgia", serif';
 
-const statusOptions = ['pending', 'confirmed', 'in-progress', 'completed', 'cancelled'];
+const orderStatusOptions = ['pending', 'confirmed', 'production', 'shipping', 'received'];
+const appointmentStatusOptions = ['pending', 'confirmed', 'in progress', 'completed', 'rescheduled', 'cancelled'];
 const statusColor = {
   pending: 'warning',
   confirmed: 'info',
-  'in-progress': 'secondary',
+  production: 'secondary',
+  shipping: 'primary',
+  received: 'success',
+  'in progress': 'secondary',
   completed: 'success',
+  rescheduled: 'warning',
   cancelled: 'error',
 };
 
 export default function OrdersSection({ orders, loading, onRefresh, filterType }) {
+  const statusOptions = filterType === 'service' ? appointmentStatusOptions : orderStatusOptions;
   const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState(filterType || 'all');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [expandedId, setExpandedId] = useState(null);
   const [noteDialog, setNoteDialog] = useState(null);
@@ -57,6 +64,15 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   const [emailPrompt, setEmailPrompt] = useState(null);
   const [emailFeedback, setEmailFeedback] = useState(null);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [addDialog, setAddDialog] = useState(false);
+  const [addForm, setAddForm] = useState({
+    customerName: '', email: '', phone: '', status: 'pending',
+    total: '', notes: '', createdAt: '',
+    // service fields
+    serviceName: '', appointmentDate: '', appointmentTime: '',
+    // order fields
+    orderType: 'pressOn', itemName: '', quantity: 1,
+  });
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {
@@ -78,7 +94,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
     try {
       await updateOrderStatus(uid, orderId, newStatus);
       await onRefresh();
-      if (newStatus === 'confirmed' || newStatus === 'completed') {
+      if (newStatus === 'confirmed' || newStatus === 'received') {
         const order = orders.find((o) => o.id === orderId);
         if (order?.email) {
           setEmailPrompt({ ...order, status: newStatus });
@@ -132,6 +148,80 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
     }
   };
 
+  const resetAddForm = () => setAddForm({
+    customerName: '', email: '', phone: '', status: 'pending',
+    total: '', notes: '', createdAt: '',
+    serviceName: '', appointmentDate: '', appointmentTime: '',
+    orderType: 'pressOn', itemName: '', quantity: 1,
+  });
+
+  const handleAddSave = async () => {
+    setBusy(true);
+    try {
+      const isService = filterType === 'service';
+      const price = parseFloat(addForm.total) || 0;
+      let appointmentDate = '';
+      let items = [];
+
+      if (isService) {
+        // Build formatted appointment date string
+        if (addForm.appointmentDate) {
+          const d = new Date(addForm.appointmentDate + 'T00:00:00');
+          const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+          const day = d.getDate();
+          const month = d.toLocaleDateString('en-US', { month: 'long' });
+          const year = d.getFullYear();
+          let timePart = '';
+          if (addForm.appointmentTime) {
+            const [hh, mm] = addForm.appointmentTime.split(':');
+            const h = parseInt(hh, 10);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            timePart = ` at ${h12}:${mm} ${ampm}`;
+          }
+          appointmentDate = `${dayName}, ${day} ${month} ${year}${timePart}`;
+        }
+        items = [{
+          kind: 'service',
+          serviceName: addForm.serviceName,
+          name: addForm.serviceName,
+          price,
+          date: appointmentDate,
+          quantity: 1,
+        }];
+      } else {
+        items = [{
+          kind: addForm.orderType,
+          name: addForm.itemName,
+          price,
+          quantity: parseInt(addForm.quantity, 10) || 1,
+        }];
+      }
+
+      const orderData = {
+        customerName: addForm.customerName,
+        email: addForm.email,
+        phone: addForm.phone,
+        status: addForm.status,
+        total: price,
+        notes: addForm.notes,
+        type: isService ? 'service' : addForm.orderType,
+        items,
+        createdAt: addForm.createdAt ? new Date(addForm.createdAt + 'T00:00:00') : null,
+      };
+      if (appointmentDate) orderData.appointmentDate = appointmentDate;
+
+      await createAdminOrder(orderData);
+      await onRefresh();
+      setAddDialog(false);
+      resetAddForm();
+    } catch (err) {
+      console.error('Add order error:', err);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (loading) {
     return (
       <Box>
@@ -150,14 +240,24 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
         <Typography variant="h5" sx={{ fontFamily, fontWeight: 700 }}>
           {title} ({filtered.length})
         </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<FileDownloadIcon />}
-          onClick={() => exportOrdersToCSV(filtered, `${title.toLowerCase()}-export.csv`)}
-          sx={{ fontFamily, borderColor: '#4A0E4E', color: '#4A0E4E', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' } }}
-        >
-          Export CSV
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setAddDialog(true)}
+            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+          >
+            Add {filterType === 'service' ? 'Appointment' : 'Order'}
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<FileDownloadIcon />}
+            onClick={() => exportOrdersToCSV(filtered, `${title.toLowerCase()}-export.csv`)}
+            sx={{ fontFamily, borderColor: '#4A0E4E', color: '#4A0E4E', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' } }}
+          >
+            Export CSV
+          </Button>
+        </Box>
       </Box>
 
       <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
@@ -384,6 +484,161 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             sx={{ fontFamily }}
           >
             Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Order/Appointment Dialog */}
+      <Dialog open={addDialog} onClose={() => setAddDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontFamily, fontWeight: 700 }}>
+          Add Legacy {filterType === 'service' ? 'Appointment' : 'Order'}
+        </DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
+          <TextField
+            label="Customer Name"
+            required
+            value={addForm.customerName}
+            onChange={(e) => setAddForm((f) => ({ ...f, customerName: e.target.value }))}
+            fullWidth
+            size="small"
+            sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+          />
+          <TextField
+            label="Email"
+            value={addForm.email}
+            onChange={(e) => setAddForm((f) => ({ ...f, email: e.target.value }))}
+            fullWidth
+            size="small"
+            sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+          />
+          <TextField
+            label="Phone"
+            value={addForm.phone}
+            onChange={(e) => setAddForm((f) => ({ ...f, phone: e.target.value }))}
+            fullWidth
+            size="small"
+            sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+          />
+          <Select
+            value={addForm.status}
+            onChange={(e) => setAddForm((f) => ({ ...f, status: e.target.value }))}
+            size="small"
+            fullWidth
+            sx={{ fontFamily }}
+          >
+            {statusOptions.map((s) => (
+              <MenuItem key={s} value={s}>{s}</MenuItem>
+            ))}
+          </Select>
+          <TextField
+            label={filterType === 'service' ? 'Price' : 'Total'}
+            required
+            type="number"
+            value={addForm.total}
+            onChange={(e) => setAddForm((f) => ({ ...f, total: e.target.value }))}
+            fullWidth
+            size="small"
+            sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+          />
+
+          {filterType === 'service' ? (
+            <>
+              <TextField
+                label="Service Name"
+                required
+                value={addForm.serviceName}
+                onChange={(e) => setAddForm((f) => ({ ...f, serviceName: e.target.value }))}
+                fullWidth
+                size="small"
+                sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+              />
+              <TextField
+                label="Appointment Date"
+                type="date"
+                value={addForm.appointmentDate}
+                onChange={(e) => setAddForm((f) => ({ ...f, appointmentDate: e.target.value }))}
+                fullWidth
+                size="small"
+                slotProps={{ inputLabel: { shrink: true } }}
+                sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+              />
+              <TextField
+                label="Appointment Time"
+                type="time"
+                value={addForm.appointmentTime}
+                onChange={(e) => setAddForm((f) => ({ ...f, appointmentTime: e.target.value }))}
+                fullWidth
+                size="small"
+                slotProps={{ inputLabel: { shrink: true } }}
+                sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+              />
+            </>
+          ) : (
+            <>
+              <Select
+                value={addForm.orderType}
+                onChange={(e) => setAddForm((f) => ({ ...f, orderType: e.target.value }))}
+                size="small"
+                fullWidth
+                sx={{ fontFamily }}
+              >
+                <MenuItem value="pressOn">Press On</MenuItem>
+                <MenuItem value="retail">Retail</MenuItem>
+                <MenuItem value="mixed">Mixed</MenuItem>
+              </Select>
+              <TextField
+                label="Item Name"
+                required
+                value={addForm.itemName}
+                onChange={(e) => setAddForm((f) => ({ ...f, itemName: e.target.value }))}
+                fullWidth
+                size="small"
+                sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+              />
+              <TextField
+                label="Quantity"
+                type="number"
+                value={addForm.quantity}
+                onChange={(e) => setAddForm((f) => ({ ...f, quantity: e.target.value }))}
+                fullWidth
+                size="small"
+                slotProps={{ input: { inputProps: { min: 1 } } }}
+                sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+              />
+            </>
+          )}
+
+          <TextField
+            label="Notes"
+            multiline
+            rows={2}
+            value={addForm.notes}
+            onChange={(e) => setAddForm((f) => ({ ...f, notes: e.target.value }))}
+            fullWidth
+            size="small"
+            sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+          />
+          <TextField
+            label="Date Occurred"
+            type="date"
+            value={addForm.createdAt}
+            onChange={(e) => setAddForm((f) => ({ ...f, createdAt: e.target.value }))}
+            fullWidth
+            size="small"
+            slotProps={{ inputLabel: { shrink: true } }}
+            helperText="The historical date this order/appointment took place"
+            sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { setAddDialog(false); resetAddForm(); }} sx={{ fontFamily }}>Cancel</Button>
+          <Button
+            onClick={handleAddSave}
+            variant="contained"
+            disabled={busy || !addForm.customerName.trim() || !addForm.total || (filterType === 'service' ? !addForm.serviceName.trim() : !addForm.itemName.trim())}
+            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+          >
+            Save
           </Button>
         </DialogActions>
       </Dialog>
