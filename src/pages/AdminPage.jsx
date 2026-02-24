@@ -7,7 +7,9 @@ import DashboardSection from '../components/admin/DashboardSection';
 import OrdersSection from '../components/admin/OrdersSection';
 import AppointmentsSection from '../components/admin/AppointmentsSection';
 import ProductsSection from '../components/admin/ProductsSection';
-import { fetchAllOrders, fetchCategories } from '../lib/adminService';
+import { fetchAllOrders, fetchCategories, seedCategories } from '../lib/adminService';
+import { productCategories as staticPressOns } from '../data/products';
+import { retailCategories as staticRetail } from '../data/retailProducts';
 
 export default function AdminPage() {
   const [section, setSection] = useState('dashboard');
@@ -23,16 +25,37 @@ export default function AdminPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [o, pc, rc] = await Promise.all([
+      // Seed Firestore from static data if collections are empty (one-time)
+      try {
+        await Promise.all([
+          seedCategories('productCategories', staticPressOns),
+          seedCategories('retailCategories', staticRetail),
+        ]);
+      } catch (seedErr) {
+        console.warn('Category seed skipped:', seedErr);
+      }
+
+      const [o, pc, rc] = await Promise.allSettled([
         fetchAllOrders(),
         fetchCategories('productCategories'),
         fetchCategories('retailCategories'),
       ]);
-      setOrders(o);
-      setPressOnCategories(pc);
-      setRetailCategories(rc);
+
+      if (o.status === 'fulfilled') {
+        setOrders(o.value);
+      } else {
+        console.error('Orders load error:', o.reason);
+        setOrders([]);
+      }
+
+      const pressOns = pc.status === 'fulfilled' ? pc.value : [];
+      const retail = rc.status === 'fulfilled' ? rc.value : [];
+      setPressOnCategories(pressOns.length > 0 ? pressOns : staticPressOns);
+      setRetailCategories(retail.length > 0 ? retail : staticRetail);
     } catch (err) {
       console.error('Admin data load error:', err);
+      setPressOnCategories(staticPressOns);
+      setRetailCategories(staticRetail);
     } finally {
       setLoading(false);
     }
@@ -96,7 +119,7 @@ export default function AdminPage() {
             flex: 1,
             ml: isMobile ? 0 : `${SIDEBAR_WIDTH}px`,
             p: { xs: 2, md: 3 },
-            pt: { xs: 2, md: 3 },
+            pt: { xs: 10, md: 11 },
             minHeight: '100vh',
           }}
         >

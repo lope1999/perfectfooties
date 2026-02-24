@@ -21,14 +21,18 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { updateOrderStatus, deleteOrder, addOrderNote } from '../../lib/adminService';
 import { exportOrdersToCSV } from '../../lib/csvExport';
+import { sendConfirmationEmail } from '../../lib/emailService';
 
 const fontFamily = '"Georgia", serif';
 
@@ -50,6 +54,9 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   const [noteText, setNoteText] = useState('');
   const [deleteDialog, setDeleteDialog] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [emailPrompt, setEmailPrompt] = useState(null);
+  const [emailFeedback, setEmailFeedback] = useState(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {
@@ -71,10 +78,28 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
     try {
       await updateOrderStatus(uid, orderId, newStatus);
       await onRefresh();
+      if (newStatus === 'confirmed' || newStatus === 'completed') {
+        const order = orders.find((o) => o.id === orderId);
+        if (order?.email) {
+          setEmailPrompt({ ...order, status: newStatus });
+        }
+      }
     } catch (err) {
       console.error('Status update error:', err);
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handleSendEmail = async (order) => {
+    setSendingEmail(true);
+    setEmailPrompt(null);
+    const result = await sendConfirmationEmail(order);
+    setSendingEmail(false);
+    if (result.success) {
+      setEmailFeedback({ severity: 'success', message: 'Email sent!' });
+    } else {
+      setEmailFeedback({ severity: 'error', message: result.error || 'Failed to send' });
     }
   };
 
@@ -215,6 +240,14 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                     {o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString() : '—'}
                   </TableCell>
                   <TableCell>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleSendEmail(o)}
+                      disabled={!o.email || sendingEmail}
+                      title={o.email ? 'Send confirmation email' : 'No email available'}
+                    >
+                      <MailOutlineIcon fontSize="small" sx={{ color: o.email ? '#4A0E4E' : '#ccc' }} />
+                    </IconButton>
                     <IconButton size="small" onClick={() => { setNoteDialog(o); setNoteText(''); }} title="Add note">
                       <NoteAddIcon fontSize="small" sx={{ color: '#4A0E4E' }} />
                     </IconButton>
@@ -338,6 +371,41 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Email Prompt Snackbar */}
+      <Snackbar
+        open={!!emailPrompt}
+        autoHideDuration={10000}
+        onClose={() => setEmailPrompt(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        message={`Send confirmation email to ${emailPrompt?.customerName || emailPrompt?.name || 'customer'}?`}
+        action={
+          <>
+            <Button color="primary" size="small" onClick={() => handleSendEmail(emailPrompt)} sx={{ fontFamily }}>
+              Send
+            </Button>
+            <Button color="inherit" size="small" onClick={() => setEmailPrompt(null)} sx={{ fontFamily }}>
+              Dismiss
+            </Button>
+          </>
+        }
+      />
+
+      {/* Email Feedback Snackbar */}
+      <Snackbar
+        open={!!emailFeedback}
+        autoHideDuration={4000}
+        onClose={() => setEmailFeedback(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setEmailFeedback(null)}
+          severity={emailFeedback?.severity || 'info'}
+          sx={{ fontFamily }}
+        >
+          {emailFeedback?.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -77,15 +77,19 @@ export default function ProductsSection({ collectionName, categories, loading, o
   };
 
   const handleSaveCategory = async () => {
+    if (catDialog.mode === 'add' && !catForm.id.trim()) return;
+    if (!catForm.title.trim()) return;
     setBusy(true);
     try {
       if (catDialog.mode === 'add') {
-        await addCategory(collectionName, catForm.id, { title: catForm.title });
+        await addCategory(collectionName, catForm.id.trim(), { title: catForm.title.trim() });
       } else {
-        await updateCategory(collectionName, catDialog.id, { title: catForm.title });
+        await updateCategory(collectionName, catDialog.id, { title: catForm.title.trim() });
       }
       setCatDialog(null);
       await onRefresh();
+    } catch (err) {
+      console.error('Category save error:', err);
     } finally {
       setBusy(false);
     }
@@ -291,7 +295,7 @@ export default function ProductsSection({ collectionName, categories, loading, o
           <Button
             onClick={handleSaveCategory}
             variant="contained"
-            disabled={busy || (!catForm.title && catDialog?.mode === 'add' && !catForm.id)}
+            disabled={busy || !catForm.title.trim() || (catDialog?.mode === 'add' && !catForm.id.trim())}
             sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
           >
             {catDialog?.mode === 'add' ? 'Create' : 'Update'}

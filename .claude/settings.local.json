@@ -14,7 +14,21 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git stash:*)",
-      "Bash(git stash pop:*)"
+      "Bash(git stash pop:*)",
+      "Bash(npx vercel:*)",
+      "Bash(npm i:*)",
+      "WebFetch(domain:unsplash.com)",
+      "WebFetch(domain:images.unsplash.com)",
+      "WebSearch",
+      "WebFetch(domain:www.pexels.com)",
+      "Bash(cd:*)",
+      "Bash(cd /c/Users/CHIZOBA-TEMP-PC/Documents/e-shop && npm run build 2>&1)",
+      "WebFetch(domain:support.google.com)",
+      "WebFetch(domain:firebase.google.com)",
+      "WebFetch(domain:www.geeksforgeeks.org)",
+      "WebFetch(domain:thelinuxcode.com)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:medium.com)"
     ]
   }
 }

@@ -32,58 +32,75 @@ export default function AdminSidebar({ active, onSelect, mobileOpen, onMobileClo
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const content = (
-    <Box
-      sx={{
-        width: SIDEBAR_WIDTH,
-        height: '100%',
-        backgroundColor: '#4A0E4E',
-        color: '#fff',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 2.5 }}>
-        <Typography
-          variant="h6"
-          sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.1rem' }}
-        >
-          Admin Panel
-        </Typography>
-        {isMobile && (
-          <IconButton onClick={onMobileClose} sx={{ color: '#fff' }}>
-            <CloseIcon />
-          </IconButton>
-        )}
-      </Box>
-      <List sx={{ flex: 1 }}>
-        {sections.map((s) => (
-          <ListItemButton
-            key={s.key}
-            selected={active === s.key}
-            onClick={() => {
-              onSelect(s.key);
-              if (isMobile) onMobileClose();
-            }}
-            sx={{
-              py: 1.5,
-              px: 2.5,
-              '&.Mui-selected': { backgroundColor: 'rgba(255,255,255,0.15)' },
-              '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' },
-            }}
-          >
-            <ListItemIcon sx={{ color: '#fff', minWidth: 40 }}>{s.icon}</ListItemIcon>
-            <ListItemText
-              primary={s.label}
-              primaryTypographyProps={{
-                fontFamily: '"Georgia", serif',
-                fontSize: '0.9rem',
-                fontWeight: active === s.key ? 700 : 400,
-              }}
-            />
-          </ListItemButton>
-        ))}
-      </List>
-    </Box>
+		<Box
+			sx={{
+				width: SIDEBAR_WIDTH,
+				height: "100%",
+				backgroundColor: "#E61793",
+				color: "#fff",
+				display: "flex",
+				flexDirection: "column",
+				pt: isMobile ? 0 : "72px",
+			}}
+		>
+			<Box
+				sx={{
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "space-between",
+					px: 2,
+					py: 2.5,
+				}}
+			>
+				<Typography
+					variant="h6"
+					sx={{
+						fontFamily: '"Georgia", serif',
+						fontWeight: 700,
+						fontSize: "1.1rem",
+					}}
+				>
+					Admin Panel
+				</Typography>
+				{isMobile && (
+					<IconButton onClick={onMobileClose} sx={{ color: "#fff" }}>
+						<CloseIcon />
+					</IconButton>
+				)}
+			</Box>
+			<List sx={{ flex: 1 }}>
+				{sections.map((s) => (
+					<ListItemButton
+						key={s.key}
+						selected={active === s.key}
+						onClick={() => {
+							onSelect(s.key);
+							if (isMobile) onMobileClose();
+						}}
+						sx={{
+							py: 1.5,
+							px: 2.5,
+							"&.Mui-selected": {
+								backgroundColor: "rgba(255,255,255,0.15)",
+							},
+							"&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
+						}}
+					>
+						<ListItemIcon sx={{ color: "#fff", minWidth: 40 }}>
+							{s.icon}
+						</ListItemIcon>
+						<ListItemText
+							primary={s.label}
+							primaryTypographyProps={{
+								fontFamily: '"Georgia", serif',
+								fontSize: "0.9rem",
+								fontWeight: active === s.key ? 700 : 400,
+							}}
+						/>
+					</ListItemButton>
+				))}
+			</List>
+		</Box>
   );
 
   if (isMobile) {

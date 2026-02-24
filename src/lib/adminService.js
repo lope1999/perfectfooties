@@ -54,11 +54,41 @@ export async function addOrderNote(uid, orderId, text) {
 
 export async function fetchCategories(collectionName) {
   const snap = await getDocs(collection(db, collectionName));
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const cats = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  // Sort client-side so docs without 'order' still appear (at the end)
+  cats.sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity));
+  return cats;
+}
+
+export async function seedCategories(collectionName, staticData) {
+  const snap = await getDocs(collection(db, collectionName));
+  if (!snap.empty) {
+    // Collection has data — patch any docs missing the 'order' field
+    let i = 0;
+    for (const d of snap.docs) {
+      if (d.data().order === undefined) {
+        await updateDoc(d.ref, { order: i });
+      }
+      i++;
+    }
+    return false;
+  }
+  // Collection is empty — seed from static data
+  for (let i = 0; i < staticData.length; i++) {
+    const { id, ...rest } = staticData[i];
+    const ref = doc(db, collectionName, id);
+    await setDoc(ref, { ...rest, order: i });
+  }
+  return true;
 }
 
 export async function addCategory(collectionName, id, data) {
   const ref = doc(db, collectionName, id);
+  // Auto-assign order to end if not provided
+  if (data.order === undefined) {
+    const snap = await getDocs(collection(db, collectionName));
+    data = { ...data, order: snap.size };
+  }
   return setDoc(ref, { ...data, products: data.products || [] });
 }
 
