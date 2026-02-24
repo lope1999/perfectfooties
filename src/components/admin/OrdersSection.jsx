@@ -199,7 +199,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
           <TableHead>
             <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 40 }} />
-              {['Order ID', 'Customer', 'Type', 'Status', 'Total', 'Appointment Date', 'Time', 'Date', 'Actions'].map((h) => (
+              {['Order ID', 'Customer', 'Type', 'Status', 'Total', 'Appointment Date', 'Time', 'Date Booked', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
                   {h}
                 </TableCell>

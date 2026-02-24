@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -64,6 +64,7 @@ const textFieldSx = {
 
 export default function BookAppointmentPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { addService: addServiceToCart } = useCart();
   const { user } = useAuth();
   const [customerName, setCustomerName] = useState('');
@@ -71,6 +72,17 @@ export default function BookAppointmentPage() {
   useEffect(() => {
     if (user?.displayName && !customerName) setCustomerName(user.displayName);
   }, [user]);
+
+  useEffect(() => {
+    const categoryId = location.state?.categoryId;
+    if (categoryId) {
+      const timer = setTimeout(() => {
+        document.getElementById(categoryId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
+
   const [selectedService, setSelectedService] = useState('');
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('');
@@ -393,7 +405,7 @@ export default function BookAppointmentPage() {
 								direction="up"
 								delay={catIdx * 0.1}
 							>
-								<Box sx={{ mb: 4 }}>
+								<Box id={category.id} sx={{ mb: 4 }}>
 									<Typography
 										variant="h5"
 										sx={{

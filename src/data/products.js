@@ -32,18 +32,18 @@ export const productCategories = [
 			// 	length: "Short",
 			// 	shape: "Almond",
 			// },
-			{
-				id: "av-golden-gilded",
-				name: "Golden & Gilded Elegant Nails",
-				description:
-					"Stunning clear base with delicate gold foil accents and gilded detailing — effortlessly luxurious for any occasion.",
-				price: 18000,
-				image: "/images/products/marble-luxe.jpg",
-				type: "Gel-X",
-				stock: 2,
-				length: "Long",
-				shape: "Almond",
-			},
+			// {
+			// 	id: "av-golden-gilded",
+			// 	name: "Golden & Gilded Elegant Nails",
+			// 	description:
+			// 		"Stunning clear base with delicate gold foil accents and gilded detailing — effortlessly luxurious for any occasion.",
+			// 	price: 18000,
+			// 	image: "/images/products/marble-luxe.jpg",
+			// 	type: "Gel-X",
+			// 	stock: 2,
+			// 	length: "Long",
+			// 	shape: "Almond",
+			// },
 			// {
 			// 	id: "av-cherry-blossom",
 			// 	name: "Cherry Blossom Press-Ons",
@@ -92,18 +92,18 @@ export const productCategories = [
 				length: "Short",
 				shape: "Square",
 			},
-			{
-				id: "av-elegances-daughter",
-				name: "Elegance's Daughter",
-				description:
-					"Soft nude tones with graceful gold-line detailing and subtle shimmer — refined beauty inherited from elegance itself.",
-				price: 16000,
-				image: "/images/products/nude-set.jpg.jpg",
-				type: "Gel-X",
-				stock: 3,
-				length: "Medium",
-				shape: "Almond",
-			},
+			// {
+			// 	id: "av-elegances-daughter",
+			// 	name: "Elegance's Daughter",
+			// 	description:
+			// 		"Soft nude tones with graceful gold-line detailing and subtle shimmer — refined beauty inherited from elegance itself.",
+			// 	price: 16000,
+			// 	image: "/images/products/nude-set.jpg.jpg",
+			// 	type: "Gel-X",
+			// 	stock: 3,
+			// 	length: "Medium",
+			// 	shape: "Almond",
+			// },
 			{
 				id: "av-purples-fantasy-mirage",
 				name: "Purple's Fantasy Mirage",
@@ -116,18 +116,18 @@ export const productCategories = [
 				length: "Long",
 				shape: "Coffin",
 			},
-			{
-				id: "av-colorful-playground",
-				name: "Colourful Playground — But Mild",
-				description:
-					"A playful mix of soft pastels and muted pops of colour — fun and vibrant without being too loud. Cheerful yet classy.",
-				price: 14000,
-				image: "/images/products/glossy-red.jpg.jpg",
-				type: "Gel-X",
-				stock: 4,
-				length: "Medium",
-				shape: "Oval",
-			},
+			// {
+			// 	id: "av-colorful-playground",
+			// 	name: "Colourful Playground — But Mild",
+			// 	description:
+			// 		"A playful mix of soft pastels and muted pops of colour — fun and vibrant without being too loud. Cheerful yet classy.",
+			// 	price: 14000,
+			// 	image: "/images/products/glossy-red.jpg.jpg",
+			// 	type: "Gel-X",
+			// 	stock: 4,
+			// 	length: "Medium",
+			// 	shape: "Oval",
+			// },
 			{
 				id: "av-mix-match-bling",
 				name: "Mix & Match Bling",
@@ -140,18 +140,18 @@ export const productCategories = [
 				length: "Long",
 				shape: "Coffin",
 			},
-			{
-				id: "av-miss-independent",
-				name: "Miss Independent but Dependent",
-				description:
-					"Fierce dark tones with delicate soft-pink accents — strong and self-assured on the outside, sweet on the inside.",
-				price: 15000,
-				image: "/images/products/custom-long.jpg.jpg",
-				type: "Gel-X",
-				stock: 3,
-				length: "Medium",
-				shape: "Almond",
-			},
+			// {
+			// 	id: "av-miss-independent",
+			// 	name: "Miss Independent but Dependent",
+			// 	description:
+			// 		"Fierce dark tones with delicate soft-pink accents — strong and self-assured on the outside, sweet on the inside.",
+			// 	price: 15000,
+			// 	image: "/images/products/custom-long.jpg.jpg",
+			// 	type: "Gel-X",
+			// 	stock: 3,
+			// 	length: "Medium",
+			// 	shape: "Almond",
+			// },
 			{
 				id: "av-reddened-glister",
 				name: "Reddened Glister",
@@ -168,9 +168,9 @@ export const productCategories = [
 	},
 	{
 		id: "simple-gelx",
-		title: "Simple Gel-X Press-On Nails",
+		title: "Custom Simple Gel-X Press-On Nails",
 		description:
-			"Clean, elegant press-on nails made with Gel-X extensions and minimal designs. Perfect for everyday wear or a soft, classy look. Available in any length of your choice, shaped and finished for a smooth, natural feel.",
+			"Custom hand-made, clean, elegant press-on nails made with Gel-X extensions and minimal designs. Perfect for everyday wear or a soft, classy look. Available in any length of your choice, shaped and finished for a smooth, natural feel.",
 		image: "/images/products/nude-set.jpg.jpg",
 		products: [
 			{
@@ -209,9 +209,9 @@ export const productCategories = [
 	},
 	{
 		id: "luxury-gelx",
-		title: "Luxury Gel-X Press-On Nails (Complex Designs)",
+		title: "CustomLuxury Gel-X Press-On Nails (Complex Designs)",
 		description:
-			"Premium Gel-X press-on nails featuring detailed, artistic, and eye-catching designs. Ideal for special occasions, photoshoots, or when you want a bold, standout look. Any length available, fully customized to your style.",
+			"Custom hand-made, premium Gel-X press-on nails featuring detailed, artistic, and eye-catching designs. Ideal for special occasions, photoshoots, or when you want a bold, standout look. Any length available, fully customized to your style.",
 		image: "/images/products/freehand-art.jpg.jpg",
 		products: [
 			{
@@ -250,9 +250,9 @@ export const productCategories = [
 	},
 	{
 		id: "simple-overlay",
-		title: "Simple Overlay Press-On Nails (Hard Gel / Polygel)",
+		title: "CustomSimple Overlay Press-On Nails (Hard Gel / Polygel)",
 		description:
-			"Timeless press-on nails reinforced with a hard gel or polygel overlay for extra strength and durability. Finished with simple, neat designs that give a clean and polished appearance — perfect for everyday elegance.",
+			"Custom hand-made, timeless press-on nails reinforced with a hard gel or polygel overlay for extra strength and durability. Finished with simple, neat designs that give a clean and polished appearance — perfect for everyday elegance.",
 		// note: 'Extra ₦1,000 applies for longer lengths.',
 		image: "/images/products/custom-long.jpg.jpg",
 		products: [
@@ -292,9 +292,9 @@ export const productCategories = [
 	},
 	{
 		id: "luxury-overlay",
-		title: "Luxury Overlay Press-On Nails (Polygel — Complex Designs)",
+		title: "CustomLuxury Overlay Press-On Nails (Polygel — Complex Designs)",
 		description:
-			"Show-stopping polygel press-on nails with elaborate designs, 3D art, chrome finishes, and embellishments. Built for durability with the wow-factor of a luxury salon set. Fully customizable to your vision of soft glam and elegance.",
+			"Custom hand-made, show-stopping polygel press-on nails with elaborate designs, 3D art, chrome finishes, and embellishments. Built for durability with the wow-factor of a luxury salon set. Fully customizable to your vision of soft glam and elegance.",
 		image: "/images/products/marble-luxe.jpg",
 		products: [
 			{

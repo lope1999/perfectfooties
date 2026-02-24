@@ -10,13 +10,21 @@ import {
   Tab,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from '@mui/material';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import LogoutIcon from '@mui/icons-material/Logout';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
 import { useAuth } from '../context/AuthContext';
 import { fetchOrders } from '../lib/orderService';
+import { saveTestimonial, hasReviewedOrder } from '../lib/testimonialService';
 
 const TABS = ['profile', 'orders', 'appointments'];
 
@@ -40,12 +48,27 @@ export default function AccountPage() {
 
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ratedOrders, setRatedOrders] = useState({});
+  const [rateDialog, setRateDialog] = useState(null);
 
   useEffect(() => {
     if (!user) return;
     setOrdersLoading(true);
     fetchOrders(user.uid)
-      .then(setOrders)
+      .then((fetched) => {
+        setOrders(fetched);
+        // Check which completed orders have already been rated
+        const completed = fetched.filter((o) => o.status === 'completed');
+        Promise.all(
+          completed.map((o) =>
+            hasReviewedOrder(o.id).then((reviewed) => [o.id, reviewed])
+          )
+        ).then((results) => {
+          const map = {};
+          results.forEach(([id, reviewed]) => { if (reviewed) map[id] = true; });
+          setRatedOrders(map);
+        });
+      })
       .catch(() => {})
       .finally(() => setOrdersLoading(false));
   }, [user]);
@@ -186,7 +209,7 @@ export default function AccountPage() {
               </Box>
             ) : (
               otherOrders.map((order) => (
-                <OrderCard key={order.id} order={order} />
+                <OrderCard key={order.id} order={order} rated={!!ratedOrders[order.id]} onRate={() => setRateDialog(order)} />
               ))
             )}
           </Box>
@@ -209,17 +232,123 @@ export default function AccountPage() {
               </Box>
             ) : (
               serviceOrders.map((order) => (
-                <OrderCard key={order.id} order={order} />
+                <OrderCard key={order.id} order={order} rated={!!ratedOrders[order.id]} onRate={() => setRateDialog(order)} />
               ))
             )}
           </Box>
         )}
+        {/* Rate Dialog */}
+        <RateDialog
+          open={!!rateDialog}
+          order={rateDialog}
+          userName={user?.displayName || ''}
+          onClose={() => setRateDialog(null)}
+          onSubmitted={(orderId) => {
+            setRatedOrders((prev) => ({ ...prev, [orderId]: true }));
+            setRateDialog(null);
+          }}
+        />
       </Container>
     </Box>
   );
 }
 
-function OrderCard({ order }) {
+function RateDialog({ open, order, userName, onClose, onSubmitted }) {
+  const [rating, setRating] = useState(0);
+  const [occupation, setOccupation] = useState('');
+  const [review, setReview] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!order || rating === 0 || !review.trim()) return;
+    setSubmitting(true);
+    try {
+      const serviceName = order.items?.[0]?.serviceName || order.items?.[0]?.name || 'Service';
+      await saveTestimonial({
+        name: userName,
+        occupation: occupation.trim() || 'Client',
+        service: serviceName,
+        type: order.type === 'service' ? 'appointment' : 'purchase',
+        rating,
+        review: review.trim(),
+        avatar: userName.charAt(0).toUpperCase(),
+        orderId: order.id,
+      });
+      onSubmitted(order.id);
+    } catch (err) {
+      console.error('Failed to save review:', err);
+    } finally {
+      setSubmitting(false);
+      setRating(0);
+      setOccupation('');
+      setReview('');
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+      <DialogTitle sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, textAlign: 'center' }}>
+        Rate Your Experience
+      </DialogTitle>
+      <DialogContent>
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5, mb: 2, mt: 1 }}>
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Box
+              key={star}
+              onClick={() => setRating(star)}
+              sx={{ cursor: 'pointer' }}
+            >
+              {star <= rating ? (
+                <StarIcon sx={{ color: '#E91E8C', fontSize: 36 }} />
+              ) : (
+                <StarBorderIcon sx={{ color: '#E91E8C', fontSize: 36 }} />
+              )}
+            </Box>
+          ))}
+        </Box>
+        <TextField
+          fullWidth
+          label="Your Occupation (optional)"
+          value={occupation}
+          onChange={(e) => setOccupation(e.target.value)}
+          size="small"
+          sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+        />
+        <TextField
+          fullWidth
+          label="Your Review"
+          value={review}
+          onChange={(e) => setReview(e.target.value)}
+          multiline
+          rows={3}
+          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+        />
+      </DialogContent>
+      <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+        <Button onClick={onClose} sx={{ fontFamily: '"Georgia", serif', color: '#777' }}>Cancel</Button>
+        <Button
+          onClick={handleSubmit}
+          disabled={submitting || rating === 0 || !review.trim()}
+          sx={{
+            backgroundColor: '#E91E8C',
+            color: '#fff',
+            borderRadius: '30px',
+            px: 4,
+            py: 1,
+            fontFamily: '"Georgia", serif',
+            fontWeight: 600,
+            '&:hover': { backgroundColor: '#C2185B' },
+            '&.Mui-disabled': { backgroundColor: '#F0C0D0', color: '#fff' },
+          }}
+        >
+          {submitting ? 'Submitting…' : 'Submit Review'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+function OrderCard({ order, rated, onRate }) {
   const statusColor = {
     pending: '#FF9800',
     confirmed: '#2196F3',
@@ -273,6 +402,29 @@ function OrderCard({ order }) {
               {item.name || item.serviceName || 'Item'}{item.quantity > 1 ? ` x${item.quantity}` : ''}
             </Typography>
           ))}
+        </Box>
+      )}
+      {order.status === 'completed' && (
+        <Box sx={{ mt: 1.5 }}>
+          <Button
+            size="small"
+            onClick={onRate}
+            disabled={rated}
+            sx={{
+              border: '1.5px solid #E91E8C',
+              borderRadius: '20px',
+              color: rated ? '#999' : '#E91E8C',
+              borderColor: rated ? '#ccc' : '#E91E8C',
+              px: 2,
+              fontFamily: '"Georgia", serif',
+              fontWeight: 600,
+              fontSize: '0.78rem',
+              textTransform: 'none',
+              '&:hover': rated ? {} : { backgroundColor: '#E91E8C', color: '#fff' },
+            }}
+          >
+            {rated ? 'Rated' : 'Rate'}
+          </Button>
         </Box>
       )}
     </Box>

@@ -89,6 +89,17 @@ export default function PlaceOrderPage() {
   useEffect(() => {
     if (user?.displayName && !customerName) setCustomerName(user.displayName);
   }, [user]);
+
+  useEffect(() => {
+    const categoryId = location.state?.categoryId;
+    if (categoryId) {
+      const timer = setTimeout(() => {
+        document.getElementById(categoryId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
+
   const [selectedProducts, setSelectedProducts] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
@@ -423,7 +434,7 @@ export default function PlaceOrderPage() {
 							direction="up"
 							delay={catIdx * 0.1}
 						>
-							<Box sx={{ mb: 4 }}>
+							<Box id={category.id} sx={{ mb: 4 }}>
 								<Typography
 									variant="h5"
 									sx={{

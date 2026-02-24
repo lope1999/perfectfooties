@@ -77,7 +77,7 @@ export default function AdminPage() {
           />
         );
       case 'orders':
-        return <OrdersSection orders={orders} loading={loading} onRefresh={loadData} />;
+        return <OrdersSection orders={orders.filter(o => o.type !== 'service')} loading={loading} onRefresh={loadData} filterType="product" />;
       case 'appointments':
         return <AppointmentsSection orders={orders} loading={loading} onRefresh={loadData} />;
       case 'pressons':

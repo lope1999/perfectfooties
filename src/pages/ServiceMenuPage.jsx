@@ -251,7 +251,7 @@ export default function ServiceMenuPage() {
 
               <ScrollReveal direction="up" delay={0.2}>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Button sx={bookButtonSx} onClick={() => navigate('/book')}>
+                  <Button sx={bookButtonSx} onClick={() => navigate('/book', { state: { categoryId: category.id } })}>
                     Book Appointment
                   </Button>
                 </Box>

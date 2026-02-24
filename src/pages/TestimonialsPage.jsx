@@ -1,8 +1,10 @@
+import { useState, useEffect } from 'react';
 import { Box, Typography, Container, Grid, Avatar, Chip } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import ScrollReveal from '../components/ScrollReveal';
-import { testimonials } from '../data/testimonials';
+import { testimonials as staticTestimonials } from '../data/testimonials';
+import { fetchTestimonials } from '../lib/testimonialService';
 
 function StarRating({ rating }) {
   return (
@@ -19,6 +21,26 @@ function StarRating({ rating }) {
 }
 
 export default function TestimonialsPage() {
+  const [testimonials, setTestimonials] = useState(staticTestimonials);
+
+  useEffect(() => {
+    fetchTestimonials()
+      .then((firestoreItems) => {
+        const mapped = firestoreItems.map((t) => ({
+          id: t.id,
+          name: t.name,
+          occupation: t.occupation || 'Client',
+          service: t.service,
+          type: t.type,
+          rating: t.rating,
+          review: t.review,
+          avatar: t.avatar || t.name?.charAt(0)?.toUpperCase() || '?',
+        }));
+        setTestimonials([...staticTestimonials, ...mapped]);
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <Box sx={{ pt: 12, pb: 8, minHeight: '100vh', backgroundColor: '#FAFAFA' }}>
       {/* Header */}

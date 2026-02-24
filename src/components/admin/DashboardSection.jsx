@@ -17,6 +17,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import EventNoteIcon from '@mui/icons-material/EventNote';
 import { computeDashboardStats, findLowStockProducts } from '../../lib/adminService';
 import { parseAppointmentDate, isWithinHours, isUpcoming, formatRelativeTime } from '../../lib/appointmentDateUtils';
 
@@ -73,6 +74,8 @@ export default function DashboardSection({ orders, pressOnCategories, retailCate
   }
 
   const stats = computeDashboardStats(orders);
+  const productOrders = orders.filter((o) => o.type !== 'service');
+  const serviceOrders = orders.filter((o) => o.type === 'service');
   const allCategories = [...pressOnCategories, ...retailCategories];
   const lowStock = findLowStockProducts(allCategories);
   const recentOrders = orders.slice(0, 10);
@@ -98,7 +101,10 @@ export default function DashboardSection({ orders, pressOnCategories, retailCate
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Total Orders" value={stats.total} icon={<ShoppingCartIcon />} color="#4A0E4E" />
+          <StatCard title="Total Orders" value={productOrders.length} icon={<ShoppingCartIcon />} color="#4A0E4E" />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard title="Total Appointments" value={serviceOrders.length} icon={<EventNoteIcon />} color="#E91E8C" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
@@ -164,7 +170,7 @@ export default function DashboardSection({ orders, pressOnCategories, retailCate
         <Table size="small">
           <TableHead>
             <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
-              {['Order ID', 'Customer', 'Type', 'Status', 'Total', 'Date'].map((h) => (
+              {['Order ID', 'Customer', 'Type', 'Status', 'Total', 'Date Booked'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
                   {h}
                 </TableCell>
