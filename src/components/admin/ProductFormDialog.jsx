@@ -10,6 +10,8 @@ import {
   MenuItem,
 } from '@mui/material';
 
+import { pressOnNailShapes, pressOnLengths } from '../../data/products';
+
 const fontFamily = '"Georgia", serif';
 
 const initialState = {
@@ -154,22 +156,34 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
               <Grid item xs={4}>
                 <TextField
                   fullWidth
+                  select
                   label="Shape"
                   value={form.shape}
                   onChange={handleChange('shape')}
                   InputProps={{ sx: { fontFamily } }}
                   InputLabelProps={{ sx: { fontFamily } }}
-                />
+                >
+                  <MenuItem value="">None</MenuItem>
+                  {pressOnNailShapes.map((s) => (
+                    <MenuItem key={s} value={s}>{s}</MenuItem>
+                  ))}
+                </TextField>
               </Grid>
               <Grid item xs={4}>
                 <TextField
                   fullWidth
+                  select
                   label="Length"
                   value={form.length}
                   onChange={handleChange('length')}
                   InputProps={{ sx: { fontFamily } }}
                   InputLabelProps={{ sx: { fontFamily } }}
-                />
+                >
+                  <MenuItem value="">None</MenuItem>
+                  {pressOnLengths.map((l) => (
+                    <MenuItem key={l} value={l}>{l}</MenuItem>
+                  ))}
+                </TextField>
               </Grid>
             </>
           )}
