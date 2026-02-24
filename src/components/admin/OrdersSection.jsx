@@ -199,7 +199,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
           <TableHead>
             <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 40 }} />
-              {['Order ID', 'Customer', 'Type', 'Status', 'Total', 'Appointment', 'Date', 'Actions'].map((h) => (
+              {['Order ID', 'Customer', 'Type', 'Status', 'Total', 'Appointment Date', 'Time', 'Date', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
                   {h}
                 </TableCell>
@@ -237,7 +237,20 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                   </TableCell>
                   <TableCell sx={{ fontFamily }}>₦{(o.total || 0).toLocaleString()}</TableCell>
                   <TableCell sx={{ fontFamily, fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
-                    {o.appointmentDate || o.items?.[0]?.date || '—'}
+                    {(() => {
+                      const raw = o.appointmentDate || o.items?.[0]?.date;
+                      if (!raw) return '—';
+                      const [datePart] = raw.split(' at ');
+                      return datePart || '—';
+                    })()}
+                  </TableCell>
+                  <TableCell sx={{ fontFamily, fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                    {(() => {
+                      const raw = o.appointmentDate || o.items?.[0]?.date;
+                      if (!raw) return '—';
+                      const parts = raw.split(' at ');
+                      return parts[1]?.trim() || '—';
+                    })()}
                   </TableCell>
                   <TableCell sx={{ fontFamily, fontSize: '0.8rem' }}>
                     {o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString() : '—'}
@@ -260,7 +273,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                   </TableCell>
                 </TableRow>
                 <TableRow key={`${o.id}-detail`}>
-                  <TableCell colSpan={9} sx={{ p: 0, border: 0 }}>
+                  <TableCell colSpan={10} sx={{ p: 0, border: 0 }}>
                     <Collapse in={expandedId === o.id}>
                       <Box sx={{ p: 2, backgroundColor: '#fafafa' }}>
                         {o.appointmentDate && (
@@ -316,7 +329,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={9} sx={{ textAlign: 'center', fontFamily, py: 4 }}>
+                <TableCell colSpan={10} sx={{ textAlign: 'center', fontFamily, py: 4 }}>
                   No {title.toLowerCase()} found
                 </TableCell>
               </TableRow>

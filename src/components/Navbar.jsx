@@ -49,12 +49,12 @@ const navButtonSx = {
 };
 
 const navItems = [
-  { label: 'Service Menu', path: '/services' },
-  { label: 'Products Menu', path: '/products' },
-  { label: 'Contact Us', path: 'contact' },
-  { label: 'Testimonials', path: '/testimonials' },
-  { label: 'Our Story', path: '/our-story' },
-  { label: 'Shop', path: '/shop' },
+	{ label: "Service Menu", path: "/services" },
+	{ label: "Products Menu", path: "/products" },
+	{ label: "Contact Us", path: "contact" },
+	{ label: "Testimonials", path: "/testimonials" },
+	{ label: "Our Story", path: "/our-story" },
+	// { label: 'Shop', path: '/shop' },
 ];
 
 export default function Navbar() {
