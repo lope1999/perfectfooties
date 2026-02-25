@@ -8,6 +8,10 @@ import {
   TextField,
   Grid,
   MenuItem,
+  FormControlLabel,
+  Switch,
+  Box,
+  Typography,
 } from '@mui/material';
 
 import { pressOnNailShapes, pressOnLengths } from '../../data/products';
@@ -23,6 +27,7 @@ const initialState = {
   type: '',
   shape: '',
   length: '',
+  hidden: false,
 };
 
 export default function ProductFormDialog({ open, onClose, onSave, product, type }) {
@@ -40,6 +45,7 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
         type: product.type || '',
         shape: product.shape || '',
         length: product.length || '',
+        hidden: !!product.hidden,
       });
     } else {
       setForm(initialState);
@@ -59,6 +65,7 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
         price: parseFloat(form.price) || 0,
         image: form.image,
         stock: form.stock !== '' ? parseInt(form.stock, 10) : undefined,
+        hidden: form.hidden,
       };
       if (type === 'presson') {
         if (form.type) data.type = form.type;
@@ -140,6 +147,27 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
               InputProps={{ sx: { fontFamily } }}
               InputLabelProps={{ sx: { fontFamily } }}
             />
+          </Grid>
+          <Grid item xs={12}>
+            <Box sx={{ display: 'flex', alignItems: 'center', p: 1.5, borderRadius: 2, border: '1px solid #eee', backgroundColor: form.hidden ? '#FFF0F5' : '#fafafa' }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={form.hidden}
+                    onChange={(e) => setForm((prev) => ({ ...prev, hidden: e.target.checked }))}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': { color: '#E91E8C' },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#E91E8C' },
+                    }}
+                  />
+                }
+                label={
+                  <Typography sx={{ fontFamily, fontSize: '0.9rem', fontWeight: 600, color: '#4A0E4E' }}>
+                    Hidden from storefront
+                  </Typography>
+                }
+              />
+            </Box>
           </Grid>
           {isPresson && (
             <>

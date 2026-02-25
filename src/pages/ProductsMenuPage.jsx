@@ -216,7 +216,7 @@ export default function ProductsMenuPage() {
 			)}
 
 			{/* Product Sections */}
-			{productCategories.map((category, index) => (
+			{productCategories.filter(cat => cat.products.some(p => !p.hidden && (p.stock === undefined || p.stock > 0))).map((category, index) => (
 				<Box key={category.id}>
 					<Box
 						sx={{
@@ -334,7 +334,7 @@ export default function ProductsMenuPage() {
 							</ScrollReveal>
 
 							<Grid container spacing={3}>
-								{category.products.map((product, pIdx) => (
+								{category.products.filter(p => !p.hidden && (p.stock === undefined || p.stock > 0)).map((product, pIdx) => (
 									<Grid
 										item
 										xs={12}

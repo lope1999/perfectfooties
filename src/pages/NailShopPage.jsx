@@ -79,7 +79,9 @@ export default function NailShopPage() {
   const { categories: retailCategories, loading, error } = useRetailCategories();
 
   const allProducts = retailCategories.flatMap((cat) =>
-    cat.products.map((p) => ({ ...p, category: cat.title, categoryId: cat.id }))
+    cat.products
+      .filter((p) => !p.hidden && (p.stock === undefined || p.stock > 0))
+      .map((p) => ({ ...p, category: cat.title, categoryId: cat.id }))
   );
 
   const getQty = (productId) => cart[productId] || 0;
@@ -270,7 +272,7 @@ export default function NailShopPage() {
       )}
 
       {/* Product Sections */}
-      {retailCategories.map((category, index) => (
+      {retailCategories.filter(cat => cat.products.some(p => !p.hidden && (p.stock === undefined || p.stock > 0))).map((category, index) => (
         <Box
           key={category.id}
           sx={{
@@ -311,7 +313,7 @@ export default function NailShopPage() {
             </ScrollReveal>
 
             <Grid container spacing={3}>
-              {category.products.map((product, pIdx) => {
+              {category.products.filter(p => !p.hidden && (p.stock === undefined || p.stock > 0)).map((product, pIdx) => {
                 const qty = getQty(product.id);
                 const outOfStock = product.stock <= 0;
                 const atMax = qty >= product.stock;
@@ -543,9 +545,10 @@ export default function NailShopPage() {
       ))}
 
       {/* Spacer for sticky bar */}
-      <Box sx={{ height: 100 }} />
+      {allProducts.length > 0 && <Box sx={{ height: 100 }} />}
 
       {/* Sticky Cart Bar */}
+      {allProducts.length > 0 && (
       <Box
         sx={{
           position: 'fixed',
@@ -613,6 +616,7 @@ export default function NailShopPage() {
           </Button>
         </Box>
       </Box>
+      )}
 
       {/* Success Modal */}
       <Dialog

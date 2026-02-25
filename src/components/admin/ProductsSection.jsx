@@ -26,6 +26,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AddIcon from '@mui/icons-material/Add';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ProductFormDialog from './ProductFormDialog';
 import {
   addProduct,
@@ -197,8 +199,11 @@ export default function ProductsSection({ collectionName, categories, loading, o
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {(cat.products || []).map((p) => (
-                    <TableRow key={p.id} hover>
+                  {(cat.products || []).map((p) => {
+                    const isHidden = !!p.hidden;
+                    const isOutOfStock = p.stock !== undefined && p.stock <= 0;
+                    return (
+                    <TableRow key={p.id} hover sx={isHidden ? { opacity: 0.5 } : undefined}>
                       <TableCell>
                         {p.image ? (
                           <Box
@@ -209,18 +214,46 @@ export default function ProductsSection({ collectionName, categories, loading, o
                           />
                         ) : '—'}
                       </TableCell>
-                      <TableCell sx={{ fontFamily }}>{p.name}</TableCell>
+                      <TableCell sx={{ fontFamily }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {p.name}
+                          {isHidden && <Chip label="Hidden" size="small" variant="outlined" color="default" />}
+                        </Box>
+                      </TableCell>
                       <TableCell sx={{ fontFamily }}>₦{(p.price || 0).toLocaleString()}</TableCell>
                       <TableCell>
                         {p.stock !== undefined ? (
-                          <Chip
-                            label={p.stock}
-                            size="small"
-                            color={p.stock <= 5 ? 'error' : p.stock <= 15 ? 'warning' : 'success'}
-                          />
+                          isOutOfStock ? (
+                            <Chip label="Out of stock" size="small" color="error" />
+                          ) : (
+                            <Chip
+                              label={p.stock}
+                              size="small"
+                              color={p.stock <= 5 ? 'error' : p.stock <= 15 ? 'warning' : 'success'}
+                            />
+                          )
                         ) : '—'}
                       </TableCell>
                       <TableCell>
+                        <IconButton
+                          size="small"
+                          onClick={async () => {
+                            setBusy(true);
+                            try {
+                              await updateProduct(collectionName, cat.id, p.id, { hidden: !isHidden });
+                              await onRefresh();
+                            } finally {
+                              setBusy(false);
+                            }
+                          }}
+                          title={isHidden ? 'Show on storefront' : 'Hide from storefront'}
+                        >
+                          {isHidden ? (
+                            <VisibilityOffIcon fontSize="small" sx={{ color: '#999' }} />
+                          ) : (
+                            <VisibilityIcon fontSize="small" sx={{ color: '#4A0E4E' }} />
+                          )}
+                        </IconButton>
                         <IconButton
                           size="small"
                           onClick={() => {
@@ -239,7 +272,8 @@ export default function ProductsSection({ collectionName, categories, loading, o
                         </IconButton>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                   {(cat.products || []).length === 0 && (
                     <TableRow>
                       <TableCell colSpan={5} sx={{ textAlign: 'center', fontFamily, py: 2, color: '#777' }}>

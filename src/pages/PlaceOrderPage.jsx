@@ -118,7 +118,9 @@ export default function PlaceOrderPage() {
   };
 
   const allProducts = productCategories.flatMap((cat) =>
-    cat.products.map((p) => ({ ...p, category: cat.title, categoryId: cat.id, readyMade: !!cat.readyMade }))
+    cat.products
+      .filter((p) => !p.hidden && (p.stock === undefined || p.stock > 0))
+      .map((p) => ({ ...p, category: cat.title, categoryId: cat.id, readyMade: !!cat.readyMade }))
   );
 
   const isReadyMade = (productId) => {
@@ -428,7 +430,7 @@ export default function PlaceOrderPage() {
 					)}
 
 					{/* Product Selection */}
-					{productCategories.map((category, catIdx) => (
+					{productCategories.filter(cat => cat.products.some(p => !p.hidden && (p.stock === undefined || p.stock > 0))).map((category, catIdx) => (
 						<ScrollReveal
 							key={category.id}
 							direction="up"
@@ -501,7 +503,7 @@ export default function PlaceOrderPage() {
 									</Box>
 								)}
 
-								{category.products.map((product) => {
+								{category.products.filter(p => !p.hidden && (p.stock === undefined || p.stock > 0)).map((product) => {
 									const isSelected = !!selectedProducts[product.id];
 									const formData =
 										selectedProducts[product.id] ||
@@ -1116,11 +1118,12 @@ export default function PlaceOrderPage() {
 					))}
 
 					{/* spacer so content doesn't hide behind sticky button */}
-					<Box sx={{ height: 80 }} />
+					{allProducts.length > 0 && <Box sx={{ height: 80 }} />}
 				</Container>
 			</Box>
 
 			{/* Sticky Confirm Button */}
+			{allProducts.length > 0 && (
 			<Box
 				sx={{
 					position: "fixed",
@@ -1186,6 +1189,7 @@ export default function PlaceOrderPage() {
 					</Button>
 				</Box>
 			</Box>
+			)}
 
 			{/* Success Modal */}
 			<Dialog
