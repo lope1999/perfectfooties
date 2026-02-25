@@ -29,7 +29,8 @@
       "WebFetch(domain:thelinuxcode.com)",
       "WebFetch(domain:dev.to)",
       "WebFetch(domain:medium.com)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(firebase:*)"
     ]
   }
 }

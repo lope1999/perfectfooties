@@ -74,7 +74,7 @@ export const productCategories = [
 				description:
 					"A modern take on the classic French tip with coloured tips, gems, and a clean glossy finish.",
 				price: 13000,
-				image: "/images/products/nude-set.jpg.jpg",
+				image: "/images/products/presson-4.JPG",
 				type: "Gel-X",
 				stock: 3,
 				length: "Short",
@@ -86,7 +86,7 @@ export const productCategories = [
 				description:
 					"Bright glossy chrome on a nude base  with bright contasting designs, giving light to my darkeness.",
 				price: 17000,
-				image: "/images/products/nude-set.jpg.jpg",
+				image: "/images/products/presson-3.jpg",
 				type: "Gel-X",
 				stock: 3,
 				length: "Short",
@@ -110,7 +110,7 @@ export const productCategories = [
 				description:
 					"Dreamy purple hues blended with holographic shimmer and soft lavender accents — a mystical, head-turning set.",
 				price: 17000,
-				image: "/images/products/freehand-art.jpg.jpg",
+				image: "/images/products/presson-2.jpg",
 				type: "Gel-X",
 				stock: 3,
 				length: "Long",
@@ -262,7 +262,7 @@ export const productCategories = [
 				description:
 					"Short hard gel / polygel press-ons with a neat, polished finish.",
 				price: 13000,
-				image: "/images/products/nude-set.jpg.jpg",
+				image: "/images/products/glossy-red.jpg.jpg",
 			},
 			{
 				id: "so-medium",
@@ -270,7 +270,7 @@ export const productCategories = [
 				description:
 					"Medium overlay press-ons. Durable and clean for everyday wear.",
 				price: 15000,
-				image: "/images/products/glossy-red.jpg.jpg",
+				image: "/images/products/marble-luxe.jpg",
 			},
 			{
 				id: "so-long",
@@ -280,14 +280,14 @@ export const productCategories = [
 				price: 16500,
 				image: "/images/products/custom-long.jpg.jpg",
 			},
-			{
-				id: "so-xl",
-				name: "Simple Overlay — XL",
-				description:
-					"Extra-long overlay press-ons. +₦1,000 for extended length.",
-				price: 18000,
-				image: "/images/products/freehand-art.jpg.jpg",
-			},
+			// {
+			// 	id: "so-xl",
+			// 	name: "Simple Overlay — XL",
+			// 	description:
+			// 		"Extra-long overlay press-ons. +₦1,000 for extended length.",
+			// 	price: 18000,
+			// 	image: "/images/products/freehand-art.jpg.jpg",
+			// },
 		],
 	},
 	{
@@ -319,7 +319,7 @@ export const productCategories = [
 				description:
 					"Long luxury polygel press-ons. Maximum detail and style.",
 				price: 20000,
-				image: "/images/products/custom-long.jpg.jpg",
+				image: "/images/products/hardgel-extension.PNG",
 			},
 			{
 				id: "lo-xl",
@@ -327,7 +327,7 @@ export const productCategories = [
 				description:
 					"Extra-long luxury overlay press-ons — the ultimate statement set.",
 				price: 25000,
-				image: "/images/products/nude-set.jpg.jpg",
+				image: "/images/products/complex-overlay.JPG",
 			},
 		],
 	},

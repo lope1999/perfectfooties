@@ -123,7 +123,7 @@ export default function OurStoryPage() {
 						<ScrollReveal direction="right" delay={0.2}>
 							<Box
 								component="img"
-								src="/images/story/founder.jpg.jpg"
+								src="/images/story/founders-2.jpeg"
 								alt="Woman planning with laptop"
 								sx={{
 									width: "100%",

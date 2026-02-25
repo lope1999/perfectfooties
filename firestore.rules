@@ -9,7 +9,7 @@ service cloud.firestore {
 
     // --- Users ---
     match /users/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
+      allow read, update: if request.auth != null && request.auth.uid == uid;
       allow create: if request.auth != null && request.auth.uid == uid;
 
       // Orders subcollection

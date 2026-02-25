@@ -6,3 +6,4 @@ dist
 .env.*
 firebase-debug.log
 .firebase/
+functions/node_modules

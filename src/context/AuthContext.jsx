@@ -13,31 +13,36 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        // Force-refresh profile to pick up Google account changes
-        await firebaseUser.reload();
-        setUser(auth.currentUser);
+      try {
+        if (firebaseUser) {
+          await firebaseUser.reload().catch(() => {});
+          setUser(auth.currentUser);
 
-        const userRef = doc(db, 'users', firebaseUser.uid);
-        const snap = await getDoc(userRef);
-        if (!snap.exists()) {
-          await setDoc(userRef, {
-            displayName: firebaseUser.displayName || '',
-            email: firebaseUser.email || '',
-            photoURL: firebaseUser.photoURL || '',
-            createdAt: serverTimestamp(),
-          });
+          const userRef = doc(db, 'users', firebaseUser.uid);
+          const snap = await getDoc(userRef);
+          if (!snap.exists()) {
+            await setDoc(userRef, {
+              displayName: firebaseUser.displayName || '',
+              email: firebaseUser.email || '',
+              photoURL: firebaseUser.photoURL || '',
+              createdAt: serverTimestamp(),
+            });
+          } else {
+            // Sync latest profile photo to Firestore (fire-and-forget)
+            updateDoc(userRef, {
+              displayName: firebaseUser.displayName || '',
+              photoURL: firebaseUser.photoURL || '',
+            }).catch(() => {});
+          }
         } else {
-          // Sync latest profile photo to Firestore
-          await updateDoc(userRef, {
-            displayName: firebaseUser.displayName || '',
-            photoURL: firebaseUser.photoURL || '',
-          });
+          setUser(null);
         }
-      } else {
-        setUser(null);
+      } catch (err) {
+        console.error('Auth state handler error:', err);
+        if (firebaseUser) setUser(auth.currentUser);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
     return unsubscribe;
   }, []);

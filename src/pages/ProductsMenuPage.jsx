@@ -637,14 +637,14 @@ export default function ProductsMenuPage() {
                             flexDirection: "column",
                             overflow: "hidden",
                             cursor: oos ? 'default' : 'pointer',
-                            opacity: oos ? 0.55 : 1,
-                            filter: oos ? 'grayscale(40%)' : 'none',
                             transition:
-                              "transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease",
+                              "transform 0.3s ease, box-shadow 0.3s ease",
+                            '& .hover-prompt': { opacity: 0, transition: 'opacity 0.2s ease' },
                             "&:hover": oos ? {} : {
                               transform: "translateY(-6px)",
                               boxShadow:
                                 "0 12px 32px rgba(233,30,140,0.15)",
+                              '& .hover-prompt': { opacity: 1 },
                             },
                           }}
                         >
@@ -657,6 +657,9 @@ export default function ProductsMenuPage() {
                                 width: "100%",
                                 height: 160,
                                 objectFit: "cover",
+                                opacity: oos ? 0.5 : 1,
+                                filter: oos ? 'grayscale(40%)' : 'none',
+                                transition: 'opacity 0.3s ease, filter 0.3s ease',
                               }}
                             />
                             {product.type && (
@@ -718,6 +721,38 @@ export default function ProductsMenuPage() {
                                   }}
                                 >
                                   Out of Stock
+                                </Typography>
+                              </Box>
+                            )}
+
+                            {/* Click to view hover prompt */}
+                            {!oos && (
+                              <Box
+                                className="hover-prompt"
+                                sx={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  backgroundColor: 'rgba(74, 14, 78, 0.35)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  pointerEvents: 'none',
+                                }}
+                              >
+                                <Typography
+                                  sx={{
+                                    color: '#fff',
+                                    fontFamily: '"Georgia", serif',
+                                    fontWeight: 700,
+                                    fontSize: '0.85rem',
+                                    letterSpacing: 0.5,
+                                    textTransform: 'uppercase',
+                                  }}
+                                >
+                                  Click to View
                                 </Typography>
                               </Box>
                             )}
@@ -820,7 +855,7 @@ export default function ProductsMenuPage() {
                               )}
                             </Box>
 
-                            {/* Notify Me button for out-of-stock */}
+                            {/* Notify Me button for out-of-stock — disabled until EmailJS plan upgrade
                             {oos && (
                               <Button
                                 size="small"
@@ -841,6 +876,7 @@ export default function ProductsMenuPage() {
                                 Notify Me
                               </Button>
                             )}
+                            */}
                           </CardContent>
                         </Card>
                       </ScrollReveal>
@@ -891,7 +927,7 @@ export default function ProductsMenuPage() {
         </Alert>
       </Snackbar>
 
-      {/* Notify Me Dialog */}
+      {/* Notify Me Dialog — disabled until EmailJS plan upgrade
       <Dialog
         open={!!notifyDialog}
         onClose={() => setNotifyDialog(null)}
@@ -993,6 +1029,7 @@ export default function ProductsMenuPage() {
           )}
         </DialogActions>
       </Dialog>
+      */}
     </Box>
   );
 }

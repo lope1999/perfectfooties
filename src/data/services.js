@@ -28,7 +28,7 @@ export const serviceCategories = [
 				description:
 					"Custom nail art designs on gel extensions — for my soft, minimalist girlies.",
 				price: 16000,
-				image: "/images/services/custom-art.jpg.jpg",
+				image: "/images/services/glossy-red.jpg.jpg",
 			},
 			{
 				id: "gelx-ombre",
@@ -53,7 +53,7 @@ export const serviceCategories = [
 				description:
 					"Strengthening hard gel applied over your natural nails.",
 				price: 13000,
-				image: "/images/services/simple-overlay.jpg.jpg",
+				image: "/images/services/overlay-nails.jpg.jpg",
 			},
 			{
 				id: "hardgel-extension",
@@ -61,7 +61,7 @@ export const serviceCategories = [
 				description:
 					"Full hard gel nail extensions sculpted to your desired shape.",
 				price: 16000,
-				image: "/images/services/overlay2.PNG",
+				image: "/images/services/hardgel-extension.PNG",
 			},
 			{
 				id: "hardgel-art",
@@ -69,7 +69,7 @@ export const serviceCategories = [
 				description:
 					"Hard gel extensions with custom art and embellishments- minimalist to bold.",
 				price: 20000,
-				image: "/images/services/complex-overlay.jpg",
+				image: "/images/services/complex-overlay.JPG",
 			},
 			{
 				id: "hardgel-refill",
