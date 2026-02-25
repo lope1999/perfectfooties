@@ -16,6 +16,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import CloseIcon from '@mui/icons-material/Close';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -29,6 +30,7 @@ const sections = [
   { key: 'appointments', label: 'Appointments', icon: <EventNoteIcon /> },
   { key: 'pressons', label: 'Press-On Products', icon: <StorefrontIcon /> },
   { key: 'retail', label: 'Retail Products', icon: <InventoryIcon /> },
+  { key: 'giftcards', label: 'Gift Cards', icon: <CardGiftcardIcon /> },
 ];
 
 export default function AdminSidebar({ active, onSelect, mobileOpen, onMobileClose, collapsed, onToggleCollapse }) {

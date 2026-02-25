@@ -17,6 +17,8 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { decrementStockBatch } from '../lib/stockService';
 import { saveOrder } from '../lib/orderService';
+import { redeemGiftCard } from '../lib/giftCardService';
+import GiftCardRedeemInput from '../components/GiftCardRedeemInput';
 
 function formatNaira(amount) {
   return `\u20A6${amount.toLocaleString()}`;
@@ -34,6 +36,7 @@ export default function CartPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [appliedGiftCard, setAppliedGiftCard] = useState(null);
   const {
     cart,
     removeService,
@@ -47,6 +50,8 @@ export default function CartPage() {
   const { services, products, pressOns } = cart.items;
   const hasItems = services.length > 0 || products.length > 0 || pressOns.length > 0;
   const total = getCartTotal();
+  const giftCardDiscount = appliedGiftCard ? Math.min(appliedGiftCard.balance, total) : 0;
+  const finalTotal = total - giftCardDiscount;
 
   const handleCheckout = async () => {
     setCheckoutLoading(true);
@@ -72,6 +77,41 @@ export default function CartPage() {
       }
     } catch (err) {
       console.error('Stock decrement failed:', err);
+    }
+
+    // Redeem gift card if applied
+    let orderId = null;
+    if (user) {
+      const allItems = [
+        ...services.map((s) => ({ kind: 'service', name: s.name, price: s.price, quantity: 1 })),
+        ...products.map((p) => ({ kind: 'retail', name: p.name, price: p.price, quantity: p.quantity })),
+        ...pressOns.map((p) => ({ kind: 'pressOn', name: p.name, price: p.price, quantity: p.quantity || 1 })),
+      ];
+      try {
+        const orderData = {
+          type: 'mixed',
+          total: finalTotal,
+          customerName: user.displayName || '',
+          email: user.email || '',
+          items: allItems,
+        };
+        if (appliedGiftCard) {
+          orderData.giftCardCode = appliedGiftCard.code;
+          orderData.giftCardDiscount = giftCardDiscount;
+        }
+        const docRef = await saveOrder(user.uid, orderData);
+        orderId = docRef?.id || null;
+      } catch {
+        // order save failed — continue with checkout
+      }
+    }
+
+    if (appliedGiftCard && giftCardDiscount > 0) {
+      try {
+        await redeemGiftCard(appliedGiftCard.code, giftCardDiscount, orderId);
+      } catch (err) {
+        console.error('Gift card redemption failed:', err);
+      }
     }
 
     setCheckoutLoading(false);
@@ -119,28 +159,20 @@ export default function CartPage() {
       lines.push('');
     }
 
-    const message = `Hi! I'd like to place a combined order.\n\n${lines.join('\n')}\nEstimated Total: ${formatNaira(total)}\n\nPlease confirm availability and payment details. Thank you!`;
+    let totalLine = `Estimated Total: ${formatNaira(total)}`;
+    if (appliedGiftCard && giftCardDiscount > 0) {
+      totalLine += `\nGift Card Applied: ${appliedGiftCard.code} \u2014 Discount: ${formatNaira(giftCardDiscount)}`;
+      totalLine += `\nAmount Due: ${formatNaira(finalTotal)}`;
+    }
+
+    const message = `Hi! I'd like to place a combined order.\n\n${lines.join('\n')}\n${totalLine}\n\nPlease confirm availability and payment details. Thank you!`;
     const encoded = encodeURIComponent(message);
     window.open(
       `https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`,
       '_blank'
     );
 
-    if (user) {
-      const allItems = [
-        ...services.map((s) => ({ kind: 'service', name: s.name, price: s.price, quantity: 1 })),
-        ...products.map((p) => ({ kind: 'retail', name: p.name, price: p.price, quantity: p.quantity })),
-        ...pressOns.map((p) => ({ kind: 'pressOn', name: p.name, price: p.price, quantity: p.quantity || 1 })),
-      ];
-      saveOrder(user.uid, {
-        type: 'mixed',
-        total,
-        customerName: user.displayName || '',
-        email: user.email || '',
-        items: allItems,
-      }).catch(() => {});
-    }
-
+    setAppliedGiftCard(null);
     clearCart();
     navigate('/');
   };
@@ -455,6 +487,13 @@ export default function CartPage() {
                 <Divider sx={{ borderColor: '#F0C0D0', mt: 2 }} />
               </Box>
             )}
+
+            {/* Gift Card Redeem Input */}
+            <GiftCardRedeemInput
+              appliedCard={appliedGiftCard}
+              onApplied={setAppliedGiftCard}
+              onRemoved={() => setAppliedGiftCard(null)}
+            />
           </>
         )}
       </Container>
@@ -486,16 +525,52 @@ export default function CartPage() {
               gap: 1,
             }}
           >
-            <Typography
-              sx={{
-                fontFamily: '"Georgia", serif',
-                fontWeight: 700,
-                fontSize: '1.15rem',
-                color: '#000',
-              }}
-            >
-              Total: <span style={{ color: '#E91E8C' }}>{formatNaira(total)}</span>
-            </Typography>
+            <Box>
+              {appliedGiftCard && giftCardDiscount > 0 ? (
+                <>
+                  <Typography
+                    sx={{
+                      fontFamily: '"Georgia", serif',
+                      fontSize: '0.85rem',
+                      color: '#777',
+                      textDecoration: 'line-through',
+                    }}
+                  >
+                    {formatNaira(total)}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontFamily: '"Georgia", serif',
+                      fontSize: '0.78rem',
+                      color: '#2e7d32',
+                    }}
+                  >
+                    Gift card: -{formatNaira(giftCardDiscount)}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontFamily: '"Georgia", serif',
+                      fontWeight: 700,
+                      fontSize: '1.15rem',
+                      color: '#000',
+                    }}
+                  >
+                    Total: <span style={{ color: '#E91E8C' }}>{formatNaira(finalTotal)}</span>
+                  </Typography>
+                </>
+              ) : (
+                <Typography
+                  sx={{
+                    fontFamily: '"Georgia", serif',
+                    fontWeight: 700,
+                    fontSize: '1.15rem',
+                    color: '#000',
+                  }}
+                >
+                  Total: <span style={{ color: '#E91E8C' }}>{formatNaira(total)}</span>
+                </Typography>
+              )}
+            </Box>
             <Button
               onClick={handleCheckout}
               disabled={checkoutLoading}

@@ -20,6 +20,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { NailLogo } from "../data/svg.jsx";
 import CartIcon from "./CartIcon";
+import WishlistIcon from "./WishlistIcon";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
 import { useAuth } from "../context/AuthContext";
@@ -42,8 +43,8 @@ const navButtonSx = {
 };
 
 const navItems = [
-	{ label: "Service Menu", path: "/services" },
-	{ label: "Products Menu", path: "/products" },
+	{ label: "Nail Services Menu", path: "/services" },
+	{ label: "Press-ons Menu", path: "/products" },
 	{ label: "Contact Us", path: "contact" },
 	{ label: "Testimonials", path: "/testimonials" },
 	{ label: "Our Story", path: "/our-story" },
@@ -160,6 +161,7 @@ export default function Navbar() {
 					{/* Right — Cart + User + Social Icons (desktop) + Hamburger (mobile) */}
 					<Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
 						<UserMenu />
+						<WishlistIcon />
 						<CartIcon />
 						<NotificationBell />
 
@@ -303,6 +305,25 @@ export default function Navbar() {
 					>
 						<ListItemText
 							primary="Cart"
+							primaryTypographyProps={{
+								fontFamily: '"Georgia", serif',
+								fontWeight: 600,
+								color: "#000",
+							}}
+						/>
+					</ListItemButton>
+					<ListItemButton
+						onClick={() => {
+							setDrawerOpen(false);
+							navigate("/account#wishlist");
+						}}
+						sx={{
+							py: 1.5,
+							"&:hover": { backgroundColor: "#FCE4EC" },
+						}}
+					>
+						<ListItemText
+							primary="Wishlist"
 							primaryTypographyProps={{
 								fontFamily: '"Georgia", serif',
 								fontWeight: 600,

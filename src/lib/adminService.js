@@ -14,6 +14,12 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
+import {
+  validateCollectionName,
+  sanitizeString,
+  validateNumber,
+  validateOrderStatus,
+} from './validate';
 
 // ─── Orders ─────────────────────────────────────────────
 
@@ -34,17 +40,23 @@ export async function fetchAllOrders() {
 }
 
 export async function createAdminOrder(data) {
+  const customerName = sanitizeString(data.customerName, 200);
+  const email = sanitizeString(data.email, 200);
+  const phone = sanitizeString(data.phone, 50);
+  const notes = sanitizeString(data.notes, 2000);
+  const total = validateNumber(data.total || 0, { min: 0, label: 'total' });
+
   const colRef = collection(db, 'users', 'admin-legacy', 'orders');
   const orderData = {
     uid: 'admin-legacy',
-    customerName: data.customerName || '',
-    email: data.email || '',
-    phone: data.phone || '',
+    customerName,
+    email,
+    phone,
     status: data.status || 'pending',
-    total: data.total || 0,
-    notes: data.notes || '',
+    total,
+    notes,
     type: data.type || '',
-    items: data.items || [],
+    items: Array.isArray(data.items) ? data.items.slice(0, 50) : [],
     createdAt: data.createdAt ? Timestamp.fromDate(data.createdAt) : serverTimestamp(),
   };
   if (data.appointmentDate) {
@@ -54,6 +66,8 @@ export async function createAdminOrder(data) {
 }
 
 export async function updateOrderStatus(uid, orderId, status) {
+  const kind = status === 'no-show' ? 'appointment' : 'order';
+  validateOrderStatus(status, kind);
   const ref = doc(db, 'users', uid, 'orders', orderId);
   return updateDoc(ref, { status });
 }
@@ -69,17 +83,20 @@ export async function deleteOrder(uid, orderId) {
 }
 
 export async function addOrderNote(uid, orderId, text) {
+  const sanitized = sanitizeString(text, 2000);
+  if (!sanitized) throw new Error('Note text is required');
   const ref = doc(db, 'users', uid, 'orders', orderId);
   const snap = await getDoc(ref);
   const existing = snap.data()?.adminNotes || [];
   return updateDoc(ref, {
-    adminNotes: [...existing, { text, timestamp: new Date().toISOString() }],
+    adminNotes: [...existing, { text: sanitized, timestamp: new Date().toISOString() }],
   });
 }
 
 // ─── Categories ─────────────────────────────────────────
 
 export async function fetchCategories(collectionName) {
+  validateCollectionName(collectionName);
   const snap = await getDocs(collection(db, collectionName));
   const cats = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   // Sort client-side so docs without 'order' still appear (at the end)
@@ -87,29 +104,46 @@ export async function fetchCategories(collectionName) {
   return cats;
 }
 
-export async function seedCategories(collectionName, staticData) {
+/**
+ * Seed Firestore from static data if a collection is empty, and return
+ * the category data so callers don't need a second read.
+ *
+ * @returns {Promise<Array>} The category documents (already sorted).
+ */
+export async function seedAndFetchCategories(collectionName, staticData) {
+  validateCollectionName(collectionName);
   const snap = await getDocs(collection(db, collectionName));
+
   if (!snap.empty) {
-    // Collection has data — patch any docs missing the 'order' field
+    // Patch docs missing the 'order' field (fire-and-forget, don't block)
+    const patches = [];
     let i = 0;
     for (const d of snap.docs) {
       if (d.data().order === undefined) {
-        await updateDoc(d.ref, { order: i });
+        patches.push(updateDoc(d.ref, { order: i }));
       }
       i++;
     }
-    return false;
+    if (patches.length > 0) Promise.all(patches).catch(() => {});
+
+    const cats = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    cats.sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity));
+    return cats;
   }
+
   // Collection is empty — seed from static data
-  for (let i = 0; i < staticData.length; i++) {
-    const { id, ...rest } = staticData[i];
-    const ref = doc(db, collectionName, id);
-    await setDoc(ref, { ...rest, order: i });
-  }
-  return true;
+  await Promise.all(
+    staticData.map(({ id: docId, ...rest }, i) =>
+      setDoc(doc(db, collectionName, docId), { ...rest, order: i })
+    )
+  );
+
+  // Return the static data as the result (matches shape of fetched docs)
+  return staticData.map(({ id: docId, ...rest }, i) => ({ id: docId, ...rest, order: i }));
 }
 
 export async function addCategory(collectionName, id, data) {
+  validateCollectionName(collectionName);
   const ref = doc(db, collectionName, id);
   // Auto-assign order to end if not provided
   if (data.order === undefined) {
@@ -120,11 +154,13 @@ export async function addCategory(collectionName, id, data) {
 }
 
 export async function updateCategory(collectionName, id, updates) {
+  validateCollectionName(collectionName);
   const ref = doc(db, collectionName, id);
   return updateDoc(ref, updates);
 }
 
 export async function deleteCategory(collectionName, id) {
+  validateCollectionName(collectionName);
   const ref = doc(db, collectionName, id);
   return deleteDoc(ref);
 }
@@ -132,6 +168,7 @@ export async function deleteCategory(collectionName, id) {
 // ─── Products (nested array inside category docs) ───────
 
 export async function addProduct(collectionName, categoryId, product) {
+  validateCollectionName(collectionName);
   const ref = doc(db, collectionName, categoryId);
   await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(ref);
@@ -143,6 +180,7 @@ export async function addProduct(collectionName, categoryId, product) {
 }
 
 export async function updateProduct(collectionName, categoryId, productId, updates) {
+  validateCollectionName(collectionName);
   const ref = doc(db, collectionName, categoryId);
   await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(ref);
@@ -155,6 +193,7 @@ export async function updateProduct(collectionName, categoryId, productId, updat
 }
 
 export async function deleteProduct(collectionName, categoryId, productId) {
+  validateCollectionName(collectionName);
   const ref = doc(db, collectionName, categoryId);
   await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(ref);

@@ -13,12 +13,17 @@ import {
   DialogContent,
   DialogActions,
   Divider,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import EmailIcon from '@mui/icons-material/Email';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import SearchIcon from '@mui/icons-material/Search';
 import ScrollReveal from '../components/ScrollReveal';
+import { useAuth } from '../context/AuthContext';
+import { createGiftCard, lookupGiftCard, validateCardForRedemption } from '../lib/giftCardService';
 
 const giftCardTypes = [
   {
@@ -75,6 +80,7 @@ function formatNaira(amount) {
 }
 
 export default function GiftCardPage() {
+  const { user } = useAuth();
   const [selectedType, setSelectedType] = useState(null);
   const [formData, setFormData] = useState({
     giftedTo: '',
@@ -82,6 +88,13 @@ export default function GiftCardPage() {
   });
   const [modalOpen, setModalOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState('');
+
+  // Balance checker state
+  const [balanceCode, setBalanceCode] = useState('');
+  const [balanceLoading, setBalanceLoading] = useState(false);
+  const [balanceResult, setBalanceResult] = useState(null); // { card } or { error }
 
   const handleBuyClick = (type) => {
     setSelectedType(type);
@@ -89,17 +102,56 @@ export default function GiftCardPage() {
     setModalOpen(true);
   };
 
-  const handleSubmit = () => {
-    setModalOpen(false);
-    setSuccessOpen(true);
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      const { code } = await createGiftCard({
+        type: selectedType.id,
+        giftedTo: formData.giftedTo.trim(),
+        amount: Number(formData.amount),
+        purchasedBy: user
+          ? { uid: user.uid, name: user.displayName || '', email: user.email || '' }
+          : { uid: null, name: 'Guest', email: '' },
+      });
+      setGeneratedCode(code);
+      setModalOpen(false);
+      setSuccessOpen(true);
+    } catch (err) {
+      console.error('Gift card creation error:', err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleCompleteOrder = () => {
     setSuccessOpen(false);
     const typeLabel = selectedType?.id === 'electronic' ? 'E-Gift Card (Digital)' : 'Physical Gift Card';
-    const message = `Hi! I'd like to purchase a Chizzystyles Gift Card.\n\nType: ${typeLabel}\nGifted To: ${formData.giftedTo}\nAmount: ${formatNaira(formData.amount)}\nValidity: 1 year from purchase date\n\nPlease confirm and process this gift card order. Thank you!`;
+    const message = `Hi! I'd like to purchase a Chizzystyles Gift Card.\n\nType: ${typeLabel}\nGifted To: ${formData.giftedTo}\nAmount: ${formatNaira(formData.amount)}\nGift Card Code: ${generatedCode}\nValidity: 1 year from purchase date\n\nPlease confirm and process this gift card order. Thank you!`;
     const encoded = encodeURIComponent(message);
     window.open(`https://wa.me/message/CHLIAKCZOF4TP1?text=${encoded}`, '_blank');
+  };
+
+  const handleBalanceCheck = async () => {
+    if (!balanceCode.trim()) return;
+    setBalanceLoading(true);
+    setBalanceResult(null);
+    try {
+      const card = await lookupGiftCard(balanceCode.trim());
+      if (!card) {
+        setBalanceResult({ error: 'Gift card not found. Please check the code and try again.' });
+      } else if (card.status === 'pending') {
+        setBalanceResult({ error: 'This gift card has not been activated yet. Please contact us for assistance.' });
+      } else if (card.status === 'expired') {
+        setBalanceResult({ error: 'This gift card has expired.' });
+      } else {
+        setBalanceResult({ card });
+      }
+    } catch (err) {
+      console.error('Balance check error:', err);
+      setBalanceResult({ error: 'Something went wrong. Please try again.' });
+    } finally {
+      setBalanceLoading(false);
+    }
   };
 
   const isFormValid = formData.giftedTo.trim() && formData.amount && Number(formData.amount) > 0;
@@ -375,10 +427,123 @@ export default function GiftCardPage() {
         </Container>
       </Box>
 
+      {/* Check Gift Card Balance */}
+      <Box sx={{ py: 6, backgroundColor: '#fff' }}>
+        <Container maxWidth="sm">
+          <ScrollReveal direction="up">
+            <Typography
+              variant="h5"
+              sx={{
+                fontFamily: '"Georgia", serif',
+                fontWeight: 700,
+                color: '#000',
+                textAlign: 'center',
+                mb: 1,
+              }}
+            >
+              Check Gift Card Balance
+            </Typography>
+            <Typography
+              sx={{
+                textAlign: 'center',
+                color: '#777',
+                mb: 4,
+                fontSize: '0.95rem',
+              }}
+            >
+              Enter your gift card code to check remaining balance and expiry.
+            </Typography>
+          </ScrollReveal>
+          <ScrollReveal direction="up" delay={0.1}>
+            <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+              <TextField
+                fullWidth
+                placeholder="Enter gift card code"
+                value={balanceCode}
+                onChange={(e) => {
+                  setBalanceCode(e.target.value.toUpperCase());
+                  setBalanceResult(null);
+                }}
+                size="small"
+                inputProps={{ style: { letterSpacing: '2px', fontWeight: 600 } }}
+                sx={textFieldSx}
+              />
+              <Button
+                onClick={handleBalanceCheck}
+                disabled={!balanceCode.trim() || balanceLoading}
+                sx={{
+                  ...buttonSx,
+                  minWidth: 130,
+                  px: 3,
+                }}
+                startIcon={balanceLoading ? <CircularProgress size={18} /> : <SearchIcon />}
+              >
+                {balanceLoading ? '' : 'Check'}
+              </Button>
+            </Box>
+            {balanceResult?.error && (
+              <Alert severity="error" sx={{ borderRadius: 2, fontFamily: '"Georgia", serif' }}>
+                {balanceResult.error}
+              </Alert>
+            )}
+            {balanceResult?.card && (
+              <Box
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  border: '1px solid #F0C0D0',
+                  backgroundColor: '#FFF0F5',
+                  textAlign: 'center',
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontFamily: '"Georgia", serif',
+                    fontWeight: 700,
+                    fontSize: '1rem',
+                    color: '#333',
+                    mb: 1,
+                  }}
+                >
+                  Gift Card: {balanceResult.card.code}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontFamily: '"Georgia", serif',
+                    fontWeight: 700,
+                    fontSize: '2rem',
+                    color: '#E91E8C',
+                    mb: 1,
+                  }}
+                >
+                  {formatNaira(balanceResult.card.balance)}
+                </Typography>
+                <Typography sx={{ color: '#777', fontSize: '0.85rem', mb: 0.5 }}>
+                  Original amount: {formatNaira(balanceResult.card.amount)}
+                </Typography>
+                <Typography sx={{ color: '#777', fontSize: '0.85rem', mb: 0.5 }}>
+                  Status: <span style={{ fontWeight: 600, color: balanceResult.card.status === 'active' ? '#2e7d32' : '#E91E8C' }}>
+                    {balanceResult.card.status.replace('_', ' ')}
+                  </span>
+                </Typography>
+                {balanceResult.card.expiresAt && (
+                  <Typography sx={{ color: '#777', fontSize: '0.85rem' }}>
+                    Expires: {(balanceResult.card.expiresAt.toDate
+                      ? balanceResult.card.expiresAt.toDate()
+                      : new Date(balanceResult.card.expiresAt)
+                    ).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </Typography>
+                )}
+              </Box>
+            )}
+          </ScrollReveal>
+        </Container>
+      </Box>
+
       {/* Purchase Modal */}
       <Dialog
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => !submitting && setModalOpen(false)}
         maxWidth="sm"
         fullWidth
         PaperProps={{
@@ -496,12 +661,12 @@ export default function GiftCardPage() {
                 fullWidth
                 sx={{
                   ...buttonSx,
-                  opacity: isFormValid ? 1 : 0.5,
+                  opacity: isFormValid && !submitting ? 1 : 0.5,
                 }}
                 onClick={handleSubmit}
-                disabled={!isFormValid}
+                disabled={!isFormValid || submitting}
               >
-                Submit Order
+                {submitting ? <CircularProgress size={22} /> : 'Submit Order'}
               </Button>
             </Box>
           </>
@@ -531,6 +696,35 @@ export default function GiftCardPage() {
           </Typography>
         </DialogTitle>
         <DialogContent>
+          {generatedCode && (
+            <Box
+              sx={{
+                backgroundColor: '#FFF0F5',
+                borderRadius: 2,
+                p: 2,
+                my: 2,
+                border: '1px dashed #E91E8C',
+              }}
+            >
+              <Typography sx={{ color: '#777', fontSize: '0.8rem', mb: 0.5 }}>
+                Gift Card Code
+              </Typography>
+              <Typography
+                sx={{
+                  fontFamily: 'monospace',
+                  fontWeight: 700,
+                  fontSize: '1.5rem',
+                  color: '#E91E8C',
+                  letterSpacing: '3px',
+                }}
+              >
+                {generatedCode}
+              </Typography>
+              <Typography sx={{ color: '#999', fontSize: '0.75rem', mt: 0.5 }}>
+                Share this code with the recipient
+              </Typography>
+            </Box>
+          )}
           <Typography sx={{ color: '#555', mt: 1, lineHeight: 1.7 }}>
             We will navigate you to WhatsApp to confirm your gift card order,
             payment, and delivery details.

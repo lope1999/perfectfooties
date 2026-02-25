@@ -7,7 +7,9 @@ import DashboardSection from '../components/admin/DashboardSection';
 import OrdersSection from '../components/admin/OrdersSection';
 import AppointmentsSection from '../components/admin/AppointmentsSection';
 import ProductsSection from '../components/admin/ProductsSection';
-import { fetchAllOrders, fetchCategories, seedCategories } from '../lib/adminService';
+import GiftCardsSection from '../components/admin/GiftCardsSection';
+import { fetchAllOrders, seedAndFetchCategories } from '../lib/adminService';
+import { fetchAllGiftCards } from '../lib/giftCardService';
 import { productCategories as staticPressOns } from '../data/products';
 import { retailCategories as staticRetail } from '../data/retailProducts';
 
@@ -18,6 +20,7 @@ export default function AdminPage() {
   const [orders, setOrders] = useState([]);
   const [pressOnCategories, setPressOnCategories] = useState([]);
   const [retailCategories, setRetailCategories] = useState([]);
+  const [giftCards, setGiftCards] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const theme = useTheme();
@@ -26,20 +29,12 @@ export default function AdminPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      // Seed Firestore from static data if collections are empty (one-time)
-      try {
-        await Promise.all([
-          seedCategories('productCategories', staticPressOns),
-          seedCategories('retailCategories', staticRetail),
-        ]);
-      } catch (seedErr) {
-        console.warn('Category seed skipped:', seedErr);
-      }
-
-      const [o, pc, rc] = await Promise.allSettled([
+      // Seed + fetch categories in one read each, all requests in parallel
+      const [o, pc, rc, gc] = await Promise.allSettled([
         fetchAllOrders(),
-        fetchCategories('productCategories'),
-        fetchCategories('retailCategories'),
+        seedAndFetchCategories('productCategories', staticPressOns),
+        seedAndFetchCategories('retailCategories', staticRetail),
+        fetchAllGiftCards(),
       ]);
 
       if (o.status === 'fulfilled') {
@@ -53,6 +48,7 @@ export default function AdminPage() {
       const retail = rc.status === 'fulfilled' ? rc.value : [];
       setPressOnCategories(pressOns.length > 0 ? pressOns : staticPressOns);
       setRetailCategories(retail.length > 0 ? retail : staticRetail);
+      setGiftCards(gc.status === 'fulfilled' ? gc.value : []);
     } catch (err) {
       console.error('Admin data load error:', err);
       setPressOnCategories(staticPressOns);
@@ -99,6 +95,14 @@ export default function AdminPage() {
             loading={loading}
             onRefresh={loadData}
             type="retail"
+          />
+        );
+      case 'giftcards':
+        return (
+          <GiftCardsSection
+            giftCards={giftCards}
+            loading={loading}
+            onRefresh={loadData}
           />
         );
       default:

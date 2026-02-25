@@ -104,9 +104,9 @@ export default function Footer() {
 							>
 								Reschedule Appointment
 							</MuiLink>
-							<MuiLink sx={linkSx} onClick={() => navigate("/shop")}>
+							{/* <MuiLink sx={linkSx} onClick={() => navigate("/shop")}>
 								Shop
-							</MuiLink>
+							</MuiLink> */}
 							<MuiLink
 								sx={linkSx}
 								onClick={() => navigate("/gift-cards")}
@@ -207,25 +207,41 @@ export default function Footer() {
 							textAlign: "center",
 						}}
 					>
-						<Box sx={{ display: "flex", justifyContent: "center", gap: 1, mb: 2 }}>
+						<Box
+							sx={{
+								display: "flex",
+								justifyContent: "center",
+								gap: 1,
+								mb: 2,
+							}}
+						>
 							<IconButton
 								href="https://www.instagram.com/chizzys_styles?igsh=YTJ6bzU3ZW82cDFo&utm_source=qr"
 								target="_blank"
-								sx={{ color: "#4A0E4E", "&:hover": { color: "#E91E8C" } }}
+								sx={{
+									color: "#4A0E4E",
+									"&:hover": { color: "#E91E8C" },
+								}}
 							>
 								<InstagramIcon />
 							</IconButton>
 							<IconButton
 								href="https://tiktok.com/@chizzysstyles"
 								target="_blank"
-								sx={{ color: "#4A0E4E", "&:hover": { color: "#E91E8C" } }}
+								sx={{
+									color: "#4A0E4E",
+									"&:hover": { color: "#E91E8C" },
+								}}
 							>
 								<MusicNoteIcon />
 							</IconButton>
 							<IconButton
 								href="https://youtube.com/@chizzysstyles1505?si=pWaiuGVL8D93bQ_i"
 								target="_blank"
-								sx={{ color: "#4A0E4E", "&:hover": { color: "#E91E8C" } }}
+								sx={{
+									color: "#4A0E4E",
+									"&:hover": { color: "#E91E8C" },
+								}}
 							>
 								<YouTubeIcon />
 							</IconButton>
@@ -238,7 +254,10 @@ export default function Footer() {
 			</Box>
 
 			<TermsModal open={termsOpen} onClose={() => setTermsOpen(false)} />
-			<PricingTable open={pricingOpen} onClose={() => setPricingOpen(false)} />
+			<PricingTable
+				open={pricingOpen}
+				onClose={() => setPricingOpen(false)}
+			/>
 		</>
   );
 }

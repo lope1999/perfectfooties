@@ -15,18 +15,22 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  IconButton,
 } from '@mui/material';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import EventNoteIcon from '@mui/icons-material/EventNote';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import LogoutIcon from '@mui/icons-material/Logout';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
 import { fetchOrders } from '../lib/orderService';
-import { saveTestimonial, hasReviewedOrder } from '../lib/testimonialService';
+import { saveTestimonial, getReviewedOrderIds } from '../lib/testimonialService';
 
-const TABS = ['profile', 'orders', 'appointments'];
+const TABS = ['profile', 'orders', 'appointments', 'wishlist'];
 
 function formatNaira(amount) {
   return `\u20A6${Number(amount).toLocaleString()}`;
@@ -40,6 +44,7 @@ function formatDate(ts) {
 
 export default function AccountPage() {
   const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth();
+  const { wishlist, removeFromWishlist } = useWishlist();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -55,19 +60,16 @@ export default function AccountPage() {
     if (!user) return;
     setOrdersLoading(true);
     fetchOrders(user.uid)
-      .then((fetched) => {
+      .then(async (fetched) => {
         setOrders(fetched);
-        // Check which completed orders have already been rated
-        const completed = fetched.filter((o) => o.status === 'received');
-        Promise.all(
-          completed.map((o) =>
-            hasReviewedOrder(o.id).then((reviewed) => [o.id, reviewed])
-          )
-        ).then((results) => {
+        // Batch-check which completed orders have already been rated (single query)
+        const completedIds = fetched.filter((o) => o.status === 'received').map((o) => o.id);
+        if (completedIds.length > 0) {
+          const reviewedSet = await getReviewedOrderIds(completedIds);
           const map = {};
-          results.forEach(([id, reviewed]) => { if (reviewed) map[id] = true; });
+          reviewedSet.forEach((id) => { map[id] = true; });
           setRatedOrders(map);
-        });
+        }
       })
       .catch(() => {})
       .finally(() => setOrdersLoading(false));
@@ -159,6 +161,7 @@ export default function AccountPage() {
           <Tab label="Profile" />
           <Tab label="Orders" />
           <Tab label="Appointments" />
+          <Tab icon={<FavoriteIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Wishlist" />
         </Tabs>
 
         {/* Profile Tab */}
@@ -237,6 +240,97 @@ export default function AccountPage() {
             )}
           </Box>
         )}
+        {/* Wishlist Tab */}
+        {tabIndex === 3 && (
+          <Box>
+            {wishlist.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 6 }}>
+                <FavoriteIcon sx={{ fontSize: 48, color: '#ccc', mb: 1 }} />
+                <Typography sx={{ color: '#999' }}>Your wishlist is empty</Typography>
+                <Typography sx={{ color: '#aaa', fontSize: '0.85rem', mt: 0.5, mb: 2 }}>
+                  Tap the heart icon on products to save them here.
+                </Typography>
+                <Button
+                  onClick={() => navigate('/products')}
+                  sx={{
+                    border: '2px solid #E91E8C',
+                    borderRadius: '30px',
+                    color: '#E91E8C',
+                    px: 3,
+                    py: 1,
+                    fontFamily: '"Georgia", serif',
+                    fontWeight: 600,
+                    '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
+                  }}
+                >
+                  Browse Products
+                </Button>
+              </Box>
+            ) : (
+              wishlist.map((item) => (
+                <Box
+                  key={item.productId}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    p: 2,
+                    mb: 1.5,
+                    borderRadius: 3,
+                    border: '1px solid #F0C0D0',
+                    backgroundColor: '#fff',
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={item.image}
+                    alt={item.name}
+                    sx={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: 2,
+                      objectFit: 'cover',
+                      flexShrink: 0,
+                    }}
+                  />
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography
+                      sx={{
+                        fontFamily: '"Georgia", serif',
+                        fontWeight: 700,
+                        fontSize: '0.95rem',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {item.name}
+                    </Typography>
+                    <Chip
+                      label={formatNaira(item.price)}
+                      size="small"
+                      sx={{
+                        mt: 0.5,
+                        backgroundColor: '#E91E8C',
+                        color: '#fff',
+                        fontFamily: '"Georgia", serif',
+                        fontWeight: 700,
+                        fontSize: '0.8rem',
+                      }}
+                    />
+                  </Box>
+                  <IconButton
+                    onClick={() => removeFromWishlist(item.productId)}
+                    sx={{ color: '#ccc', '&:hover': { color: '#E91E8C' } }}
+                  >
+                    <DeleteOutlineIcon />
+                  </IconButton>
+                </Box>
+              ))
+            )}
+          </Box>
+        )}
+
         {/* Rate Dialog */}
         <RateDialog
           open={!!rateDialog}

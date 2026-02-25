@@ -1,5 +1,6 @@
-import { doc, runTransaction } from 'firebase/firestore';
+import { doc, runTransaction, collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
+import { validateCollectionName, validateNumber } from './validate';
 
 /**
  * Decrement stock for a single product inside a category document.
@@ -11,6 +12,10 @@ import { db } from './firebase';
  * @returns {Promise<void>}
  */
 export async function decrementStock(collectionName, categoryId, productId, quantity = 1) {
+  validateCollectionName(collectionName);
+  validateNumber(quantity, { min: 1, label: 'quantity' });
+  if (!Number.isInteger(quantity)) throw new Error('Quantity must be a whole number');
+
   const ref = doc(db, collectionName, categoryId);
 
   await runTransaction(db, async (transaction) => {
@@ -38,6 +43,12 @@ export async function decrementStock(collectionName, categoryId, productId, quan
  * @returns {Promise<void>}
  */
 export async function decrementStockBatch(items) {
+  // Validate all items up front
+  for (const item of items) {
+    validateCollectionName(item.collection);
+    validateNumber(item.quantity, { min: 1, label: 'quantity' });
+  }
+
   // Group by collection + categoryId so we only run one transaction per document
   const grouped = {};
   for (const item of items) {
@@ -70,4 +81,31 @@ export async function decrementStockBatch(items) {
       transaction.update(ref, { products });
     });
   }
+}
+
+/**
+ * Save a stock notification request so the user is notified when a product is back in stock.
+ * Throws with code 'ALREADY_SUBSCRIBED' if the same email+productId combo already exists.
+ *
+ * @param {{ email: string, productId: string, productName: string }} params
+ * @returns {Promise<void>}
+ */
+export async function saveStockNotification({ email, productId, productName }) {
+  const col = collection(db, 'stockNotifications');
+
+  // Duplicate prevention
+  const q = query(col, where('email', '==', email), where('productId', '==', productId));
+  const existing = await getDocs(q);
+  if (!existing.empty) {
+    const err = new Error('You are already subscribed to notifications for this product.');
+    err.code = 'ALREADY_SUBSCRIBED';
+    throw err;
+  }
+
+  await addDoc(col, {
+    email,
+    productId,
+    productName,
+    createdAt: serverTimestamp(),
+  });
 }

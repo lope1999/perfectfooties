@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../lib/firebase';
 
 const AuthContext = createContext(null);
@@ -14,8 +14,10 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        setUser(firebaseUser);
-        // Create user profile doc on first sign-in
+        // Force-refresh profile to pick up Google account changes
+        await firebaseUser.reload();
+        setUser(auth.currentUser);
+
         const userRef = doc(db, 'users', firebaseUser.uid);
         const snap = await getDoc(userRef);
         if (!snap.exists()) {
@@ -24,6 +26,12 @@ export function AuthProvider({ children }) {
             email: firebaseUser.email || '',
             photoURL: firebaseUser.photoURL || '',
             createdAt: serverTimestamp(),
+          });
+        } else {
+          // Sync latest profile photo to Firestore
+          await updateDoc(userRef, {
+            displayName: firebaseUser.displayName || '',
+            photoURL: firebaseUser.photoURL || '',
           });
         }
       } else {

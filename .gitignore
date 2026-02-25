@@ -2,4 +2,7 @@ node_modules
 dist
 .vercel
 *.local
-node_modules
+.env
+.env.*
+firebase-debug.log
+.firebase/
