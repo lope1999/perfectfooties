@@ -28,7 +28,8 @@
       "WebFetch(domain:www.geeksforgeeks.org)",
       "WebFetch(domain:thelinuxcode.com)",
       "WebFetch(domain:dev.to)",
-      "WebFetch(domain:medium.com)"
+      "WebFetch(domain:medium.com)",
+      "Bash(find:*)"
     ]
   }
 }

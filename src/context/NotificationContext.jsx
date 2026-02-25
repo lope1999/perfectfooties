@@ -23,7 +23,7 @@ function buildNotifications(orders) {
   const notifications = [];
 
   for (const order of orders) {
-    if (order.status === 'cancelled' || order.status === 'completed') continue;
+    if (order.status === 'received') continue;
 
     const dateStr = order.appointmentDate || order.items?.[0]?.date;
     if (!dateStr) continue;

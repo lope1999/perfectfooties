@@ -51,8 +51,9 @@ function StatCard({ title, value, icon, color }) {
 const statusColor = {
   pending: 'warning',
   confirmed: 'info',
-  completed: 'success',
-  cancelled: 'error',
+  production: 'secondary',
+  shipping: 'primary',
+  received: 'success',
 };
 
 export default function DashboardSection({ orders, pressOnCategories, retailCategories, loading }) {
@@ -82,7 +83,7 @@ export default function DashboardSection({ orders, pressOnCategories, retailCate
 
   // Compute upcoming appointments from service orders
   const upcomingAppointments = orders
-    .filter((o) => o.type === 'service' && o.status !== 'cancelled' && o.status !== 'completed')
+    .filter((o) => o.type === 'service' && o.status !== 'received')
     .map((o) => {
       const dateStr = o.appointmentDate || o.items?.[0]?.date;
       const parsed = parseAppointmentDate(dateStr);

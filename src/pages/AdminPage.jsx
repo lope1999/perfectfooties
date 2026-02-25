@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Box, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AdminGuard from '../components/admin/AdminGuard';
-import AdminSidebar, { SIDEBAR_WIDTH } from '../components/admin/AdminSidebar';
+import AdminSidebar, { SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from '../components/admin/AdminSidebar';
 import DashboardSection from '../components/admin/DashboardSection';
 import OrdersSection from '../components/admin/OrdersSection';
 import AppointmentsSection from '../components/admin/AppointmentsSection';
@@ -14,6 +14,7 @@ import { retailCategories as staticRetail } from '../data/retailProducts';
 export default function AdminPage() {
   const [section, setSection] = useState('dashboard');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [orders, setOrders] = useState([]);
   const [pressOnCategories, setPressOnCategories] = useState([]);
   const [retailCategories, setRetailCategories] = useState([]);
@@ -113,11 +114,13 @@ export default function AdminPage() {
           onSelect={setSection}
           mobileOpen={mobileOpen}
           onMobileClose={() => setMobileOpen(false)}
+          collapsed={collapsed}
+          onToggleCollapse={() => setCollapsed(c => !c)}
         />
         <Box
           sx={{
             flex: 1,
-            ml: isMobile ? 0 : `${SIDEBAR_WIDTH}px`,
+            ml: isMobile ? 0 : `${collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH}px`,
             p: { xs: 2, md: 3 },
             pt: { xs: 10, md: 11 },
             minHeight: '100vh',

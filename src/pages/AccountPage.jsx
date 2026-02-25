@@ -58,7 +58,7 @@ export default function AccountPage() {
       .then((fetched) => {
         setOrders(fetched);
         // Check which completed orders have already been rated
-        const completed = fetched.filter((o) => o.status === 'completed');
+        const completed = fetched.filter((o) => o.status === 'received');
         Promise.all(
           completed.map((o) =>
             hasReviewedOrder(o.id).then((reviewed) => [o.id, reviewed])
@@ -352,7 +352,9 @@ function OrderCard({ order, rated, onRate }) {
   const statusColor = {
     pending: '#FF9800',
     confirmed: '#2196F3',
-    completed: '#4CAF50',
+    production: '#9C27B0',
+    shipping: '#1976D2',
+    received: '#4CAF50',
   };
 
   return (
@@ -404,7 +406,7 @@ function OrderCard({ order, rated, onRate }) {
           ))}
         </Box>
       )}
-      {order.status === 'completed' && (
+      {order.status === 'received' && (
         <Box sx={{ mt: 1.5 }}>
           <Button
             size="small"

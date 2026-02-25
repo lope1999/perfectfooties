@@ -131,17 +131,20 @@ export default function HomePage() {
 								<Button
 									sx={{
 										...ctaButtonSx,
-										borderColor: '#4A0E4E',
-										color: '#4A0E4E',
-										'&:hover': {
-											backgroundColor: '#4A0E4E',
-											color: '#fff',
-											borderColor: '#4A0E4E',
+										borderColor: "#4A0E4E",
+										color: "#4A0E4E",
+										"&:hover": {
+											backgroundColor: "#4A0E4E",
+											color: "#fff",
+											borderColor: "#4A0E4E",
 										},
 									}}
 									startIcon={
 										signingIn ? (
-											<CircularProgress size={18} sx={{ color: 'inherit' }} />
+											<CircularProgress
+												size={18}
+												sx={{ color: "inherit" }}
+											/>
 										) : (
 											<LoginIcon />
 										)
@@ -149,7 +152,7 @@ export default function HomePage() {
 									onClick={handleSignIn}
 									disabled={signingIn}
 								>
-									{signingIn ? 'Signing In…' : 'Sign In'}
+									{signingIn ? "Signing In…" : "Sign In"}
 								</Button>
 							)}
 						</Box>
@@ -165,7 +168,7 @@ export default function HomePage() {
       /> */}
 
 			{/* Contact / Hours / Location Section */}
-			<Box id="contact-section" sx={{ py: 8, backgroundColor: "#FFF0F5" }}>
+			<Box id="contact-section" sx={{ py: 8, backgroundColor: "#FFC0CB" }}>
 				<Container maxWidth="lg">
 					<Grid
 						container
@@ -266,9 +269,7 @@ export default function HomePage() {
 										Location
 									</Typography>
 									<Typography>Cornerstone</Typography>
-									<Typography>
-									Labak Estate, Abule-egba,
-									</Typography>
+									<Typography>Labak Estate, Abule-egba,</Typography>
 									<Typography>Lagos, Nigeria</Typography>
 								</Box>
 							</ScrollReveal>

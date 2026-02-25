@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
 import { CircularProgress, Box } from '@mui/material';
 import ScrollToTop from './components/ScrollToTop';
@@ -30,6 +30,8 @@ const LazyFallback = (
 );
 
 function App() {
+  const location = useLocation();
+
   return (
     <>
       <ScrollToTop />
@@ -59,7 +61,7 @@ function App() {
           }
         />
       </Routes>
-      <Footer />
+      {location.pathname !== '/admin' && <Footer />}
       <Analytics />
     </>
   );

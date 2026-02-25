@@ -13,16 +13,9 @@ import {
   ListItemButton,
   ListItemText,
   Divider,
-  Tooltip,
 } from '@mui/material';
-import SvgIcon from "@mui/material/SvgIcon";
-
-
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
-import InstagramIcon from '@mui/icons-material/Instagram';
-import YouTubeIcon from '@mui/icons-material/YouTube';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { NailLogo } from "../data/svg.jsx";
@@ -166,47 +159,9 @@ export default function Navbar() {
 
 					{/* Right — Cart + User + Social Icons (desktop) + Hamburger (mobile) */}
 					<Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+						<UserMenu />
 						<CartIcon />
 						<NotificationBell />
-						<UserMenu />
-						<Box sx={{ display: { xs: "none", md: "flex" }, gap: 0.5 }}>
-							<Tooltip title="Instagram" arrow>
-								<IconButton
-									href="https://www.instagram.com/chizzys_styles?igsh=YTJ6bzU3ZW82cDFo&utm_source=qr"
-									target="_blank"
-									sx={{
-										color: "#E91E8C",
-										"&:hover": { color: "#4A0E4E" },
-									}}
-								>
-									<InstagramIcon />
-								</IconButton>
-							</Tooltip>
-							<Tooltip title="TikTok" arrow>
-								<IconButton
-									href="https://tiktok.com/@chizzysstyles"
-									target="_blank"
-									sx={{
-										color: "#E91E8C",
-										"&:hover": { color: "#4A0E4E" },
-									}}
-								>
-									<MusicNoteIcon />
-								</IconButton>
-							</Tooltip>
-							<Tooltip title="YouTube" arrow>
-								<IconButton
-									href="https://youtube.com/@chizzysstyles1505?si=pWaiuGVL8D93bQ_i"
-									target="_blank"
-									sx={{
-										color: "#E91E8C",
-										"&:hover": { color: "#4A0E4E" },
-									}}
-								>
-									<YouTubeIcon />
-								</IconButton>
-							</Tooltip>
-						</Box>
 
 						{/* Hamburger for tablet/mobile */}
 						<IconButton
@@ -377,33 +332,7 @@ export default function Navbar() {
 						</ListItemButton>
 					)}
 				</List>
-				<Divider sx={{ borderColor: "#F0C0D0", my: 1 }} />
-				<Box
-					sx={{ display: "flex", justifyContent: "center", gap: 2, py: 2 }}
-				>
-					<IconButton
-						href="https://instagram.com"
-						target="_blank"
-						sx={{ color: "#E91E8C" }}
-					>
-						<InstagramIcon />
-					</IconButton>
-					<IconButton
-						href="https://tiktok.com"
-						target="_blank"
-						sx={{ color: "#E91E8C" }}
-					>
-						<MusicNoteIcon />
-					</IconButton>
-					<IconButton
-						href="https://youtube.com"
-						target="_blank"
-						sx={{ color: "#E91E8C" }}
-					>
-						<YouTubeIcon />
-					</IconButton>
-				</Box>
-			</Drawer>
+				</Drawer>
 		</>
   );
 }

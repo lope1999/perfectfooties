@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Box, Typography, Container, Grid, Link as MuiLink } from '@mui/material';
+import { Box, Typography, Container, Grid, Link as MuiLink, IconButton } from '@mui/material';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import YouTubeIcon from '@mui/icons-material/YouTube';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import TermsModal from './TermsModal';
 import PricingTable from './PricingTable';
 
@@ -195,7 +198,7 @@ export default function Footer() {
 						</Grid>
 					</Grid>
 
-					{/* Copyright */}
+					{/* Social Icons + Copyright */}
 					<Box
 						sx={{
 							borderTop: "1px solid rgba(74, 14, 78, 0.3)",
@@ -204,6 +207,29 @@ export default function Footer() {
 							textAlign: "center",
 						}}
 					>
+						<Box sx={{ display: "flex", justifyContent: "center", gap: 1, mb: 2 }}>
+							<IconButton
+								href="https://www.instagram.com/chizzys_styles?igsh=YTJ6bzU3ZW82cDFo&utm_source=qr"
+								target="_blank"
+								sx={{ color: "#4A0E4E", "&:hover": { color: "#E91E8C" } }}
+							>
+								<InstagramIcon />
+							</IconButton>
+							<IconButton
+								href="https://tiktok.com/@chizzysstyles"
+								target="_blank"
+								sx={{ color: "#4A0E4E", "&:hover": { color: "#E91E8C" } }}
+							>
+								<MusicNoteIcon />
+							</IconButton>
+							<IconButton
+								href="https://youtube.com/@chizzysstyles1505?si=pWaiuGVL8D93bQ_i"
+								target="_blank"
+								sx={{ color: "#4A0E4E", "&:hover": { color: "#E91E8C" } }}
+							>
+								<YouTubeIcon />
+							</IconButton>
+						</Box>
 						<Typography sx={{ color: "#4d0051", fontSize: "0.85rem" }}>
 							&copy; 2026 Made by Chizzy'sstyles. All rights reserved.
 						</Typography>
