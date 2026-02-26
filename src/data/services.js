@@ -85,7 +85,7 @@ export const serviceCategories = [
 		title: "Pedicure Appointments",
 		description:
 			"Treat your feet to a luxurious pedicure experience. From basic grooming to full spa treatments, we keep your toes looking and feeling fabulous.",
-		image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800&q=80",
+		image: "/images/services/toes.PNG",
 		services: [
 			{
 				id: "pedi-basic",
@@ -93,21 +93,21 @@ export const serviceCategories = [
 				description:
 					"Nail shaping, cuticle care, and a polish of your choice.",
 				price: 5000,
-				image: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=800&q=80",
+				image: "/images/services/toes.PNG",
 			},
 			{
 				id: "pedi-gel",
 				name: "Gel Pedicure",
 				description: "Full pedicure with long-lasting gel polish finish.",
 				price: 8000,
-				image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800&q=80",
+				image: "/images/services/toes.PNG",
 			},
 			{
 				id: "pedi-art",
 				name: "Pedicure with Nail Art",
 				description: "Pedicure with custom toe nail art designs.",
 				price: 10000,
-				image: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=800&q=80",
+				image: "/images/services/toes.PNG",
 			},
 		],
 	},
