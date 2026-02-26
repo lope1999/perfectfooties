@@ -64,9 +64,12 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
         description: form.description,
         price: parseFloat(form.price) || 0,
         image: form.image,
-        stock: form.stock !== '' ? parseInt(form.stock, 10) : undefined,
         hidden: form.hidden,
       };
+      // Only include stock if a value was provided (Firestore rejects undefined)
+      if (form.stock !== '') {
+        data.stock = parseInt(form.stock, 10);
+      }
       if (type === 'presson') {
         if (form.type) data.type = form.type;
         if (form.shape) data.shape = form.shape;
