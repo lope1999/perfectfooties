@@ -71,6 +71,7 @@ export default function AdminPage() {
             pressOnCategories={pressOnCategories}
             retailCategories={retailCategories}
             loading={loading}
+            onNavigate={setSection}
           />
         );
       case 'orders':

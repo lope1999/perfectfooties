@@ -125,7 +125,7 @@ export default function HomePage() {
 								sx={ctaButtonSx}
 								onClick={() => navigate("/services")}
 							>
-								View Service Menu
+								View Nail Services
 							</Button>
 							{!user && (
 								<Button

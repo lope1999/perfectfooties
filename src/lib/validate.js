@@ -2,7 +2,7 @@
 const ALLOWED_COLLECTIONS = new Set(['productCategories', 'retailCategories']);
 
 // Allowed order types
-const ALLOWED_ORDER_TYPES = new Set(['pressOn', 'retail', 'service']);
+const ALLOWED_ORDER_TYPES = new Set(['pressOn', 'retail', 'service', 'mixed']);
 
 // Allowed order statuses
 const ALLOWED_ORDER_STATUSES = new Set([

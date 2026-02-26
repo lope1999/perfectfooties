@@ -64,7 +64,7 @@ export default function Footer() {
 									mb: 2,
 								}}
 							>
-								Chizzystyles
+								Chizzy's Styles
 							</Typography>
 							<Typography
 								sx={{
@@ -73,8 +73,8 @@ export default function Footer() {
 									lineHeight: 1.7,
 								}}
 							>
-								Chizzysnails is a refined nail brand rooted in Gloss and
-								Grace - where clean structure meets detailed minimal
+								Chizzy's Nails is a refined nail brand rooted in Gloss
+								and Grace - where clean structure meets detailed minimal
 								artistry.
 							</Typography>
 						</Grid>

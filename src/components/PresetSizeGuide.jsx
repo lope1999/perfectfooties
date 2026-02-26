@@ -124,7 +124,7 @@ export default function PresetSizeGuide({ open, onClose }) {
 					sx={{
 						borderRadius: 2,
 						border: "1px solid #F0C0D0",
-						overflow: "hidden",
+						overflowX: "auto",
 					}}
 				>
 					<Table size="small">

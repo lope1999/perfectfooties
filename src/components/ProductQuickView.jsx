@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -11,28 +11,47 @@ import {
   MenuItem,
   TextField,
   IconButton,
+  CircularProgress,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { pressOnNailShapes, pressOnQuantities } from '../data/products';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { saveOrder } from '../lib/orderService';
+import { decrementStockBatch } from '../lib/stockService';
 import NailBedSizeInput from './NailBedSizeInput';
 
 const presetSizes = ['XS', 'S', 'M', 'L'];
 
+function formatNaira(amount) {
+  return `₦${amount.toLocaleString()}`;
+}
+
 export default function ProductQuickView({ open, onClose, product, category, onAddedToCart }) {
   const { addPressOn } = useCart();
+  const { user } = useAuth();
   const [zoomOpen, setZoomOpen] = useState(false);
   const [presetSize, setPresetSize] = useState('');
   const [nailShape, setNailShape] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [nailBedSize, setNailBedSize] = useState('');
+  const [customerName, setCustomerName] = useState('');
   const [error, setError] = useState('');
+  const [orderLoading, setOrderLoading] = useState(false);
+
+  useEffect(() => {
+    if (user?.displayName && !customerName) setCustomerName(user.displayName);
+  }, [user]);
 
   if (!product || !category) return null;
 
   const isReadyMade = !!category.readyMade;
   const maxQty = isReadyMade ? (product.stock || 1) : 5;
+
+  const isFormValid =
+    customerName.trim() && (isReadyMade ? presetSize : nailShape);
 
   const handleClose = () => {
     setPresetSize('');
@@ -40,18 +59,28 @@ export default function ProductQuickView({ open, onClose, product, category, onA
     setQuantity(1);
     setNailBedSize('');
     setError('');
+    setOrderLoading(false);
     onClose();
   };
 
-  const handleAddToCart = () => {
+  const validate = () => {
+    if (!customerName.trim()) {
+      setError('Please enter your name.');
+      return false;
+    }
     if (isReadyMade && !presetSize) {
       setError('Please select a preset size.');
-      return;
+      return false;
     }
     if (!isReadyMade && !nailShape) {
       setError('Please select a nail shape.');
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const handleAddToCart = () => {
+    if (!validate()) return;
 
     addPressOn({
       productId: product.id,
@@ -64,7 +93,7 @@ export default function ProductQuickView({ open, onClose, product, category, onA
       presetSize: presetSize || '',
       orderingForOthers: false,
       otherPeople: [],
-      customerName: '',
+      customerName: customerName.trim(),
       categoryId: category.id,
       readyMade: isReadyMade,
       stock: product.stock,
@@ -72,6 +101,67 @@ export default function ProductQuickView({ open, onClose, product, category, onA
 
     handleClose();
     onAddedToCart?.();
+  };
+
+  const handleConfirmOrder = async () => {
+    if (!validate()) return;
+
+    setOrderLoading(true);
+    try {
+      // Decrement stock for ready-made items
+      if (isReadyMade && product.stock !== undefined) {
+        await decrementStockBatch([
+          {
+            collection: 'productCategories',
+            categoryId: category.id,
+            productId: product.id,
+            quantity,
+          },
+        ]);
+      }
+    } catch (err) {
+      console.error('Stock decrement failed:', err);
+    }
+
+    // Build WhatsApp message
+    const total = product.price * quantity;
+    let productLine = `1. ${product.name} — ${formatNaira(product.price)}`;
+    if (isReadyMade) {
+      productLine += `\n   - Type: ${product.type || 'N/A'}\n   - Shape: ${product.shape || 'N/A'}\n   - Length: ${product.length || 'N/A'}\n   - Preset Size: ${presetSize}\n   - Quantity: ${quantity} set(s)\n   - (Ready-made — ready to ship)`;
+    } else {
+      productLine += `\n   - Nail Shape: ${nailShape}\n   - Quantity: ${quantity} set(s)\n   - Nail Bed Size: ${nailBedSize || 'Not provided'}`;
+    }
+
+    const message = `Hi! I'd like to order press-on nails.\n\nName: ${customerName.trim()}\n\nProducts (1):\n${productLine}\n\nEstimated Total: ${formatNaira(total)}\n\nPlease confirm availability and delivery details. Thank you!`;
+    const encoded = encodeURIComponent(message);
+    window.open(
+      `https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`,
+      '_blank'
+    );
+
+    // Save order to DB
+    if (user) {
+      saveOrder(user.uid, {
+        type: 'pressOn',
+        total,
+        customerName: customerName.trim(),
+        email: user.email || '',
+        items: [
+          {
+            kind: 'pressOn',
+            name: product.name || '',
+            price: product.price || 0,
+            nailShape: nailShape || product.shape || '',
+            quantity,
+            ...(isReadyMade ? { presetSize } : {}),
+            ...(nailBedSize ? { nailBedSize } : {}),
+          },
+        ],
+      }).catch(() => {});
+    }
+
+    setOrderLoading(false);
+    handleClose();
   };
 
   return (
@@ -149,10 +239,23 @@ export default function ProductQuickView({ open, onClose, product, category, onA
                 <Chip label={product.type} size="small" sx={{ backgroundColor: '#4A0E4E', color: '#fff', fontWeight: 600 }} />
               )}
               <Chip
-                label={`₦${product.price.toLocaleString()}`}
+                label={formatNaira(product.price)}
                 sx={{ backgroundColor: '#E91E8C', color: '#fff', fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '0.95rem' }}
               />
             </Box>
+
+            {/* Customer Name field */}
+            <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.9rem', mb: 1 }}>
+              Your Name
+            </Typography>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Enter your full name"
+              value={customerName}
+              onChange={(e) => { setCustomerName(e.target.value); setError(''); }}
+              sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#F0C0D0' }, '&:hover fieldset': { borderColor: '#E91E8C' }, '&.Mui-focused fieldset': { borderColor: '#E91E8C' } } }}
+            />
 
             {/* Conditional form */}
             {isReadyMade ? (
@@ -250,22 +353,47 @@ export default function ProductQuickView({ open, onClose, product, category, onA
           </Box>
         </DialogContent>
 
-        <DialogActions sx={{ justifyContent: 'center', pb: 3, px: 3 }}>
+        <DialogActions sx={{ justifyContent: 'center', pb: 3, px: 3, gap: 1, flexWrap: 'wrap' }}>
           <Button onClick={handleClose} sx={{ fontFamily: '"Georgia", serif', color: '#777' }}>
             Cancel
           </Button>
           <Button
-            onClick={handleAddToCart}
+            onClick={handleConfirmOrder}
+            disabled={!isFormValid || orderLoading}
             sx={{
               backgroundColor: '#E91E8C',
               color: '#fff',
               borderRadius: '30px',
-              px: 4,
+              px: 3,
               py: 1,
               fontFamily: '"Georgia", serif',
               fontWeight: 600,
-              fontSize: '0.9rem',
+              fontSize: '0.85rem',
               '&:hover': { backgroundColor: '#C2185B' },
+              '&.Mui-disabled': { backgroundColor: '#F0C0D0', color: '#fff' },
+            }}
+          >
+            {orderLoading ? (
+              <CircularProgress size={20} sx={{ color: '#fff' }} />
+            ) : (
+              'Confirm Order'
+            )}
+          </Button>
+          <Button
+            onClick={handleAddToCart}
+            disabled={!isFormValid}
+            startIcon={<ShoppingCartOutlinedIcon />}
+            sx={{
+              border: '2px solid #4A0E4E',
+              borderRadius: '30px',
+              color: '#4A0E4E',
+              px: 3,
+              py: 1,
+              fontFamily: '"Georgia", serif',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              '&:hover': { backgroundColor: '#4A0E4E', color: '#fff', borderColor: '#4A0E4E' },
+              '&.Mui-disabled': { opacity: 0.5 },
             }}
           >
             Add to Cart

@@ -94,7 +94,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
     try {
       await updateOrderStatus(uid, orderId, newStatus);
       await onRefresh();
-      if (newStatus === 'confirmed' || newStatus === 'received') {
+      if (newStatus === 'confirmed') {
         const order = orders.find((o) => o.id === orderId);
         if (order?.email) {
           setEmailPrompt({ ...order, status: newStatus });
