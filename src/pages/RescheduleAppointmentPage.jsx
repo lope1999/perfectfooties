@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -14,11 +14,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  CircularProgress,
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import { serviceCategories } from '../data/services';
 import ScrollReveal from '../components/ScrollReveal';
+import { useAuth } from '../context/AuthContext';
+import { fetchOrders, saveOrder, updateOrderStatus } from '../lib/orderService';
 
 const confirmButtonSx = {
   border: '2px solid #E91E8C',
@@ -47,17 +50,55 @@ const textFieldSx = {
   },
 };
 
+const RESCHEDULABLE_STATUSES = new Set(['pending', 'confirmed']);
+
 export default function () {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [customerName, setCustomerName] = useState('');
   const [selectedService, setSelectedService] = useState('');
   const [reason, setReason] = useState('');
   const [preferredDate, setPreferredDate] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Appointment selection state (logged-in users)
+  const [appointments, setAppointments] = useState([]);
+  const [loadingAppointments, setLoadingAppointments] = useState(false);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState('');
 
   const allServices = serviceCategories.flatMap((cat) =>
     cat.services.map((s) => ({ ...s, category: cat.title }))
   );
+
+  // Pre-fill name from auth and fetch reschedulable appointments
+  useEffect(() => {
+    if (!user) return;
+    if (user.displayName && !customerName) setCustomerName(user.displayName);
+    setLoadingAppointments(true);
+    fetchOrders(user.uid, 'service')
+      .then((orders) => {
+        const reschedulable = orders.filter((o) => RESCHEDULABLE_STATUSES.has(o.status));
+        setAppointments(reschedulable);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingAppointments(false));
+  }, [user]);
+
+  // Pre-fill form when an appointment is selected
+  useEffect(() => {
+    if (!selectedAppointmentId) return;
+    const appt = appointments.find((a) => a.id === selectedAppointmentId);
+    if (!appt) return;
+    setCustomerName(appt.customerName || '');
+    const serviceItem = appt.items?.[0];
+    if (serviceItem) {
+      const match = allServices.find((s) => s.name === serviceItem.serviceName);
+      if (match) setSelectedService(match.id);
+    }
+  }, [selectedAppointmentId]);
+
+  const selectedAppointment = appointments.find((a) => a.id === selectedAppointmentId);
 
   const getMinDate = () => {
     const tomorrow = new Date();
@@ -86,11 +127,39 @@ export default function () {
     setModalOpen(true);
   };
 
-  const handleComplete = () => {
-    setModalOpen(false);
+  const handleComplete = async () => {
     const selected = allServices.find((s) => s.id === selectedService);
     const message = `Hi! I'd like to reschedule my appointment.\n\nName: ${customerName}\nOriginal Service: ${selected?.name || 'N/A'}\nReason for Rescheduling: ${reason}\nPreferred New Date: ${formatDate(preferredDate)}\n\nPlease confirm the new slot. Thank you!`;
     const encoded = encodeURIComponent(message);
+
+    // Save to Firebase for logged-in users with a selected appointment
+    if (user && selectedAppointmentId) {
+      setSubmitting(true);
+      try {
+        await updateOrderStatus(user.uid, selectedAppointmentId, 'rescheduled');
+        await saveOrder(user.uid, {
+          type: 'service',
+          total: selected?.price || 0,
+          customerName: customerName.trim(),
+          email: user.email || '',
+          appointmentDate: formatDate(preferredDate),
+          rescheduledFrom: selectedAppointmentId,
+          rescheduleReason: reason.trim(),
+          items: selectedAppointment?.items || [{
+            kind: 'service',
+            serviceName: selected?.name || '',
+            price: selected?.price || 0,
+            date: formatDate(preferredDate),
+          }],
+        });
+      } catch {
+        // Still proceed to WhatsApp even if Firebase save fails
+      } finally {
+        setSubmitting(false);
+      }
+    }
+
+    setModalOpen(false);
     window.open(`https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`, '_blank');
     navigate('/');
   };
@@ -157,6 +226,74 @@ export default function () {
 							</Box>
 						</Box>
 					</ScrollReveal>
+
+					{/* Appointment Selector (logged-in users only) */}
+					{user && (
+						<ScrollReveal direction="up">
+							<Box sx={{ mb: 3 }}>
+								<Typography
+									sx={{
+										fontFamily: '"Georgia", serif',
+										fontWeight: 700,
+										color: "#4A0E4E",
+										mb: 1,
+										fontSize: "1.05rem",
+									}}
+								>
+									Select Appointment to Reschedule
+								</Typography>
+								{loadingAppointments ? (
+									<Box sx={{ display: "flex", alignItems: "center", gap: 1, py: 1 }}>
+										<CircularProgress size={20} sx={{ color: "#E91E8C" }} />
+										<Typography sx={{ fontSize: "0.9rem", color: "#555" }}>
+											Loading your appointments...
+										</Typography>
+									</Box>
+								) : appointments.length > 0 ? (
+									<>
+										<FormControl fullWidth size="small">
+											<InputLabel>Choose an appointment</InputLabel>
+											<Select
+												value={selectedAppointmentId}
+												label="Choose an appointment"
+												onChange={(e) => setSelectedAppointmentId(e.target.value)}
+												sx={{ borderRadius: 2 }}
+											>
+												{appointments.map((appt) => {
+													const serviceName = appt.items?.[0]?.serviceName || 'Service';
+													const date = appt.appointmentDate || 'No date';
+													return (
+														<MenuItem key={appt.id} value={appt.id}>
+															{serviceName} — {date}
+														</MenuItem>
+													);
+												})}
+											</Select>
+										</FormControl>
+										{selectedAppointment && (
+											<Box
+												sx={{
+													mt: 1.5,
+													p: 1.5,
+													borderRadius: 2,
+													backgroundColor: "#FCE4EC",
+													border: "1px solid #F0C0D0",
+												}}
+											>
+												<Typography sx={{ fontSize: "0.85rem", color: "#4A0E4E", fontWeight: 600 }}>
+													Original Date: {selectedAppointment.appointmentDate || 'Not set'}
+												</Typography>
+											</Box>
+										)}
+									</>
+								) : (
+									<Typography sx={{ fontSize: "0.9rem", color: "#888", fontStyle: "italic" }}>
+										No reschedulable appointments found. You can still fill in the form manually below.
+									</Typography>
+								)}
+							</Box>
+						</ScrollReveal>
+					)}
 
 					{/* Sticky Name Field */}
 					<Box
@@ -379,6 +516,7 @@ export default function () {
 				<DialogActions sx={{ justifyContent: "center", pb: 3 }}>
 					<Button
 						onClick={handleComplete}
+						disabled={submitting}
 						sx={{
 							backgroundColor: "#E91E8C",
 							color: "#fff",
@@ -393,7 +531,7 @@ export default function () {
 							},
 						}}
 					>
-						Complete
+						{submitting ? <CircularProgress size={22} sx={{ color: "#fff" }} /> : 'Complete'}
 					</Button>
 				</DialogActions>
 			</Dialog>

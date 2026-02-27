@@ -83,6 +83,7 @@ export const serviceCategories = [
 	{
 		id: "pedicure",
 		title: "Pedicure Appointments",
+		comingSoon: true,
 		description:
 			"Treat your feet to a luxurious pedicure experience. From basic grooming to full spa treatments, we keep your toes looking and feeling fabulous.",
 		image: "/images/services/toes.PNG",

@@ -1,7 +1,9 @@
 import {
   collection,
+  doc,
   addDoc,
   getDocs,
+  updateDoc,
   query,
   where,
   orderBy,
@@ -9,7 +11,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { requireString, sanitizeString, validateNumber, validateOrderType } from './validate';
+import { requireString, sanitizeString, validateNumber, validateOrderType, validateOrderStatus } from './validate';
 
 export async function saveOrder(uid, data) {
   requireString(uid, 'uid');
@@ -43,4 +45,12 @@ export async function fetchRecentOrders(uid) {
   const ref = collection(db, 'users', uid, 'orders');
   const snap = await getDocs(query(ref, orderBy('createdAt', 'desc'), limit(3)));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function updateOrderStatus(uid, orderId, status) {
+  requireString(uid, 'uid');
+  requireString(orderId, 'orderId');
+  validateOrderStatus(status, 'appointment');
+  const ref = doc(db, 'users', uid, 'orders', orderId);
+  return updateDoc(ref, { status });
 }

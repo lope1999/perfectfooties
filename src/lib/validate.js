@@ -27,7 +27,9 @@ const ALLOWED_GIFT_CARD_STATUSES = new Set([
 const ALLOWED_APPOINTMENT_STATUSES = new Set([
   'pending',
   'confirmed',
+  'in progress',
   'completed',
+  'rescheduled',
   'cancelled',
   'no-show',
 ]);

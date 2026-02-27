@@ -242,7 +242,7 @@ export default function HomePage() {
 										Service Hours
 									</Typography>
 									<Typography>
-										Monday – Friday: 11:00 AM – 5:00 PM
+										Monday – Friday: 11:30 AM – 5:00 PM
 									</Typography>
 									<Typography>
 										Saturdays & Sundays: 12:00 PM – 6:00 PM
@@ -268,7 +268,7 @@ export default function HomePage() {
 									>
 										Location
 									</Typography>
-									<Typography>Cornerstone</Typography>
+									<Typography>Cornerstone A</Typography>
 									<Typography>Labak Estate, Abule-egba,</Typography>
 									<Typography>Lagos, Nigeria</Typography>
 								</Box>
