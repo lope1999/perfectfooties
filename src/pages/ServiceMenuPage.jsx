@@ -153,9 +153,40 @@ export default function ServiceMenuPage() {
 							backgroundColor:
 								sectionColors[index % sectionColors.length],
 							py: 8,
+							...(category.comingSoon && { position: "relative" }),
 						}}
 					>
-						<Container maxWidth="lg">
+						{category.comingSoon && (
+							<Box
+								sx={{
+									position: "absolute",
+									inset: 0,
+									backgroundColor: "rgba(255,255,255,0.55)",
+									zIndex: 2,
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+									pointerEvents: "none",
+								}}
+							>
+								<Typography
+									sx={{
+										fontFamily: '"Georgia", serif',
+										fontWeight: 700,
+										fontSize: { xs: "1.4rem", md: "1.8rem" },
+										color: "#4A0E4E",
+										backgroundColor: "rgba(255,240,245,0.9)",
+										px: 4,
+										py: 1.5,
+										borderRadius: 3,
+										border: "2px solid #E91E8C",
+									}}
+								>
+									Coming Soon
+								</Typography>
+							</Box>
+						)}
+						<Container maxWidth="lg" sx={category.comingSoon ? { opacity: 0.45 } : undefined}>
 							<ScrollReveal direction="up">
 								<Typography
 									variant="h4"
@@ -281,13 +312,14 @@ export default function ServiceMenuPage() {
 								<Box sx={{ textAlign: "center" }}>
 									<Button
 										sx={bookButtonSx}
+										disabled={category.comingSoon}
 										onClick={() =>
 											navigate("/book", {
 												state: { categoryId: category.id },
 											})
 										}
 									>
-										Book Appointment
+										{category.comingSoon ? "Coming Soon" : "Book Appointment"}
 									</Button>
 								</Box>
 							</ScrollReveal>

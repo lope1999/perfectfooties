@@ -405,18 +405,34 @@ export default function BookAppointmentPage() {
 								direction="up"
 								delay={catIdx * 0.1}
 							>
-								<Box id={category.id} sx={{ mb: 4 }}>
-									<Typography
-										variant="h5"
-										sx={{
-											fontFamily: '"Georgia", serif',
-											fontWeight: 700,
-											color: "#4A0E4E",
-											mb: 2,
-										}}
-									>
-										{category.title}
-									</Typography>
+								<Box id={category.id} sx={{ mb: 4, ...(category.comingSoon && { opacity: 0.45, pointerEvents: "none" }) }}>
+									<Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+										<Typography
+											variant="h5"
+											sx={{
+												fontFamily: '"Georgia", serif',
+												fontWeight: 700,
+												color: "#4A0E4E",
+											}}
+										>
+											{category.title}
+										</Typography>
+										{category.comingSoon && (
+											<Typography
+												sx={{
+													fontSize: "0.75rem",
+													fontWeight: 700,
+													color: "#E91E8C",
+													border: "1.5px solid #E91E8C",
+													borderRadius: "12px",
+													px: 1.5,
+													py: 0.3,
+												}}
+											>
+												Coming Soon
+											</Typography>
+										)}
+									</Box>
 
 									{category.services.map((service) => (
 										<Box key={service.id} sx={{ mb: 2 }}>

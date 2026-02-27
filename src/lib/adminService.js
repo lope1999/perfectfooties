@@ -65,8 +65,10 @@ export async function createAdminOrder(data) {
   return addDoc(colRef, orderData);
 }
 
+const APPOINTMENT_ONLY_STATUSES = new Set(['no-show', 'rescheduled', 'in progress']);
+
 export async function updateOrderStatus(uid, orderId, status) {
-  const kind = status === 'no-show' ? 'appointment' : 'order';
+  const kind = APPOINTMENT_ONLY_STATUSES.has(status) ? 'appointment' : 'order';
   validateOrderStatus(status, kind);
   const ref = doc(db, 'users', uid, 'orders', orderId);
   return updateDoc(ref, { status });
