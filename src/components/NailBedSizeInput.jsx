@@ -25,7 +25,7 @@ const fingers = [
 const rightFingers = fingers.filter((f) => f.hand === 'Right');
 const leftFingers = fingers.filter((f) => f.hand === 'Left');
 
-export default function NailBedSizeInput({ value, onChange }) {
+export default function NailBedSizeInput({ value, onChange, required }) {
   const [open, setOpen] = useState(false);
 
   // Parse value string like "RT:18, RI:15" into object { RT: '18', RI: '15' }
@@ -56,9 +56,11 @@ export default function NailBedSizeInput({ value, onChange }) {
   };
 
   const filledCount = Object.keys(sizes).length;
+  const isComplete = filledCount === 10;
+  const showError = required && !isComplete && !open;
   const displayText = filledCount > 0
-    ? `${filledCount}/10 sizes entered`
-    : 'Tap to enter nail sizes';
+    ? `${filledCount}/10 sizes entered${required && !isComplete ? ' (all 10 required)' : ''}`
+    : required ? 'Required — tap to enter all 10 nail sizes' : 'Tap to enter nail sizes';
 
   const renderHand = (handFingers, handLabel) => (
     <Box sx={{ mb: 2 }}>
@@ -153,7 +155,7 @@ export default function NailBedSizeInput({ value, onChange }) {
           alignItems: 'center',
           justifyContent: 'space-between',
           border: '1px solid',
-          borderColor: open ? '#E91E8C' : '#ccc',
+          borderColor: showError ? '#d32f2f' : open ? '#E91E8C' : '#ccc',
           borderRadius: 2,
           px: 1.5,
           py: 1,
@@ -178,7 +180,7 @@ export default function NailBedSizeInput({ value, onChange }) {
           <Typography
             sx={{
               fontSize: '0.85rem',
-              color: filledCount > 0 ? '#E91E8C' : '#aaa',
+              color: showError ? '#d32f2f' : filledCount > 0 ? '#E91E8C' : '#aaa',
               fontWeight: filledCount > 0 ? 600 : 400,
             }}
           >

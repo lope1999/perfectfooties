@@ -307,6 +307,12 @@ export default function PlaceOrderPage() {
 		setSelectedProducts({});
   };
 
+  const hasAllNailSizes = (sizeStr) => {
+    if (!sizeStr) return false;
+    const parts = sizeStr.split(',').filter((p) => p.includes(':'));
+    return parts.length >= 10;
+  };
+
   const selectedIds = Object.keys(selectedProducts);
   const isFormValid =
     customerName.trim() &&
@@ -316,7 +322,12 @@ export default function PlaceOrderPage() {
       if (isReadyMade(id)) {
         return f.quantity && f.presetSize;
       }
-      return f.nailShape && f.quantity;
+      const ownValid = f.nailShape && f.quantity && hasAllNailSizes(f.nailBedSize);
+      if (!ownValid) return false;
+      if (f.orderingForOthers && f.otherPeople?.length > 0) {
+        return f.otherPeople.every((p) => hasAllNailSizes(p.nailBedSize));
+      }
+      return true;
     });
 
   return (
@@ -856,6 +867,7 @@ export default function PlaceOrderPage() {
 																				val,
 																			)
 																		}
+																		required
 																	/>
 																</Grid>
 
@@ -1073,6 +1085,7 @@ export default function PlaceOrderPage() {
 																									val,
 																								)
 																							}
+																							required
 																						/>
 																					</Box>
 																				),

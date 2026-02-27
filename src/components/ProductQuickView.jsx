@@ -50,8 +50,14 @@ export default function ProductQuickView({ open, onClose, product, category, onA
   const isReadyMade = !!category.readyMade;
   const maxQty = isReadyMade ? (product.stock || 1) : 5;
 
+  const hasAllNailSizes = (sizeStr) => {
+    if (!sizeStr) return false;
+    const parts = sizeStr.split(',').filter((p) => p.includes(':'));
+    return parts.length >= 10;
+  };
+
   const isFormValid =
-    customerName.trim() && (isReadyMade ? presetSize : nailShape);
+    customerName.trim() && (isReadyMade ? presetSize : (nailShape && hasAllNailSizes(nailBedSize)));
 
   const handleClose = () => {
     setPresetSize('');
@@ -74,6 +80,10 @@ export default function ProductQuickView({ open, onClose, product, category, onA
     }
     if (!isReadyMade && !nailShape) {
       setError('Please select a nail shape.');
+      return false;
+    }
+    if (!isReadyMade && !hasAllNailSizes(nailBedSize)) {
+      setError('Please enter all 10 nail bed sizes.');
       return false;
     }
     return true;
@@ -339,9 +349,9 @@ export default function ProductQuickView({ open, onClose, product, category, onA
                 </TextField>
 
                 <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.9rem', mb: 1 }}>
-                  Nail Bed Sizes (optional)
+                  Nail Bed Sizes
                 </Typography>
-                <NailBedSizeInput value={nailBedSize} onChange={setNailBedSize} />
+                <NailBedSizeInput value={nailBedSize} onChange={setNailBedSize} required />
               </Box>
             )}
 
