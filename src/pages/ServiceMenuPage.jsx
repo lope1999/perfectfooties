@@ -143,6 +143,70 @@ export default function ServiceMenuPage() {
 						</Box>
 					</ScrollReveal>
 				)}
+				{/* Appointment Type */}
+				<ScrollReveal direction="up" delay={0.3}>
+					<Box
+						sx={{
+							display: "flex",
+							gap: 2,
+							justifyContent: "center",
+							mt: 3,
+							flexWrap: "wrap",
+						}}
+					>
+						<Box
+							sx={{
+								border: "2px solid #E91E8C",
+								borderRadius: 3,
+								px: 3,
+								py: 1.5,
+								backgroundColor: "#FFF0F5",
+								textAlign: "center",
+								minWidth: 160,
+							}}
+						>
+							<Typography
+								sx={{
+									fontFamily: '"Georgia", serif',
+									fontWeight: 700,
+									fontSize: "0.95rem",
+									color: "#4A0E4E",
+								}}
+							>
+								Salon Service
+							</Typography>
+							<Typography sx={{ fontSize: "0.78rem", color: "#555" }}>
+								Visit us at our studio
+							</Typography>
+						</Box>
+						<Box
+							sx={{
+								border: "2px dashed #ccc",
+								borderRadius: 3,
+								px: 3,
+								py: 1.5,
+								backgroundColor: "#fafafa",
+								textAlign: "center",
+								opacity: 0.55,
+								minWidth: 160,
+							}}
+						>
+							<Typography
+								sx={{
+									fontFamily: '"Georgia", serif',
+									fontWeight: 700,
+									fontSize: "0.95rem",
+									color: "#999",
+								}}
+							>
+								Home Service
+							</Typography>
+							<Typography sx={{ fontSize: "0.78rem", color: "#aaa" }}>
+								Coming Soon
+							</Typography>
+						</Box>
+					</Box>
+				</ScrollReveal>
 			</Box>
 
 			{/* Service Sections */}

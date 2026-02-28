@@ -23,6 +23,7 @@ import {
   DialogActions,
   Snackbar,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
@@ -63,7 +64,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   const [busy, setBusy] = useState(false);
   const [emailPrompt, setEmailPrompt] = useState(null);
   const [emailFeedback, setEmailFeedback] = useState(null);
-  const [sendingEmail, setSendingEmail] = useState(false);
+  const [sendingEmailId, setSendingEmailId] = useState(null);
   const [addDialog, setAddDialog] = useState(false);
   const [addForm, setAddForm] = useState({
     customerName: '', email: '', phone: '', status: 'pending',
@@ -108,10 +109,10 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   };
 
   const handleSendEmail = async (order) => {
-    setSendingEmail(true);
+    setSendingEmailId(order.id);
     setEmailPrompt(null);
     const result = await sendConfirmationEmail(order);
-    setSendingEmail(false);
+    setSendingEmailId(null);
     if (result.success) {
       setEmailFeedback({ severity: 'success', message: 'Email sent!' });
     } else {
@@ -359,10 +360,14 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                     <IconButton
                       size="small"
                       onClick={() => handleSendEmail(o)}
-                      disabled={!o.email || sendingEmail}
+                      disabled={!o.email || !!sendingEmailId}
                       title={o.email ? 'Send confirmation email' : 'No email available'}
                     >
-                      <MailOutlineIcon fontSize="small" sx={{ color: o.email ? '#4A0E4E' : '#ccc' }} />
+                      {sendingEmailId === o.id ? (
+                        <CircularProgress size={18} sx={{ color: '#4A0E4E' }} />
+                      ) : (
+                        <MailOutlineIcon fontSize="small" sx={{ color: o.email ? '#4A0E4E' : '#ccc' }} />
+                      )}
                     </IconButton>
                     <IconButton size="small" onClick={() => { setNoteDialog(o); setNoteText(''); }} title="Add note">
                       <NoteAddIcon fontSize="small" sx={{ color: '#4A0E4E' }} />

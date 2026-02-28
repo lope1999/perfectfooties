@@ -8,6 +8,8 @@ const ALLOWED_ORDER_TYPES = new Set(['pressOn', 'retail', 'service', 'mixed']);
 const ALLOWED_ORDER_STATUSES = new Set([
   'pending',
   'confirmed',
+  'production',
+  'shipping',
   'in-progress',
   'completed',
   'cancelled',

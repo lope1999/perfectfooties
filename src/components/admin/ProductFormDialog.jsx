@@ -33,8 +33,10 @@ const initialState = {
 export default function ProductFormDialog({ open, onClose, onSave, product, type }) {
   const [form, setForm] = useState(initialState);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    setError('');
     if (product) {
       setForm({
         name: product.name || '',
@@ -58,6 +60,7 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
 
   const handleSubmit = async () => {
     setBusy(true);
+    setError('');
     try {
       const data = {
         name: form.name,
@@ -81,6 +84,7 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
       onClose();
     } catch (err) {
       console.error('Product save error:', err);
+      setError(err.message || 'Failed to save product. Please try again.');
     } finally {
       setBusy(false);
     }
@@ -219,6 +223,11 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
             </>
           )}
         </Grid>
+        {error && (
+          <Typography sx={{ color: '#d32f2f', fontSize: '0.85rem', mt: 2, fontFamily }}>
+            {error}
+          </Typography>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} sx={{ fontFamily }}>Cancel</Button>

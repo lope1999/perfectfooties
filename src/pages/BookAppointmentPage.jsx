@@ -83,6 +83,7 @@ export default function BookAppointmentPage() {
     }
   }, [location.state]);
 
+  const [appointmentType, setAppointmentType] = useState('salon');
   const [selectedService, setSelectedService] = useState('');
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('');
@@ -278,6 +279,62 @@ export default function BookAppointmentPage() {
 								>
 									{removalNote}
 								</Typography>
+							</Box>
+						</Box>
+					</ScrollReveal>
+
+					{/* Appointment Type */}
+					<ScrollReveal direction="up" delay={0.15}>
+						<Box sx={{ mb: 3 }}>
+							<Typography
+								sx={{
+									fontFamily: '"Georgia", serif',
+									fontWeight: 700,
+									color: "#4A0E4E",
+									mb: 1,
+									fontSize: "1.05rem",
+								}}
+							>
+								Appointment Type
+							</Typography>
+							<Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+								<Box
+									onClick={() => setAppointmentType("salon")}
+									sx={{
+										border: appointmentType === "salon" ? "2px solid #E91E8C" : "2px solid #F0C0D0",
+										borderRadius: 2,
+										px: 2.5,
+										py: 1.2,
+										cursor: "pointer",
+										backgroundColor: appointmentType === "salon" ? "#FFF0F5" : "#fff",
+										transition: "all 0.2s ease",
+										"&:hover": { borderColor: "#E91E8C" },
+									}}
+								>
+									<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: "0.9rem", color: appointmentType === "salon" ? "#E91E8C" : "#333" }}>
+										Salon Service
+									</Typography>
+									<Typography sx={{ fontSize: "0.75rem", color: "#777" }}>
+										Visit us at our studio
+									</Typography>
+								</Box>
+								<Box
+									sx={{
+										border: "2px dashed #ddd",
+										borderRadius: 2,
+										px: 2.5,
+										py: 1.2,
+										opacity: 0.5,
+										cursor: "not-allowed",
+									}}
+								>
+									<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: "0.9rem", color: "#999" }}>
+										Home Service
+									</Typography>
+									<Typography sx={{ fontSize: "0.75rem", color: "#aaa" }}>
+										Coming Soon
+									</Typography>
+								</Box>
 							</Box>
 						</Box>
 					</ScrollReveal>
