@@ -42,7 +42,8 @@ import NailBedSizeInput from '../components/NailBedSizeInput';
 import PresetSizeGuide from '../components/PresetSizeGuide';
 import { useCart } from "../context/CartContext";
 import { useAuth } from '../context/AuthContext';
-import { saveOrder } from '../lib/orderService';
+import { saveOrder, saveNailBedSizes, fetchNailBedSizes } from '../lib/orderService';
+import SignInPrompt from '../components/SignInPrompt';
 
 function formatNaira(amount) {
   return `₦${amount.toLocaleString()}`;
@@ -85,9 +86,14 @@ export default function PlaceOrderPage() {
   const { addPressOn: addPressOnToCart } = useCart();
   const { user } = useAuth();
   const [customerName, setCustomerName] = useState('');
+  const [savedNailSizes, setSavedNailSizes] = useState('');
+  const [signInPromptOpen, setSignInPromptOpen] = useState(false);
 
   useEffect(() => {
     if (user?.displayName && !customerName) setCustomerName(user.displayName);
+    if (user?.uid) {
+      fetchNailBedSizes(user.uid).then(setSavedNailSizes).catch(() => {});
+    }
   }, [user]);
 
   useEffect(() => {
@@ -134,7 +140,7 @@ export default function PlaceOrderPage() {
       if (updated[productId]) {
         delete updated[productId];
       } else {
-        updated[productId] = isReadyMade(productId) ? { ...readyMadeForm } : { ...emptyForm };
+        updated[productId] = isReadyMade(productId) ? { ...readyMadeForm } : { ...emptyForm, nailBedSize: savedNailSizes };
       }
       return updated;
     });
@@ -208,6 +214,7 @@ export default function PlaceOrderPage() {
   };
 
   const handleConfirmOrder = () => {
+    if (!user) { setSignInPromptOpen(true); return; }
     setModalOpen(true);
   };
 
@@ -274,15 +281,24 @@ export default function PlaceOrderPage() {
             price: product?.price || 0,
             nailShape: form.nailShape || product?.shape || '',
             quantity: form.quantity || 1,
+            ...(form.nailBedSize ? { nailBedSize: form.nailBedSize } : {}),
           };
         }),
       }).catch(() => {});
+
+      // Save nail bed sizes to profile for reuse
+      const firstCustom = selectedIds.find((id) => !isReadyMade(id));
+      if (firstCustom) {
+        const sizes = selectedProducts[firstCustom]?.nailBedSize;
+        if (sizes) saveNailBedSizes(user.uid, sizes).catch(() => {});
+      }
     }
 
     navigate('/');
   };
 
   const handleAddToCart = () => {
+		if (!user) { setSignInPromptOpen(true); return; }
 		Object.keys(selectedProducts).forEach((id) => {
 			const product = allProducts.find((p) => p.id === id);
 			if (!product) return;
@@ -1287,6 +1303,12 @@ export default function PlaceOrderPage() {
 			<PresetSizeGuide
 				open={sizeGuideOpen}
 				onClose={() => setSizeGuideOpen(false)}
+			/>
+
+			{/* Sign In Prompt */}
+			<SignInPrompt
+				open={signInPromptOpen}
+				onClose={() => setSignInPromptOpen(false)}
 			/>
 		</Box>
   );

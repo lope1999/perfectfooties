@@ -19,6 +19,7 @@ import { decrementStockBatch } from '../lib/stockService';
 import { saveOrder } from '../lib/orderService';
 import { redeemGiftCard } from '../lib/giftCardService';
 import GiftCardRedeemInput from '../components/GiftCardRedeemInput';
+import SignInPrompt from '../components/SignInPrompt';
 
 function formatNaira(amount) {
   return `\u20A6${amount.toLocaleString()}`;
@@ -37,6 +38,7 @@ export default function CartPage() {
   const { user } = useAuth();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [appliedGiftCard, setAppliedGiftCard] = useState(null);
+  const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const {
     cart,
     removeService,
@@ -54,6 +56,7 @@ export default function CartPage() {
   const finalTotal = total - giftCardDiscount;
 
   const handleCheckout = async () => {
+    if (!user) { setSignInPromptOpen(true); return; }
     setCheckoutLoading(true);
 
     try {
@@ -593,6 +596,12 @@ export default function CartPage() {
           </Box>
         </Box>
       )}
+
+      {/* Sign In Prompt */}
+      <SignInPrompt
+        open={signInPromptOpen}
+        onClose={() => setSignInPromptOpen(false)}
+      />
     </Box>
   );
 }

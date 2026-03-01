@@ -2,6 +2,7 @@ import {
   collection,
   doc,
   addDoc,
+  getDoc,
   getDocs,
   updateDoc,
   query,
@@ -12,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { requireString, sanitizeString, validateNumber, validateOrderType, validateOrderStatus } from './validate';
+import { updateBookedSlotStatus } from './bookedSlotsService';
 
 export async function saveOrder(uid, data) {
   requireString(uid, 'uid');
@@ -52,5 +54,20 @@ export async function updateOrderStatus(uid, orderId, status) {
   requireString(orderId, 'orderId');
   validateOrderStatus(status, 'appointment');
   const ref = doc(db, 'users', uid, 'orders', orderId);
+  updateBookedSlotStatus(orderId, status).catch(() => {});
   return updateDoc(ref, { status });
+}
+
+export async function saveNailBedSizes(uid, sizes) {
+  requireString(uid, 'uid');
+  if (!sizes) return;
+  const userRef = doc(db, 'users', uid);
+  return updateDoc(userRef, { nailBedSizes: sizes });
+}
+
+export async function fetchNailBedSizes(uid) {
+  requireString(uid, 'uid');
+  const userRef = doc(db, 'users', uid);
+  const snap = await getDoc(userRef);
+  return snap.exists() ? snap.data().nailBedSizes || '' : '';
 }

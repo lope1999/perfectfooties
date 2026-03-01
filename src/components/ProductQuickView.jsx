@@ -19,9 +19,10 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { pressOnNailShapes, pressOnQuantities } from '../data/products';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { saveOrder } from '../lib/orderService';
+import { saveOrder, saveNailBedSizes, fetchNailBedSizes } from '../lib/orderService';
 import { decrementStockBatch } from '../lib/stockService';
 import NailBedSizeInput from './NailBedSizeInput';
+import SignInPrompt from './SignInPrompt';
 
 const presetSizes = ['XS', 'S', 'M', 'L'];
 
@@ -40,10 +41,16 @@ export default function ProductQuickView({ open, onClose, product, category, onA
   const [customerName, setCustomerName] = useState('');
   const [error, setError] = useState('');
   const [orderLoading, setOrderLoading] = useState(false);
+  const [signInPromptOpen, setSignInPromptOpen] = useState(false);
 
   useEffect(() => {
     if (user?.displayName && !customerName) setCustomerName(user.displayName);
-  }, [user]);
+    if (user?.uid && open) {
+      fetchNailBedSizes(user.uid).then((saved) => {
+        if (saved && !nailBedSize) setNailBedSize(saved);
+      }).catch(() => {});
+    }
+  }, [user, open]);
 
   if (!product || !category) return null;
 
@@ -90,6 +97,7 @@ export default function ProductQuickView({ open, onClose, product, category, onA
   };
 
   const handleAddToCart = () => {
+    if (!user) { setSignInPromptOpen(true); return; }
     if (!validate()) return;
 
     addPressOn({
@@ -114,6 +122,7 @@ export default function ProductQuickView({ open, onClose, product, category, onA
   };
 
   const handleConfirmOrder = async () => {
+    if (!user) { setSignInPromptOpen(true); return; }
     if (!validate()) return;
 
     setOrderLoading(true);
@@ -168,6 +177,11 @@ export default function ProductQuickView({ open, onClose, product, category, onA
           },
         ],
       }).catch(() => {});
+
+      // Save nail bed sizes to profile for reuse
+      if (!isReadyMade && nailBedSize) {
+        saveNailBedSizes(user.uid, nailBedSize).catch(() => {});
+      }
     }
 
     setOrderLoading(false);
@@ -410,6 +424,12 @@ export default function ProductQuickView({ open, onClose, product, category, onA
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Sign In Prompt */}
+      <SignInPrompt
+        open={signInPromptOpen}
+        onClose={() => setSignInPromptOpen(false)}
+      />
 
       {/* Full-screen zoom dialog */}
       <Dialog

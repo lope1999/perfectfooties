@@ -36,7 +36,7 @@ const fontFamily = '"Georgia", serif';
 
 function GreetingBanner() {
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const greeting = hour < 12 ? 'Good morning Chizzy' : hour < 17 ? 'Good afternoon Chizzy' : 'Good evening Chizzy';
   const today = new Date().toLocaleDateString('en-GB', {
     weekday: 'long',
     day: 'numeric',

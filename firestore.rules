@@ -79,6 +79,14 @@ service cloud.firestore {
                     && request.resource.data.giftedTo is string;
     }
 
+    // --- Booked Slots (public read, authenticated create, owner/admin update, admin delete) ---
+    match /bookedSlots/{slotId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if isAdmin() || (request.auth != null && request.auth.uid == resource.data.uid);
+      allow delete: if isAdmin();
+    }
+
     // --- Collection group query for admin to fetch all orders ---
     match /{path=**}/orders/{orderId} {
       allow read: if isAdmin();

@@ -20,6 +20,7 @@ import {
   validateNumber,
   validateOrderStatus,
 } from './validate';
+import { updateBookedSlotStatus } from './bookedSlotsService';
 
 // ─── Orders ─────────────────────────────────────────────
 
@@ -71,6 +72,7 @@ export async function updateOrderStatus(uid, orderId, status) {
   const kind = APPOINTMENT_ONLY_STATUSES.has(status) ? 'appointment' : 'order';
   validateOrderStatus(status, kind);
   const ref = doc(db, 'users', uid, 'orders', orderId);
+  updateBookedSlotStatus(orderId, status).catch(() => {});
   return updateDoc(ref, { status });
 }
 

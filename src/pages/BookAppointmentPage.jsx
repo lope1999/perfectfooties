@@ -21,6 +21,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  CircularProgress,
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EventNoteIcon from '@mui/icons-material/EventNote';
@@ -30,6 +31,8 @@ import ScrollReveal from '../components/ScrollReveal';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { saveOrder } from '../lib/orderService';
+import { fetchBookedSlots, saveBookedSlot } from '../lib/bookedSlotsService';
+import SignInPrompt from '../components/SignInPrompt';
 
 function formatNaira(amount) {
   return `₦${amount.toLocaleString()}`;
@@ -68,6 +71,7 @@ export default function BookAppointmentPage() {
   const { addService: addServiceToCart } = useCart();
   const { user } = useAuth();
   const [customerName, setCustomerName] = useState('');
+  const [signInPromptOpen, setSignInPromptOpen] = useState(false);
 
   useEffect(() => {
     if (user?.displayName && !customerName) setCustomerName(user.displayName);
@@ -94,6 +98,23 @@ export default function BookAppointmentPage() {
 
   const timeSlots = ['12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'];
   const [modalOpen, setModalOpen] = useState(false);
+  const [bookedSlots, setBookedSlots] = useState([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!appointmentDate || !isWeekend(appointmentDate)) {
+      setBookedSlots([]);
+      return;
+    }
+    setSlotsLoading(true);
+    fetchBookedSlots(formatDate(appointmentDate))
+      .then((slots) => {
+        setBookedSlots(slots);
+        setAppointmentTime((prev) => (slots.includes(prev) ? '' : prev));
+      })
+      .catch(() => setBookedSlots([]))
+      .finally(() => setSlotsLoading(false));
+  }, [appointmentDate]);
 
   const allServices = serviceCategories.flatMap((cat) =>
     cat.services.map((s) => ({ ...s, category: cat.title }))
@@ -133,6 +154,7 @@ export default function BookAppointmentPage() {
   };
 
   const handleConfirmBooking = () => {
+    if (!user) { setSignInPromptOpen(true); return; }
     setModalOpen(true);
   };
 
@@ -159,6 +181,13 @@ export default function BookAppointmentPage() {
           nailShape: formData.nailShape,
           nailLength: formData.nailLength,
         }],
+      }).then((orderRef) => {
+        saveBookedSlot({
+          date: formatDate(appointmentDate),
+          time: appointmentTime,
+          orderId: orderRef.id,
+          uid: user.uid,
+        }).catch(() => {});
       }).catch(() => {});
     }
 
@@ -166,6 +195,7 @@ export default function BookAppointmentPage() {
   };
 
   const handleAddToCart = () => {
+    if (!user) { setSignInPromptOpen(true); return; }
     const selected = allServices.find((s) => s.id === selectedService);
     if (!selected) return;
     const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
@@ -436,6 +466,7 @@ export default function BookAppointmentPage() {
 								value={appointmentTime}
 								onChange={(e) => setAppointmentTime(e.target.value)}
 								displayEmpty
+								disabled={slotsLoading}
 								sx={{
 									borderRadius: 2,
 									'& fieldset': { borderColor: '#F0C0D0' },
@@ -443,12 +474,34 @@ export default function BookAppointmentPage() {
 									'&.Mui-focused fieldset': { borderColor: '#E91E8C' },
 								}}
 							>
-								<MenuItem value="" disabled>Select a time slot</MenuItem>
-								{timeSlots.map((slot) => (
-									<MenuItem key={slot} value={slot}>{slot}</MenuItem>
-								))}
+								<MenuItem value="" disabled>
+									{slotsLoading ? 'Checking availability...' : 'Select a time slot'}
+								</MenuItem>
+								{timeSlots.map((slot) => {
+									const isBooked = bookedSlots.includes(slot);
+									return (
+										<MenuItem key={slot} value={slot} disabled={isBooked}>
+											<Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+												<span>{slot}</span>
+												{isBooked && (
+													<Typography component="span" sx={{ color: '#d32f2f', fontSize: '0.8rem', fontWeight: 600, ml: 2 }}>
+														Booked
+													</Typography>
+												)}
+											</Box>
+										</MenuItem>
+									);
+								})}
 							</Select>
 						</FormControl>
+						{slotsLoading && (
+							<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.8 }}>
+								<CircularProgress size={14} sx={{ color: '#E91E8C' }} />
+								<Typography sx={{ fontSize: '0.78rem', color: '#7a0064', fontStyle: 'italic' }}>
+									Checking available time slots...
+								</Typography>
+							</Box>
+						)}
 					</Box>
 
 					{/* Service Selection */}
@@ -758,6 +811,12 @@ export default function BookAppointmentPage() {
 					</Button>
 				</DialogActions>
 			</Dialog>
+
+			{/* Sign In Prompt */}
+			<SignInPrompt
+				open={signInPromptOpen}
+				onClose={() => setSignInPromptOpen(false)}
+			/>
 		</Box>
   );
 }
