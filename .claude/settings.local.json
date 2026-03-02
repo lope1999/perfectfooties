@@ -30,7 +30,11 @@
       "WebFetch(domain:dev.to)",
       "WebFetch(domain:medium.com)",
       "Bash(find:*)",
-      "Bash(firebase:*)"
+      "Bash(firebase:*)",
+      "Bash(git checkout:*)",
+      "Bash(git fetch:*)",
+      "Bash(git:*)",
+      "Bash(sed:*)"
     ]
   }
 }
