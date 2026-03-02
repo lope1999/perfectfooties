@@ -182,6 +182,7 @@ export default function ProductsMenuPage() {
         price: product.price,
         image: product.image,
         categoryId: category.id,
+        stock: product.stock,
       });
     }
   };

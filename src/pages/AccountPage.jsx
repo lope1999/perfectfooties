@@ -16,16 +16,20 @@ import {
   DialogActions,
   TextField,
   IconButton,
+  Tooltip,
 } from '@mui/material';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { fetchOrders } from '../lib/orderService';
 import { saveTestimonial, getReviewedOrderIds } from '../lib/testimonialService';
@@ -45,6 +49,7 @@ function formatDate(ts) {
 export default function AccountPage() {
   const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth();
   const { wishlist, removeFromWishlist } = useWishlist();
+  const { addProduct } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -279,52 +284,91 @@ export default function AccountPage() {
                     borderRadius: 3,
                     border: '1px solid #F0C0D0',
                     backgroundColor: '#fff',
+                    transition: 'box-shadow 0.2s ease',
+                    '&:hover': { boxShadow: '0 2px 12px rgba(233,30,140,0.1)' },
                   }}
                 >
                   <Box
-                    component="img"
-                    src={item.image}
-                    alt={item.name}
+                    onClick={() => navigate('/products', { state: { categoryId: item.categoryId } })}
                     sx={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: 2,
-                      objectFit: 'cover',
-                      flexShrink: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      flex: 1,
+                      minWidth: 0,
+                      cursor: 'pointer',
                     }}
-                  />
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography
+                  >
+                    <Box
+                      component="img"
+                      src={item.image}
+                      alt={item.name}
                       sx={{
-                        fontFamily: '"Georgia", serif',
-                        fontWeight: 700,
-                        fontSize: '0.95rem',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {item.name}
-                    </Typography>
-                    <Chip
-                      label={formatNaira(item.price)}
-                      size="small"
-                      sx={{
-                        mt: 0.5,
-                        backgroundColor: '#E91E8C',
-                        color: '#fff',
-                        fontFamily: '"Georgia", serif',
-                        fontWeight: 700,
-                        fontSize: '0.8rem',
+                        width: 60,
+                        height: 60,
+                        borderRadius: 2,
+                        objectFit: 'cover',
+                        flexShrink: 0,
                       }}
                     />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography
+                        sx={{
+                          fontFamily: '"Georgia", serif',
+                          fontWeight: 700,
+                          fontSize: '0.95rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {item.name}
+                      </Typography>
+                      <Chip
+                        label={formatNaira(item.price)}
+                        size="small"
+                        sx={{
+                          mt: 0.5,
+                          backgroundColor: '#E91E8C',
+                          color: '#fff',
+                          fontFamily: '"Georgia", serif',
+                          fontWeight: 700,
+                          fontSize: '0.8rem',
+                        }}
+                      />
+                    </Box>
                   </Box>
-                  <IconButton
-                    onClick={() => removeFromWishlist(item.productId)}
-                    sx={{ color: '#ccc', '&:hover': { color: '#E91E8C' } }}
-                  >
-                    <DeleteOutlineIcon />
-                  </IconButton>
+                  <Tooltip title="View product">
+                    <IconButton
+                      onClick={() => navigate('/products', { state: { categoryId: item.categoryId } })}
+                      sx={{ color: '#999', '&:hover': { color: '#4A0E4E' } }}
+                    >
+                      <VisibilityOutlinedIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Add to cart">
+                    <IconButton
+                      onClick={() => addProduct({
+                        productId: item.productId,
+                        name: item.name,
+                        price: item.price,
+                        quantity: 1,
+                        stock: item.stock ?? 999,
+                        categoryId: item.categoryId,
+                      })}
+                      sx={{ color: '#999', '&:hover': { color: '#E91E8C' } }}
+                    >
+                      <ShoppingCartOutlinedIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Remove from wishlist">
+                    <IconButton
+                      onClick={() => removeFromWishlist(item.productId)}
+                      sx={{ color: '#ccc', '&:hover': { color: '#E91E8C' } }}
+                    >
+                      <DeleteOutlineIcon />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
               ))
             )}
