@@ -152,18 +152,18 @@ export const productCategories = [
 			// 	length: "Medium",
 			// 	shape: "Almond",
 			// },
-			// {
-			// 	id: "av-reddened-glister",
-			// 	name: "Reddened Glister",
-			// 	description:
-			// 		"Rich, deep red base with fine glitter particles that catch the light beautifully — classic glamour with a sparkling twist.",
-			// 	price: 15000,
-			// 	image: "/images/products/glossy-red.jpg.jpg",
-			// 	type: "Hard Gel",
-			// 	stock: 3,
-			// 	length: "Medium",
-			// 	shape: "Oval",
-			// },
+			{
+				id: "av-reddened-glister",
+				name: "Reddened Glister",
+				description:
+					"Rich, deep red base with fine glitter particles(cateye) that catch the light beautifully — classic glamour with a sparkling twist.",
+				price: 15000,
+				image: "/images/products/redenedg.jpg",
+				type: "Hard Gel",
+				stock: 3,
+				length: "Long",
+				shape: "Stiletto",
+			},
 		],
 	},
 	{
