@@ -19,9 +19,13 @@ import ScrollReveal from '../components/ScrollReveal';
 import useBlogPosts from '../hooks/useBlogPosts';
 
 const categoryColors = {
-  'Nail Care': '#E91E8C',
-  'Gel Polishes': '#4A0E4E',
-  'Nail Brands': '#C2185B',
+	"Nail Care": "#E91E8C",
+	"Gel Polishes": "#4A0E4E",
+	"Nail Brands": "#C2185B",
+	"Nail Art": "#AD1457",
+	"Nail Trends": "#880E4F",
+	"Nail Styles": "#d75498",
+	"Nail Shapes": "#9a1b50",
 };
 
 export default function BlogPage() {
