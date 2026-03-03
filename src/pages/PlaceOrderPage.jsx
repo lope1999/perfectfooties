@@ -44,6 +44,7 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from '../context/AuthContext';
 import { saveOrder, saveNailBedSizes, fetchNailBedSizes } from '../lib/orderService';
 import SignInPrompt from '../components/SignInPrompt';
+import { hasDiscount, getEffectivePrice, getDiscountLabel } from '../lib/discountUtils';
 
 function formatNaira(amount) {
   return `₦${amount.toLocaleString()}`;
@@ -244,10 +245,11 @@ export default function PlaceOrderPage() {
     const orderLines = selectedIds.map((id, i) => {
       const product = allProducts.find((p) => p.id === id);
       const form = selectedProducts[id];
+      const price = product ? getEffectivePrice(product) : 0;
       if (product?.readyMade) {
-        return `${i + 1}. ${product?.name || 'Product'} — ${product ? formatNaira(product.price) : ''}\n   - Type: ${product.type || 'N/A'}\n   - Shape: ${product.shape || 'N/A'}\n   - Length: ${product.length || 'N/A'}\n   - Preset Size: ${form.presetSize}\n   - Quantity: ${form.quantity} set(s)\n   - (Ready-made — ready to ship)`;
+        return `${i + 1}. ${product?.name || 'Product'} — ${formatNaira(price)}\n   - Type: ${product.type || 'N/A'}\n   - Shape: ${product.shape || 'N/A'}\n   - Length: ${product.length || 'N/A'}\n   - Preset Size: ${form.presetSize}\n   - Quantity: ${form.quantity} set(s)\n   - (Ready-made — ready to ship)`;
       }
-      let line = `${i + 1}. ${product?.name || 'Product'} — ${product ? formatNaira(product.price) : ''}\n   - Nail Shape: ${form.nailShape}\n   - Quantity: ${form.quantity} set(s)\n   - Nail Bed Size: ${form.nailBedSize || 'Not provided'}`;
+      let line = `${i + 1}. ${product?.name || 'Product'} — ${formatNaira(price)}\n   - Nail Shape: ${form.nailShape}\n   - Quantity: ${form.quantity} set(s)\n   - Nail Bed Size: ${form.nailBedSize || 'Not provided'}`;
       if (form.orderingForOthers && form.otherPeople?.length > 0) {
         const othersLines = form.otherPeople.map((p, j) =>
           `   - Also for: ${p.name || 'N/A'} — Shape: ${p.nailShape || 'Same'} — Nail Bed Size: ${p.nailBedSize || 'Not provided'}`
@@ -259,7 +261,7 @@ export default function PlaceOrderPage() {
 
     const total = selectedIds.reduce((sum, id) => {
       const product = allProducts.find((p) => p.id === id);
-      return sum + (product?.price || 0);
+      return sum + (product ? getEffectivePrice(product) : 0);
     }, 0);
 
     const message = `Hi! I'd like to order press-on nails.\n\nName: ${customerName}\n\nProducts (${selectedIds.length}):\n${orderLines.join('\n\n')}\n\nEstimated Total: ${formatNaira(total)}\n\nPlease confirm availability and delivery details. Thank you!`;
@@ -275,10 +277,12 @@ export default function PlaceOrderPage() {
         items: selectedIds.map((id) => {
           const product = allProducts.find((p) => p.id === id);
           const form = selectedProducts[id];
+          const effectivePrice = product ? getEffectivePrice(product) : 0;
           return {
             kind: 'pressOn',
             name: product?.name || '',
-            price: product?.price || 0,
+            price: effectivePrice,
+            ...(hasDiscount(product) ? { originalPrice: product.price, discountLabel: getDiscountLabel(product) } : {}),
             nailShape: form.nailShape || product?.shape || '',
             quantity: form.quantity || 1,
             ...(form.nailBedSize ? { nailBedSize: form.nailBedSize } : {}),
@@ -306,7 +310,8 @@ export default function PlaceOrderPage() {
 			addPressOnToCart({
 				productId: product.id,
 				name: product.name,
-				price: product.price,
+				price: getEffectivePrice(product),
+				...(hasDiscount(product) ? { originalPrice: product.price, discountLabel: getDiscountLabel(product) } : {}),
 				type: product.type || "",
 				nailShape: form.nailShape || product.shape || "",
 				quantity: form.quantity || 1,
@@ -613,6 +618,19 @@ export default function PlaceOrderPage() {
 																				}}
 																			/>
 																		)}
+																		{hasDiscount(product) && (
+																			<Chip
+																				label={getDiscountLabel(product)}
+																				size="small"
+																				sx={{
+																					backgroundColor: "#e8f5e9",
+																					color: "#2e7d32",
+																					fontSize: "0.65rem",
+																					fontWeight: 700,
+																					height: 20,
+																				}}
+																			/>
+																		)}
 																	</Box>
 																	<Typography
 																		sx={{
@@ -675,18 +693,45 @@ export default function PlaceOrderPage() {
 																handleToggleProduct(product.id)
 															}
 														/>
-														<Typography
-															sx={{
-																fontFamily: '"Georgia", serif',
-																fontWeight: 700,
-																color: "#E91E8C",
-																fontSize: "1.05rem",
-																whiteSpace: "nowrap",
-																ml: 2,
-															}}
-														>
-															{formatNaira(product.price)}
-														</Typography>
+														{hasDiscount(product) ? (
+															<Box sx={{ textAlign: 'right', ml: 2 }}>
+																<Typography
+																	sx={{
+																		fontFamily: '"Georgia", serif',
+																		fontWeight: 700,
+																		color: "#2e7d32",
+																		fontSize: "1.05rem",
+																		whiteSpace: "nowrap",
+																	}}
+																>
+																	{formatNaira(getEffectivePrice(product))}
+																</Typography>
+																<Typography
+																	sx={{
+																		fontFamily: '"Georgia", serif',
+																		color: "#999",
+																		fontSize: "0.78rem",
+																		textDecoration: 'line-through',
+																		whiteSpace: "nowrap",
+																	}}
+																>
+																	{formatNaira(product.price)}
+																</Typography>
+															</Box>
+														) : (
+															<Typography
+																sx={{
+																	fontFamily: '"Georgia", serif',
+																	fontWeight: 700,
+																	color: "#E91E8C",
+																	fontSize: "1.05rem",
+																	whiteSpace: "nowrap",
+																	ml: 2,
+																}}
+															>
+																{formatNaira(product.price)}
+															</Typography>
+														)}
 													</Box>
 												</CardContent>
 
@@ -1270,7 +1315,12 @@ export default function PlaceOrderPage() {
 										sx={{ color: "#555", fontSize: "0.9rem", pl: 1 }}
 									>
 										• {product?.name || "Product"} —{" "}
-										{product ? formatNaira(product.price) : ""}
+										{product ? formatNaira(getEffectivePrice(product)) : ""}
+										{product && hasDiscount(product) && (
+											<Typography component="span" sx={{ ml: 1, fontSize: '0.8rem', color: '#999', textDecoration: 'line-through' }}>
+												{formatNaira(product.price)}
+											</Typography>
+										)}
 									</Typography>
 								);
 							})}

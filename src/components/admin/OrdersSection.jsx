@@ -400,9 +400,41 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                           <Box sx={{ mb: 1 }}>
                             <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700 }}>Items:</Typography>
                             {o.items.map((item, i) => (
-                              <Typography key={i} sx={{ fontFamily, fontSize: '0.8rem', pl: 2 }}>
-                                • {item.name || item.title} × {item.quantity || 1} — ₦{(item.price || 0).toLocaleString()}
-                              </Typography>
+                              <Box key={i} sx={{ pl: 2, mb: 1, borderLeft: '2px solid #F0C0D0', ml: 1 }}>
+                                <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, color: '#4A0E4E' }}>
+                                  {item.serviceName || item.name || item.title || 'Item'}
+                                </Typography>
+                                <Typography sx={{ fontFamily, fontSize: '0.8rem', color: '#555' }}>
+                                  {item.kind === 'service' ? 'Service Appointment' : item.kind === 'retail' ? 'Retail Product' : item.kind === 'pressOn' ? 'Press-On Nails' : item.kind || '—'}
+                                  {' • '}Qty: {item.quantity || 1}
+                                  {' • '}₦{(item.price || 0).toLocaleString()}
+                                  {item.originalPrice && (
+                                    <Typography component="span" sx={{ ml: 0.5, fontSize: '0.75rem', color: '#999', textDecoration: 'line-through' }}>
+                                      ₦{item.originalPrice.toLocaleString()}
+                                    </Typography>
+                                  )}
+                                  {item.discountLabel && (
+                                    <Typography component="span" sx={{ ml: 0.5, fontSize: '0.7rem', color: '#2e7d32', fontWeight: 600 }}>
+                                      ({item.discountLabel})
+                                    </Typography>
+                                  )}
+                                </Typography>
+                                {item.nailShape && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
+                                    Shape: {item.nailShape}{item.nailLength ? ` • Length: ${item.nailLength}` : ''}
+                                  </Typography>
+                                )}
+                                {item.presetSize && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
+                                    Preset Size: {item.presetSize}
+                                  </Typography>
+                                )}
+                                {item.nailBedSize && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
+                                    Nail Bed Size: {item.nailBedSize}
+                                  </Typography>
+                                )}
+                              </Box>
                             ))}
                           </Box>
                         )}
