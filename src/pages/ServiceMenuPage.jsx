@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Container, Card, CardContent, Button, Grid, CircularProgress } from '@mui/material';
+import { Box, Typography, Container, Card, CardContent, Button, Grid, CircularProgress, Chip } from '@mui/material';
 import LoginIcon from '@mui/icons-material/Login';
 import { serviceCategories } from '../data/services';
 import { useAuth } from '../context/AuthContext';
+import useServiceDiscounts from '../hooks/useServiceDiscounts';
+import { hasServiceDiscount, getServiceEffectivePrice, getServiceDiscountLabel } from '../lib/discountUtils';
 import ScrollReveal from '../components/ScrollReveal';
 
 const sectionColors = ['#FFF0F5', '#FCE4EC', '#F3E5F6'];
@@ -34,6 +36,7 @@ function formatNaira(amount) {
 export default function ServiceMenuPage() {
   const navigate = useNavigate();
   const { user, signInWithGoogle } = useAuth();
+  const { discounts } = useServiceDiscounts();
   const [signingIn, setSigningIn] = useState(false);
 
   const handleSignIn = async () => {
@@ -308,16 +311,34 @@ export default function ServiceMenuPage() {
 													},
 												}}
 											>
-												<Box
-													component="img"
-													src={service.image}
-													alt={service.name}
-													sx={{
-														width: "100%",
-														height: 180,
-														objectFit: "cover",
-													}}
-												/>
+												<Box sx={{ position: 'relative' }}>
+													<Box
+														component="img"
+														src={service.image}
+														alt={service.name}
+														sx={{
+															width: "100%",
+															height: 180,
+															objectFit: "cover",
+														}}
+													/>
+													{hasServiceDiscount(service.id, discounts) && (
+														<Chip
+															label={getServiceDiscountLabel(service.id, discounts)}
+															size="small"
+															sx={{
+																position: 'absolute',
+																top: 8,
+																left: 8,
+																backgroundColor: '#2e7d32',
+																color: '#fff',
+																fontSize: '0.7rem',
+																fontWeight: 700,
+																height: 22,
+															}}
+														/>
+													)}
+												</Box>
 												<CardContent sx={{ flex: 1, p: 3, display: "flex", flexDirection: "column" }}>
 													<Box
 														sx={{
@@ -339,18 +360,45 @@ export default function ServiceMenuPage() {
 														>
 															{service.name}
 														</Typography>
-														<Typography
-															sx={{
-																fontFamily: '"Georgia", serif',
-																fontWeight: 700,
-																color: "#E91E8C",
-																fontSize: "1rem",
-																whiteSpace: "nowrap",
-																ml: 2,
-															}}
-														>
-															{formatNaira(service.price)}
-														</Typography>
+														{hasServiceDiscount(service.id, discounts) ? (
+															<Box sx={{ textAlign: 'right', ml: 2 }}>
+																<Typography
+																	sx={{
+																		fontFamily: '"Georgia", serif',
+																		fontWeight: 700,
+																		color: "#2e7d32",
+																		fontSize: "1rem",
+																		whiteSpace: "nowrap",
+																	}}
+																>
+																	{formatNaira(getServiceEffectivePrice(service, discounts))}
+																</Typography>
+																<Typography
+																	sx={{
+																		fontFamily: '"Georgia", serif',
+																		color: "#999",
+																		fontSize: "0.78rem",
+																		textDecoration: 'line-through',
+																		whiteSpace: "nowrap",
+																	}}
+																>
+																	{formatNaira(service.price)}
+																</Typography>
+															</Box>
+														) : (
+															<Typography
+																sx={{
+																	fontFamily: '"Georgia", serif',
+																	fontWeight: 700,
+																	color: "#E91E8C",
+																	fontSize: "1rem",
+																	whiteSpace: "nowrap",
+																	ml: 2,
+																}}
+															>
+																{formatNaira(service.price)}
+															</Typography>
+														)}
 													</Box>
 													<Typography
 														sx={{

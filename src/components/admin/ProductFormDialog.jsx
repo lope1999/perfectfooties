@@ -28,6 +28,9 @@ const initialState = {
   shape: '',
   length: '',
   hidden: false,
+  discountEnabled: false,
+  discountPrice: '',
+  discountLabel: '',
 };
 
 export default function ProductFormDialog({ open, onClose, onSave, product, type }) {
@@ -48,6 +51,9 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
         shape: product.shape || '',
         length: product.length || '',
         hidden: !!product.hidden,
+        discountEnabled: !!product.discountEnabled,
+        discountPrice: product.discountPrice ?? '',
+        discountLabel: product.discountLabel ?? '',
       });
     } else {
       setForm(initialState);
@@ -68,6 +74,9 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
         price: parseFloat(form.price) || 0,
         image: form.image,
         hidden: form.hidden,
+        discountEnabled: form.discountEnabled,
+        discountPrice: form.discountEnabled ? (parseFloat(form.discountPrice) || 0) : null,
+        discountLabel: form.discountEnabled ? (form.discountLabel || '') : '',
       };
       // Only include stock if a value was provided (Firestore rejects undefined)
       if (form.stock !== '') {
@@ -176,6 +185,53 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
               />
             </Box>
           </Grid>
+          <Grid item xs={12}>
+            <Box sx={{ display: 'flex', alignItems: 'center', p: 1.5, borderRadius: 2, border: '1px solid #eee', backgroundColor: form.discountEnabled ? '#e8f5e9' : '#fafafa' }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={form.discountEnabled}
+                    onChange={(e) => setForm((prev) => ({ ...prev, discountEnabled: e.target.checked }))}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': { color: '#2e7d32' },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#2e7d32' },
+                    }}
+                  />
+                }
+                label={
+                  <Typography sx={{ fontFamily, fontSize: '0.9rem', fontWeight: 600, color: '#2e7d32' }}>
+                    Discount Active
+                  </Typography>
+                }
+              />
+            </Box>
+          </Grid>
+          {form.discountEnabled && (
+            <>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Sale Price"
+                  type="number"
+                  value={form.discountPrice}
+                  onChange={handleChange('discountPrice')}
+                  InputProps={{ sx: { fontFamily } }}
+                  InputLabelProps={{ sx: { fontFamily } }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Discount Label"
+                  placeholder="e.g. Easter Sale"
+                  value={form.discountLabel}
+                  onChange={handleChange('discountLabel')}
+                  InputProps={{ sx: { fontFamily } }}
+                  InputLabelProps={{ sx: { fontFamily } }}
+                />
+              </Grid>
+            </>
+          )}
           {isPresson && (
             <>
               <Grid item xs={4}>

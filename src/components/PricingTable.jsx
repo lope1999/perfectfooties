@@ -10,6 +10,8 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { serviceCategories } from '../data/services';
 import { productCategories } from '../data/products';
+import useServiceDiscounts from '../hooks/useServiceDiscounts';
+import { hasDiscount, getEffectivePrice, hasServiceDiscount, getServiceEffectivePrice } from '../lib/discountUtils';
 
 function formatNaira(amount) {
   return `\u20A6${amount.toLocaleString()}`;
@@ -62,6 +64,8 @@ const priceSx = {
 };
 
 export default function PricingTable({ open, onClose }) {
+  const { discounts } = useServiceDiscounts();
+
   return (
     <Dialog
       open={open}
@@ -148,7 +152,18 @@ export default function PricingTable({ open, onClose }) {
               {cat.services.map((service) => (
                 <Box key={service.id} sx={rowSx}>
                   <Typography sx={nameSx}>{service.name}</Typography>
-                  <Typography sx={priceSx}>{formatNaira(service.price)}</Typography>
+                  {hasServiceDiscount(service.id, discounts) ? (
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Typography sx={{ ...priceSx, color: '#2e7d32' }}>
+                        {formatNaira(getServiceEffectivePrice(service, discounts))}
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.75rem', color: '#999', textDecoration: 'line-through', whiteSpace: 'nowrap' }}>
+                        {formatNaira(service.price)}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography sx={priceSx}>{formatNaira(service.price)}</Typography>
+                  )}
                 </Box>
               ))}
             </Box>
@@ -183,7 +198,18 @@ export default function PricingTable({ open, onClose }) {
                 {cat.products.map((product) => (
                   <Box key={product.id} sx={rowSx}>
                     <Typography sx={nameSx}>{product.name}</Typography>
-                    <Typography sx={priceSx}>{formatNaira(product.price)}</Typography>
+                    {hasDiscount(product) ? (
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography sx={{ ...priceSx, color: '#2e7d32' }}>
+                          {formatNaira(getEffectivePrice(product))}
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.75rem', color: '#999', textDecoration: 'line-through', whiteSpace: 'nowrap' }}>
+                          {formatNaira(product.price)}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography sx={priceSx}>{formatNaira(product.price)}</Typography>
+                    )}
                   </Box>
                 ))}
               </Box>

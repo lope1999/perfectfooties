@@ -207,6 +207,65 @@ export async function deleteProduct(collectionName, categoryId, productId) {
   });
 }
 
+// ─── Users ──────────────────────────────────────────────
+
+export async function fetchAllUsers() {
+  const snap = await getDocs(collection(db, 'users'));
+  return snap.docs
+    .filter((d) => d.id !== 'admin-legacy')
+    .map((d) => ({ uid: d.id, ...d.data() }));
+}
+
+export function computeUserStats(users, orders) {
+  const ordersByUid = {};
+  for (const o of orders) {
+    const uid = o.uid;
+    if (!uid) continue;
+    if (!ordersByUid[uid]) ordersByUid[uid] = [];
+    ordersByUid[uid].push(o);
+  }
+
+  return users.map((u) => {
+    const userOrders = ordersByUid[u.uid] || [];
+    const orderCount = userOrders.filter((o) => o.type !== 'service').length;
+    const appointmentCount = userOrders.filter((o) => o.type === 'service').length;
+    const totalPaid = userOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+    const lastOrder = userOrders.length > 0
+      ? userOrders.reduce((latest, o) => {
+          const t = o.createdAt?.toDate?.() || new Date(0);
+          return t > latest ? t : latest;
+        }, new Date(0))
+      : null;
+    return {
+      ...u,
+      orderCount,
+      appointmentCount,
+      totalPaid,
+      lastOrderDate: lastOrder,
+      isRegular: orderCount + appointmentCount >= 3,
+    };
+  });
+}
+
+// ─── Service Discounts ──────────────────────────────────
+
+export async function fetchServiceDiscounts() {
+  const snap = await getDocs(collection(db, 'serviceDiscounts'));
+  const map = {};
+  snap.docs.forEach((d) => { map[d.id] = d.data(); });
+  return map;
+}
+
+export async function setServiceDiscount(serviceId, data) {
+  const ref = doc(db, 'serviceDiscounts', serviceId);
+  return setDoc(ref, data, { merge: true });
+}
+
+export async function removeServiceDiscount(serviceId) {
+  const ref = doc(db, 'serviceDiscounts', serviceId);
+  return deleteDoc(ref);
+}
+
 // ─── Stats ──────────────────────────────────────────────
 
 export function computeDashboardStats(orders) {

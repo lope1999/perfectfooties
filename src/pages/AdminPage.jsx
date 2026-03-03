@@ -7,8 +7,10 @@ import DashboardSection from '../components/admin/DashboardSection';
 import OrdersSection from '../components/admin/OrdersSection';
 import AppointmentsSection from '../components/admin/AppointmentsSection';
 import ProductsSection from '../components/admin/ProductsSection';
+import CustomersSection from '../components/admin/CustomersSection';
+import ServiceDiscountsSection from '../components/admin/ServiceDiscountsSection';
 import GiftCardsSection from '../components/admin/GiftCardsSection';
-import { fetchAllOrders, seedAndFetchCategories } from '../lib/adminService';
+import { fetchAllOrders, seedAndFetchCategories, fetchAllUsers, computeUserStats, fetchServiceDiscounts } from '../lib/adminService';
 import { fetchAllGiftCards } from '../lib/giftCardService';
 import { productCategories as staticPressOns } from '../data/products';
 import { retailCategories as staticRetail } from '../data/retailProducts';
@@ -21,6 +23,8 @@ export default function AdminPage() {
   const [pressOnCategories, setPressOnCategories] = useState([]);
   const [retailCategories, setRetailCategories] = useState([]);
   const [giftCards, setGiftCards] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [serviceDiscounts, setServiceDiscounts] = useState({});
   const [loading, setLoading] = useState(true);
 
   const theme = useTheme();
@@ -30,11 +34,13 @@ export default function AdminPage() {
     setLoading(true);
     try {
       // Seed + fetch categories in one read each, all requests in parallel
-      const [o, pc, rc, gc] = await Promise.allSettled([
+      const [o, pc, rc, gc, uf, sd] = await Promise.allSettled([
         fetchAllOrders(),
         seedAndFetchCategories('productCategories', staticPressOns),
         seedAndFetchCategories('retailCategories', staticRetail),
         fetchAllGiftCards(),
+        fetchAllUsers(),
+        fetchServiceDiscounts(),
       ]);
 
       if (o.status === 'fulfilled') {
@@ -49,6 +55,11 @@ export default function AdminPage() {
       setPressOnCategories(pressOns.length > 0 ? pressOns : staticPressOns);
       setRetailCategories(retail.length > 0 ? retail : staticRetail);
       setGiftCards(gc.status === 'fulfilled' ? gc.value : []);
+
+      const rawUsers = uf.status === 'fulfilled' ? uf.value : [];
+      const allOrders = o.status === 'fulfilled' ? o.value : [];
+      setUsers(computeUserStats(rawUsers, allOrders));
+      setServiceDiscounts(sd.status === 'fulfilled' ? sd.value : {});
     } catch (err) {
       console.error('Admin data load error:', err);
       setPressOnCategories(staticPressOns);
@@ -70,6 +81,7 @@ export default function AdminPage() {
             orders={orders}
             pressOnCategories={pressOnCategories}
             retailCategories={retailCategories}
+            customerCount={users.length}
             loading={loading}
             onNavigate={setSection}
           />
@@ -96,6 +108,16 @@ export default function AdminPage() {
             loading={loading}
             onRefresh={loadData}
             type="retail"
+          />
+        );
+      case 'customers':
+        return <CustomersSection users={users} loading={loading} />;
+      case 'services':
+        return (
+          <ServiceDiscountsSection
+            serviceDiscounts={serviceDiscounts}
+            loading={loading}
+            onRefresh={loadData}
           />
         );
       case 'giftcards':

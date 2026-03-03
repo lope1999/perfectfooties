@@ -23,6 +23,7 @@ import { saveOrder, saveNailBedSizes, fetchNailBedSizes } from '../lib/orderServ
 import { decrementStockBatch } from '../lib/stockService';
 import NailBedSizeInput from './NailBedSizeInput';
 import SignInPrompt from './SignInPrompt';
+import { hasDiscount, getEffectivePrice, getDiscountLabel } from '../lib/discountUtils';
 
 const presetSizes = ['XS', 'S', 'M', 'L'];
 
@@ -100,10 +101,13 @@ export default function ProductQuickView({ open, onClose, product, category, onA
     if (!user) { setSignInPromptOpen(true); return; }
     if (!validate()) return;
 
+    const effectivePrice = getEffectivePrice(product);
     addPressOn({
       productId: product.id,
       name: product.name,
-      price: product.price,
+      price: effectivePrice,
+      originalPrice: hasDiscount(product) ? product.price : undefined,
+      discountLabel: hasDiscount(product) ? getDiscountLabel(product) : undefined,
       type: product.type || '',
       nailShape: nailShape || product.shape || '',
       quantity,
@@ -143,8 +147,9 @@ export default function ProductQuickView({ open, onClose, product, category, onA
     }
 
     // Build WhatsApp message
-    const total = product.price * quantity;
-    let productLine = `1. ${product.name} — ${formatNaira(product.price)}`;
+    const effectivePrice = getEffectivePrice(product);
+    const total = effectivePrice * quantity;
+    let productLine = `1. ${product.name} — ${formatNaira(effectivePrice)}`;
     if (isReadyMade) {
       productLine += `\n   - Type: ${product.type || 'N/A'}\n   - Shape: ${product.shape || 'N/A'}\n   - Length: ${product.length || 'N/A'}\n   - Preset Size: ${presetSize}\n   - Quantity: ${quantity} set(s)\n   - (Ready-made — ready to ship)`;
     } else {
@@ -169,7 +174,7 @@ export default function ProductQuickView({ open, onClose, product, category, onA
           {
             kind: 'pressOn',
             name: product.name || '',
-            price: product.price || 0,
+            price: effectivePrice,
             nailShape: nailShape || product.shape || '',
             quantity,
             ...(isReadyMade ? { presetSize } : {}),
@@ -262,10 +267,30 @@ export default function ProductQuickView({ open, onClose, product, category, onA
               {product.type && (
                 <Chip label={product.type} size="small" sx={{ backgroundColor: '#4A0E4E', color: '#fff', fontWeight: 600 }} />
               )}
-              <Chip
-                label={formatNaira(product.price)}
-                sx={{ backgroundColor: '#E91E8C', color: '#fff', fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '0.95rem' }}
-              />
+              {hasDiscount(product) ? (
+                <>
+                  <Chip
+                    label={formatNaira(getEffectivePrice(product))}
+                    sx={{ backgroundColor: '#2e7d32', color: '#fff', fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '0.95rem' }}
+                  />
+                  <Typography
+                    component="span"
+                    sx={{ textDecoration: 'line-through', color: '#999', fontSize: '0.85rem', fontFamily: '"Georgia", serif' }}
+                  >
+                    {formatNaira(product.price)}
+                  </Typography>
+                  <Chip
+                    label={getDiscountLabel(product)}
+                    size="small"
+                    sx={{ backgroundColor: '#e8f5e9', color: '#2e7d32', fontWeight: 700, fontSize: '0.7rem' }}
+                  />
+                </>
+              ) : (
+                <Chip
+                  label={formatNaira(product.price)}
+                  sx={{ backgroundColor: '#E91E8C', color: '#fff', fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '0.95rem' }}
+                />
+              )}
             </Box>
 
             {/* Customer Name field */}

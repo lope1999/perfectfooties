@@ -293,16 +293,31 @@ export default function CartPage() {
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
-                      <Typography
-                        sx={{
-                          fontFamily: '"Georgia", serif',
-                          fontWeight: 700,
-                          color: '#E91E8C',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {formatNaira(s.price)}
-                      </Typography>
+                      <Box>
+                        {s.originalPrice && (
+                          <Typography
+                            sx={{
+                              fontFamily: '"Georgia", serif',
+                              fontSize: '0.75rem',
+                              color: '#999',
+                              textDecoration: 'line-through',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {formatNaira(s.originalPrice)}
+                          </Typography>
+                        )}
+                        <Typography
+                          sx={{
+                            fontFamily: '"Georgia", serif',
+                            fontWeight: 700,
+                            color: s.originalPrice ? '#2e7d32' : '#E91E8C',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {formatNaira(s.price)}
+                        </Typography>
+                      </Box>
                       <IconButton
                         size="small"
                         onClick={() => removeService(s.id)}
@@ -351,7 +366,14 @@ export default function CartPage() {
                         </Typography>
                       )}
                       <Typography sx={{ color: '#999', fontSize: '0.78rem' }}>
-                        {formatNaira(p.price)} each
+                        {p.originalPrice ? (
+                          <>
+                            <span style={{ textDecoration: 'line-through' }}>{formatNaira(p.originalPrice)}</span>
+                            {' '}{formatNaira(p.price)} each
+                          </>
+                        ) : (
+                          `${formatNaira(p.price)} each`
+                        )}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
@@ -467,16 +489,32 @@ export default function CartPage() {
                       )}
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
-                      <Typography
-                        sx={{
-                          fontFamily: '"Georgia", serif',
-                          fontWeight: 700,
-                          color: '#E91E8C',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {formatNaira(p.price)}
-                      </Typography>
+                      <Box>
+                        {p.originalPrice && (
+                          <Typography
+                            sx={{
+                              fontFamily: '"Georgia", serif',
+                              fontSize: '0.75rem',
+                              color: '#999',
+                              textDecoration: 'line-through',
+                              whiteSpace: 'nowrap',
+                              textAlign: 'right',
+                            }}
+                          >
+                            {formatNaira(p.originalPrice)}
+                          </Typography>
+                        )}
+                        <Typography
+                          sx={{
+                            fontFamily: '"Georgia", serif',
+                            fontWeight: 700,
+                            color: p.originalPrice ? '#2e7d32' : '#E91E8C',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {formatNaira(p.price)}
+                        </Typography>
+                      </Box>
                       <IconButton
                         size="small"
                         onClick={() => removePressOn(p.id)}

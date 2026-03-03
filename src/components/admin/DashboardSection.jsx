@@ -25,6 +25,7 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import PeopleIcon from '@mui/icons-material/People';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import { computeDashboardStats, findLowStockProducts } from '../../lib/adminService';
@@ -333,6 +334,7 @@ export default function DashboardSection({
   orders,
   pressOnCategories,
   retailCategories,
+  customerCount,
   loading,
   onNavigate,
 }) {
@@ -374,8 +376,8 @@ export default function DashboardSection({
       <Box>
         <Skeleton variant="rounded" height={100} sx={{ borderRadius: 3, mb: 3 }} />
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          {[1, 2, 3, 4, 5].map((i) => (
-            <Grid item xs={6} sm={4} md={2.4} key={i}>
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Grid item xs={6} sm={4} md={2} key={i}>
               <Skeleton variant="rounded" height={100} sx={{ borderRadius: 3 }} />
             </Grid>
           ))}
@@ -442,6 +444,13 @@ export default function DashboardSection({
       section: 'orders',
     },
     {
+      title: 'Customers',
+      value: customerCount || 0,
+      icon: <PeopleIcon />,
+      gradient: 'linear-gradient(135deg, #1565c0 0%, #42a5f5 100%)',
+      section: 'customers',
+    },
+    {
       title: 'Low Stock',
       value: lowStock.length,
       icon: <WarningAmberIcon />,
@@ -457,7 +466,7 @@ export default function DashboardSection({
       {/* Stat Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {statCards.map((s) => (
-          <Grid item xs={6} sm={4} md={2.4} key={s.title}>
+          <Grid item xs={6} sm={4} md={2} key={s.title}>
             <StatCard
               title={s.title}
               value={s.value}

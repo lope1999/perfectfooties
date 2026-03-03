@@ -41,6 +41,7 @@ import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { pressOnNailShapes } from '../data/products';
 import { saveStockNotification } from '../lib/stockService';
+import { hasDiscount, getEffectivePrice, getDiscountLabel } from '../lib/discountUtils';
 
 const sectionColors = ['#FFF0F5', '#FCE4EC', '#F3E5F6', '#F8E8F0', '#FFF5F8'];
 
@@ -695,6 +696,22 @@ export default function ProductsMenuPage() {
                                 }}
                               />
                             )}
+                            {hasDiscount(product) && (
+                              <Chip
+                                label={getDiscountLabel(product)}
+                                size="small"
+                                sx={{
+                                  position: "absolute",
+                                  bottom: 8,
+                                  left: 8,
+                                  backgroundColor: "#2e7d32",
+                                  color: "#fff",
+                                  fontSize: "0.7rem",
+                                  fontWeight: 700,
+                                  height: 22,
+                                }}
+                              />
+                            )}
 
                             {/* Out of stock overlay */}
                             {oos && (
@@ -826,16 +843,42 @@ export default function ProductsMenuPage() {
                                 mt: "auto",
                               }}
                             >
-                              <Chip
-                                label={formatNaira(product.price)}
-                                sx={{
-                                  backgroundColor: "#E91E8C",
-                                  color: "#fff",
-                                  fontFamily: '"Georgia", serif',
-                                  fontWeight: 700,
-                                  fontSize: "0.9rem",
-                                }}
-                              />
+                              {hasDiscount(product) ? (
+                                <>
+                                  <Chip
+                                    label={formatNaira(getEffectivePrice(product))}
+                                    sx={{
+                                      backgroundColor: "#2e7d32",
+                                      color: "#fff",
+                                      fontFamily: '"Georgia", serif',
+                                      fontWeight: 700,
+                                      fontSize: "0.9rem",
+                                    }}
+                                  />
+                                  <Typography
+                                    component="span"
+                                    sx={{
+                                      textDecoration: 'line-through',
+                                      color: '#999',
+                                      fontSize: '0.8rem',
+                                      fontFamily: '"Georgia", serif',
+                                    }}
+                                  >
+                                    {formatNaira(product.price)}
+                                  </Typography>
+                                </>
+                              ) : (
+                                <Chip
+                                  label={formatNaira(product.price)}
+                                  sx={{
+                                    backgroundColor: "#E91E8C",
+                                    color: "#fff",
+                                    fontFamily: '"Georgia", serif',
+                                    fontWeight: 700,
+                                    fontSize: "0.9rem",
+                                  }}
+                                />
+                              )}
                               {product.stock !== undefined && product.stock > 0 && (
                                 <Typography
                                   sx={{

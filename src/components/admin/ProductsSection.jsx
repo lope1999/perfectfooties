@@ -4,6 +4,7 @@ import {
   Typography,
   Paper,
   Accordion,
+
   AccordionSummary,
   AccordionDetails,
   Table,
@@ -218,9 +219,25 @@ export default function ProductsSection({ collectionName, categories, loading, o
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           {p.name}
                           {isHidden && <Chip label="Hidden" size="small" variant="outlined" color="default" />}
+                          {p.discountEnabled && p.discountLabel && (
+                            <Chip label={p.discountLabel} size="small" sx={{ backgroundColor: '#e8f5e9', color: '#2e7d32', fontWeight: 600, fontSize: '0.7rem' }} />
+                          )}
                         </Box>
                       </TableCell>
-                      <TableCell sx={{ fontFamily }}>₦{(p.price || 0).toLocaleString()}</TableCell>
+                      <TableCell sx={{ fontFamily }}>
+                        {p.discountEnabled && p.discountPrice != null ? (
+                          <Box>
+                            <Typography component="span" sx={{ textDecoration: 'line-through', color: '#999', fontSize: '0.8rem', mr: 0.5 }}>
+                              ₦{(p.price || 0).toLocaleString()}
+                            </Typography>
+                            <Typography component="span" sx={{ color: '#2e7d32', fontWeight: 700, fontSize: '0.85rem' }}>
+                              ₦{(p.discountPrice || 0).toLocaleString()}
+                            </Typography>
+                          </Box>
+                        ) : (
+                          `₦${(p.price || 0).toLocaleString()}`
+                        )}
+                      </TableCell>
                       <TableCell>
                         {p.stock !== undefined ? (
                           isOutOfStock ? (

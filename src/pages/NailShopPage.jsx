@@ -30,6 +30,7 @@ import { decrementStockBatch } from '../lib/stockService';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { saveOrder } from '../lib/orderService';
+import { hasDiscount, getEffectivePrice, getDiscountLabel } from '../lib/discountUtils';
 
 const sectionColors = ['#FFF0F5', '#FCE4EC', '#F3E5F6', '#F8E8F0', '#FFF5F8', '#FFF0F5'];
 
@@ -114,7 +115,7 @@ export default function NailShopPage() {
   const totalItems = cartItems.reduce((sum, [, qty]) => sum + qty, 0);
   const totalPrice = cartItems.reduce((sum, [id, qty]) => {
     const product = allProducts.find((p) => p.id === id);
-    return sum + (product?.price || 0) * qty;
+    return sum + (product ? getEffectivePrice(product) : 0) * qty;
   }, 0);
 
   const isFormValid = customerName.trim() && cartItems.length > 0;
@@ -148,7 +149,8 @@ export default function NailShopPage() {
 
     const orderLines = cartItems.map(([id, qty], i) => {
       const product = allProducts.find((p) => p.id === id);
-      const subtotal = (product?.price || 0) * qty;
+      const price = product ? getEffectivePrice(product) : 0;
+      const subtotal = price * qty;
       return `${i + 1}. ${product?.name || 'Product'} x${qty} — ${formatNaira(subtotal)}`;
     });
 
@@ -167,7 +169,8 @@ export default function NailShopPage() {
         email: user.email || '',
         items: cartItems.map(([id, qty]) => {
           const product = allProducts.find((p) => p.id === id);
-          return { kind: 'retail', name: product?.name || '', price: product?.price || 0, quantity: qty };
+          const price = product ? getEffectivePrice(product) : 0;
+          return { kind: 'retail', name: product?.name || '', price, quantity: qty };
         }),
       }).catch(() => {});
     }
@@ -179,10 +182,13 @@ export default function NailShopPage() {
     cartItems.forEach(([id, qty]) => {
       const product = allProducts.find((p) => p.id === id);
       if (product) {
+        const effectivePrice = getEffectivePrice(product);
         addToGlobalCart({
           productId: product.id,
           name: product.name,
-          price: product.price,
+          price: effectivePrice,
+          originalPrice: hasDiscount(product) ? product.price : undefined,
+          discountLabel: hasDiscount(product) ? getDiscountLabel(product) : undefined,
           quantity: qty,
           stock: product.stock,
           categoryId: product.categoryId,
@@ -391,6 +397,22 @@ export default function NailShopPage() {
                               Photo coming soon
                             </Typography>
                           </Box>
+                          {hasDiscount(product) && (
+                            <Chip
+                              label={getDiscountLabel(product)}
+                              size="small"
+                              sx={{
+                                position: 'absolute',
+                                top: 8,
+                                left: 8,
+                                backgroundColor: '#2e7d32',
+                                color: '#fff',
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                height: 22,
+                              }}
+                            />
+                          )}
                         </Box>
                         <CardContent sx={{ flex: 1, p: 2.5 }}>
                           <Typography
@@ -426,16 +448,44 @@ export default function NailShopPage() {
                               mb: 2,
                             }}
                           >
-                            <Chip
-                              label={formatNaira(product.price)}
-                              sx={{
-                                backgroundColor: '#E91E8C',
-                                color: '#fff',
-                                fontFamily: '"Georgia", serif',
-                                fontWeight: 700,
-                                fontSize: '0.9rem',
-                              }}
-                            />
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              {hasDiscount(product) ? (
+                                <>
+                                  <Chip
+                                    label={formatNaira(getEffectivePrice(product))}
+                                    sx={{
+                                      backgroundColor: '#2e7d32',
+                                      color: '#fff',
+                                      fontFamily: '"Georgia", serif',
+                                      fontWeight: 700,
+                                      fontSize: '0.9rem',
+                                    }}
+                                  />
+                                  <Typography
+                                    component="span"
+                                    sx={{
+                                      textDecoration: 'line-through',
+                                      color: '#999',
+                                      fontSize: '0.78rem',
+                                      fontFamily: '"Georgia", serif',
+                                    }}
+                                  >
+                                    {formatNaira(product.price)}
+                                  </Typography>
+                                </>
+                              ) : (
+                                <Chip
+                                  label={formatNaira(product.price)}
+                                  sx={{
+                                    backgroundColor: '#E91E8C',
+                                    color: '#fff',
+                                    fontFamily: '"Georgia", serif',
+                                    fontWeight: 700,
+                                    fontSize: '0.9rem',
+                                  }}
+                                />
+                              )}
+                            </Box>
                             <Typography
                               sx={{
                                 color: outOfStock

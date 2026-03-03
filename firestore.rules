@@ -9,7 +9,8 @@ service cloud.firestore {
 
     // --- Users ---
     match /users/{uid} {
-      allow read, update: if request.auth != null && request.auth.uid == uid;
+      allow read: if isAdmin() || (request.auth != null && request.auth.uid == uid);
+      allow update: if request.auth != null && request.auth.uid == uid;
       allow create: if request.auth != null && request.auth.uid == uid;
 
       // Orders subcollection
@@ -77,6 +78,12 @@ service cloud.firestore {
                     && request.resource.data.amount > 0
                     && request.resource.data.code is string
                     && request.resource.data.giftedTo is string;
+    }
+
+    // --- Service Discounts (public read, admin write) ---
+    match /serviceDiscounts/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     // --- Booked Slots (public read, authenticated create, owner/admin update, admin delete) ---

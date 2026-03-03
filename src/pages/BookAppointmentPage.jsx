@@ -27,6 +27,8 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { serviceCategories, nailShapes, nailLengths, removalNote } from '../data/services';
+import useServiceDiscounts from '../hooks/useServiceDiscounts';
+import { hasServiceDiscount, getServiceEffectivePrice, getServiceDiscountLabel } from '../lib/discountUtils';
 import ScrollReveal from '../components/ScrollReveal';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -70,6 +72,7 @@ export default function BookAppointmentPage() {
   const location = useLocation();
   const { addService: addServiceToCart } = useCart();
   const { user } = useAuth();
+  const { discounts } = useServiceDiscounts();
   const [customerName, setCustomerName] = useState('');
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
 
@@ -162,21 +165,22 @@ export default function BookAppointmentPage() {
     setModalOpen(false);
     const selected = allServices.find((s) => s.id === selectedService);
     const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
-    const message = `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nPreferred Date: ${fullDate}\nService: ${selected?.name || "a service"}\nPrice: ${selected ? formatNaira(selected.price) : ''}\n\nDetails:\n- Nail Shape: ${formData.nailShape}\n- Nail Length: ${formData.nailLength}\n\nPlease confirm availability for this request. Thank you!`;
+    const effectivePrice = selected ? getServiceEffectivePrice(selected, discounts) : 0;
+    const message = `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nPreferred Date: ${fullDate}\nService: ${selected?.name || "a service"}\nPrice: ${formatNaira(effectivePrice)}\n\nDetails:\n- Nail Shape: ${formData.nailShape}\n- Nail Length: ${formData.nailLength}\n\nPlease confirm availability for this request. Thank you!`;
     const encoded = encodeURIComponent(message);
     window.open(`https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`, '_blank');
 
     if (user) {
       saveOrder(user.uid, {
         type: 'service',
-        total: selected?.price || 0,
+        total: effectivePrice,
         customerName: customerName.trim(),
         email: user.email || '',
         appointmentDate: fullDate,
         items: [{
           kind: 'service',
           serviceName: selected?.name || '',
-          price: selected?.price || 0,
+          price: effectivePrice,
           date: fullDate,
           nailShape: formData.nailShape,
           nailLength: formData.nailLength,
@@ -199,10 +203,13 @@ export default function BookAppointmentPage() {
     const selected = allServices.find((s) => s.id === selectedService);
     if (!selected) return;
     const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
+    const effectivePrice = getServiceEffectivePrice(selected, discounts);
     addServiceToCart({
       serviceId: selected.id,
       name: selected.name,
-      price: selected.price,
+      price: effectivePrice,
+      originalPrice: hasServiceDiscount(selected.id, discounts) ? selected.price : undefined,
+      discountLabel: hasServiceDiscount(selected.id, discounts) ? getServiceDiscountLabel(selected.id, discounts) : undefined,
       date: fullDate,
       nailShape: formData.nailShape,
       nailLength: formData.nailLength,
@@ -612,6 +619,32 @@ export default function BookAppointmentPage() {
 															}
 															sx={{ flex: 1, m: 0 }}
 														/>
+														{hasServiceDiscount(service.id, discounts) ? (
+														<Box sx={{ textAlign: 'right', ml: 2 }}>
+															<Typography
+																sx={{
+																	fontFamily: '"Georgia", serif',
+																	fontWeight: 700,
+																	color: "#2e7d32",
+																	fontSize: "1.05rem",
+																	whiteSpace: "nowrap",
+																}}
+															>
+																{formatNaira(getServiceEffectivePrice(service, discounts))}
+															</Typography>
+															<Typography
+																sx={{
+																	fontFamily: '"Georgia", serif',
+																	color: "#999",
+																	fontSize: "0.78rem",
+																	textDecoration: 'line-through',
+																	whiteSpace: "nowrap",
+																}}
+															>
+																{formatNaira(service.price)}
+															</Typography>
+														</Box>
+													) : (
 														<Typography
 															sx={{
 																fontFamily: '"Georgia", serif',
@@ -624,6 +657,7 @@ export default function BookAppointmentPage() {
 														>
 															{formatNaira(service.price)}
 														</Typography>
+													)}
 													</Box>
 												</CardContent>
 

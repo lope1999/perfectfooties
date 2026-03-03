@@ -17,6 +17,8 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import PeopleIcon from '@mui/icons-material/People';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import CloseIcon from '@mui/icons-material/Close';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -28,8 +30,10 @@ const sections = [
   { key: 'dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
   { key: 'orders', label: 'Orders', icon: <ShoppingCartIcon /> },
   { key: 'appointments', label: 'Appointments', icon: <EventNoteIcon /> },
+  { key: 'customers', label: 'Customers', icon: <PeopleIcon /> },
   { key: 'pressons', label: 'Press-On Products', icon: <StorefrontIcon /> },
   { key: 'retail', label: 'Retail Products', icon: <InventoryIcon /> },
+  { key: 'services', label: 'Services', icon: <LocalOfferIcon /> },
   { key: 'giftcards', label: 'Gift Cards', icon: <CardGiftcardIcon /> },
 ];
 
