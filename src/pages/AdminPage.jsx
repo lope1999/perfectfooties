@@ -10,10 +10,13 @@ import ProductsSection from '../components/admin/ProductsSection';
 import CustomersSection from '../components/admin/CustomersSection';
 import ServiceDiscountsSection from '../components/admin/ServiceDiscountsSection';
 import GiftCardsSection from '../components/admin/GiftCardsSection';
+import BlogPostsSection from '../components/admin/BlogPostsSection';
 import { fetchAllOrders, seedAndFetchCategories, fetchAllUsers, computeUserStats, fetchServiceDiscounts } from '../lib/adminService';
 import { fetchAllGiftCards } from '../lib/giftCardService';
+import { seedAndFetchBlogPosts } from '../lib/blogService';
 import { productCategories as staticPressOns } from '../data/products';
 import { retailCategories as staticRetail } from '../data/retailProducts';
+import { blogPosts as staticBlogPosts } from '../data/blog';
 
 export default function AdminPage() {
   const [section, setSection] = useState('dashboard');
@@ -23,6 +26,7 @@ export default function AdminPage() {
   const [pressOnCategories, setPressOnCategories] = useState([]);
   const [retailCategories, setRetailCategories] = useState([]);
   const [giftCards, setGiftCards] = useState([]);
+  const [blogPosts, setBlogPosts] = useState([]);
   const [users, setUsers] = useState([]);
   const [serviceDiscounts, setServiceDiscounts] = useState({});
   const [loading, setLoading] = useState(true);
@@ -34,13 +38,14 @@ export default function AdminPage() {
     setLoading(true);
     try {
       // Seed + fetch categories in one read each, all requests in parallel
-      const [o, pc, rc, gc, uf, sd] = await Promise.allSettled([
+      const [o, pc, rc, gc, uf, sd, bp] = await Promise.allSettled([
         fetchAllOrders(),
         seedAndFetchCategories('productCategories', staticPressOns),
         seedAndFetchCategories('retailCategories', staticRetail),
         fetchAllGiftCards(),
         fetchAllUsers(),
         fetchServiceDiscounts(),
+        seedAndFetchBlogPosts(staticBlogPosts),
       ]);
 
       if (o.status === 'fulfilled') {
@@ -55,6 +60,7 @@ export default function AdminPage() {
       setPressOnCategories(pressOns.length > 0 ? pressOns : staticPressOns);
       setRetailCategories(retail.length > 0 ? retail : staticRetail);
       setGiftCards(gc.status === 'fulfilled' ? gc.value : []);
+      setBlogPosts(bp.status === 'fulfilled' ? bp.value : staticBlogPosts);
 
       const rawUsers = uf.status === 'fulfilled' ? uf.value : [];
       const allOrders = o.status === 'fulfilled' ? o.value : [];
@@ -116,6 +122,14 @@ export default function AdminPage() {
         return (
           <ServiceDiscountsSection
             serviceDiscounts={serviceDiscounts}
+            loading={loading}
+            onRefresh={loadData}
+          />
+        );
+      case 'blog':
+        return (
+          <BlogPostsSection
+            blogPosts={blogPosts}
             loading={loading}
             onRefresh={loadData}
           />

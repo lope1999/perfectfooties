@@ -80,6 +80,12 @@ service cloud.firestore {
                     && request.resource.data.giftedTo is string;
     }
 
+    // --- Blog Posts (public read, admin write) ---
+    match /blogPosts/{postId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     // --- Service Discounts (public read, admin write) ---
     match /serviceDiscounts/{serviceId} {
       allow read: if true;

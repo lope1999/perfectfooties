@@ -8,6 +8,7 @@ import {
   Dialog,
   IconButton,
   Divider,
+  CircularProgress,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -15,7 +16,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import ScrollReveal from '../components/ScrollReveal';
-import { blogPosts } from '../data/blog';
+import useBlogPosts from '../hooks/useBlogPosts';
 
 const categoryColors = {
   'Nail Care': '#E91E8C',
@@ -24,7 +25,26 @@ const categoryColors = {
 };
 
 export default function BlogPage() {
+  const { posts: blogPosts, loading } = useBlogPosts();
   const [selectedPost, setSelectedPost] = useState(null);
+
+  if (loading) {
+    return (
+      <Box sx={{ pt: 20, display: 'flex', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#FAFAFA' }}>
+        <CircularProgress sx={{ color: '#E91E8C' }} />
+      </Box>
+    );
+  }
+
+  if (blogPosts.length === 0) {
+    return (
+      <Box sx={{ pt: 20, textAlign: 'center', minHeight: '100vh', backgroundColor: '#FAFAFA' }}>
+        <Typography sx={{ fontFamily: '"Georgia", serif', color: '#777', fontSize: '1.1rem' }}>
+          No blog posts yet. Check back soon!
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ pt: 12, pb: 8, minHeight: '100vh', backgroundColor: '#FAFAFA' }}>
