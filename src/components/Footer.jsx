@@ -140,6 +140,9 @@ export default function Footer() {
 							<MuiLink sx={linkSx} onClick={() => navigate("/blog")}>
 								Blog
 							</MuiLink>
+						<MuiLink sx={linkSx} onClick={() => navigate("/gallery")}>
+								Gallery
+							</MuiLink>
 							<MuiLink sx={linkSx} onClick={handleContactClick}>
 								Contact
 							</MuiLink>

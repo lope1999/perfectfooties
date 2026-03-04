@@ -146,79 +146,84 @@ export default function NailBedSizeInput({ value, onChange, required }) {
   );
 
   return (
-    <Box>
-      {/* Clickable summary bar */}
-      <Box
-        onClick={() => setOpen(!open)}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          border: '1px solid',
-          borderColor: showError ? '#d32f2f' : open ? '#E91E8C' : '#ccc',
-          borderRadius: 2,
-          px: 1.5,
-          py: 1,
-          cursor: 'pointer',
-          backgroundColor: filledCount > 0 ? '#FFF0F5' : '#fff',
-          transition: 'all 0.2s ease',
-          '&:hover': {
-            borderColor: '#E91E8C',
-          },
-        }}
-      >
-        <Box>
-          <Typography
-            sx={{
-              fontSize: '0.75rem',
-              color: '#666',
-              fontFamily: '"Georgia", serif',
-            }}
-          >
-            Nail Bed Sizes
-          </Typography>
-          <Typography
-            sx={{
-              fontSize: '0.85rem',
-              color: showError ? '#d32f2f' : filledCount > 0 ? '#E91E8C' : '#aaa',
-              fontWeight: filledCount > 0 ? 600 : 400,
-            }}
-          >
-            {displayText}
-          </Typography>
-        </Box>
-        {open ? (
-          <KeyboardArrowUpIcon sx={{ color: '#E91E8C' }} />
-        ) : (
-          <KeyboardArrowDownIcon sx={{ color: '#999' }} />
-        )}
-      </Box>
+		<Box>
+			{/* Clickable summary bar */}
+			<Box
+				onClick={() => setOpen(!open)}
+				sx={{
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "space-between",
+					border: "1px solid",
+					borderColor: showError ? "#d32f2f" : open ? "#E91E8C" : "#ccc",
+					borderRadius: 2,
+					px: 1.5,
+					py: 1,
+					cursor: "pointer",
+					backgroundColor: filledCount > 0 ? "#FFF0F5" : "#fff",
+					transition: "all 0.2s ease",
+					"&:hover": {
+						borderColor: "#E91E8C",
+					},
+				}}
+			>
+				<Box>
+					<Typography
+						sx={{
+							fontSize: "0.75rem",
+							color: "#666",
+							fontFamily: '"Georgia", serif',
+						}}
+					>
+						Nail Bed Sizes
+					</Typography>
+					<Typography
+						sx={{
+							fontSize: "0.85rem",
+							color: showError
+								? "#d32f2f"
+								: filledCount > 0
+									? "#E91E8C"
+									: "#aaa",
+							fontWeight: filledCount > 0 ? 600 : 400,
+						}}
+					>
+						{displayText}
+					</Typography>
+				</Box>
+				{open ? (
+					<KeyboardArrowUpIcon sx={{ color: "#E91E8C" }} />
+				) : (
+					<KeyboardArrowDownIcon sx={{ color: "#999" }} />
+				)}
+			</Box>
 
-      {/* Expandable finger inputs */}
-      <Collapse in={open}>
-        <Box
-          sx={{
-            mt: 1.5,
-            p: 2,
-            border: '1px solid #F0C0D0',
-            borderRadius: 2,
-            backgroundColor: '#fff',
-          }}
-        >
-          <Typography
-            sx={{
-              fontSize: '0.75rem',
-              color: '#E91E8C',
-              mb: 2,
-              lineHeight: 1.5,
-            }}
-          >
-            Enter each nail width in mm — measured at the widest point of each nail bed.
-          </Typography>
-          {renderHand(rightFingers, 'Right')}
-          {renderHand(leftFingers, 'Left')}
-        </Box>
-      </Collapse>
-    </Box>
+			{/* Expandable finger inputs */}
+			<Collapse in={open}>
+				<Box
+					sx={{
+						mt: 1.5,
+						p: 2,
+						border: "1px solid #F0C0D0",
+						borderRadius: 2,
+						backgroundColor: "#fff",
+					}}
+				>
+					<Typography
+						sx={{
+							fontSize: "0.75rem",
+							color: "#E91E8C",
+							mb: 2,
+							lineHeight: 1.5,
+						}}
+					>
+						Enter each nail width in mm — measured at the widest point of
+						each nail bed with a taperule or ruler.
+					</Typography>
+					{renderHand(rightFingers, "Right")}
+					{renderHand(leftFingers, "Left")}
+				</Box>
+			</Collapse>
+		</Box>
   );
 }

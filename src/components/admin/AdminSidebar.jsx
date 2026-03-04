@@ -18,6 +18,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import ArticleIcon from '@mui/icons-material/Article';
+import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import PeopleIcon from '@mui/icons-material/People';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import CloseIcon from '@mui/icons-material/Close';
@@ -37,6 +38,7 @@ const sections = [
   { key: 'services', label: 'Services', icon: <LocalOfferIcon /> },
   { key: 'blog', label: 'Blog Posts', icon: <ArticleIcon /> },
   { key: 'giftcards', label: 'Gift Cards', icon: <CardGiftcardIcon /> },
+  { key: 'gallery', label: 'Gallery', icon: <PhotoLibraryIcon /> },
 ];
 
 export default function AdminSidebar({ active, onSelect, mobileOpen, onMobileClose, collapsed, onToggleCollapse }) {

@@ -30,6 +30,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { addBlogPost, updateBlogPost, deleteBlogPost } from '../../lib/blogService';
+import ImageUploadField from './ImageUploadField';
 
 const fontFamily = '"Georgia", serif';
 
@@ -361,14 +362,11 @@ export default function BlogPostsSection({ blogPosts, loading, onRefresh }) {
                 InputLabelProps={{ sx: { fontFamily } }}
               />
             </Box>
-            <TextField
-              label="Image URL"
-              fullWidth
-              size="small"
+            <ImageUploadField
+              label="Blog Image"
               value={form.image}
-              onChange={(e) => setForm({ ...form, image: e.target.value })}
-              InputProps={{ sx: { fontFamily } }}
-              InputLabelProps={{ sx: { fontFamily } }}
+              onChange={(url) => setForm({ ...form, image: url })}
+              folder="blog"
             />
             <TextField
               label="Excerpt"

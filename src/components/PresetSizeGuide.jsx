@@ -119,7 +119,33 @@ export default function PresetSizeGuide({ open, onClose }) {
 					sizes, we recommend choosing the larger size for a more
 					comfortable fit.
 				</Typography>
-
+				<Box sx={{ textAlign: "center", mb: 2 }}>
+					<Button
+						component="a"
+						href="https://www.instagram.com/reel/DVdWOmNDEtY/"
+						target="_blank"
+						rel="noopener noreferrer"
+						sx={{
+							fontFamily: '"Georgia", serif',
+							fontWeight: 600,
+							fontSize: "0.85rem",
+							textTransform: "none",
+							color: "#E91E8C",
+							border: "1px solid #E91E8C",
+							borderRadius: "30px",
+							backgroundColor: "transparent",
+							px: 3,
+							py: 0.8,
+							"&:hover": {
+								backgroundColor: "#E91E8C",
+								color: "#fff",
+								border: "1px solid #600056",
+							},
+						}}
+					>
+						See video tutorial
+					</Button>
+				</Box>
 				<TableContainer
 					sx={{
 						borderRadius: 2,
@@ -225,6 +251,35 @@ export default function PresetSizeGuide({ open, onClose }) {
 						width in millimetres with a ruler or taperule... then compare
 						with the table above to find your closest preset size.
 					</Typography>
+				</Box>
+
+				<Box
+					sx={{
+						mt: 2.5,
+						textAlign: "center",
+					}}
+				>
+					<Box
+						sx={{
+							borderRadius: 2,
+							overflow: "hidden",
+							border: "1px solid #F0C0D0",
+							maxWidth: 400,
+							mx: "auto",
+						}}
+					>
+						<iframe
+							src="https://www.instagram.com/reel/DVdWOmNDEtY/embed/"
+							width="100%"
+							height="480"
+							frameBorder="0"
+							scrolling="no"
+							allowTransparency="true"
+							allow="encrypted-media"
+							style={{ display: "block" }}
+							title="Nail bed size measurement tutorial"
+						/>
+					</Box>
 				</Box>
 			</DialogContent>
 

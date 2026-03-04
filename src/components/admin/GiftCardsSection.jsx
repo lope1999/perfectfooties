@@ -21,15 +21,20 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Snackbar,
+  Alert,
+  InputAdornment,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import {
   activateGiftCard,
   updateGiftCardStatus,
   deleteGiftCard,
+  redeemGiftCard,
 } from '../../lib/giftCardService';
 
 const fontFamily = '"Georgia", serif';
@@ -59,7 +64,10 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
   const [statusFilter, setStatusFilter] = useState('all');
   const [expandedId, setExpandedId] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState(null);
+  const [deductCard, setDeductCard] = useState(null);
+  const [deductAmount, setDeductAmount] = useState('');
   const [busy, setBusy] = useState(false);
+  const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
 
   const filtered = useMemo(() => {
     return giftCards.filter((gc) => {
@@ -116,6 +124,41 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
       await onRefresh();
     } catch (err) {
       console.error('Delete error:', err);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const openDeductDialog = (gc) => {
+    setDeductCard(gc);
+    setDeductAmount('');
+  };
+
+  const handleDeduct = async () => {
+    const amount = Number(deductAmount);
+    if (!amount || amount <= 0) {
+      setSnack({ open: true, message: 'Enter a valid amount', severity: 'error' });
+      return;
+    }
+    if (amount > (deductCard?.balance || 0)) {
+      setSnack({ open: true, message: `Amount exceeds balance (₦${deductCard.balance.toLocaleString()})`, severity: 'error' });
+      return;
+    }
+    setBusy(true);
+    try {
+      await redeemGiftCard(deductCard.code, amount, 'admin-deduction');
+      setSnack({
+        open: true,
+        message: amount === deductCard.balance
+          ? `Card ${deductCard.code} fully redeemed — balance is now ₦0`
+          : `₦${amount.toLocaleString()} deducted from ${deductCard.code}`,
+        severity: 'success',
+      });
+      setDeductCard(null);
+      await onRefresh();
+    } catch (err) {
+      console.error('Deduct error:', err);
+      setSnack({ open: true, message: err.message || 'Failed to deduct', severity: 'error' });
     } finally {
       setBusy(false);
     }
@@ -270,6 +313,28 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
                             ))}
                           </Select>
                         </Box>
+                        {(gc.status === 'active' || gc.status === 'partially_used') && gc.balance > 0 && (
+                          <Box sx={{ mb: 1 }}>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              startIcon={<RemoveCircleOutlineIcon />}
+                              onClick={() => openDeductDialog(gc)}
+                              disabled={busy}
+                              sx={{
+                                fontFamily,
+                                fontSize: '0.78rem',
+                                textTransform: 'none',
+                                borderColor: '#E91E8C',
+                                color: '#E91E8C',
+                                mt: 0.5,
+                                '&:hover': { borderColor: '#C2185B', backgroundColor: '#FFF0F5' },
+                              }}
+                            >
+                              Deduct Balance
+                            </Button>
+                          </Box>
+                        )}
                         {gc.transactions?.length > 0 && (
                           <Box sx={{ mt: 1 }}>
                             <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700 }}>
@@ -305,6 +370,67 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
         </Table>
       </TableContainer>
 
+      {/* Deduct Balance Dialog */}
+      <Dialog open={!!deductCard} onClose={() => setDeductCard(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontFamily, fontWeight: 700 }}>
+          Deduct from Gift Card
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, p: 2, backgroundColor: '#FFF0F5', borderRadius: 2 }}>
+              <Box>
+                <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>Card Code</Typography>
+                <Typography sx={{ fontFamily, fontWeight: 700, letterSpacing: '1px' }}>{deductCard?.code}</Typography>
+              </Box>
+              <Box sx={{ textAlign: 'right' }}>
+                <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>Current Balance</Typography>
+                <Typography sx={{ fontFamily, fontWeight: 700, color: '#2e7d32' }}>{formatNaira(deductCard?.balance)}</Typography>
+              </Box>
+            </Box>
+            <TextField
+              label="Amount to deduct"
+              fullWidth
+              type="number"
+              value={deductAmount}
+              onChange={(e) => setDeductAmount(e.target.value)}
+              InputProps={{
+                sx: { fontFamily },
+                startAdornment: <InputAdornment position="start">₦</InputAdornment>,
+              }}
+              InputLabelProps={{ sx: { fontFamily } }}
+              helperText={
+                deductAmount && Number(deductAmount) === deductCard?.balance
+                  ? 'This will fully redeem the card (balance → ₦0)'
+                  : deductAmount && Number(deductAmount) > 0 && Number(deductAmount) < (deductCard?.balance || 0)
+                    ? `New balance: ${formatNaira((deductCard?.balance || 0) - Number(deductAmount))}`
+                    : ''
+              }
+              FormHelperTextProps={{ sx: { fontFamily, fontSize: '0.78rem' } }}
+            />
+            {deductCard?.balance > 0 && (
+              <Button
+                size="small"
+                onClick={() => setDeductAmount(String(deductCard.balance))}
+                sx={{ fontFamily, fontSize: '0.75rem', color: '#E91E8C', textTransform: 'none', mt: 0.5 }}
+              >
+                Use full balance ({formatNaira(deductCard.balance)})
+              </Button>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeductCard(null)} sx={{ fontFamily }}>Cancel</Button>
+          <Button
+            onClick={handleDeduct}
+            variant="contained"
+            disabled={busy || !deductAmount || Number(deductAmount) <= 0}
+            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+          >
+            {deductAmount && Number(deductAmount) === deductCard?.balance ? 'Fully Redeem' : 'Deduct'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Delete Confirmation */}
       <Dialog open={!!deleteDialog} onClose={() => setDeleteDialog(null)}>
         <DialogTitle sx={{ fontFamily, fontWeight: 700 }}>Delete Gift Card?</DialogTitle>
@@ -327,6 +453,22 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snack.open}
+        autoHideDuration={4000}
+        onClose={() => setSnack({ ...snack, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnack({ ...snack, open: false })}
+          severity={snack.severity}
+          sx={{ fontFamily }}
+        >
+          {snack.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { useAuth } from './AuthContext';
 import { fetchOrders } from '../lib/orderService';
 import { parseAppointmentDate, isWithinHours, isUpcoming, formatRelativeTime } from '../lib/appointmentDateUtils';
@@ -6,6 +8,23 @@ import { parseAppointmentDate, isWithinHours, isUpcoming, formatRelativeTime } f
 const NotificationContext = createContext(null);
 
 const DISMISSED_KEY = 'chizzystyles-notifications-dismissed';
+
+const STATUS_LABELS = {
+  pending: 'Pending',
+  confirmed: 'Confirmed',
+  processing: 'Processing',
+  shipped: 'Shipped',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+  received: 'Received',
+};
+
+function getOrderLabel(order) {
+  if (order.type === 'service') {
+    return order.items?.[0]?.serviceName || 'your appointment';
+  }
+  return order.items?.[0]?.name || 'your press-on order';
+}
 
 function getDismissed() {
   try {
@@ -56,7 +75,6 @@ function buildNotifications(orders) {
     }
   }
 
-  // Sort: reminders first, then by date ascending
   notifications.sort((a, b) => {
     if (a.type !== b.type) return a.type === 'appointment-reminder' ? -1 : 1;
     return a.date - b.date;
@@ -67,13 +85,19 @@ function buildNotifications(orders) {
 
 export function NotificationProvider({ children }) {
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState([]);
+  const [appointmentNotifications, setAppointmentNotifications] = useState([]);
+  const [statusChangeNotifications, setStatusChangeNotifications] = useState([]);
+  const [toastQueue, setToastQueue] = useState([]);
   const [dismissed, setDismissed] = useState(getDismissed);
   const [loading, setLoading] = useState(false);
 
+  const statusMapRef = useRef({});
+  const initialLoadDoneRef = useRef(false);
+
+  // Fetch appointment-related notifications (existing logic)
   useEffect(() => {
     if (!user) {
-      setNotifications([]);
+      setAppointmentNotifications([]);
       return;
     }
 
@@ -82,7 +106,7 @@ export function NotificationProvider({ children }) {
 
     fetchOrders(user.uid, 'service')
       .then((orders) => {
-        if (!cancelled) setNotifications(buildNotifications(orders));
+        if (!cancelled) setAppointmentNotifications(buildNotifications(orders));
       })
       .catch(() => {})
       .finally(() => {
@@ -90,6 +114,91 @@ export function NotificationProvider({ children }) {
       });
 
     return () => { cancelled = true; };
+  }, [user?.uid]);
+
+  // Real-time listener for order status changes
+  useEffect(() => {
+    if (!user) {
+      statusMapRef.current = {};
+      initialLoadDoneRef.current = false;
+      setStatusChangeNotifications([]);
+      setToastQueue([]);
+      return;
+    }
+
+    const ordersRef = collection(db, 'users', user.uid, 'orders');
+    const q = query(ordersRef, orderBy('createdAt', 'desc'));
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      if (!initialLoadDoneRef.current) {
+        // First load — populate the status map, no notifications
+        const map = {};
+        snapshot.docs.forEach((doc) => {
+          map[doc.id] = doc.data().status;
+        });
+        statusMapRef.current = map;
+        initialLoadDoneRef.current = true;
+        return;
+      }
+
+      // Subsequent updates — check for status changes
+      const changes = snapshot.docChanges();
+      const newNotifications = [];
+      const newToasts = [];
+
+      for (const change of changes) {
+        if (change.type !== 'modified') {
+          // Track newly added docs too
+          if (change.type === 'added') {
+            statusMapRef.current[change.doc.id] = change.doc.data().status;
+          }
+          continue;
+        }
+
+        const docData = change.doc.data();
+        const orderId = change.doc.id;
+        const oldStatus = statusMapRef.current[orderId];
+        const newStatus = docData.status;
+
+        // Only notify for pressOn and service order types
+        if (docData.type !== 'pressOn' && docData.type !== 'service') {
+          statusMapRef.current[orderId] = newStatus;
+          continue;
+        }
+
+        if (oldStatus && oldStatus !== newStatus) {
+          const label = getOrderLabel(docData);
+          const statusText = STATUS_LABELS[newStatus] || newStatus;
+          const notification = {
+            id: `status-${orderId}-${Date.now()}`,
+            type: 'status-change',
+            orderId,
+            title: `Order ${statusText}`,
+            message: `Status of ${label} changed from ${STATUS_LABELS[oldStatus] || oldStatus} to ${statusText}`,
+            status: newStatus,
+            timestamp: Date.now(),
+          };
+
+          newNotifications.push(notification);
+          newToasts.push(notification);
+        }
+
+        statusMapRef.current[orderId] = newStatus;
+      }
+
+      if (newNotifications.length > 0) {
+        setStatusChangeNotifications((prev) => [...newNotifications, ...prev]);
+      }
+      if (newToasts.length > 0) {
+        setToastQueue((prev) => [...prev, ...newToasts]);
+      }
+    });
+
+    return () => {
+      unsub();
+      statusMapRef.current = {};
+      initialLoadDoneRef.current = false;
+    };
   }, [user?.uid]);
 
   const dismiss = useCallback((id) => {
@@ -100,20 +209,41 @@ export function NotificationProvider({ children }) {
     });
   }, []);
 
+  const dismissToast = useCallback(() => {
+    setToastQueue((prev) => prev.slice(1));
+  }, []);
+
+  // Merge all notifications: reminders first, then upcoming, then status changes (newest first)
+  const allNotifications = [
+    ...appointmentNotifications,
+    ...statusChangeNotifications,
+  ];
+
   const dismissAll = useCallback(() => {
     setDismissed((prev) => {
-      const next = [...new Set([...prev, ...notifications.map((n) => n.id)])];
+      const next = [...new Set([...prev, ...allNotifications.map((n) => n.id)])];
       saveDismissed(next);
       return next;
     });
-  }, [notifications]);
+  }, [allNotifications]);
 
-  const undismissedCount = notifications.filter((n) => !dismissed.includes(n.id)).length;
-  const urgentNotifications = notifications.filter((n) => n.type === 'appointment-reminder');
+  const undismissedCount = allNotifications.filter((n) => !dismissed.includes(n.id)).length;
+  const urgentNotifications = allNotifications.filter((n) => n.type === 'appointment-reminder');
+  const currentToast = toastQueue[0] || null;
 
   return (
     <NotificationContext.Provider
-      value={{ notifications, dismissed, undismissedCount, urgentNotifications, dismiss, dismissAll, loading }}
+      value={{
+        notifications: allNotifications,
+        dismissed,
+        undismissedCount,
+        urgentNotifications,
+        dismiss,
+        dismissAll,
+        loading,
+        currentToast,
+        dismissToast,
+      }}
     >
       {children}
     </NotificationContext.Provider>

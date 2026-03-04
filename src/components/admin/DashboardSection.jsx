@@ -466,7 +466,7 @@ export default function DashboardSection({
       {/* Stat Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {statCards.map((s) => (
-          <Grid item xs={6} sm={4} md={2} key={s.title}>
+          <Grid item xs={6} sm={4} md={3} lg={2} key={s.title}>
             <StatCard
               title={s.title}
               value={s.value}

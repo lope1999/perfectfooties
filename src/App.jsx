@@ -5,6 +5,7 @@ import { CircularProgress, Box } from '@mui/material';
 import ScrollToTop from './components/ScrollToTop';
 import Navbar from './components/Navbar';
 import AppointmentReminderPopup from './components/AppointmentReminderPopup';
+import StatusChangeToast from './components/StatusChangeToast';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import ServiceMenuPage from './pages/ServiceMenuPage';
@@ -20,6 +21,7 @@ import RescheduleAppointmentPage from './pages/RescheduleAppointmentPage';
 import NailShopPage from './pages/NailShopPage';
 import CartPage from './pages/CartPage';
 import AccountPage from './pages/AccountPage';
+import GalleryPage from './pages/GalleryPage';
 
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 
@@ -37,6 +39,7 @@ function App() {
       <ScrollToTop />
       <Navbar />
       <AppointmentReminderPopup />
+      <StatusChangeToast />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/services" element={<ServiceMenuPage />} />
@@ -52,6 +55,7 @@ function App() {
         <Route path="/testimonials" element={<TestimonialsPage />} />
         <Route path="/gift-cards" element={<GiftCardPage />} />
         <Route path="/our-team" element={<OurTeamPage />} />
+        <Route path="/gallery" element={<GalleryPage />} />
         <Route
           path="/admin"
           element={

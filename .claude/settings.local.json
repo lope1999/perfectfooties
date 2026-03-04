@@ -34,7 +34,9 @@
       "Bash(git checkout:*)",
       "Bash(git fetch:*)",
       "Bash(git:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(xargs ls:*)",
+      "Bash(xxd:*)"
     ]
   }
 }

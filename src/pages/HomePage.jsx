@@ -23,23 +23,50 @@ import Interstitial from '../components/Interstitial';
 import PresetSizeGuide from '../components/PresetSizeGuide';
 import { useAuth } from '../context/AuthContext';
 import { faqData } from '../data/faq';
+import { Opacity } from "@mui/icons-material";
 
-const ctaButtonSx = {
-  border: '2px solid #E91E8C',
-  borderRadius: '30px',
-  color: '#000',
-  backgroundColor: 'transparent',
-  px: 4,
-  py: 1.5,
-  fontSize: '1rem',
-  fontFamily: '"Georgia", serif',
-  fontWeight: 600,
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    backgroundColor: '#E91E8C',
-    color: '#fff',
-    borderColor: '#E91E8C',
-  },
+const ctaButtonBase = {
+	borderRadius: "30px",
+	px: 4,
+	py: 1.5,
+	fontSize: "1rem",
+	fontFamily: '"Georgia", serif',
+	fontWeight: 600,
+	transition: "all 0.3s ease",
+	minWidth: 220,
+};
+
+const bookBtnSx = {
+	...ctaButtonBase,
+	border: "1px solid #E91E8C",
+	backgroundColor: "#E91E8C",
+	color: "#fff",
+	"&:hover": {
+		backgroundColor: "transparent",
+		color: "#E91E8C",
+	},
+};
+
+const viewServicesBtnSx = {
+	...ctaButtonBase,
+	border: "1px solid #E91E8C",
+	backgroundColor: "#fff",
+	color: "#000",
+	"&:hover": {
+		backgroundColor: "transparent",
+	},
+};
+
+const signInBtnSx = {
+	...ctaButtonBase,
+	border: "2px solid #4A0E4E",
+	backgroundColor: "transparent",
+	color: "#4A0E4E",
+	"&:hover": {
+		backgroundColor: "#4A0E4E",
+		color: "#fff",
+		borderColor: "#4A0E4E",
+	},
 };
 
 export default function HomePage() {
@@ -118,27 +145,18 @@ export default function HomePage() {
 								flexWrap: "wrap",
 							}}
 						>
-							<Button sx={ctaButtonSx} onClick={() => navigate("/book")}>
+							<Button sx={bookBtnSx} onClick={() => navigate("/book")}>
 								Book Appointment
 							</Button>
 							<Button
-								sx={ctaButtonSx}
+								sx={viewServicesBtnSx}
 								onClick={() => navigate("/services")}
 							>
 								View Nail Services
 							</Button>
-							{!user && (
+							{/* {!user && (
 								<Button
-									sx={{
-										...ctaButtonSx,
-										borderColor: "#4A0E4E",
-										color: "#4A0E4E",
-										"&:hover": {
-											backgroundColor: "#4A0E4E",
-											color: "#fff",
-											borderColor: "#4A0E4E",
-										},
-									}}
+									sx={signInBtnSx}
 									startIcon={
 										signingIn ? (
 											<CircularProgress
@@ -154,7 +172,7 @@ export default function HomePage() {
 								>
 									{signingIn ? "Signing In…" : "Sign In"}
 								</Button>
-							)}
+							)} */}
 						</Box>
 					</ScrollReveal>
 				</Box>

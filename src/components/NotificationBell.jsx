@@ -15,6 +15,7 @@ import {
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EventNoteIcon from '@mui/icons-material/EventNote';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 
@@ -108,6 +109,18 @@ export default function NotificationBell() {
             {notifications.map((n, i) => {
               const isDismissed = dismissed.includes(n.id);
               const isReminder = n.type === 'appointment-reminder';
+              const isStatusChange = n.type === 'status-change';
+              const isCancelled = isStatusChange && n.status === 'cancelled';
+
+              let iconColor = isReminder ? '#ed6c02' : '#E91E8C';
+              let titleColor = isReminder ? '#ed6c02' : '#000';
+              let icon = isReminder ? <AccessTimeIcon fontSize="small" /> : <EventNoteIcon fontSize="small" />;
+
+              if (isStatusChange) {
+                iconColor = isCancelled ? '#d32f2f' : '#2e7d32';
+                titleColor = isCancelled ? '#d32f2f' : '#2e7d32';
+                icon = <LocalShippingIcon fontSize="small" />;
+              }
 
               return (
                 <Box key={n.id}>
@@ -121,8 +134,8 @@ export default function NotificationBell() {
                       '&:hover': { backgroundColor: isDismissed ? '#fafafa' : '#FCE4EC' },
                     }}
                   >
-                    <Box sx={{ mr: 1.5, color: isReminder ? '#ed6c02' : '#E91E8C', mt: 0.3 }}>
-                      {isReminder ? <AccessTimeIcon fontSize="small" /> : <EventNoteIcon fontSize="small" />}
+                    <Box sx={{ mr: 1.5, color: iconColor, mt: 0.3 }}>
+                      {icon}
                     </Box>
                     <ListItemText
                       primary={n.title}
@@ -131,7 +144,7 @@ export default function NotificationBell() {
                         fontFamily,
                         fontWeight: isDismissed ? 500 : 700,
                         fontSize: '0.85rem',
-                        color: isReminder ? '#ed6c02' : '#000',
+                        color: titleColor,
                       }}
                       secondaryTypographyProps={{
                         fontFamily,

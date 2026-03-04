@@ -33,6 +33,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import CloseIcon from '@mui/icons-material/Close';
+import StraightenIcon from '@mui/icons-material/Straighten';
 import ScrollReveal from '../components/ScrollReveal';
 import PresetSizeGuide from '../components/PresetSizeGuide';
 import ProductQuickView from '../components/ProductQuickView';
@@ -898,6 +899,32 @@ export default function ProductsMenuPage() {
                                 </Typography>
                               )}
                             </Box>
+
+                            {!category.readyMade && (
+                              <Button
+                                size="small"
+                                startIcon={<StraightenIcon sx={{ fontSize: 16 }} />}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSizeGuideOpen(true);
+                                }}
+                                sx={{
+                                  mt: 1.5,
+                                  border: '1.5px solid #E91E8C',
+                                  borderRadius: '20px',
+                                  color: '#E91E8C',
+                                  fontFamily: '"Georgia", serif',
+                                  fontWeight: 600,
+                                  fontSize: '0.75rem',
+                                  textTransform: 'none',
+                                  px: 2,
+                                  py: 0.5,
+                                  '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
+                                }}
+                              >
+                                Preset Size Guide
+                              </Button>
+                            )}
 
                             {/* Notify Me button for out-of-stock — disabled until EmailJS plan upgrade
                             {oos && (
