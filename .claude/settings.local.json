@@ -36,7 +36,8 @@
       "Bash(git:*)",
       "Bash(sed:*)",
       "Bash(xargs ls:*)",
-      "Bash(xxd:*)"
+      "Bash(xxd:*)",
+      "Bash(node:*)"
     ]
   }
 }

@@ -68,7 +68,9 @@ export default function AccountPage() {
       .then(async (fetched) => {
         setOrders(fetched);
         // Batch-check which completed orders have already been rated (single query)
-        const completedIds = fetched.filter((o) => o.status === 'received').map((o) => o.id);
+        const completedIds = fetched
+          .filter((o) => o.status === 'received' || o.status === 'completed')
+          .map((o) => o.id);
         if (completedIds.length > 0) {
           const reviewedSet = await getReviewedOrderIds(completedIds);
           const map = {};
@@ -408,7 +410,7 @@ function RateDialog({ open, order, userName, onClose, onSubmitted }) {
         service: serviceName,
         type: order.type === 'service' ? 'appointment' : 'purchase',
         rating,
-        review: review.trim(),
+        testimonial: review.trim(),
         avatar: userName.charAt(0).toUpperCase(),
         orderId: order.id,
       });
@@ -493,6 +495,11 @@ function OrderCard({ order, rated, onRate }) {
     production: '#9C27B0',
     shipping: '#1976D2',
     received: '#4CAF50',
+    completed: '#4CAF50',
+    'in progress': '#9C27B0',
+    rescheduled: '#FF9800',
+    cancelled: '#f44336',
+    'no-show': '#9E9E9E',
   };
 
   return (
@@ -544,7 +551,7 @@ function OrderCard({ order, rated, onRate }) {
           ))}
         </Box>
       )}
-      {order.status === 'received' && (
+      {(order.status === 'received' || order.status === 'completed') && (
         <Box sx={{ mt: 1.5 }}>
           <Button
             size="small"
