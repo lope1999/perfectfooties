@@ -121,7 +121,7 @@ export default function Navbar() {
 								fontStyle: "italic",
 							}}
 						>
-							Chizzystyles
+							Chizzysstyles
 						</Typography>
 					</Box>
 
@@ -146,12 +146,15 @@ export default function Navbar() {
 							<Button
 								sx={{
 									...navButtonSx,
-									borderColor: '#4A0E4E',
-									color: '#4A0E4E',
-									'&:hover': { backgroundColor: '#4A0E4E', color: '#fff' },
+									borderColor: "#4A0E4E",
+									color: "#4A0E4E",
+									"&:hover": {
+										backgroundColor: "#4A0E4E",
+										color: "#fff",
+									},
 								}}
 								startIcon={<AdminPanelSettingsIcon />}
-								onClick={() => navigate('/admin')}
+								onClick={() => navigate("/admin")}
 							>
 								Admin
 							</Button>
@@ -223,50 +226,106 @@ export default function Navbar() {
 				<Box sx={{ px: 2, py: 1.5 }}>
 					{user ? (
 						<>
-							<Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.5 }}>
+							<Box
+								sx={{
+									display: "flex",
+									alignItems: "center",
+									gap: 1.5,
+									mb: 1.5,
+								}}
+							>
 								<Box
 									component="img"
 									src={user.photoURL}
 									alt={user.displayName}
-									sx={{ width: 36, height: 36, borderRadius: "50%", border: "2px solid #E91E8C" }}
+									sx={{
+										width: 36,
+										height: 36,
+										borderRadius: "50%",
+										border: "2px solid #E91E8C",
+									}}
 								/>
 								<Box>
-									<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '0.9rem', color: '#000' }}>
+									<Typography
+										sx={{
+											fontFamily: '"Georgia", serif',
+											fontWeight: 700,
+											fontSize: "0.9rem",
+											color: "#000",
+										}}
+									>
 										{user.displayName}
 									</Typography>
-									<Typography sx={{ fontSize: '0.75rem', color: '#777' }}>
+									<Typography
+										sx={{ fontSize: "0.75rem", color: "#777" }}
+									>
 										{user.email}
 									</Typography>
 								</Box>
 							</Box>
 							<ListItemButton
-								onClick={() => { setDrawerOpen(false); navigate('/account'); }}
-								sx={{ py: 1, borderRadius: 1, '&:hover': { backgroundColor: '#FCE4EC' } }}
+								onClick={() => {
+									setDrawerOpen(false);
+									navigate("/account");
+								}}
+								sx={{
+									py: 1,
+									borderRadius: 1,
+									"&:hover": { backgroundColor: "#FCE4EC" },
+								}}
 							>
 								<ListItemText
 									primary="View Account"
-									primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontWeight: 600, color: '#E91E8C', fontSize: '0.9rem' }}
+									primaryTypographyProps={{
+										fontFamily: '"Georgia", serif',
+										fontWeight: 600,
+										color: "#E91E8C",
+										fontSize: "0.9rem",
+									}}
 								/>
 							</ListItemButton>
 							<ListItemButton
-								onClick={() => { setDrawerOpen(false); signOut(); }}
-								sx={{ py: 1, borderRadius: 1, '&:hover': { backgroundColor: '#FCE4EC' } }}
+								onClick={() => {
+									setDrawerOpen(false);
+									signOut();
+								}}
+								sx={{
+									py: 1,
+									borderRadius: 1,
+									"&:hover": { backgroundColor: "#FCE4EC" },
+								}}
 							>
 								<ListItemText
 									primary="Sign Out"
-									primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontWeight: 600, color: '#999', fontSize: '0.9rem' }}
+									primaryTypographyProps={{
+										fontFamily: '"Georgia", serif',
+										fontWeight: 600,
+										color: "#999",
+										fontSize: "0.9rem",
+									}}
 								/>
 							</ListItemButton>
 						</>
 					) : (
 						<ListItemButton
-							onClick={() => { setDrawerOpen(false); signInWithGoogle().catch(() => {}); }}
-							sx={{ py: 1.5, borderRadius: 1, '&:hover': { backgroundColor: '#FCE4EC' } }}
+							onClick={() => {
+								setDrawerOpen(false);
+								signInWithGoogle().catch(() => {});
+							}}
+							sx={{
+								py: 1.5,
+								borderRadius: 1,
+								"&:hover": { backgroundColor: "#FCE4EC" },
+							}}
 						>
-							<PersonOutlineIcon sx={{ color: '#E91E8C', mr: 1 }} />
+							<PersonOutlineIcon sx={{ color: "#E91E8C", mr: 1 }} />
 							<ListItemText
 								primary="Sign In"
-								primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontWeight: 600, color: '#000' }}
+								primaryTypographyProps={{
+									fontFamily: '"Georgia", serif',
+									fontWeight: 600,
+									color: "#000",
+								}}
 							/>
 						</ListItemButton>
 					)}
@@ -353,7 +412,7 @@ export default function Navbar() {
 						</ListItemButton>
 					)}
 				</List>
-				</Drawer>
+			</Drawer>
 		</>
   );
 }
