@@ -37,7 +37,8 @@
       "Bash(sed:*)",
       "Bash(xargs ls:*)",
       "Bash(xxd:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(vercel:*)"
     ]
   }
 }

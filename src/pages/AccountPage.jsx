@@ -133,263 +133,386 @@ export default function AccountPage() {
   const otherOrders = orders.filter((o) => o.type !== 'service');
 
   return (
-    <Box sx={{ pt: { xs: 10, md: 12 }, pb: 10, minHeight: '100vh', backgroundColor: '#FFF0F5' }}>
-      <Container maxWidth="md">
-        <Typography
-          variant="h3"
-          sx={{
-            fontFamily: '"Georgia", serif',
-            fontWeight: 700,
-            color: '#000',
-            mb: 3,
-            textAlign: 'center',
-            fontSize: { xs: '1.8rem', sm: '2.4rem', md: '3rem' },
-          }}
-        >
-          My Account
-        </Typography>
+		<Box
+			sx={{
+				pt: { xs: 10, md: 12 },
+				pb: 10,
+				minHeight: "100vh",
+				backgroundColor: "#FFF0F5",
+			}}
+		>
+			<Container maxWidth="md">
+				<Typography
+					variant="h3"
+					sx={{
+						fontFamily: '"Georgia", serif',
+						fontWeight: 700,
+						color: "#000",
+						mb: 3,
+						textAlign: "center",
+						fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" },
+					}}
+				>
+					My Account
+				</Typography>
 
-        <Tabs
-          value={tabIndex}
-          onChange={handleTabChange}
-          centered
-          sx={{
-            mb: 4,
-            '& .MuiTab-root': {
-              fontFamily: '"Georgia", serif',
-              fontWeight: 600,
-              textTransform: 'none',
-              fontSize: '0.95rem',
-            },
-            '& .Mui-selected': { color: '#E91E8C' },
-            '& .MuiTabs-indicator': { backgroundColor: '#E91E8C' },
-          }}
-        >
-          <Tab label="Profile" />
-          <Tab label="Orders" />
-          <Tab label="Appointments" />
-          <Tab icon={<FavoriteIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Wishlist" />
-        </Tabs>
+				<Tabs
+					value={tabIndex}
+					onChange={handleTabChange}
+					centered
+					sx={{
+						mb: 4,
+						"& .MuiTab-root": {
+							fontFamily: '"Georgia", serif',
+							fontWeight: 600,
+							textTransform: "none",
+							fontSize: "0.95rem",
+						},
+						"& .Mui-selected": { color: "#E91E8C" },
+						"& .MuiTabs-indicator": { backgroundColor: "#E91E8C" },
+					}}
+				>
+					<Tab label="Profile" />
+					<Tab label="Orders" />
+					<Tab label="Appointments" />
+					<Tab
+						icon={<FavoriteIcon sx={{ fontSize: 18 }} />}
+						iconPosition="start"
+						label="Wishlist"
+					/>
+				</Tabs>
 
-        {/* Profile Tab */}
-        {tabIndex === 0 && (
-          <Box sx={{ textAlign: 'center' }}>
-            <Avatar
-              src={user.photoURL}
-              alt={user.displayName}
-              sx={{ width: 80, height: 80, mx: 'auto', mb: 2, border: '3px solid #E91E8C' }}
-            />
-            <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.3rem' }}>
-              {user.displayName}
-            </Typography>
-            <Typography sx={{ color: '#777', mb: 3 }}>{user.email}</Typography>
-            <Button
-              startIcon={<LogoutIcon />}
-              onClick={signOut}
-              sx={{
-                border: '2px solid #E91E8C',
-                borderRadius: '30px',
-                color: '#E91E8C',
-                px: 3,
-                py: 1,
-                fontFamily: '"Georgia", serif',
-                fontWeight: 600,
-                '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
-              }}
-            >
-              Sign Out
-            </Button>
-          </Box>
-        )}
+				{/* Profile Tab */}
+				{tabIndex === 0 && (
+					<Box sx={{ textAlign: "center" }}>
+						<Avatar
+							src={user.photoURL}
+							alt={user.displayName}
+							sx={{
+								width: 80,
+								height: 80,
+								mx: "auto",
+								mb: 2,
+								border: "3px solid #E91E8C",
+							}}
+						/>
+						<Typography
+							sx={{
+								fontFamily: '"Georgia", serif',
+								fontWeight: 700,
+								fontSize: "1.3rem",
+							}}
+						>
+							{user.displayName}
+						</Typography>
+						<Typography sx={{ color: "#777", mb: 3 }}>
+							{user.email}
+						</Typography>
+						<Button
+							startIcon={<LogoutIcon />}
+							onClick={signOut}
+							sx={{
+								border: "2px solid #E91E8C",
+								borderRadius: "30px",
+								color: "#E91E8C",
+								px: 3,
+								py: 1,
+								fontFamily: '"Georgia", serif',
+								fontWeight: 600,
+								"&:hover": {
+									backgroundColor: "#E91E8C",
+									color: "#fff",
+								},
+							}}
+						>
+							Sign Out
+						</Button>
+					</Box>
+				)}
 
-        {/* Orders Tab */}
-        {tabIndex === 1 && (
-          <Box>
-            {ordersLoading ? (
-              <Box sx={{ textAlign: 'center', py: 6 }}>
-                <CircularProgress sx={{ color: '#E91E8C' }} />
-              </Box>
-            ) : otherOrders.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 6 }}>
-                <ReceiptLongOutlinedIcon sx={{ fontSize: 48, color: '#ccc', mb: 1 }} />
-                <Typography sx={{ color: '#999' }}>No orders yet.</Typography>
-                <Typography sx={{ color: '#aaa', fontSize: '0.85rem', mt: 0.5 }}>
-                  Orders placed while signed in will appear here.
-                </Typography>
-              </Box>
-            ) : (
-              otherOrders.map((order) => (
-                <OrderCard key={order.id} order={order} rated={!!ratedOrders[order.id]} onRate={() => setRateDialog(order)} />
-              ))
-            )}
-          </Box>
-        )}
+				{/* Orders Tab */}
+				{tabIndex === 1 && (
+					<Box>
+						{ordersLoading ? (
+							<Box sx={{ textAlign: "center", py: 6 }}>
+								<CircularProgress sx={{ color: "#E91E8C" }} />
+							</Box>
+						) : otherOrders.length === 0 ? (
+							<Box sx={{ textAlign: "center", py: 6 }}>
+								<ReceiptLongOutlinedIcon
+									sx={{ fontSize: 48, color: "#ccc", mb: 1 }}
+								/>
+								<Typography sx={{ color: "#999" }}>
+									No orders yet.
+								</Typography>
+								<Typography
+									sx={{ color: "#aaa", fontSize: "0.85rem", mt: 0.5 }}
+								>
+									Orders placed while signed in will appear here.
+								</Typography>
+								<Button
+									onClick={() => navigate("/products")}
+									sx={{
+										border: "2px solid #E91E8C",
+										borderRadius: "30px",
+										color: "#E91E8C",
+										px: 3,
+										py: 1,
+										fontFamily: '"Georgia", serif',
+										fontWeight: 600,
+										"&:hover": {
+											backgroundColor: "#E91E8C",
+											color: "#fff",
+										},
+									}}
+								>
+									Browse Products
+								</Button>
+							</Box>
+						) : (
+							otherOrders.map((order) => (
+								<OrderCard
+									key={order.id}
+									order={order}
+									rated={!!ratedOrders[order.id]}
+									onRate={() => setRateDialog(order)}
+								/>
+							))
+						)}
+					</Box>
+				)}
 
-        {/* Appointments Tab */}
-        {tabIndex === 2 && (
-          <Box>
-            {ordersLoading ? (
-              <Box sx={{ textAlign: 'center', py: 6 }}>
-                <CircularProgress sx={{ color: '#E91E8C' }} />
-              </Box>
-            ) : serviceOrders.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 6 }}>
-                <EventNoteIcon sx={{ fontSize: 48, color: '#ccc', mb: 1 }} />
-                <Typography sx={{ color: '#999' }}>No appointments yet.</Typography>
-                <Typography sx={{ color: '#aaa', fontSize: '0.85rem', mt: 0.5 }}>
-                  Appointments booked while signed in will appear here.
-                </Typography>
-              </Box>
-            ) : (
-              serviceOrders.map((order) => (
-                <OrderCard key={order.id} order={order} rated={!!ratedOrders[order.id]} onRate={() => setRateDialog(order)} />
-              ))
-            )}
-          </Box>
-        )}
-        {/* Wishlist Tab */}
-        {tabIndex === 3 && (
-          <Box>
-            {wishlist.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 6 }}>
-                <FavoriteIcon sx={{ fontSize: 48, color: '#ccc', mb: 1 }} />
-                <Typography sx={{ color: '#999' }}>Your wishlist is empty</Typography>
-                <Typography sx={{ color: '#aaa', fontSize: '0.85rem', mt: 0.5, mb: 2 }}>
-                  Tap the heart icon on products to save them here.
-                </Typography>
-                <Button
-                  onClick={() => navigate('/products')}
-                  sx={{
-                    border: '2px solid #E91E8C',
-                    borderRadius: '30px',
-                    color: '#E91E8C',
-                    px: 3,
-                    py: 1,
-                    fontFamily: '"Georgia", serif',
-                    fontWeight: 600,
-                    '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
-                  }}
-                >
-                  Browse Products
-                </Button>
-              </Box>
-            ) : (
-              wishlist.map((item) => (
-                <Box
-                  key={item.productId}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 2,
-                    p: 2,
-                    mb: 1.5,
-                    borderRadius: 3,
-                    border: '1px solid #F0C0D0',
-                    backgroundColor: '#fff',
-                    transition: 'box-shadow 0.2s ease',
-                    '&:hover': { boxShadow: '0 2px 12px rgba(233,30,140,0.1)' },
-                  }}
-                >
-                  <Box
-                    onClick={() => navigate('/products', { state: { categoryId: item.categoryId } })}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 2,
-                      flex: 1,
-                      minWidth: 0,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Box
-                      component="img"
-                      src={item.image}
-                      alt={item.name}
-                      sx={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: 2,
-                        objectFit: 'cover',
-                        flexShrink: 0,
-                      }}
-                    />
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography
-                        sx={{
-                          fontFamily: '"Georgia", serif',
-                          fontWeight: 700,
-                          fontSize: '0.95rem',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {item.name}
-                      </Typography>
-                      <Chip
-                        label={formatNaira(item.price)}
-                        size="small"
-                        sx={{
-                          mt: 0.5,
-                          backgroundColor: '#E91E8C',
-                          color: '#fff',
-                          fontFamily: '"Georgia", serif',
-                          fontWeight: 700,
-                          fontSize: '0.8rem',
-                        }}
-                      />
-                    </Box>
-                  </Box>
-                  <Tooltip title="View product">
-                    <IconButton
-                      onClick={() => navigate('/products', { state: { categoryId: item.categoryId } })}
-                      sx={{ color: '#999', '&:hover': { color: '#4A0E4E' } }}
-                    >
-                      <VisibilityOutlinedIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Add to cart">
-                    <IconButton
-                      onClick={() => addProduct({
-                        productId: item.productId,
-                        name: item.name,
-                        price: item.price,
-                        quantity: 1,
-                        stock: item.stock ?? 999,
-                        categoryId: item.categoryId,
-                      })}
-                      sx={{ color: '#999', '&:hover': { color: '#E91E8C' } }}
-                    >
-                      <ShoppingCartOutlinedIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Remove from wishlist">
-                    <IconButton
-                      onClick={() => removeFromWishlist(item.productId)}
-                      sx={{ color: '#ccc', '&:hover': { color: '#E91E8C' } }}
-                    >
-                      <DeleteOutlineIcon />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              ))
-            )}
-          </Box>
-        )}
+				{/* Appointments Tab */}
+				{tabIndex === 2 && (
+					<Box>
+						{ordersLoading ? (
+							<Box sx={{ textAlign: "center", py: 6 }}>
+								<CircularProgress sx={{ color: "#E91E8C" }} />
+							</Box>
+						) : serviceOrders.length === 0 ? (
+							<Box sx={{ textAlign: "center", py: 6 }}>
+								<EventNoteIcon
+									sx={{ fontSize: 48, color: "#ccc", mb: 1 }}
+								/>
+								<Typography sx={{ color: "#999" }}>
+									No appointments yet.
+								</Typography>
+								<Typography
+									sx={{ color: "#aaa", fontSize: "0.85rem", mt: 0.5 }}
+								>
+									Appointments booked while signed in will appear here.
+								</Typography>
+								<Button
+									onClick={() => navigate("/services")}
+									sx={{
+										border: "2px solid #E91E8C",
+										borderRadius: "30px",
+										color: "#E91E8C",
+										px: 3,
+										py: 1,
+										fontFamily: '"Georgia", serif',
+										fontWeight: 600,
+										"&:hover": {
+											backgroundColor: "#E91E8C",
+											color: "#fff",
+										},
+									}}
+								>
+									Browse Nail Services
+								</Button>
+							</Box>
+						) : (
+							serviceOrders.map((order) => (
+								<OrderCard
+									key={order.id}
+									order={order}
+									rated={!!ratedOrders[order.id]}
+									onRate={() => setRateDialog(order)}
+								/>
+							))
+						)}
+					</Box>
+				)}
+				{/* Wishlist Tab */}
+				{tabIndex === 3 && (
+					<Box>
+						{wishlist.length === 0 ? (
+							<Box sx={{ textAlign: "center", py: 6 }}>
+								<FavoriteIcon
+									sx={{ fontSize: 48, color: "#ccc", mb: 1 }}
+								/>
+								<Typography sx={{ color: "#999" }}>
+									Your wishlist is empty
+								</Typography>
+								<Typography
+									sx={{
+										color: "#aaa",
+										fontSize: "0.85rem",
+										mt: 0.5,
+										mb: 2,
+									}}
+								>
+									Tap the heart icon on products to save them here.
+								</Typography>
+								<Button
+									onClick={() => navigate("/products")}
+									sx={{
+										border: "2px solid #E91E8C",
+										borderRadius: "30px",
+										color: "#E91E8C",
+										px: 3,
+										py: 1,
+										fontFamily: '"Georgia", serif',
+										fontWeight: 600,
+										"&:hover": {
+											backgroundColor: "#E91E8C",
+											color: "#fff",
+										},
+									}}
+								>
+									Browse Products
+								</Button>
+							</Box>
+						) : (
+							wishlist.map((item) => (
+								<Box
+									key={item.productId}
+									sx={{
+										display: "flex",
+										alignItems: "center",
+										gap: 2,
+										p: 2,
+										mb: 1.5,
+										borderRadius: 3,
+										border: "1px solid #F0C0D0",
+										backgroundColor: "#fff",
+										transition: "box-shadow 0.2s ease",
+										"&:hover": {
+											boxShadow: "0 2px 12px rgba(233,30,140,0.1)",
+										},
+									}}
+								>
+									<Box
+										onClick={() =>
+											navigate("/products", {
+												state: { categoryId: item.categoryId },
+											})
+										}
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											gap: 2,
+											flex: 1,
+											minWidth: 0,
+											cursor: "pointer",
+										}}
+									>
+										<Box
+											component="img"
+											src={item.image}
+											alt={item.name}
+											sx={{
+												width: 60,
+												height: 60,
+												borderRadius: 2,
+												objectFit: "cover",
+												flexShrink: 0,
+											}}
+										/>
+										<Box sx={{ flex: 1, minWidth: 0 }}>
+											<Typography
+												sx={{
+													fontFamily: '"Georgia", serif',
+													fontWeight: 700,
+													fontSize: "0.95rem",
+													overflow: "hidden",
+													textOverflow: "ellipsis",
+													whiteSpace: "nowrap",
+												}}
+											>
+												{item.name}
+											</Typography>
+											<Chip
+												label={formatNaira(item.price)}
+												size="small"
+												sx={{
+													mt: 0.5,
+													backgroundColor: "#E91E8C",
+													color: "#fff",
+													fontFamily: '"Georgia", serif',
+													fontWeight: 700,
+													fontSize: "0.8rem",
+												}}
+											/>
+										</Box>
+									</Box>
+									<Tooltip title="View product">
+										<IconButton
+											onClick={() =>
+												navigate("/products", {
+													state: { categoryId: item.categoryId },
+												})
+											}
+											sx={{
+												color: "#999",
+												"&:hover": { color: "#4A0E4E" },
+											}}
+										>
+											<VisibilityOutlinedIcon />
+										</IconButton>
+									</Tooltip>
+									<Tooltip title="Add to cart">
+										<IconButton
+											onClick={() =>
+												addProduct({
+													productId: item.productId,
+													name: item.name,
+													price: item.price,
+													quantity: 1,
+													stock: item.stock ?? 999,
+													categoryId: item.categoryId,
+												})
+											}
+											sx={{
+												color: "#999",
+												"&:hover": { color: "#E91E8C" },
+											}}
+										>
+											<ShoppingCartOutlinedIcon />
+										</IconButton>
+									</Tooltip>
+									<Tooltip title="Remove from wishlist">
+										<IconButton
+											onClick={() =>
+												removeFromWishlist(item.productId)
+											}
+											sx={{
+												color: "#ccc",
+												"&:hover": { color: "#E91E8C" },
+											}}
+										>
+											<DeleteOutlineIcon />
+										</IconButton>
+									</Tooltip>
+								</Box>
+							))
+						)}
+					</Box>
+				)}
 
-        {/* Rate Dialog */}
-        <RateDialog
-          open={!!rateDialog}
-          order={rateDialog}
-          userName={user?.displayName || ''}
-          onClose={() => setRateDialog(null)}
-          onSubmitted={(orderId) => {
-            setRatedOrders((prev) => ({ ...prev, [orderId]: true }));
-            setRateDialog(null);
-          }}
-        />
-      </Container>
-    </Box>
+				{/* Rate Dialog */}
+				<RateDialog
+					open={!!rateDialog}
+					order={rateDialog}
+					userName={user?.displayName || ""}
+					onClose={() => setRateDialog(null)}
+					onSubmitted={(orderId) => {
+						setRatedOrders((prev) => ({ ...prev, [orderId]: true }));
+						setRateDialog(null);
+					}}
+				/>
+			</Container>
+		</Box>
   );
 }
 
