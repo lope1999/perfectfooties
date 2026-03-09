@@ -38,7 +38,8 @@
       "Bash(xargs ls:*)",
       "Bash(xxd:*)",
       "Bash(node:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "Bash(xargs grep:*)"
     ]
   }
 }

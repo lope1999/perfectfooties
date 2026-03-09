@@ -33,7 +33,7 @@ export default function TestimonialsPage() {
           service: t.service,
           type: t.type,
           rating: t.rating,
-          review: t.review,
+          review: t.testimonial || t.review,
           avatar: t.avatar || t.name?.charAt(0)?.toUpperCase() || '?',
         }));
         setTestimonials([...staticTestimonials, ...mapped]);
