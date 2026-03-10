@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogTitle,
@@ -11,7 +12,6 @@ import {
   MenuItem,
   TextField,
   IconButton,
-  CircularProgress,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
@@ -19,8 +19,7 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { pressOnNailShapes, pressOnQuantities } from '../data/products';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { saveOrder, saveNailBedSizes, fetchNailBedSizes } from '../lib/orderService';
-import { decrementStockBatch } from '../lib/stockService';
+import { saveNailBedSizes, fetchNailBedSizes } from '../lib/orderService';
 import NailBedSizeInput from './NailBedSizeInput';
 import SignInPrompt from './SignInPrompt';
 import { hasDiscount, getEffectivePrice, getDiscountLabel } from '../lib/discountUtils';
@@ -34,6 +33,7 @@ function formatNaira(amount) {
 export default function ProductQuickView({ open, onClose, product, category, onAddedToCart }) {
   const { addPressOn } = useCart();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [zoomOpen, setZoomOpen] = useState(false);
   const [presetSize, setPresetSize] = useState('');
   const [nailShape, setNailShape] = useState('');
@@ -41,7 +41,6 @@ export default function ProductQuickView({ open, onClose, product, category, onA
   const [nailBedSize, setNailBedSize] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [error, setError] = useState('');
-  const [orderLoading, setOrderLoading] = useState(false);
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
 
   useEffect(() => {
@@ -125,72 +124,37 @@ export default function ProductQuickView({ open, onClose, product, category, onA
     onAddedToCart?.();
   };
 
-  const handleConfirmOrder = async () => {
+  const handleConfirmOrder = () => {
     if (!user) { setSignInPromptOpen(true); return; }
     if (!validate()) return;
 
-    setOrderLoading(true);
-    try {
-      // Decrement stock for ready-made items
-      if (isReadyMade && product.stock !== undefined) {
-        await decrementStockBatch([
-          {
-            collection: 'productCategories',
-            categoryId: category.id,
-            productId: product.id,
-            quantity,
-          },
-        ]);
-      }
-    } catch (err) {
-      console.error('Stock decrement failed:', err);
+    // Add item to CartContext then go to checkout for shipping details
+    addPressOn({
+      productId: product.id,
+      name: product.name,
+      price: getEffectivePrice(product),
+      originalPrice: hasDiscount(product) ? product.price : undefined,
+      discountLabel: hasDiscount(product) ? getDiscountLabel(product) : undefined,
+      type: product.type || '',
+      nailShape: nailShape || product.shape || '',
+      quantity,
+      nailBedSize: nailBedSize || '',
+      presetSize: presetSize || '',
+      orderingForOthers: false,
+      otherPeople: [],
+      customerName: customerName.trim(),
+      categoryId: category.id,
+      readyMade: isReadyMade,
+      stock: product.stock,
+    });
+
+    // Save nail bed sizes to profile for reuse
+    if (!isReadyMade && nailBedSize) {
+      saveNailBedSizes(user.uid, nailBedSize).catch(() => {});
     }
 
-    // Build WhatsApp message
-    const effectivePrice = getEffectivePrice(product);
-    const total = effectivePrice * quantity;
-    let productLine = `1. ${product.name} — ${formatNaira(effectivePrice)}`;
-    if (isReadyMade) {
-      productLine += `\n   - Type: ${product.type || 'N/A'}\n   - Shape: ${product.shape || 'N/A'}\n   - Length: ${product.length || 'N/A'}\n   - Preset Size: ${presetSize}\n   - Quantity: ${quantity} set(s)\n   - (Ready-made — ready to ship)`;
-    } else {
-      productLine += `\n   - Nail Shape: ${nailShape}\n   - Quantity: ${quantity} set(s)\n   - Nail Bed Size: ${nailBedSize || 'Not provided'}`;
-    }
-
-    const message = `Hi! I'd like to order press-on nails.\n\nName: ${customerName.trim()}\n\nProducts (1):\n${productLine}\n\nEstimated Total: ${formatNaira(total)}\n\nPlease confirm availability and delivery details. Thank you!`;
-    const encoded = encodeURIComponent(message);
-    window.open(
-      `https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`,
-      '_blank'
-    );
-
-    // Save order to DB
-    if (user) {
-      saveOrder(user.uid, {
-        type: 'pressOn',
-        total,
-        customerName: customerName.trim(),
-        email: user.email || '',
-        items: [
-          {
-            kind: 'pressOn',
-            name: product.name || '',
-            price: effectivePrice,
-            nailShape: nailShape || product.shape || '',
-            quantity,
-            ...(isReadyMade ? { presetSize } : {}),
-            ...(nailBedSize ? { nailBedSize } : {}),
-          },
-        ],
-      }).catch(() => {});
-
-      // Save nail bed sizes to profile for reuse
-      if (!isReadyMade && nailBedSize) {
-        saveNailBedSizes(user.uid, nailBedSize).catch(() => {});
-      }
-    }
-
-    setOrderLoading(false);
     handleClose();
+    navigate('/checkout');
   };
 
   return (
@@ -408,7 +372,7 @@ export default function ProductQuickView({ open, onClose, product, category, onA
           </Button>
           <Button
             onClick={handleConfirmOrder}
-            disabled={!isFormValid || orderLoading}
+            disabled={!isFormValid}
             sx={{
               backgroundColor: '#E91E8C',
               color: '#fff',
@@ -422,11 +386,7 @@ export default function ProductQuickView({ open, onClose, product, category, onA
               '&.Mui-disabled': { backgroundColor: '#F0C0D0', color: '#fff' },
             }}
           >
-            {orderLoading ? (
-              <CircularProgress size={20} sx={{ color: '#fff' }} />
-            ) : (
-              'Confirm Order'
-            )}
+            Proceed to Checkout
           </Button>
           <Button
             onClick={handleAddToCart}

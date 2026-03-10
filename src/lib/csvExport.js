@@ -17,6 +17,11 @@ export function exportOrdersToCSV(orders, filename = 'orders.csv') {
     'Items',
     'Admin Notes',
     'Date',
+    'Ship Name',
+    'Ship Phone',
+    'Ship Address',
+    'Ship State',
+    'Ship LGA',
   ];
 
   const rows = orders.map((o) => [
@@ -29,6 +34,11 @@ export function exportOrdersToCSV(orders, filename = 'orders.csv') {
     (o.items || []).map((i) => `${i.name || i.title || ''} x${i.quantity || 1}`).join('; '),
     (o.adminNotes || []).map((n) => n.text).join('; '),
     o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString() : '',
+    o.shipping?.name || '',
+    o.shipping?.phone || '',
+    o.shipping?.address || '',
+    o.shipping?.state || '',
+    o.shipping?.lga || '',
   ]);
 
   const csv =

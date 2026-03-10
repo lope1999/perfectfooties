@@ -26,11 +26,10 @@ import ImageNotSupportedOutlinedIcon from '@mui/icons-material/ImageNotSupported
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import ScrollReveal from '../components/ScrollReveal';
 import useRetailCategories from '../hooks/useRetailCategories';
-import { decrementStockBatch } from '../lib/stockService';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { saveOrder } from '../lib/orderService';
 import { hasDiscount, getEffectivePrice, getDiscountLabel } from '../lib/discountUtils';
+import SignInPrompt from '../components/SignInPrompt';
 
 const sectionColors = ['#FFF0F5', '#FCE4EC', '#F3E5F6', '#F8E8F0', '#FFF5F8', '#FFF0F5'];
 
@@ -75,7 +74,7 @@ export default function NailShopPage() {
     if (user?.displayName && !customerName) setCustomerName(user.displayName);
   }, [user]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const { addProduct: addToGlobalCart } = useCart();
   const { categories: retailCategories, loading, error } = useRetailCategories();
 
@@ -121,61 +120,14 @@ export default function NailShopPage() {
   const isFormValid = customerName.trim() && cartItems.length > 0;
 
   const handleConfirmPurchase = () => {
+    if (!user) { setSignInPromptOpen(true); return; }
     setModalOpen(true);
   };
 
-  const handleCompletePurchase = async () => {
-    setCheckoutLoading(true);
-    try {
-      // Decrement stock in Firestore
-      const stockItems = cartItems
-        .map(([id, qty]) => {
-          const product = allProducts.find((p) => p.id === id);
-          if (!product || product.stock === undefined) return null;
-          return { collection: 'retailCategories', categoryId: product.categoryId, productId: id, quantity: qty };
-        })
-        .filter(Boolean);
-
-      if (stockItems.length > 0) {
-        await decrementStockBatch(stockItems);
-      }
-    } catch (err) {
-      console.error('Stock decrement failed:', err);
-      // Continue with checkout even if stock decrement fails
-    }
-
-    setCheckoutLoading(false);
+  const handleCompletePurchase = () => {
+    handleAddToCart(); // adds items to global CartContext and clears local cart
     setModalOpen(false);
-
-    const orderLines = cartItems.map(([id, qty], i) => {
-      const product = allProducts.find((p) => p.id === id);
-      const price = product ? getEffectivePrice(product) : 0;
-      const subtotal = price * qty;
-      return `${i + 1}. ${product?.name || 'Product'} x${qty} — ${formatNaira(subtotal)}`;
-    });
-
-    const message = `Hi! I'd like to purchase nail care products.\n\nName: ${customerName}\n\nItems (${totalItems}):\n${orderLines.join('\n')}\n\nTotal: ${formatNaira(totalPrice)}\n\nPlease confirm availability and payment details. Thank you!`;
-    const encoded = encodeURIComponent(message);
-    window.open(
-      `https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`,
-      '_blank'
-    );
-
-    if (user) {
-      saveOrder(user.uid, {
-        type: 'retail',
-        total: totalPrice,
-        customerName: customerName.trim(),
-        email: user.email || '',
-        items: cartItems.map(([id, qty]) => {
-          const product = allProducts.find((p) => p.id === id);
-          const price = product ? getEffectivePrice(product) : 0;
-          return { kind: 'retail', name: product?.name || '', price, quantity: qty };
-        }),
-      }).catch(() => {});
-    }
-
-    navigate('/');
+    navigate('/checkout');
   };
 
   const handleAddToCart = () => {
@@ -687,13 +639,13 @@ export default function NailShopPage() {
             variant="h5"
             sx={{ fontFamily: '"Georgia", serif', fontWeight: 700 }}
           >
-            Purchase Confirmed!
+            Looking good!
           </Typography>
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ color: '#555', mt: 1, lineHeight: 1.7 }}>
-            We will navigate you to WhatsApp to confirm availability, payment,
-            and delivery details for your items.
+            Next, you'll enter your shipping details to complete your order.
+            We deliver within Nigeria only.
           </Typography>
           {cartItems.length > 0 && (
             <Box sx={{ mt: 2, textAlign: 'left' }}>
@@ -745,15 +697,15 @@ export default function NailShopPage() {
               fontFamily: '"Georgia", serif',
               fontWeight: 600,
               fontSize: '0.95rem',
-              '&:hover': {
-                backgroundColor: '#C2185B',
-              },
+              '&:hover': { backgroundColor: '#C2185B' },
             }}
           >
-            Complete Purchase
+            Proceed to Checkout
           </Button>
         </DialogActions>
       </Dialog>
+
+      <SignInPrompt open={signInPromptOpen} onClose={() => setSignInPromptOpen(false)} />
     </Box>
   );
 }

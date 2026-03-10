@@ -20,6 +20,7 @@ import OurTeamPage from './pages/OurTeamPage';
 import RescheduleAppointmentPage from './pages/RescheduleAppointmentPage';
 import NailShopPage from './pages/NailShopPage';
 import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
 import AccountPage from './pages/AccountPage';
 import GalleryPage from './pages/GalleryPage';
 
@@ -49,6 +50,7 @@ function App() {
         <Route path="/reschedule" element={<RescheduleAppointmentPage />} />
         <Route path="/order" element={<PlaceOrderPage />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/our-story" element={<OurStoryPage />} />
         <Route path="/blog" element={<BlogPage />} />

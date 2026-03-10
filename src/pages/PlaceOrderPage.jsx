@@ -36,13 +36,12 @@ import {
   pressOnQuantities,
 } from '../data/products';
 import useProductCategories from '../hooks/useProductCategories';
-import { decrementStockBatch } from '../lib/stockService';
 import ScrollReveal from '../components/ScrollReveal';
 import NailBedSizeInput from '../components/NailBedSizeInput';
 import PresetSizeGuide from '../components/PresetSizeGuide';
 import { useCart } from "../context/CartContext";
 import { useAuth } from '../context/AuthContext';
-import { saveOrder, saveNailBedSizes, fetchNailBedSizes } from '../lib/orderService';
+import { saveNailBedSizes, fetchNailBedSizes } from '../lib/orderService';
 import SignInPrompt from '../components/SignInPrompt';
 import { hasDiscount, getEffectivePrice, getDiscountLabel } from '../lib/discountUtils';
 
@@ -110,7 +109,6 @@ export default function PlaceOrderPage() {
   const [selectedProducts, setSelectedProducts] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const { categories: productCategories, loading, error } = useProductCategories();
 
   const handleContactClick = () => {
@@ -219,86 +217,43 @@ export default function PlaceOrderPage() {
     setModalOpen(true);
   };
 
-  const handleCompleteOrder = async () => {
-    setCheckoutLoading(true);
-    try {
-      // Decrement stock for ready-made items only
-      const stockItems = Object.keys(selectedProducts)
-        .map((id) => {
-          const product = allProducts.find((p) => p.id === id);
-          const form = selectedProducts[id];
-          if (!product || !product.readyMade || product.stock === undefined) return null;
-          return { collection: 'productCategories', categoryId: product.categoryId, productId: id, quantity: Number(form.quantity) || 1 };
-        })
-        .filter(Boolean);
-
-      if (stockItems.length > 0) {
-        await decrementStockBatch(stockItems);
-      }
-    } catch (err) {
-      console.error('Stock decrement failed:', err);
-    }
-    setCheckoutLoading(false);
-    setModalOpen(false);
-
-    const selectedIds = Object.keys(selectedProducts);
-    const orderLines = selectedIds.map((id, i) => {
+  const handleCompleteOrder = () => {
+    // Add all selected items to the global CartContext
+    Object.keys(selectedProducts).forEach((id) => {
       const product = allProducts.find((p) => p.id === id);
+      if (!product) return;
       const form = selectedProducts[id];
-      const price = product ? getEffectivePrice(product) : 0;
-      if (product?.readyMade) {
-        return `${i + 1}. ${product?.name || 'Product'} — ${formatNaira(price)}\n   - Type: ${product.type || 'N/A'}\n   - Shape: ${product.shape || 'N/A'}\n   - Length: ${product.length || 'N/A'}\n   - Preset Size: ${form.presetSize}\n   - Quantity: ${form.quantity} set(s)\n   - (Ready-made — ready to ship)`;
-      }
-      let line = `${i + 1}. ${product?.name || 'Product'} — ${formatNaira(price)}\n   - Nail Shape: ${form.nailShape}\n   - Quantity: ${form.quantity} set(s)\n   - Nail Bed Size: ${form.nailBedSize || 'Not provided'}`;
-      if (form.orderingForOthers && form.otherPeople?.length > 0) {
-        const othersLines = form.otherPeople.map((p, j) =>
-          `   - Also for: ${p.name || 'N/A'} — Shape: ${p.nailShape || 'Same'} — Nail Bed Size: ${p.nailBedSize || 'Not provided'}`
-        ).join('\n');
-        line += `\n${othersLines}`;
-      }
-      return line;
+      addPressOnToCart({
+        productId: product.id,
+        name: product.name,
+        price: getEffectivePrice(product),
+        ...(hasDiscount(product) ? { originalPrice: product.price, discountLabel: getDiscountLabel(product) } : {}),
+        type: product.type || '',
+        nailShape: form.nailShape || product.shape || '',
+        quantity: form.quantity || 1,
+        nailBedSize: form.nailBedSize || '',
+        presetSize: form.presetSize || '',
+        orderingForOthers: form.orderingForOthers || false,
+        otherPeople: form.otherPeople || [],
+        customerName: customerName.trim(),
+        categoryId: product.categoryId,
+        readyMade: product.readyMade,
+        stock: product.stock,
+      });
     });
 
-    const total = selectedIds.reduce((sum, id) => {
-      const product = allProducts.find((p) => p.id === id);
-      return sum + (product ? getEffectivePrice(product) : 0);
-    }, 0);
-
-    const message = `Hi! I'd like to order press-on nails.\n\nName: ${customerName}\n\nProducts (${selectedIds.length}):\n${orderLines.join('\n\n')}\n\nEstimated Total: ${formatNaira(total)}\n\nPlease confirm availability and delivery details. Thank you!`;
-    const encoded = encodeURIComponent(message);
-    window.open(`https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`, '_blank');
-
+    // Save nail bed sizes to profile for reuse
     if (user) {
-      saveOrder(user.uid, {
-        type: 'pressOn',
-        total,
-        customerName: customerName.trim(),
-        email: user.email || '',
-        items: selectedIds.map((id) => {
-          const product = allProducts.find((p) => p.id === id);
-          const form = selectedProducts[id];
-          const effectivePrice = product ? getEffectivePrice(product) : 0;
-          return {
-            kind: 'pressOn',
-            name: product?.name || '',
-            price: effectivePrice,
-            ...(hasDiscount(product) ? { originalPrice: product.price, discountLabel: getDiscountLabel(product) } : {}),
-            nailShape: form.nailShape || product?.shape || '',
-            quantity: form.quantity || 1,
-            ...(form.nailBedSize ? { nailBedSize: form.nailBedSize } : {}),
-          };
-        }),
-      }).catch(() => {});
-
-      // Save nail bed sizes to profile for reuse
-      const firstCustom = selectedIds.find((id) => !isReadyMade(id));
+      const firstCustom = Object.keys(selectedProducts).find((id) => !isReadyMade(id));
       if (firstCustom) {
         const sizes = selectedProducts[firstCustom]?.nailBedSize;
         if (sizes) saveNailBedSizes(user.uid, sizes).catch(() => {});
       }
     }
 
-    navigate('/');
+    setSelectedProducts({});
+    setModalOpen(false);
+    navigate('/checkout');
   };
 
   const handleAddToCart = () => {
@@ -1286,14 +1241,13 @@ export default function PlaceOrderPage() {
 						variant="h5"
 						sx={{ fontFamily: '"Georgia", serif', fontWeight: 700 }}
 					>
-						Order Placed!
+						Looking good!
 					</Typography>
 				</DialogTitle>
 				<DialogContent>
 					<Typography sx={{ color: "#555", mt: 1, lineHeight: 1.7 }}>
-						Your press-on nail order is being processed. We will navigate
-						you to WhatsApp to confirm your design, nail bed measurements,
-						and delivery details.
+						Next, you'll enter your shipping details to complete your order.
+						We deliver within Nigeria only.
 					</Typography>
 					{selectedIds.length > 0 && (
 						<Box sx={{ mt: 2, textAlign: "left" }}>
@@ -1339,12 +1293,10 @@ export default function PlaceOrderPage() {
 							fontFamily: '"Georgia", serif',
 							fontWeight: 600,
 							fontSize: "0.95rem",
-							"&:hover": {
-								backgroundColor: "#C2185B",
-							},
+							"&:hover": { backgroundColor: "#C2185B" },
 						}}
 					>
-						Complete Order
+						Proceed to Checkout
 					</Button>
 				</DialogActions>
 			</Dialog>

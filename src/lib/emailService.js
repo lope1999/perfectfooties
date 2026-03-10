@@ -47,6 +47,11 @@ export async function sendConfirmationEmail(order) {
         order_items: order.items
           ? order.items.map((i) => `${i.name || i.title} x${i.quantity || 1}`).join(', ')
           : 'N/A',
+        shipping_name: order.shipping?.name || '',
+        shipping_phone: order.shipping?.phone || '',
+        shipping_address: order.shipping?.address || '',
+        shipping_state: order.shipping?.state || '',
+        shipping_lga: order.shipping?.lga || '',
       };
 
   try {

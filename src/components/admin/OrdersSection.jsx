@@ -453,10 +453,32 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                             ))}
                           </Box>
                         )}
-                        {o.address && (
-                          <Typography sx={{ fontFamily, fontSize: '0.85rem', mt: 1 }}>
-                            <strong>Address:</strong> {typeof o.address === 'string' ? o.address : JSON.stringify(o.address)}
-                          </Typography>
+                        {o.shipping && o.type !== 'service' && (
+                          <Box sx={{ mt: 1.5, p: 1.5, backgroundColor: '#FFF0F5', borderRadius: 2, border: '1px solid #F0C0D0' }}>
+                            <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, color: '#4A0E4E', mb: 0.5 }}>
+                              Shipping Details
+                            </Typography>
+                            {o.shipping.name && (
+                              <Typography sx={{ fontFamily, fontSize: '0.82rem', mb: 0.25 }}>
+                                <strong>Name:</strong> {o.shipping.name}
+                              </Typography>
+                            )}
+                            {o.shipping.phone && (
+                              <Typography sx={{ fontFamily, fontSize: '0.82rem', mb: 0.25 }}>
+                                <strong>Phone:</strong> {o.shipping.phone}
+                              </Typography>
+                            )}
+                            {o.shipping.address && (
+                              <Typography sx={{ fontFamily, fontSize: '0.82rem', mb: 0.25 }}>
+                                <strong>Address:</strong> {o.shipping.address}
+                              </Typography>
+                            )}
+                            {(o.shipping.state || o.shipping.lga) && (
+                              <Typography sx={{ fontFamily, fontSize: '0.82rem' }}>
+                                <strong>State / LGA:</strong> {[o.shipping.state, o.shipping.lga].filter(Boolean).join(' / ')}
+                              </Typography>
+                            )}
+                          </Box>
                         )}
                       </Box>
                     </Collapse>

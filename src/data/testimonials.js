@@ -10,17 +10,6 @@ export const testimonials = [
 			"I needed strong nails that could survive my busy lifestyle and Chizzy delivered. They look so good, from the cuticle work to the nailart which looks amazing on camera.She is definitely my new go to nail tech.",
 		avatar: "D",
 	},
-	{
-		id: 1,
-		name: "Sarah",
-		occupation: "Marketer",
-		service: "Gel X Nail Service",
-		type: "appointment",
-		rating: 5,
-		review:
-			"Absolutely loved my Gel X set! The shape was perfect, the finish was flawless, and it lasted over three weeks without a single chip. Chizzy really took her time to make sure everything was exactly how I wanted. Will definitely be coming back!",
-		avatar: "S",
-	},
 	// {
 	// 	id: 3,
 	// 	name: "Tolu",

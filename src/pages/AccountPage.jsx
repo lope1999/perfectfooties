@@ -517,24 +517,35 @@ export default function AccountPage() {
 }
 
 function RateDialog({ open, order, userName, onClose, onSubmitted }) {
+  const [name, setName] = useState(userName || '');
   const [rating, setRating] = useState(0);
   const [occupation, setOccupation] = useState('');
   const [review, setReview] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (open) {
+      setName(userName || '');
+      setRating(0);
+      setOccupation('');
+      setReview('');
+    }
+  }, [open, userName]);
+
   const handleSubmit = async () => {
     if (!order || rating === 0 || !review.trim()) return;
     setSubmitting(true);
+    const resolvedName = name.trim() || userName;
     try {
       const serviceName = order.items?.[0]?.serviceName || order.items?.[0]?.name || 'Service';
       await saveTestimonial({
-        name: userName,
+        name: resolvedName,
         occupation: occupation.trim() || 'Client',
         service: serviceName,
         type: order.type === 'service' ? 'appointment' : 'purchase',
         rating,
         testimonial: review.trim(),
-        avatar: userName.charAt(0).toUpperCase(),
+        avatar: resolvedName.charAt(0).toUpperCase(),
         orderId: order.id,
       });
       onSubmitted(order.id);
@@ -569,6 +580,14 @@ function RateDialog({ open, order, userName, onClose, onSubmitted }) {
             </Box>
           ))}
         </Box>
+        <TextField
+          fullWidth
+          label="Your Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          size="small"
+          sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+        />
         <TextField
           fullWidth
           label="Your Occupation (optional)"

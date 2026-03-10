@@ -57,6 +57,14 @@ export default function CartPage() {
 
   const handleCheckout = async () => {
     if (!user) { setSignInPromptOpen(true); return; }
+
+    // Any product/press-on items need shipping details — go to checkout page
+    if (products.length > 0 || pressOns.length > 0) {
+      navigate('/checkout', { state: { appliedGiftCard } });
+      return;
+    }
+
+    // Services-only: proceed directly to WhatsApp
     setCheckoutLoading(true);
 
     try {
