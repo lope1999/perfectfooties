@@ -72,7 +72,6 @@ export default function ProductQuickView({ open, onClose, product, category, onA
     setQuantity(1);
     setNailBedSize('');
     setError('');
-    setOrderLoading(false);
     onClose();
   };
 

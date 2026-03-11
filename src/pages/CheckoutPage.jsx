@@ -107,7 +107,66 @@ export default function CheckoutPage() {
       lga: form.lga.trim(),
     };
 
-    // Save shipping details to user profile for future reuse (fire and forget)
+    // Build WhatsApp message synchronously BEFORE any awaits — browsers block
+    // window.open() when called after async operations break the user-gesture chain
+    const lines = [];
+    lines.push('--- SHIPPING DETAILS ---');
+    lines.push(`Name: ${shipping.name}`);
+    lines.push(`Phone: ${shipping.phone}`);
+    lines.push(`Address: ${shipping.address}`);
+    lines.push(`State: ${shipping.state}`);
+    lines.push(`LGA: ${shipping.lga}`);
+    lines.push('');
+
+    if (services.length > 0) {
+      lines.push('--- SERVICE APPOINTMENTS ---');
+      services.forEach((s, i) => {
+        let line = `${i + 1}. ${s.name} \u2014 ${formatNaira(s.price)}`;
+        if (s.customerName) line += `\n   Name: ${s.customerName}`;
+        line += `\n   Date: ${s.date}\n   Shape: ${s.nailShape} | Length: ${s.nailLength}`;
+        lines.push(line);
+      });
+      lines.push('');
+    }
+
+    if (products.length > 0) {
+      lines.push('--- NAIL CARE PRODUCTS ---');
+      products.forEach((p, i) => {
+        lines.push(`${i + 1}. ${p.name} x${p.quantity} \u2014 ${formatNaira(p.price * p.quantity)}`);
+      });
+      lines.push('');
+    }
+
+    if (pressOns.length > 0) {
+      lines.push('--- PRESS-ON ORDERS ---');
+      pressOns.forEach((p, i) => {
+        let detail = `${i + 1}. ${p.name} \u2014 ${formatNaira(p.price)}`;
+        if (p.customerName) detail += `\n   Name: ${p.customerName}`;
+        if (p.type) detail += `\n   Type: ${p.type}`;
+        detail += `\n   Shape: ${p.nailShape || 'N/A'}`;
+        detail += `\n   Quantity: ${p.quantity} set(s)`;
+        if (p.nailBedSize) detail += `\n   Nail Bed Size: ${p.nailBedSize}`;
+        if (p.presetSize) detail += `\n   Preset Size: ${p.presetSize}`;
+        if (p.orderingForOthers && p.otherPeople?.length > 0) {
+          p.otherPeople.forEach((o) => {
+            detail += `\n   Also for: ${o.name || 'N/A'} \u2014 Shape: ${o.nailShape || 'Same'} \u2014 Nail Bed: ${o.nailBedSize || 'N/A'}`;
+          });
+        }
+        lines.push(detail);
+      });
+      lines.push('');
+    }
+
+    let totalLine = `Estimated Total: ${formatNaira(subtotal)}`;
+    if (appliedGiftCard && giftCardDiscount > 0) {
+      totalLine += `\nGift Card Applied: ${appliedGiftCard.code} \u2014 Discount: ${formatNaira(giftCardDiscount)}`;
+      totalLine += `\nAmount Due: ${formatNaira(finalTotal)}`;
+    }
+
+    const message = `Hi! I\u2019d like to place an order.\n\n${lines.join('\n')}\n${totalLine}\n\nPlease confirm availability and payment details. Thank you!`;
+    window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`, '_blank');
+
+    // Background async operations (save order, decrement stock, redeem gift card)
     saveShippingDetails(user.uid, shipping).catch(() => {});
 
     // Decrement stock for retail products and ready-made press-ons
@@ -173,65 +232,6 @@ export default function CheckoutPage() {
     }
 
     setSubmitting(false);
-
-    // Build WhatsApp message
-    const lines = [];
-    lines.push('--- SHIPPING DETAILS ---');
-    lines.push(`Name: ${shipping.name}`);
-    lines.push(`Phone: ${shipping.phone}`);
-    lines.push(`Address: ${shipping.address}`);
-    lines.push(`State: ${shipping.state}`);
-    lines.push(`LGA: ${shipping.lga}`);
-    lines.push('');
-
-    if (services.length > 0) {
-      lines.push('--- SERVICE APPOINTMENTS ---');
-      services.forEach((s, i) => {
-        let line = `${i + 1}. ${s.name} \u2014 ${formatNaira(s.price)}`;
-        if (s.customerName) line += `\n   Name: ${s.customerName}`;
-        line += `\n   Date: ${s.date}\n   Shape: ${s.nailShape} | Length: ${s.nailLength}`;
-        lines.push(line);
-      });
-      lines.push('');
-    }
-
-    if (products.length > 0) {
-      lines.push('--- NAIL CARE PRODUCTS ---');
-      products.forEach((p, i) => {
-        lines.push(`${i + 1}. ${p.name} x${p.quantity} \u2014 ${formatNaira(p.price * p.quantity)}`);
-      });
-      lines.push('');
-    }
-
-    if (pressOns.length > 0) {
-      lines.push('--- PRESS-ON ORDERS ---');
-      pressOns.forEach((p, i) => {
-        let detail = `${i + 1}. ${p.name} \u2014 ${formatNaira(p.price)}`;
-        if (p.customerName) detail += `\n   Name: ${p.customerName}`;
-        if (p.type) detail += `\n   Type: ${p.type}`;
-        detail += `\n   Shape: ${p.nailShape || 'N/A'}`;
-        detail += `\n   Quantity: ${p.quantity} set(s)`;
-        if (p.nailBedSize) detail += `\n   Nail Bed Size: ${p.nailBedSize}`;
-        if (p.presetSize) detail += `\n   Preset Size: ${p.presetSize}`;
-        if (p.orderingForOthers && p.otherPeople?.length > 0) {
-          p.otherPeople.forEach((o) => {
-            detail += `\n   Also for: ${o.name || 'N/A'} \u2014 Shape: ${o.nailShape || 'Same'} \u2014 Nail Bed: ${o.nailBedSize || 'N/A'}`;
-          });
-        }
-        lines.push(detail);
-      });
-      lines.push('');
-    }
-
-    let totalLine = `Estimated Total: ${formatNaira(subtotal)}`;
-    if (appliedGiftCard && giftCardDiscount > 0) {
-      totalLine += `\nGift Card Applied: ${appliedGiftCard.code} \u2014 Discount: ${formatNaira(giftCardDiscount)}`;
-      totalLine += `\nAmount Due: ${formatNaira(finalTotal)}`;
-    }
-
-    const message = `Hi! I\u2019d like to place an order.\n\n${lines.join('\n')}\n${totalLine}\n\nPlease confirm availability and payment details. Thank you!`;
-    window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`, '_blank');
-
     clearCart();
     navigate('/');
   };
