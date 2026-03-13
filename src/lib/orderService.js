@@ -49,13 +49,13 @@ export async function fetchRecentOrders(uid) {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
-export async function updateOrderStatus(uid, orderId, status) {
+export async function updateOrderStatus(uid, orderId, status, extraFields = {}) {
   requireString(uid, 'uid');
   requireString(orderId, 'orderId');
   validateOrderStatus(status, 'appointment');
   const ref = doc(db, 'users', uid, 'orders', orderId);
   updateBookedSlotStatus(orderId, status).catch(() => {});
-  return updateDoc(ref, { status });
+  return updateDoc(ref, { status, ...extraFields });
 }
 
 export async function saveNailBedSizes(uid, sizes) {

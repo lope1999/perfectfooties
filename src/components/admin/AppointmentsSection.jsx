@@ -444,7 +444,15 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                     <TableCell sx={{ fontFamily, fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
                       {(() => {
                         const raw = o.appointmentDate || o.items?.[0]?.date;
-                        return raw ? raw.split(' at ')[0] : '—';
+                        const dateStr = raw ? raw.split(' at ')[0] : '—';
+                        return (
+                          <Box>
+                            {dateStr}
+                            {o.status === 'rescheduled' && (
+                              <Chip label="rescheduled" size="small" sx={{ ml: 0.5, fontSize: '0.65rem', height: 18, backgroundColor: '#FFF3E0', color: '#E65100', fontWeight: 700 }} />
+                            )}
+                          </Box>
+                        );
                       })()}
                     </TableCell>
                     <TableCell sx={{ fontFamily, fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
@@ -579,6 +587,37 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                               );
                             })()}
                           </Box>
+
+                          {/* Reschedule Details (if rescheduled) */}
+                          {o.status === 'rescheduled' && (
+                            <Box sx={{ flex: 1, minWidth: 220 }}>
+                              <Typography sx={{ fontFamily, fontSize: '0.8rem', fontWeight: 700, color: '#E65100', mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                Reschedule Info
+                              </Typography>
+                              <Box sx={{ p: 1.5, borderRadius: 2, backgroundColor: '#FFF3E0', border: '1px solid #FFCC02' }}>
+                                {o.previousDate && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.82rem', mb: 0.5 }}>
+                                    <strong>Original Date:</strong> {o.previousDate}
+                                  </Typography>
+                                )}
+                                {o.appointmentDate && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.82rem', mb: 0.5, color: '#2e7d32', fontWeight: 600 }}>
+                                    <strong>New Date:</strong> {o.appointmentDate}
+                                  </Typography>
+                                )}
+                                {o.rescheduleReason && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.82rem', mb: 0.5 }}>
+                                    <strong>Reason:</strong> {o.rescheduleReason}
+                                  </Typography>
+                                )}
+                                {o.rescheduledAt?.toDate && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
+                                    Rescheduled on: {o.rescheduledAt.toDate().toLocaleDateString()}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          )}
 
                           {/* Right: Notes */}
                           <Box sx={{ flex: 1, minWidth: 180 }}>

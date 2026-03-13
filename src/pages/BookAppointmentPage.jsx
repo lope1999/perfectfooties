@@ -1097,7 +1097,7 @@ export default function BookAppointmentPage() {
 					)}
 
 					{/* spacer so content doesn't hide behind sticky button */}
-					<Box sx={{ height: 80 }} />
+					<Box sx={{ height: { xs: 130, md: 80 } }} />
 				</Container>
 			</Box>
 
@@ -1105,7 +1105,7 @@ export default function BookAppointmentPage() {
 			<Box
 				sx={{
 					position: "fixed",
-					bottom: 0,
+					bottom: { xs: "64px", md: 0 },
 					left: 0,
 					right: 0,
 					zIndex: 1100,

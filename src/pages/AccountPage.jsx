@@ -2133,6 +2133,26 @@ function OrderCard({ order, rated, onRate, onReschedule, onCancel }) {
 				</Button>
 			</Box>
 		)}
+		{/* Reschedule details */}
+		{order.status === 'rescheduled' && (
+			<Box sx={{ mt: 1.5, p: 1.2, borderRadius: 2, backgroundColor: '#FFF3E0', border: '1px solid #FFCC02' }}>
+				{order.previousDate && (
+					<Typography sx={{ fontSize: '0.75rem', color: '#777' }}>
+						Originally: {order.previousDate}
+					</Typography>
+				)}
+				{order.appointmentDate && (
+					<Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#2e7d32', mt: 0.2 }}>
+						New date: {order.appointmentDate}
+					</Typography>
+				)}
+				{order.rescheduleReason && (
+					<Typography sx={{ fontSize: '0.75rem', color: '#555', mt: 0.3 }}>
+						Reason: {order.rescheduleReason}
+					</Typography>
+				)}
+			</Box>
+		)}
 		</Box>
 	);
 }

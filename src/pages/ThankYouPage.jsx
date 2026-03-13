@@ -44,7 +44,9 @@ export default function ThankYouPage() {
   const state = location.state || {};
   const [show, setShow] = useState(false);
 
+  const isReschedule = !!state.isReschedule;
   const isAppointment =
+    isReschedule ||
     state.type === 'service' ||
     state.type === 'appointment' ||
     (state.appointmentDate && !state.items?.some?.((i) => i.kind !== 'service'));
@@ -122,12 +124,12 @@ export default function ThankYouPage() {
               mb: 0.5,
             }}
           >
-            {isAppointment ? 'Appointment Booked!' : 'Order Placed!'}
+            {isReschedule ? 'Appointment Rescheduled!' : isAppointment ? 'Appointment Booked!' : 'Order Placed!'}
           </Typography>
           <Typography sx={{ fontSize: '0.92rem', color: '#777', px: 2 }}>
             {customerName
-              ? `Thank you, ${customerName.split(' ')[0]}! We've received your ${isAppointment ? 'booking' : 'order'} and will be in touch via WhatsApp shortly.`
-              : `Thank you! We've received your ${isAppointment ? 'booking' : 'order'} and will be in touch via WhatsApp shortly.`}
+              ? `Thank you, ${customerName.split(' ')[0]}! We've received your ${isReschedule ? 'reschedule request' : isAppointment ? 'booking' : 'order'} and will be in touch via WhatsApp shortly.`
+              : `Thank you! We've received your ${isReschedule ? 'reschedule request' : isAppointment ? 'booking' : 'order'} and will be in touch via WhatsApp shortly.`}
           </Typography>
         </Box>
 
@@ -163,7 +165,7 @@ export default function ThankYouPage() {
               <ShoppingBagOutlinedIcon sx={{ fontSize: 20, color: '#E91E8C' }} />
             )}
             <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#C2185B' }}>
-              {isAppointment ? 'Appointment Summary' : 'Order Summary'}
+              {isReschedule ? 'Reschedule Summary' : isAppointment ? 'Appointment Summary' : 'Order Summary'}
             </Typography>
           </Box>
 
@@ -288,13 +290,17 @@ export default function ThankYouPage() {
             },
             {
               icon: <AccessTimeIcon sx={{ fontSize: 18, color: '#E91E8C' }} />,
-              text: isAppointment
+              text: isReschedule
+                ? 'We\'ll confirm your new appointment slot on WhatsApp and update your booking.'
+                : isAppointment
                 ? 'We\'ll confirm your appointment slot and send a reminder before your visit.'
                 : 'We\'ll update your order status as we prepare and dispatch your items.',
             },
             {
               icon: <StarOutlineIcon sx={{ fontSize: 18, color: '#FFB300' }} />,
-              text: `You'll earn loyalty points for this ${isAppointment ? 'appointment' : 'order'} once it's completed — check your Account page.`,
+              text: isReschedule
+                ? 'Your appointment has been updated. View it in My Account → Appointments tab.'
+                : `You'll earn loyalty points for this ${isAppointment ? 'appointment' : 'order'} once it's completed — check your Account page.`,
             },
           ].map((step, i) => (
             <Box key={i} sx={{ display: 'flex', gap: 1.5, mb: i < 2 ? 1.2 : 0, alignItems: 'flex-start' }}>

@@ -20,7 +20,8 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { serviceCategories } from '../data/services';
 import ScrollReveal from '../components/ScrollReveal';
 import { useAuth } from '../context/AuthContext';
-import { fetchOrders, saveOrder, updateOrderStatus } from '../lib/orderService';
+import { fetchOrders, updateOrderStatus } from '../lib/orderService';
+import { serverTimestamp } from 'firebase/firestore';
 import CalendarWidget from '../components/CalendarWidget';
 import { fetchBookedSlots } from '../lib/bookedSlotsService';
 
@@ -148,28 +149,26 @@ export default function () {
 
   const handleComplete = async () => {
     const selected = allServices.find((s) => s.id === selectedService);
-    const message = `Hi! I'd like to reschedule my appointment.\n\nName: ${customerName}\nOriginal Service: ${selected?.name || 'N/A'}\nReason for Rescheduling: ${reason}\nPreferred New Date: ${formatDate(preferredDate)} at ${preferredTime}\n\nPlease confirm the new slot. Thank you!`;
+    const newDate = `${formatDate(preferredDate)} at ${preferredTime}`;
+    const message = `Hi! I'd like to reschedule my appointment.\n\nName: ${customerName}\nOriginal Service: ${selected?.name || 'N/A'}\nReason for Rescheduling: ${reason}\nPreferred New Date: ${newDate}\n\nPlease confirm the new slot. Thank you!`;
     const encoded = encodeURIComponent(message);
 
-    // Save to Firebase for logged-in users with a selected appointment
+    // Update the existing appointment in Firebase
     if (user && selectedAppointmentId) {
       setSubmitting(true);
       try {
-        await updateOrderStatus(user.uid, selectedAppointmentId, 'rescheduled');
-        await saveOrder(user.uid, {
-          type: 'service',
-          total: selected?.price || 0,
-          customerName: customerName.trim(),
-          email: user.email || '',
-          appointmentDate: `${formatDate(preferredDate)} at ${preferredTime}`,
-          rescheduledFrom: selectedAppointmentId,
+        const updatedItems = (selectedAppointment?.items || [{
+          kind: 'service',
+          serviceName: selected?.name || '',
+          price: selected?.price || 0,
+        }]).map((item) => ({ ...item, date: newDate }));
+
+        await updateOrderStatus(user.uid, selectedAppointmentId, 'rescheduled', {
+          appointmentDate: newDate,
+          previousDate: selectedAppointment?.appointmentDate || '',
           rescheduleReason: reason.trim(),
-          items: selectedAppointment?.items || [{
-            kind: 'service',
-            serviceName: selected?.name || '',
-            price: selected?.price || 0,
-            date: `${formatDate(preferredDate)} at ${preferredTime}`,
-          }],
+          rescheduledAt: serverTimestamp(),
+          items: updatedItems,
         });
       } catch {
         // Still proceed to WhatsApp even if Firebase save fails
@@ -180,7 +179,23 @@ export default function () {
 
     setModalOpen(false);
     window.open(`https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`, '_blank');
-    navigate('/');
+    navigate('/thank-you', {
+      state: {
+        type: 'service',
+        customerName,
+        serviceName: selected?.name || '',
+        appointmentDate: newDate,
+        isReschedule: true,
+        items: [{
+          kind: 'service',
+          serviceName: selected?.name || '',
+          price: selected?.price || 0,
+          date: newDate,
+        }],
+        total: selected?.price || 0,
+        finalTotal: selected?.price || 0,
+      },
+    });
   };
 
   const isFormValid =
@@ -448,7 +463,7 @@ export default function () {
 					</ScrollReveal>
 
 					{/* Spacer for sticky button */}
-					<Box sx={{ height: 80 }} />
+					<Box sx={{ height: { xs: 130, md: 80 } }} />
 				</Container>
 			</Box>
 
@@ -456,7 +471,7 @@ export default function () {
 			<Box
 				sx={{
 					position: "fixed",
-					bottom: 0,
+					bottom: { xs: "64px", md: 0 },
 					left: 0,
 					right: 0,
 					zIndex: 1100,
