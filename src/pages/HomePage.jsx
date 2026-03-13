@@ -158,7 +158,7 @@ export default function HomePage() {
 								sx={bookBtnSx}
 								onClick={() => navigate("/products")}
 							>
-								View Custom Press-ons
+								View Press-ons Menu
 							</Button>
 							{/* {!user && (
 								<Button
