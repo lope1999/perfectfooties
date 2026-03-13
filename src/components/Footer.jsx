@@ -73,9 +73,13 @@ export default function Footer() {
 									lineHeight: 1.7,
 								}}
 							>
-								Chizzy's Nails is a refined nail brand rooted in Gloss
+								{/* Chizzy's Nails is a refined nail brand rooted in Gloss
 								and Grace - where clean structure meets detailed minimal
-								artistry.
+								artistry. */}
+								Our mission at ChizzysStyles is to create refined beauty
+								experiences that begin with the hands, delivering
+								elegance, confidence, artistry, gloss and grace through
+								Chizzy’s Nails.{" "}
 							</Typography>
 						</Grid>
 
@@ -140,7 +144,7 @@ export default function Footer() {
 							<MuiLink sx={linkSx} onClick={() => navigate("/blog")}>
 								Blog
 							</MuiLink>
-						<MuiLink sx={linkSx} onClick={() => navigate("/gallery")}>
+							<MuiLink sx={linkSx} onClick={() => navigate("/gallery")}>
 								Gallery
 							</MuiLink>
 							<MuiLink sx={linkSx} onClick={handleContactClick}>
@@ -193,10 +197,10 @@ export default function Footer() {
 							<Typography
 								sx={{ color: "#1b1b1b", fontSize: "0.9rem", mb: 0.8 }}
 							>
-								+234 905 371 419 7
+								0905 371 419 7
 							</Typography>
 							<Typography sx={{ color: "#1e1e1e", fontSize: "0.9rem" }}>
-								Cornerstone, Labak Estate, Abule egba, Lagos.
+								Cornerstone A, Labak Estate, Abule egba, Lagos.
 							</Typography>
 						</Grid>
 					</Grid>
@@ -250,7 +254,8 @@ export default function Footer() {
 							</IconButton>
 						</Box>
 						<Typography sx={{ color: "#4d0051", fontSize: "0.85rem" }}>
-							&copy; 2026 Made by Chizzy'sstyles. All rights reserved.
+							&copy; 2026 Designed by Chizzy's Styles. All rights
+							reserved.
 						</Typography>
 					</Box>
 				</Container>

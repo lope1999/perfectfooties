@@ -231,7 +231,7 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
           <TableHead>
             <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 40 }} />
-              {['Code', 'Type', 'Recipient', 'Amount', 'Balance', 'Status', 'Created', 'Expires', 'Actions'].map((h) => (
+              {['#', 'Code', 'Type', 'Recipient', 'Amount', 'Balance', 'Status', 'Created', 'Expires', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
                   {h}
                 </TableCell>
@@ -239,7 +239,7 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filtered.map((gc) => (
+            {filtered.map((gc, idx) => (
               <>
                 <TableRow key={gc.id} hover>
                   <TableCell>
@@ -247,6 +247,7 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
                       {expandedId === gc.id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     </IconButton>
                   </TableCell>
+                  <TableCell sx={{ fontFamily, fontSize: '0.78rem', color: '#999', width: 32 }}>{idx + 1}</TableCell>
                   <TableCell sx={{ fontFamily, fontWeight: 600, letterSpacing: '1px' }}>{gc.code}</TableCell>
                   <TableCell sx={{ fontFamily, textTransform: 'capitalize' }}>{gc.type}</TableCell>
                   <TableCell sx={{ fontFamily }}>{gc.giftedTo || '—'}</TableCell>
@@ -286,7 +287,7 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
                   </TableCell>
                 </TableRow>
                 <TableRow key={`${gc.id}-detail`}>
-                  <TableCell colSpan={10} sx={{ p: 0, border: 0 }}>
+                  <TableCell colSpan={11} sx={{ p: 0, border: 0 }}>
                     <Collapse in={expandedId === gc.id}>
                       <Box sx={{ p: 2, backgroundColor: '#fafafa' }}>
                         {gc.purchasedBy && (
@@ -343,7 +344,7 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
                             {gc.transactions.map((tx, i) => (
                               <Typography key={i} sx={{ fontFamily, fontSize: '0.8rem', pl: 2, color: '#4A0E4E' }}>
                                 [{new Date(tx.date).toLocaleDateString()}] Redeemed {formatNaira(tx.amount)}
-                                {tx.orderId && ` — Order: ${tx.orderId.slice(0, 8)}…`}
+                                {tx.orderId && ` — Order: ${tx.orderId}`}
                               </Typography>
                             ))}
                           </Box>
@@ -361,7 +362,7 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={10} sx={{ textAlign: 'center', fontFamily, py: 4 }}>
+                <TableCell colSpan={11} sx={{ textAlign: 'center', fontFamily, py: 4 }}>
                   No gift cards found
                 </TableCell>
               </TableRow>

@@ -12,6 +12,7 @@ import ServiceDiscountsSection from '../components/admin/ServiceDiscountsSection
 import GiftCardsSection from '../components/admin/GiftCardsSection';
 import BlogPostsSection from '../components/admin/BlogPostsSection';
 import GallerySection from '../components/admin/GallerySection';
+import LoyaltySection from '../components/admin/LoyaltySection';
 import { fetchAllOrders, seedAndFetchCategories, fetchAllUsers, computeUserStats, fetchServiceDiscounts } from '../lib/adminService';
 import { fetchGalleryImages } from '../lib/galleryService';
 import { fetchAllGiftCards } from '../lib/giftCardService';
@@ -155,6 +156,8 @@ export default function AdminPage() {
             onRefresh={loadData}
           />
         );
+      case 'loyalty':
+        return <LoyaltySection loading={loading} />;
       default:
         return null;
     }

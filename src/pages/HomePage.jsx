@@ -133,6 +133,8 @@ export default function HomePage() {
 						>
 							Chizzy's Nails is a refined nail brand rooted in Gloss and
 							Grace
+							{/* Welcome to Chizzy’s Nails, a signature nail experience
+							under the Chizzy'sStyles beauty brand. */}
 						</Typography>
 					</ScrollReveal>
 
@@ -145,14 +147,18 @@ export default function HomePage() {
 								flexWrap: "wrap",
 							}}
 						>
-							<Button sx={bookBtnSx} onClick={() => navigate("/book")}>
-								Book Appointment
-							</Button>
+							{" "}
 							<Button
 								sx={viewServicesBtnSx}
 								onClick={() => navigate("/services")}
 							>
 								View Nail Services
+							</Button>
+							<Button
+								sx={bookBtnSx}
+								onClick={() => navigate("/products")}
+							>
+								View Custom Press-ons
 							</Button>
 							{/* {!user && (
 								<Button

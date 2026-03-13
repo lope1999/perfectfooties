@@ -22,19 +22,27 @@ import {
   DialogContent,
   DialogActions,
   CircularProgress,
+  IconButton,
 } from '@mui/material';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import { serviceCategories, nailShapes, nailLengths, removalNote } from '../data/services';
+import { serviceCategories, nailLengths, removalNote } from '../data/services';
 import useServiceDiscounts from '../hooks/useServiceDiscounts';
 import { hasServiceDiscount, getServiceEffectivePrice, getServiceDiscountLabel } from '../lib/discountUtils';
 import ScrollReveal from '../components/ScrollReveal';
+import NailShapeSelector from '../components/NailShapeSelector';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { saveOrder } from '../lib/orderService';
-import { fetchBookedSlots, saveBookedSlot } from '../lib/bookedSlotsService';
+import { fetchBookedSlots, saveBookedSlot, addToWaitlist } from '../lib/bookedSlotsService';
 import SignInPrompt from '../components/SignInPrompt';
+import CalendarWidget from '../components/CalendarWidget';
+import { verifyPaystackDeposit } from '../lib/paymentService';
+import { validateReferralCode, applyReferral, REFERRAL_DISCOUNT, getLoyaltyData, redeemLoyaltyPoints, REDEMPTION_UNIT, REDEMPTION_VALUE, getPendingLoyaltyReward, clearPendingLoyaltyReward } from '../lib/loyaltyService';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import StarIcon from '@mui/icons-material/Star';
 
 function formatNaira(amount) {
   return `₦${amount.toLocaleString()}`;
@@ -67,164 +75,393 @@ const textFieldSx = {
   },
 };
 
+
 export default function BookAppointmentPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { addService: addServiceToCart } = useCart();
-  const { user } = useAuth();
-  const { discounts } = useServiceDiscounts();
-  const [customerName, setCustomerName] = useState('');
-  const [signInPromptOpen, setSignInPromptOpen] = useState(false);
+	const navigate = useNavigate();
+	const location = useLocation();
+	const { addService: addServiceToCart } = useCart();
+	const homeServiceEnabled = true; // Set to false to hide home service option
+	const { user } = useAuth();
+	const { discounts } = useServiceDiscounts();
+	const [customerName, setCustomerName] = useState("");
+	const [signInPromptOpen, setSignInPromptOpen] = useState(false);
 
-  useEffect(() => {
-    if (user?.displayName && !customerName) setCustomerName(user.displayName);
-  }, [user]);
+	useEffect(() => {
+		if (user?.displayName && !customerName) setCustomerName(user.displayName);
+	}, [user]);
 
-  useEffect(() => {
-    const categoryId = location.state?.categoryId;
-    if (categoryId) {
-      const timer = setTimeout(() => {
-        document.getElementById(categoryId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [location.state]);
+	useEffect(() => {
+		const categoryId = location.state?.categoryId;
+		if (categoryId) {
+			const timer = setTimeout(() => {
+				document
+					.getElementById(categoryId)
+					?.scrollIntoView({ behavior: "smooth", block: "center" });
+			}, 300);
+			return () => clearTimeout(timer);
+		}
+	}, [location.state]);
 
-  const [appointmentType, setAppointmentType] = useState('salon');
-  const [selectedService, setSelectedService] = useState('');
-  const [appointmentDate, setAppointmentDate] = useState('');
-  const [appointmentTime, setAppointmentTime] = useState('');
-  const [formData, setFormData] = useState({
-    nailShape: '',
-    nailLength: '',
-  });
+	const [appointmentType, setAppointmentType] = useState("salon");
+	const [selectedService, setSelectedService] = useState("");
+	const [appointmentDate, setAppointmentDate] = useState("");
+	const [appointmentTime, setAppointmentTime] = useState("");
+	const [formData, setFormData] = useState({
+		nailShape: "",
+		nailLength: "",
+	});
 
-  const timeSlots = ['12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'];
-  const [modalOpen, setModalOpen] = useState(false);
-  const [bookedSlots, setBookedSlots] = useState([]);
-  const [slotsLoading, setSlotsLoading] = useState(false);
+	// Home service — transport cost ranges (final cost confirmed at booking)
+	const HOME_TRANSPORT_COSTS = {
+		"Lagos Island": { min: 15000, max: 20000 },
+		"Lagos Mainland": { min: 10000, max: 15000 },
+	};
+	const [homeAddress, setHomeAddress] = useState("");
+	const [hasTableArea, setHasTableArea] = useState("");
+	const [homeLocation, setHomeLocation] = useState("");
+	const transportRange = homeLocation
+		? HOME_TRANSPORT_COSTS[homeLocation]
+		: null;
 
-  useEffect(() => {
-    if (!appointmentDate || !isWeekend(appointmentDate)) {
-      setBookedSlots([]);
-      return;
-    }
-    setSlotsLoading(true);
-    fetchBookedSlots(formatDate(appointmentDate))
-      .then((slots) => {
-        setBookedSlots(slots);
-        setAppointmentTime((prev) => (slots.includes(prev) ? '' : prev));
-      })
-      .catch(() => setBookedSlots([]))
-      .finally(() => setSlotsLoading(false));
-  }, [appointmentDate]);
+	const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+	const [homeDetailsModalOpen, setHomeDetailsModalOpen] = useState(false);
+	const [pendingAction, setPendingAction] = useState(null); // 'confirm' | 'cart'
+	const [bookedSlots, setBookedSlots] = useState([]);
+	const [slotsLoading, setSlotsLoading] = useState(false);
+	const [waitlistDialog, setWaitlistDialog] = useState(false);
+	const [waitlistDate, setWaitlistDate] = useState('');
+	const [waitlistName, setWaitlistName] = useState('');
+	const [waitlistPhone, setWaitlistPhone] = useState('');
+	const [waitlistSubmitting, setWaitlistSubmitting] = useState(false);
+	const [waitlistSuccess, setWaitlistSuccess] = useState(false);
+	const [calendarModalOpen, setCalendarModalOpen] = useState(false);
 
-  const allServices = serviceCategories.flatMap((cat) =>
-    cat.services.map((s) => ({ ...s, category: cat.title }))
-  );
+	// Referral code
+	const [showRefField, setShowRefField] = useState(false);
+	const [refCodeInput, setRefCodeInput] = useState('');
+	const [referralValid, setReferralValid] = useState(false);
+	const [referralChecking, setReferralChecking] = useState(false);
+	const [referralMsg, setReferralMsg] = useState('');
+	// Loyalty points
+	const [loyaltyBalance, setLoyaltyBalance] = useState(0);
+	const [loyaltyUnits, setLoyaltyUnits] = useState(0);
+	const [pendingReward] = useState(() => getPendingLoyaltyReward());
 
-  // Get tomorrow's date as minimum selectable date
-  const getMinDate = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
-  };
+	// Load loyalty balance + validate referral code from URL
+	useEffect(() => {
+		if (!user) return;
+		getLoyaltyData(user.uid).then((d) => { const pts = d.loyaltyPoints || 0; setLoyaltyBalance(pts); const pr = getPendingLoyaltyReward(); if (pr && pr.units > 0) setLoyaltyUnits(Math.min(pr.units, Math.floor(pts / REDEMPTION_UNIT))); }).catch(() => {});
+		const pending = sessionStorage.getItem('pendingReferralCode');
+		if (pending) {
+			setRefCodeInput(pending);
+			setShowRefField(true);
+			validateReferralCode(pending).then((referrerUid) => {
+				const valid = !!referrerUid && referrerUid !== user.uid;
+				setReferralValid(valid);
+				setReferralMsg(valid ? '₦1,000 off applied!' : '');
+			}).catch(() => {});
+		}
+	}, [user]);
 
-  const isWeekend = (dateString) => {
-    if (!dateString) return true;
-    const day = new Date(dateString).getDay();
-    return day === 0 || day === 6; // Sunday or Saturday
-  };
+	// Load Paystack inline script
+	useEffect(() => {
+		if (document.getElementById('paystack-js')) return;
+		const s = document.createElement('script');
+		s.id = 'paystack-js';
+		s.src = 'https://js.paystack.co/v1/inline.js';
+		s.async = true;
+		document.body.appendChild(s);
+	}, []);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-  };
+	useEffect(() => {
+		if (!appointmentDate || !isWeekend(appointmentDate)) {
+			setBookedSlots([]);
+			return;
+		}
+		setSlotsLoading(true);
+		fetchBookedSlots(formatDate(appointmentDate))
+			.then((slots) => {
+				setBookedSlots(slots);
+				setAppointmentTime((prev) => (slots.includes(prev) ? "" : prev));
+			})
+			.catch(() => setBookedSlots([]))
+			.finally(() => setSlotsLoading(false));
+	}, [appointmentDate]);
 
-  const handleServiceChange = (event) => {
-    setSelectedService(event.target.value);
-    setFormData({ nailShape: '', nailLength: '' });
-  };
+	const allServices = serviceCategories.flatMap((cat) =>
+		cat.services.map((s) => ({ ...s, category: cat.title })),
+	);
 
-  const handleFieldChange = (field) => (event) => {
-    setFormData((prev) => ({ ...prev, [field]: event.target.value }));
-  };
+	const selectedServiceObj = allServices.find((s) => s.id === selectedService);
+	const fullPrice = selectedServiceObj ? getServiceEffectivePrice(selectedServiceObj, discounts) : 0;
+	const maxLoyaltyUnits = Math.floor(loyaltyBalance / REDEMPTION_UNIT);
+	const referralDiscount = referralValid ? Math.min(REFERRAL_DISCOUNT, fullPrice) : 0;
+	const loyaltyDiscount = Math.min(loyaltyUnits * REDEMPTION_VALUE, Math.max(0, fullPrice - referralDiscount));
+	const finalBookingPrice = Math.max(0, fullPrice - referralDiscount - loyaltyDiscount);
+	const depositAmount = Math.round(finalBookingPrice * 0.5);
 
-  const handleConfirmBooking = () => {
-    if (!user) { setSignInPromptOpen(true); return; }
-    setModalOpen(true);
-  };
+	const handleApplyReferral = async () => {
+		if (!refCodeInput.trim()) return;
+		if (!user) { setSignInPromptOpen(true); return; }
+		setReferralChecking(true); setReferralMsg('');
+		try {
+			const referrerUid = await validateReferralCode(refCodeInput.trim());
+			const valid = !!referrerUid && referrerUid !== user.uid;
+			setReferralValid(valid);
+			setReferralMsg(valid ? '₦1,000 off applied!' : 'Code not found or not applicable');
+		} catch { setReferralValid(false); setReferralMsg('Could not validate'); }
+		finally { setReferralChecking(false); }
+	};
 
-  const handleCompleteOrder = () => {
-    setModalOpen(false);
-    const selected = allServices.find((s) => s.id === selectedService);
-    const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
-    const effectivePrice = selected ? getServiceEffectivePrice(selected, discounts) : 0;
-    const message = `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nPreferred Date: ${fullDate}\nService: ${selected?.name || "a service"}\nPrice: ${formatNaira(effectivePrice)}\n\nDetails:\n- Nail Shape: ${formData.nailShape}\n- Nail Length: ${formData.nailLength}\n\nPlease confirm availability for this request. Thank you!`;
-    const encoded = encodeURIComponent(message);
-    window.open(`https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`, '_blank');
+	// Get tomorrow's date as minimum selectable date
+	const getMinDate = () => {
+		const tomorrow = new Date();
+		tomorrow.setDate(tomorrow.getDate() + 1);
+		return tomorrow.toISOString().split("T")[0];
+	};
 
-    if (user) {
-      saveOrder(user.uid, {
-        type: 'service',
-        total: effectivePrice,
-        customerName: customerName.trim(),
-        email: user.email || '',
-        appointmentDate: fullDate,
-        items: [{
-          kind: 'service',
-          serviceName: selected?.name || '',
-          price: effectivePrice,
-          date: fullDate,
-          nailShape: formData.nailShape,
-          nailLength: formData.nailLength,
-        }],
-      }).then((orderRef) => {
-        saveBookedSlot({
-          date: formatDate(appointmentDate),
-          time: appointmentTime,
-          orderId: orderRef.id,
-          uid: user.uid,
-        }).catch(() => {});
-      }).catch(() => {});
-    }
+	const isWeekend = (dateString) => {
+		if (!dateString) return true;
+		const day = new Date(dateString).getDay();
+		return day === 0 || day === 6; // Sunday or Saturday
+	};
 
-    navigate('/');
-  };
+	const formatDate = (dateString) => {
+		if (!dateString) return "";
+		const date = new Date(dateString);
+		return date.toLocaleDateString("en-GB", {
+			weekday: "long",
+			day: "numeric",
+			month: "long",
+			year: "numeric",
+		});
+	};
 
-  const handleAddToCart = () => {
-    if (!user) { setSignInPromptOpen(true); return; }
-    const selected = allServices.find((s) => s.id === selectedService);
-    if (!selected) return;
-    const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
-    const effectivePrice = getServiceEffectivePrice(selected, discounts);
-    addServiceToCart({
-      serviceId: selected.id,
-      name: selected.name,
-      price: effectivePrice,
-      originalPrice: hasServiceDiscount(selected.id, discounts) ? selected.price : undefined,
-      discountLabel: hasServiceDiscount(selected.id, discounts) ? getServiceDiscountLabel(selected.id, discounts) : undefined,
-      date: fullDate,
-      nailShape: formData.nailShape,
-      nailLength: formData.nailLength,
-      customerName: customerName.trim(),
-    });
-    setSelectedService('');
-    setAppointmentDate('');
-    setAppointmentTime('');
-    setFormData({ nailShape: '', nailLength: '' });
-  };
+	const handleServiceChange = (event) => {
+		setSelectedService(event.target.value);
+		setFormData({ nailShape: "", nailLength: "" });
+	};
 
-  const isFormValid =
-    customerName.trim() && appointmentDate && isWeekend(appointmentDate) && appointmentTime && selectedService && formData.nailShape && formData.nailLength;
+	const handleFieldChange = (field) => (event) => {
+		setFormData((prev) => ({ ...prev, [field]: event.target.value }));
+	};
 
-  return (
+	const handleJoinWaitlist = async () => {
+		setWaitlistSubmitting(true);
+		try {
+			await addToWaitlist({
+				date: waitlistDate,
+				name: waitlistName.trim(),
+				phone: waitlistPhone.trim(),
+				email: user?.email || '',
+				uid: user?.uid || '',
+			});
+			setWaitlistSuccess(true);
+		} catch (_) {
+			// Still show success to not frustrate user
+			setWaitlistSuccess(true);
+		} finally {
+			setWaitlistSubmitting(false);
+		}
+	};
+
+	const handleConfirmBooking = () => {
+		if (!user) {
+			setSignInPromptOpen(true);
+			return;
+		}
+		if (appointmentType === "home") {
+			setPendingAction("confirm");
+			setHomeDetailsModalOpen(true);
+			return;
+		}
+		setPaymentModalOpen(true);
+	};
+
+	const handleHomeDetailsSubmit = () => {
+		setHomeDetailsModalOpen(false);
+		if (pendingAction === "confirm") {
+			setPaymentModalOpen(true);
+		} else if (pendingAction === "cart") {
+			executeAddToCart();
+		}
+		setPendingAction(null);
+	};
+
+	const handleCompleteOrder = (paymentReference = '') => {
+		setPaymentModalOpen(false);
+		const selected = allServices.find((s) => s.id === selectedService);
+		const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
+		const effectivePrice = selected
+			? getServiceEffectivePrice(selected, discounts)
+			: 0;
+		const transportRangeStr = transportRange
+			? `${formatNaira(transportRange.min)} – ${formatNaira(transportRange.max)}`
+			: "";
+		const homeServiceInfo =
+			appointmentType === "home"
+				? `\n\nHome Service Details:\n- Address: ${homeAddress}\n- Table Area: ${hasTableArea}\n- Location: ${homeLocation}\n- Est. Transport Fee: ${transportRangeStr} (confirmed on booking)`
+				: "";
+		const depositInfo = paymentReference
+			? `\n\n✅ Deposit Paid: ${formatNaira(depositAmount)} (Paystack Ref: ${paymentReference})`
+			: `\n\n⚠️ Deposit: To be paid via WhatsApp`;
+		const discountLines = [];
+		if (referralDiscount > 0) discountLines.push(`- Referral Code (${refCodeInput}): -${formatNaira(referralDiscount)}`);
+		if (loyaltyDiscount > 0) discountLines.push(`- Loyalty Points (${loyaltyUnits * REDEMPTION_UNIT} pts): -${formatNaira(loyaltyDiscount)}`);
+		const discountStr = discountLines.length > 0 ? `\n\nDiscounts:\n${discountLines.join('\n')}\nFinal Price: ${formatNaira(finalBookingPrice)}` : '';
+		const message = `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nType: ${appointmentType === "home" ? "Home Service" : "Salon Visit"}\nPreferred Date: ${fullDate}\nService: ${selected?.name || "a service"}\nPrice: ${formatNaira(effectivePrice)}${discountStr}${depositInfo}${homeServiceInfo}\n\nDetails:\n- Nail Shape: ${formData.nailShape}\n- Nail Length: ${formData.nailLength}\n\nPlease confirm availability for this request. Thank you!`;
+		const encoded = encodeURIComponent(message);
+		window.open(
+			`https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`,
+			"_blank",
+		);
+
+		if (user) {
+			saveOrder(user.uid, {
+				type: "service",
+				total: effectivePrice,
+				customerName: customerName.trim(),
+				email: user.email || "",
+				appointmentDate: fullDate,
+				...(paymentReference && { depositPaid: true, paymentReference }),
+				...(appointmentType === "home" && {
+					isHomeService: true,
+					homeLocation,
+					homeAddress: homeAddress.trim(),
+					hasTableArea,
+					transportRange: transportRangeStr,
+				}),
+				items: [
+					{
+						kind: "service",
+						serviceName: selected?.name || "",
+						price: effectivePrice,
+						date: fullDate,
+						nailShape: formData.nailShape,
+						nailLength: formData.nailLength,
+						...(appointmentType === "home" && {
+							isHomeService: true,
+							homeLocation,
+							homeAddress: homeAddress.trim(),
+							hasTableArea,
+							transportRange: transportRangeStr,
+						}),
+					},
+				],
+			})
+				.then((orderRef) => {
+					saveBookedSlot({
+						date: formatDate(appointmentDate),
+						time: appointmentTime,
+						orderId: orderRef.id,
+						uid: user.uid,
+					}).catch(() => {});
+					if (paymentReference) {
+						verifyPaystackDeposit({ reference: paymentReference, orderId: orderRef.id, uid: user.uid }).catch(() => {});
+					}
+					if (referralValid && refCodeInput) {
+						applyReferral(refCodeInput.trim(), user.uid).catch(() => {});
+						sessionStorage.removeItem('pendingReferralCode');
+					}
+					if (loyaltyUnits > 0) {
+						redeemLoyaltyPoints(user.uid, loyaltyUnits * REDEMPTION_UNIT).catch(() => {});
+			clearPendingLoyaltyReward();
+					}
+				})
+				.catch(() => {});
+		}
+
+		navigate("/");
+	};
+
+	const payWithPaystack = () => {
+		const pk = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY) || '';
+		if (!pk || !window.PaystackPop) {
+			handleCompleteOrder('');
+			return;
+		}
+		const handler = window.PaystackPop.setup({
+			key: pk,
+			email: user?.email || 'guest@chizzys.com',
+			amount: depositAmount * 100,
+			currency: 'NGN',
+			ref: `CHIZZYS-${Date.now()}`,
+			metadata: { serviceName: selectedServiceObj?.name || '', appointmentDate, appointmentTime },
+			callback: (response) => {
+				setPaymentModalOpen(false);
+				handleCompleteOrder(response.reference);
+			},
+			onClose: () => {},
+		});
+		handler.openIframe();
+	};
+
+	const executeAddToCart = () => {
+		const selected = allServices.find((s) => s.id === selectedService);
+		if (!selected) return;
+		const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
+		const effectivePrice = getServiceEffectivePrice(selected, discounts);
+		addServiceToCart({
+			serviceId: selected.id,
+			name: selected.name,
+			price: effectivePrice,
+			originalPrice: hasServiceDiscount(selected.id, discounts)
+				? selected.price
+				: undefined,
+			discountLabel: hasServiceDiscount(selected.id, discounts)
+				? getServiceDiscountLabel(selected.id, discounts)
+				: undefined,
+			date: fullDate,
+			nailShape: formData.nailShape,
+			nailLength: formData.nailLength,
+			customerName: customerName.trim(),
+			...(appointmentType === "home" && {
+				isHomeService: true,
+				homeAddress: homeAddress.trim(),
+				hasTableArea,
+				homeLocation,
+				transportRange: transportRange
+					? `${formatNaira(transportRange.min)} – ${formatNaira(transportRange.max)}`
+					: "",
+			}),
+		});
+		setSelectedService("");
+		setAppointmentDate("");
+		setAppointmentTime("");
+		setFormData({ nailShape: "", nailLength: "" });
+		if (appointmentType === "home") {
+			setHomeAddress("");
+			setHasTableArea("");
+			setHomeLocation("");
+		}
+	};
+
+	const handleAddToCart = () => {
+		if (!user) {
+			setSignInPromptOpen(true);
+			return;
+		}
+		if (appointmentType === "home") {
+			setPendingAction("cart");
+			setHomeDetailsModalOpen(true);
+			return;
+		}
+		executeAddToCart();
+	};
+
+	const isFormValid =
+		customerName.trim() &&
+		appointmentDate &&
+		isWeekend(appointmentDate) &&
+		appointmentTime &&
+		selectedService &&
+		formData.nailShape &&
+		formData.nailLength;
+
+	const isHomeDetailsValid =
+		homeAddress.trim() && hasTableArea && homeLocation;
+
+	return (
 		<Box sx={{ pt: { xs: 7, md: 8 } }}>
 			{/* Interstitial banner at top */}
 			{/* <Interstitial
@@ -338,20 +575,38 @@ export default function BookAppointmentPage() {
 								<Box
 									onClick={() => setAppointmentType("salon")}
 									sx={{
-										border: appointmentType === "salon" ? "2px solid #E91E8C" : "2px solid #F0C0D0",
+										border:
+											appointmentType === "salon"
+												? "2px solid #E91E8C"
+												: "2px solid #F0C0D0",
 										borderRadius: 2,
 										px: 2.5,
 										py: 1.2,
 										cursor: "pointer",
-										backgroundColor: appointmentType === "salon" ? "#FFF0F5" : "#fff",
+										backgroundColor:
+											appointmentType === "salon"
+												? "#FFF0F5"
+												: "#fff",
 										transition: "all 0.2s ease",
 										"&:hover": { borderColor: "#E91E8C" },
 									}}
 								>
-									<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: "0.9rem", color: appointmentType === "salon" ? "#E91E8C" : "#333" }}>
+									<Typography
+										sx={{
+											fontFamily: '"Georgia", serif',
+											fontWeight: 600,
+											fontSize: "0.9rem",
+											color:
+												appointmentType === "salon"
+													? "#E91E8C"
+													: "#333",
+										}}
+									>
 										Salon Service
 									</Typography>
-									<Typography sx={{ fontSize: "0.75rem", color: "#777" }}>
+									<Typography
+										sx={{ fontSize: "0.75rem", color: "#777" }}
+									>
 										Visit us at our studio
 									</Typography>
 								</Box>
@@ -408,108 +663,106 @@ export default function BookAppointmentPage() {
 							sx={textFieldSx}
 						/>
 
-						{/* Appointment Date */}
-						<Typography
+					</Box>
+
+					{/* Calendar Date + Time Selection — compact field */}
+					<Box sx={{ mb: 3 }}>
+						<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1, fontSize: '1.05rem' }}>
+							Preferred Date &amp; Time
+						</Typography>
+						<Box
+							onClick={() => setCalendarModalOpen(true)}
 							sx={{
-								fontFamily: '"Georgia", serif',
-								fontWeight: 700,
-								color: "#4A0E4E",
-								mb: 1,
-								mt: 2.5,
-								fontSize: "1.05rem",
+								display: 'flex',
+								alignItems: 'center',
+								gap: 1.5,
+								px: 2,
+								py: 1.4,
+								borderRadius: 2,
+								border: (appointmentDate && appointmentTime) ? '2px solid #E91E8C' : '1.5px solid #F0C0D0',
+								backgroundColor: '#fff',
+								cursor: 'pointer',
+								transition: 'all 0.2s',
+								'&:hover': { borderColor: '#E91E8C', backgroundColor: '#FFF8FC' },
 							}}
 						>
-							Preferred Date
+							<EventNoteIcon sx={{ color: '#E91E8C', fontSize: 20, flexShrink: 0 }} />
+							<Typography sx={{ flex: 1, fontSize: '0.92rem', color: (appointmentDate && appointmentTime) ? '#222' : '#aaa', fontFamily: '"Georgia", serif' }}>
+								{(appointmentDate && appointmentTime)
+									? `${formatDate(appointmentDate)} · ${appointmentTime}`
+									: 'Tap to select date & time'}
+							</Typography>
+							{(appointmentDate || appointmentTime) && (
+								<Typography
+									onClick={(e) => { e.stopPropagation(); setAppointmentDate(''); setAppointmentTime(''); }}
+									sx={{ fontSize: '0.72rem', color: '#E91E8C', cursor: 'pointer', whiteSpace: 'nowrap', '&:hover': { textDecoration: 'underline' } }}
+								>
+									Clear
+								</Typography>
+							)}
+						</Box>
+						<Typography sx={{ fontSize: '0.72rem', color: '#7a0064', mt: 0.6, display: 'flex', alignItems: 'center', gap: 0.4 }}>
+							<EventNoteIcon sx={{ fontSize: 12 }} /> Weekends only · 12 PM – 5 PM
 						</Typography>
-						<TextField
-							fullWidth
-							type="date"
-							value={appointmentDate}
-							onChange={(e) => setAppointmentDate(e.target.value)}
-							size="small"
-							inputProps={{ min: getMinDate() }}
-							sx={textFieldSx}
-						/>
-						<Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.8 }}>
-							<EventNoteIcon sx={{ fontSize: 16, color: "#E91E8C" }} />
+					</Box>
+
+					{/* Calendar Dialog */}
+					<Dialog open={calendarModalOpen} onClose={() => setCalendarModalOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+						<DialogTitle sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, pb: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+							Select Date &amp; Time
+							<Box onClick={() => setCalendarModalOpen(false)} sx={{ cursor: 'pointer', color: '#aaa', fontSize: '1.3rem', lineHeight: 1, '&:hover': { color: '#555' } }}>✕</Box>
+						</DialogTitle>
+						<DialogContent sx={{ pt: '12px !important' }}>
+							<CalendarWidget
+								selectedDate={appointmentDate}
+								onDateChange={setAppointmentDate}
+								selectedTime={appointmentTime}
+								onTimeChange={setAppointmentTime}
+								minDate={getMinDate()}
+								bookedSlots={bookedSlots}
+								slotsLoading={slotsLoading}
+								onJoinWaitlist={(date) => {
+									setCalendarModalOpen(false);
+									setWaitlistDate(date);
+									setWaitlistDialog(true);
+								}}
+							/>
+						</DialogContent>
+						<DialogActions sx={{ px: 3, pb: 3 }}>
+							<Button onClick={() => setCalendarModalOpen(false)} sx={{ color: '#777', fontFamily: '"Georgia", serif', textTransform: 'none' }}>Cancel</Button>
+							<Button
+								onClick={() => setCalendarModalOpen(false)}
+								disabled={!appointmentDate || !appointmentTime}
+								sx={{ backgroundColor: '#E91E8C', color: '#fff', borderRadius: '20px', px: 3, fontFamily: '"Georgia", serif', fontWeight: 600, textTransform: 'none', '&:hover': { backgroundColor: '#C2185B' }, '&.Mui-disabled': { backgroundColor: '#F0C0D0', color: '#fff' } }}
+							>
+								Confirm
+							</Button>
+						</DialogActions>
+					</Dialog>
+
+					{/* Home Service — details collected via modal before checkout */}
+					{appointmentType === "home" && (
+						<Box
+							sx={{
+								mb: 3,
+								p: 2,
+								borderRadius: 2,
+								backgroundColor: "#FFF8E1",
+								border: "1px solid #FFD54F",
+							}}
+						>
 							<Typography
 								sx={{
-									fontSize: "0.78rem",
-									color: "#7a0064",
-									fontStyle: "italic",
+									fontSize: "0.85rem",
+									color: "#5D4037",
+									fontWeight: 600,
 								}}
 							>
-								Appointments are only on weekends (Sat & Sun), 12 PM – 6 PM
+								Your address, location & transport fee will be confirmed
+								before checkout.
 							</Typography>
 						</Box>
-						{appointmentDate && !isWeekend(appointmentDate) && (
-							<Typography
-								sx={{
-									fontSize: "0.78rem",
-									color: "#d32f2f",
-									fontWeight: 600,
-									mt: 0.5,
-								}}
-							>
-								Please select a Saturday or Sunday.
-							</Typography>
-						)}
-
-						{/* Time Slot */}
-						<Typography
-							sx={{
-								fontFamily: '"Georgia", serif',
-								fontWeight: 700,
-								color: "#4A0E4E",
-								mb: 1,
-								mt: 2.5,
-								fontSize: "1.05rem",
-							}}
-						>
-							Preferred Time
-						</Typography>
-						<FormControl fullWidth size="small">
-							<Select
-								value={appointmentTime}
-								onChange={(e) => setAppointmentTime(e.target.value)}
-								displayEmpty
-								disabled={slotsLoading}
-								sx={{
-									borderRadius: 2,
-									'& fieldset': { borderColor: '#F0C0D0' },
-									'&:hover fieldset': { borderColor: '#E91E8C' },
-									'&.Mui-focused fieldset': { borderColor: '#E91E8C' },
-								}}
-							>
-								<MenuItem value="" disabled>
-									{slotsLoading ? 'Checking availability...' : 'Select a time slot'}
-								</MenuItem>
-								{timeSlots.map((slot) => {
-									const isBooked = bookedSlots.includes(slot);
-									return (
-										<MenuItem key={slot} value={slot} disabled={isBooked}>
-											<Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-												<span>{slot}</span>
-												{isBooked && (
-													<Typography component="span" sx={{ color: '#d32f2f', fontSize: '0.8rem', fontWeight: 600, ml: 2 }}>
-														Booked
-													</Typography>
-												)}
-											</Box>
-										</MenuItem>
-									);
-								})}
-							</Select>
-						</FormControl>
-						{slotsLoading && (
-							<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.8 }}>
-								<CircularProgress size={14} sx={{ color: '#E91E8C' }} />
-								<Typography sx={{ fontSize: '0.78rem', color: '#7a0064', fontStyle: 'italic' }}>
-									Checking available time slots...
-								</Typography>
-							</Box>
-						)}
-					</Box>
+					)}
 
 					{/* Service Selection */}
 					<RadioGroup
@@ -522,8 +775,24 @@ export default function BookAppointmentPage() {
 								direction="up"
 								delay={catIdx * 0.1}
 							>
-								<Box id={category.id} sx={{ mb: 4, ...(category.comingSoon && { opacity: 0.45, pointerEvents: "none" }) }}>
-									<Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+								<Box
+									id={category.id}
+									sx={{
+										mb: 4,
+										...(category.comingSoon && {
+											opacity: 0.45,
+											pointerEvents: "none",
+										}),
+									}}
+								>
+									<Box
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											gap: 1.5,
+											mb: 2,
+										}}
+									>
 										<Typography
 											variant="h5"
 											sx={{
@@ -619,45 +888,62 @@ export default function BookAppointmentPage() {
 															}
 															sx={{ flex: 1, m: 0 }}
 														/>
-														{hasServiceDiscount(service.id, discounts) ? (
-														<Box sx={{ textAlign: 'right', ml: 2 }}>
-															<Typography
+														{hasServiceDiscount(
+															service.id,
+															discounts,
+														) ? (
+															<Box
 																sx={{
-																	fontFamily: '"Georgia", serif',
-																	fontWeight: 700,
-																	color: "#2e7d32",
-																	fontSize: "1.05rem",
-																	whiteSpace: "nowrap",
+																	textAlign: "right",
+																	ml: 2,
 																}}
 															>
-																{formatNaira(getServiceEffectivePrice(service, discounts))}
-															</Typography>
+																<Typography
+																	sx={{
+																		fontFamily:
+																			'"Georgia", serif',
+																		fontWeight: 700,
+																		color: "#2e7d32",
+																		fontSize: "1.05rem",
+																		whiteSpace: "nowrap",
+																	}}
+																>
+																	{formatNaira(
+																		getServiceEffectivePrice(
+																			service,
+																			discounts,
+																		),
+																	)}
+																</Typography>
+																<Typography
+																	sx={{
+																		fontFamily:
+																			'"Georgia", serif',
+																		color: "#999",
+																		fontSize: "0.78rem",
+																		textDecoration:
+																			"line-through",
+																		whiteSpace: "nowrap",
+																	}}
+																>
+																	{formatNaira(service.price)}
+																</Typography>
+															</Box>
+														) : (
 															<Typography
 																sx={{
-																	fontFamily: '"Georgia", serif',
-																	color: "#999",
-																	fontSize: "0.78rem",
-																	textDecoration: 'line-through',
+																	fontFamily:
+																		'"Georgia", serif',
+																	fontWeight: 700,
+																	color: "#E91E8C",
+																	fontSize: "1.05rem",
 																	whiteSpace: "nowrap",
+																	ml: 2,
 																}}
 															>
 																{formatNaira(service.price)}
 															</Typography>
-														</Box>
-													) : (
-														<Typography
-															sx={{
-																fontFamily: '"Georgia", serif',
-																fontWeight: 700,
-																color: "#E91E8C",
-																fontSize: "1.05rem",
-																whiteSpace: "nowrap",
-																ml: 2,
-															}}
-														>
-															{formatNaira(service.price)}
-														</Typography>
-													)}
+														)}
 													</Box>
 												</CardContent>
 
@@ -670,34 +956,16 @@ export default function BookAppointmentPage() {
 														onClick={(e) => e.stopPropagation()}
 													>
 														<Grid container spacing={2}>
-															<Grid item xs={12} sm={6}>
-																<FormControl
-																	fullWidth
-																	size="small"
-																>
-																	<InputLabel>
-																		Nail Shape
-																	</InputLabel>
-																	<Select
-																		value={formData.nailShape}
-																		label="Nail Shape"
-																		onChange={handleFieldChange(
-																			"nailShape",
-																		)}
-																		sx={{ borderRadius: 2 }}
-																	>
-																		{nailShapes.map(
-																			(shape) => (
-																				<MenuItem
-																					key={shape}
-																					value={shape}
-																				>
-																					{shape}
-																				</MenuItem>
-																			),
-																		)}
-																	</Select>
-																</FormControl>
+															<Grid item xs={12}>
+																<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1.5, fontSize: '0.9rem' }}>
+																	Nail Shape
+																</Typography>
+																<NailShapeSelector
+																	value={formData.nailShape}
+																	onChange={(shape) =>
+																		setFormData((prev) => ({ ...prev, nailShape: shape }))
+																	}
+																/>
 															</Grid>
 															<Grid item xs={12} sm={6}>
 																<FormControl
@@ -741,6 +1009,73 @@ export default function BookAppointmentPage() {
 						))}
 					</RadioGroup>
 
+					{/* Discounts & Rewards */}
+					{isFormValid && (
+						<Box sx={{ mt: 4, p: 3, borderRadius: 3, backgroundColor: '#fff', border: '1px solid #F0C0D0' }}>
+							<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 2, fontSize: '0.95rem' }}>
+								Discounts &amp; Rewards
+							</Typography>
+
+							{/* Referral code */}
+							<Box onClick={() => setShowRefField((v) => !v)} sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', mb: showRefField ? 1.5 : 0 }}>
+								<LocalOfferIcon sx={{ fontSize: 16, color: referralValid ? '#2e7d32' : '#E91E8C' }} />
+								<Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: referralValid ? '#2e7d32' : '#E91E8C', fontFamily: '"Georgia", serif' }}>
+									{referralValid ? '₦1,000 off applied!' : 'Have a referral code?'}
+								</Typography>
+							</Box>
+							<Collapse in={showRefField}>
+								<Box sx={{ display: 'flex', gap: 1, mb: 0.5 }}>
+									<TextField size="small" placeholder="e.g. CHIZZYS-ABC123" value={refCodeInput} onChange={(e) => { setRefCodeInput(e.target.value.toUpperCase()); setReferralValid(false); setReferralMsg(''); }} sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#F0C0D0' }, '&.Mui-focused fieldset': { borderColor: '#E91E8C' } } }} inputProps={{ style: { fontFamily: 'monospace', letterSpacing: 1 } }} />
+									<Button onClick={handleApplyReferral} disabled={!refCodeInput.trim() || referralChecking} sx={{ backgroundColor: '#E91E8C', color: '#fff', borderRadius: 2, px: 2.5, fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.82rem', whiteSpace: 'nowrap', '&:hover': { backgroundColor: '#C2185B' }, '&.Mui-disabled': { backgroundColor: '#F0C0D0', color: '#fff' } }}>
+										{referralChecking ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Apply'}
+									</Button>
+								</Box>
+								{referralMsg && <Typography sx={{ fontSize: '0.78rem', color: referralValid ? '#2e7d32' : '#d32f2f', mt: 0.3 }}>{referralMsg}</Typography>}
+							</Collapse>
+
+							{/* Loyalty points */}
+							{user && maxLoyaltyUnits > 0 && (
+								<Box sx={{ mt: 2 }}>
+									<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+										<StarIcon sx={{ fontSize: 16, color: '#B8860B' }} />
+										{/* Pending loyalty reward banner */}
+										{/* Pending loyalty reward banner */}
+										{pendingReward && loyaltyUnits === 0 && (
+										  <Box sx={{ mb: 1.5, p: 1.2, borderRadius: 2, background: "linear-gradient(135deg, #FFF8E1, #FFF3E0)", border: "1.5px solid #FFD54F", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+										    <Box>
+										      <Typography sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#B8860B" }}>🎁 ₦{pendingReward.naira.toLocaleString()} loyalty reward ready</Typography>
+										      <Typography sx={{ fontSize: "0.72rem", color: "#888" }}>{pendingReward.pts} pts saved — tap Apply to use</Typography>
+										    </Box>
+										    <Button size="small" onClick={() => setLoyaltyUnits(Math.min(pendingReward.units, maxLoyaltyUnits))} sx={{ border: "1.5px solid #E91E8C", borderRadius: "20px", color: "#E91E8C", px: 2, py: 0.4, fontSize: "0.78rem", fontWeight: 700, textTransform: "none", "&:hover": { backgroundColor: "#E91E8C", color: "#fff" } }}>Apply</Button>
+										  </Box>
+										)}
+																				<Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#B8860B', fontFamily: '"Georgia", serif' }}>
+											Loyalty — {loyaltyBalance} pts ({formatNaira(maxLoyaltyUnits * REDEMPTION_VALUE)} redeemable)
+										</Typography>
+									</Box>
+									<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+										<IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.max(0, u - 1))} disabled={loyaltyUnits === 0} sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 28, height: 28 }}><RemoveIcon sx={{ fontSize: 14 }} /></IconButton>
+										<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, minWidth: 20, textAlign: 'center' }}>{loyaltyUnits}</Typography>
+										<IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))} disabled={loyaltyUnits >= maxLoyaltyUnits} sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 28, height: 28 }}><AddIcon sx={{ fontSize: 14 }} /></IconButton>
+										<Typography sx={{ fontSize: '0.82rem', color: '#555' }}>units × ₦1,000 = <strong style={{ color: '#B8860B' }}>{formatNaira(loyaltyDiscount)} off</strong></Typography>
+									</Box>
+								</Box>
+							)}
+
+							{/* Price summary */}
+							{(referralDiscount > 0 || loyaltyDiscount > 0) && (
+								<Box sx={{ mt: 2, p: 1.5, borderRadius: 2, backgroundColor: '#F1F8E9', border: '1px solid #C5E1A5' }}>
+									{referralDiscount > 0 && <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.3 }}><Typography sx={{ fontSize: '0.82rem', color: '#2e7d32' }}>Referral discount</Typography><Typography sx={{ fontSize: '0.82rem', color: '#2e7d32', fontWeight: 700 }}>-{formatNaira(referralDiscount)}</Typography></Box>}
+									{loyaltyDiscount > 0 && <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.3 }}><Typography sx={{ fontSize: '0.82rem', color: '#B8860B' }}>Loyalty redemption</Typography><Typography sx={{ fontSize: '0.82rem', color: '#B8860B', fontWeight: 700 }}>-{formatNaira(loyaltyDiscount)}</Typography></Box>}
+									<Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 0.5, borderTop: '1px solid #C5E1A5' }}>
+										<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '0.9rem' }}>Deposit (50%)</Typography>
+										<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '0.9rem', color: '#E91E8C' }}>{formatNaira(depositAmount)}</Typography>
+									</Box>
+								</Box>
+							)}
+						</Box>
+					)}
+
 					{/* spacer so content doesn't hide behind sticky button */}
 					<Box sx={{ height: 80 }} />
 				</Container>
@@ -761,7 +1096,14 @@ export default function BookAppointmentPage() {
 					textAlign: "center",
 				}}
 			>
-				<Box sx={{ display: "flex", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
+				<Box
+					sx={{
+						display: "flex",
+						justifyContent: "center",
+						gap: 2,
+						flexWrap: "wrap",
+					}}
+				>
 					<Button
 						sx={{
 							...confirmButtonSx,
@@ -793,40 +1135,237 @@ export default function BookAppointmentPage() {
 				</Box>
 			</Box>
 
-			{/* Success Modal */}
+			{/* Payment Modal */}
 			<Dialog
-				open={modalOpen}
-				onClose={() => setModalOpen(false)}
-				PaperProps={{
-					sx: {
-						borderRadius: 4,
-						p: 2,
-						textAlign: "center",
-						maxWidth: 420,
-					},
-				}}
+				open={paymentModalOpen}
+				onClose={() => setPaymentModalOpen(false)}
+				PaperProps={{ sx: { borderRadius: 4, p: 2, textAlign: 'center', maxWidth: 420 } }}
 			>
 				<DialogTitle sx={{ pb: 0 }}>
-					<CheckCircleOutlineIcon
-						sx={{ fontSize: 60, color: "#E91E8C", mb: 1 }}
-					/>
-					<Typography
-						variant="h5"
-						sx={{ fontFamily: '"Georgia", serif', fontWeight: 700 }}
-					>
-						Booking Successful!
+					<Typography variant="h5" sx={{ fontFamily: '"Georgia", serif', fontWeight: 700 }}>
+						Secure Your Appointment
+					</Typography>
+					<Typography sx={{ color: '#555', fontSize: '0.88rem', mt: 0.5 }}>
+						A 50% deposit secures your slot. Balance due on appointment day.
 					</Typography>
 				</DialogTitle>
 				<DialogContent>
-					<Typography sx={{ color: "#555", mt: 1, lineHeight: 1.7 }}>
-						Your appointment is processing. We will navigate you to
-						WhatsApp to talk with the stylist and confirm your design and
-						payment.
-					</Typography>
+					{selectedServiceObj && (
+						<Box sx={{ my: 2, p: 2, borderRadius: 2, backgroundColor: '#FFF0F5', border: '1px solid #F0C0D0', textAlign: 'left' }}>
+							<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1rem', color: '#4A0E4E' }}>
+								{selectedServiceObj.name}
+							</Typography>
+							<Typography sx={{ color: '#777', fontSize: '0.82rem', mt: 0.3 }}>
+								{appointmentDate ? `${formatDate(appointmentDate)} at ${appointmentTime}` : ''}
+							</Typography>
+							<Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5 }}>
+								<Typography sx={{ color: '#777', fontSize: '0.85rem' }}>Full price:</Typography>
+								<Typography sx={{ color: '#333', fontWeight: 600, fontSize: '0.85rem' }}>{formatNaira(fullPrice)}</Typography>
+							</Box>
+							<Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5, pt: 0.5, borderTop: '1px solid #F0C0D0' }}>
+								<Typography sx={{ color: '#E91E8C', fontWeight: 700, fontSize: '0.95rem' }}>Deposit (50%):</Typography>
+								<Typography sx={{ color: '#E91E8C', fontWeight: 700, fontSize: '0.95rem' }}>{formatNaira(depositAmount)}</Typography>
+							</Box>
+						</Box>
+					)}
 				</DialogContent>
-				<DialogActions sx={{ justifyContent: "center", pb: 3 }}>
+				<DialogActions sx={{ justifyContent: 'center', pb: 3, flexDirection: 'column', gap: 1.5, alignItems: 'center' }}>
 					<Button
-						onClick={handleCompleteOrder}
+						onClick={payWithPaystack}
+						sx={{ backgroundColor: '#E91E8C', color: '#fff', borderRadius: '30px', px: 4, py: 1.2, fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.95rem', '&:hover': { backgroundColor: '#C2185B' }, width: '100%', maxWidth: 280 }}
+					>
+						Pay {formatNaira(depositAmount)} Deposit
+					</Button>
+					<Button
+						onClick={() => handleCompleteOrder('')}
+						sx={{ color: '#999', fontSize: '0.82rem', textTransform: 'none', fontFamily: '"Georgia", serif', '&:hover': { color: '#555' } }}
+					>
+						Continue on WhatsApp (pay later)
+					</Button>
+				</DialogActions>
+			</Dialog>
+
+			{/* Home Service Details Modal */}
+			<Dialog
+				open={homeDetailsModalOpen}
+				onClose={() => setHomeDetailsModalOpen(false)}
+				PaperProps={{
+					sx: { borderRadius: 4, p: 1, maxWidth: 460, width: "100%" },
+				}}
+			>
+				<DialogTitle sx={{ pb: 0 }}>
+					<Typography
+						variant="h6"
+						sx={{
+							fontFamily: '"Georgia", serif',
+							fontWeight: 700,
+							color: "#4A0E4E",
+						}}
+					>
+						Home Service Details
+					</Typography>
+					<Typography sx={{ fontSize: "0.82rem", color: "#777", mt: 0.5 }}>
+						We need a few details before we come to you.
+					</Typography>
+				</DialogTitle>
+				<DialogContent sx={{ pt: 2 }}>
+					<Typography
+						sx={{
+							fontSize: "0.88rem",
+							color: "#555",
+							fontWeight: 600,
+							mb: 0.5,
+						}}
+					>
+						Your Address
+					</Typography>
+					<TextField
+						fullWidth
+						placeholder="Enter your full home address"
+						value={homeAddress}
+						onChange={(e) => setHomeAddress(e.target.value)}
+						size="small"
+						multiline
+						rows={2}
+						sx={{ ...textFieldSx, mb: 2.5 }}
+					/>
+					<Typography
+						sx={{
+							fontSize: "0.88rem",
+							color: "#555",
+							fontWeight: 600,
+							mb: 0.8,
+						}}
+					>
+						Do you have a table / work area?
+					</Typography>
+					<Box sx={{ display: "flex", gap: 1.5, mb: 2.5 }}>
+						{["Yes", "No"].map((option) => (
+							<Box
+								key={option}
+								onClick={() => setHasTableArea(option)}
+								sx={{
+									border:
+										hasTableArea === option
+											? "2px solid #E91E8C"
+											: "2px solid #F0C0D0",
+									borderRadius: 2,
+									px: 3,
+									py: 1,
+									cursor: "pointer",
+									backgroundColor:
+										hasTableArea === option ? "#FFF0F5" : "#fff",
+									transition: "all 0.2s ease",
+									"&:hover": { borderColor: "#E91E8C" },
+								}}
+							>
+								<Typography
+									sx={{
+										fontSize: "0.9rem",
+										fontWeight: 600,
+										color:
+											hasTableArea === option ? "#E91E8C" : "#555",
+									}}
+								>
+									{option}
+								</Typography>
+							</Box>
+						))}
+					</Box>
+					<Typography
+						sx={{
+							fontSize: "0.88rem",
+							color: "#555",
+							fontWeight: 600,
+							mb: 0.8,
+						}}
+					>
+						Location
+					</Typography>
+					<Box
+						sx={{ display: "flex", gap: 1.5, mb: 1.5, flexWrap: "wrap" }}
+					>
+						{Object.entries(HOME_TRANSPORT_COSTS).map(([loc, range]) => (
+							<Box
+								key={loc}
+								onClick={() => setHomeLocation(loc)}
+								sx={{
+									border:
+										homeLocation === loc
+											? "2px solid #E91E8C"
+											: "2px solid #F0C0D0",
+									borderRadius: 2,
+									px: 2.5,
+									py: 1.2,
+									cursor: "pointer",
+									backgroundColor:
+										homeLocation === loc ? "#FFF0F5" : "#fff",
+									transition: "all 0.2s ease",
+									"&:hover": { borderColor: "#E91E8C" },
+								}}
+							>
+								<Typography
+									sx={{
+										fontFamily: '"Georgia", serif',
+										fontWeight: 600,
+										fontSize: "0.9rem",
+										color: homeLocation === loc ? "#E91E8C" : "#333",
+									}}
+								>
+									{loc}
+								</Typography>
+								<Typography sx={{ fontSize: "0.75rem", color: "#777" }}>
+									{formatNaira(range.min)} – {formatNaira(range.max)}{" "}
+									transport
+								</Typography>
+							</Box>
+						))}
+					</Box>
+					{homeLocation && (
+						<Box
+							sx={{
+								p: 1.5,
+								borderRadius: 2,
+								backgroundColor: "#FFF8E1",
+								border: "1px solid #FFD54F",
+							}}
+						>
+							<Typography
+								sx={{
+									fontSize: "0.85rem",
+									color: "#5D4037",
+									fontWeight: 600,
+								}}
+							>
+								Est. transport fee ({homeLocation}):{" "}
+								{formatNaira(HOME_TRANSPORT_COSTS[homeLocation].min)} –{" "}
+								{formatNaira(HOME_TRANSPORT_COSTS[homeLocation].max)}
+							</Typography>
+							<Typography
+								sx={{ fontSize: "0.78rem", color: "#795548", mt: 0.3 }}
+							>
+								Final transport cost will be confirmed when we reach out
+								to you.
+							</Typography>
+						</Box>
+					)}
+				</DialogContent>
+				<DialogActions
+					sx={{ justifyContent: "space-between", px: 3, pb: 3 }}
+				>
+					<Button
+						onClick={() => setHomeDetailsModalOpen(false)}
+						sx={{
+							color: "#777",
+							fontFamily: '"Georgia", serif',
+							fontWeight: 600,
+						}}
+					>
+						Cancel
+					</Button>
+					<Button
+						onClick={handleHomeDetailsSubmit}
+						disabled={!isHomeDetailsValid}
 						sx={{
 							backgroundColor: "#E91E8C",
 							color: "#fff",
@@ -836,21 +1375,83 @@ export default function BookAppointmentPage() {
 							fontFamily: '"Georgia", serif',
 							fontWeight: 600,
 							fontSize: "0.95rem",
-							"&:hover": {
-								backgroundColor: "#C2185B",
+							"&:hover": { backgroundColor: "#C2185B" },
+							"&.Mui-disabled": {
+								backgroundColor: "#f0a0cc",
+								color: "#fff",
 							},
 						}}
 					>
-						Complete Order
+						Continue
 					</Button>
 				</DialogActions>
 			</Dialog>
-
+			{/* Waitlist Dialog */}
+			<Dialog
+				open={waitlistDialog}
+				onClose={() => setWaitlistDialog(false)}
+				PaperProps={{ sx: { borderRadius: 4, p: 2, maxWidth: 420, width: '100%' } }}
+			>
+				<DialogTitle sx={{ pb: 0 }}>
+					<Typography variant="h6" sx={{ fontFamily: '"Georgia", serif', fontWeight: 700 }}>Join Waitlist</Typography>
+					{waitlistDate && (
+						<Typography sx={{ fontSize: '0.85rem', color: '#555', mt: 0.5 }}>
+							{new Date(waitlistDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+						</Typography>
+					)}
+				</DialogTitle>
+				<DialogContent>
+					{waitlistSuccess ? (
+						<Box sx={{ textAlign: 'center', py: 2 }}>
+							<Typography sx={{ fontSize: '2rem', mb: 1 }}>🎉</Typography>
+							<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.1rem', mb: 1 }}>You're on the waitlist!</Typography>
+							<Typography sx={{ fontSize: '0.88rem', color: '#555', lineHeight: 1.6 }}>We'll reach out as soon as a slot opens up on this date. Keep an eye on your phone!</Typography>
+						</Box>
+					) : (
+						<Box sx={{ pt: 1 }}>
+							<Typography sx={{ fontSize: '0.85rem', color: '#555', mb: 2, lineHeight: 1.6 }}>Enter your details below. We'll contact you if a slot becomes available.</Typography>
+							<TextField
+								fullWidth
+								label="Your Name"
+								value={waitlistName}
+								onChange={(e) => setWaitlistName(e.target.value)}
+								size="small"
+								sx={{ mb: 2, ...textFieldSx }}
+							/>
+							<TextField
+								fullWidth
+								label="Phone Number"
+								value={waitlistPhone}
+								onChange={(e) => setWaitlistPhone(e.target.value)}
+								size="small"
+								type="tel"
+								sx={textFieldSx}
+							/>
+						</Box>
+					)}
+				</DialogContent>
+				<DialogActions sx={{ px: 3, pb: 3, justifyContent: waitlistSuccess ? 'center' : 'flex-end' }}>
+					{waitlistSuccess ? (
+						<Button onClick={() => setWaitlistDialog(false)} sx={{ backgroundColor: '#E91E8C', color: '#fff', borderRadius: '30px', px: 4, py: 1, fontFamily: '"Georgia", serif', fontWeight: 600, '&:hover': { backgroundColor: '#C2185B' } }}>Done</Button>
+					) : (
+						<>
+							<Button onClick={() => setWaitlistDialog(false)} sx={{ mr: 1, color: '#777' }}>Cancel</Button>
+							<Button
+								onClick={handleJoinWaitlist}
+								disabled={!waitlistName.trim() || !waitlistPhone.trim() || waitlistSubmitting}
+								sx={{ backgroundColor: '#E91E8C', color: '#fff', borderRadius: '30px', px: 3, py: 0.8, fontFamily: '"Georgia", serif', fontWeight: 600, '&:hover': { backgroundColor: '#C2185B' }, '&.Mui-disabled': { backgroundColor: '#f0a0c8', color: '#fff' } }}
+							>
+								{waitlistSubmitting ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'Join Waitlist'}
+							</Button>
+						</>
+					)}
+				</DialogActions>
+			</Dialog>
 			{/* Sign In Prompt */}
 			<SignInPrompt
 				open={signInPromptOpen}
 				onClose={() => setSignInPromptOpen(false)}
 			/>
 		</Box>
-  );
+	);
 }

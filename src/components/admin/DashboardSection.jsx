@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import React from 'react';
+import { useMemo, useState } from 'react';
 import {
   Box,
   Typography,
@@ -318,6 +319,40 @@ function QuickActionsPanel({ onNavigate }) {
   );
 }
 
+function LowStockAlertBanner({ items, onNavigate }) {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed || items.length === 0) return null;
+  return (
+    <Box
+      sx={{
+        mb: 2,
+        p: 2,
+        borderRadius: 2,
+        backgroundColor: '#fff3e0',
+        border: '1.5px solid #fb8c00',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 1.5,
+      }}
+    >
+      <WarningAmberIcon sx={{ color: '#e65100', mt: 0.3, flexShrink: 0 }} />
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '0.92rem', color: '#e65100', mb: 0.5 }}>
+          Low Stock Alert — {items.length} product{items.length !== 1 ? 's' : ''} running low
+        </Typography>
+        <Typography sx={{ fontFamily, fontSize: '0.8rem', color: '#555' }}>
+          {items.slice(0, 3).map((p) => `${p.name} (${p.stock} left)`).join(' · ')}
+          {items.length > 3 ? ` · +${items.length - 3} more` : ''}
+        </Typography>
+      </Box>
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexShrink: 0 }}>
+        <Button size="small" onClick={() => onNavigate && onNavigate('pressons')} sx={{ fontFamily, textTransform: 'none', color: '#e65100', fontWeight: 600, fontSize: '0.78rem', px: 1 }}>Manage</Button>
+        <Button size="small" onClick={() => setDismissed(true)} sx={{ fontFamily, textTransform: 'none', color: '#999', fontSize: '0.78rem', px: 1, minWidth: 0 }}>Dismiss</Button>
+      </Box>
+    </Box>
+  );
+}
+
 /* ─── Status colors ─── */
 
 const statusColor = {
@@ -339,7 +374,7 @@ export default function DashboardSection({
   onNavigate,
 }) {
   const chartData = useMemo(() => {
-    if (!orders.length) return { ordersData: [], revenueData: [] };
+    if (!orders.length) return { ordersData: [], revenueData: [], monthlyData: [] };
 
     const days = [];
     const now = new Date();
@@ -365,9 +400,30 @@ export default function DashboardSection({
       }
     });
 
+    // Monthly revenue — last 6 months
+    const months = [];
+    const now2 = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now2.getFullYear(), now2.getMonth() - i, 1);
+      months.push({
+        year: d.getFullYear(),
+        month: d.getMonth(),
+        label: d.toLocaleDateString('en-GB', { month: 'short' }),
+        revenue: 0,
+        orders: 0,
+      });
+    }
+    orders.forEach((o) => {
+      const created = o.createdAt?.toDate ? o.createdAt.toDate() : null;
+      if (!created) return;
+      const mo = months.find((m) => m.year === created.getFullYear() && m.month === created.getMonth());
+      if (mo) { mo.revenue += o.total || 0; mo.orders += 1; }
+    });
+
     return {
       ordersData: days.map((d) => ({ label: d.label, value: d.orders })),
       revenueData: days.map((d) => ({ label: d.label, value: d.revenue })),
+      monthlyData: months.map((m) => ({ label: m.label, value: m.revenue, orders: m.orders })),
     };
   }, [orders]);
 
@@ -402,7 +458,7 @@ export default function DashboardSection({
   const serviceOrders = orders.filter((o) => o.type === 'service');
   const allCategories = [...pressOnCategories, ...retailCategories];
   const lowStock = findLowStockProducts(allCategories).sort((a, b) => a.stock - b.stock);
-  const recentOrders = orders.slice(0, 10);
+  const recentOrders = orders.slice(0, 3);
 
   const upcomingAppointments = orders
     .filter((o) => o.type === 'service' && o.status !== 'received')
@@ -462,6 +518,7 @@ export default function DashboardSection({
   return (
     <Box>
       <GreetingBanner />
+      <LowStockAlertBanner items={lowStock.filter(p => p.stock <= 2)} onNavigate={onNavigate} />
 
       {/* Stat Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -500,6 +557,31 @@ export default function DashboardSection({
             </Grid>
           </Grid>
 
+          <Paper sx={{ p: 2.5, borderRadius: 3, mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '0.95rem' }}>Monthly Revenue (Last 6 Months)</Typography>
+              <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#2e7d32', fontWeight: 600 }}>
+                Total: ₦{chartData.monthlyData.reduce((s, m) => s + m.value, 0).toLocaleString()}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1, height: 120 }}>
+              {chartData.monthlyData.map((m, i) => {
+                const maxVal = Math.max(...chartData.monthlyData.map(d => d.value), 1);
+                const isCurrentMonth = i === chartData.monthlyData.length - 1;
+                return (
+                  <Tooltip key={i} title={`${m.label}: ₦${m.value.toLocaleString()} (${m.orders} orders)`} arrow>
+                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
+                      <Box sx={{ width: '100%', maxWidth: 40, height: `${Math.max((m.value / maxVal) * 100, 4)}%`, background: isCurrentMonth ? 'linear-gradient(180deg, #2e7d32 0%, #66bb6a 100%)' : 'linear-gradient(180deg, #a5d6a7 0%, #c8e6c9 100%)', borderRadius: '4px 4px 0 0', transition: 'height 0.3s ease', '&:hover': { opacity: 0.8 } }} />
+                      <Typography sx={{ fontSize: '0.65rem', color: isCurrentMonth ? '#2e7d32' : '#999', mt: 0.5, fontFamily, fontWeight: isCurrentMonth ? 700 : 400 }}>
+                        {m.label}
+                      </Typography>
+                    </Box>
+                  </Tooltip>
+                );
+              })}
+            </Box>
+          </Paper>
+
           <SectionHeader
             title="Recent Orders"
             icon={<ShoppingCartIcon sx={{ color: '#4A0E4E' }} />}
@@ -509,7 +591,7 @@ export default function DashboardSection({
             <Table size="small">
               <TableHead>
                 <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
-                  {['Customer', 'Type', 'Status', 'Total', 'Date'].map((h) => (
+                  {['#', 'Customer', 'Type', 'Status', 'Total', 'Date'].map((h) => (
                     <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
                       {h}
                     </TableCell>
@@ -517,7 +599,7 @@ export default function DashboardSection({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {recentOrders.map((o) => {
+                {recentOrders.map((o, idx) => {
                   const customerName = o.customerName || o.name || '—';
                   const initials =
                     customerName !== '—'
@@ -530,6 +612,7 @@ export default function DashboardSection({
                       : '?';
                   return (
                     <TableRow key={o.id} sx={{ '&:hover': { bgcolor: '#f3e5f5' } }}>
+                      <TableCell sx={{ fontFamily, fontSize: '0.78rem', color: '#999', width: 32 }}>{idx + 1}</TableCell>
                       <TableCell sx={{ fontFamily }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                           <Avatar
@@ -577,7 +660,7 @@ export default function DashboardSection({
                 })}
                 {recentOrders.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} sx={{ textAlign: 'center', fontFamily, py: 3 }}>
+                    <TableCell colSpan={6} sx={{ textAlign: 'center', fontFamily, py: 3 }}>
                       No orders yet
                     </TableCell>
                   </TableRow>

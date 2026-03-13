@@ -13,14 +13,20 @@ import {
   MenuItem,
   CircularProgress,
   Divider,
+  IconButton,
+  Collapse,
 } from '@mui/material';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { saveOrder } from '../lib/orderService';
 import { decrementStockBatch } from '../lib/stockService';
 import { redeemGiftCard } from '../lib/giftCardService';
 import { saveShippingDetails, fetchShippingDetails } from '../lib/shippingService';
+import { validateReferralCode, applyReferral, getLoyaltyData, redeemLoyaltyPoints, REFERRAL_DISCOUNT, REDEMPTION_UNIT, REDEMPTION_VALUE, getPendingLoyaltyReward, clearPendingLoyaltyReward } from '../lib/loyaltyService';
 import { nigerianStates } from '../data/nigerianStates';
 import SignInPrompt from '../components/SignInPrompt';
 
@@ -50,13 +56,60 @@ export default function CheckoutPage() {
   const appliedGiftCard = location.state?.appliedGiftCard || null;
   const subtotal = getCartTotal();
   const giftCardDiscount = appliedGiftCard ? Math.min(appliedGiftCard.balance, subtotal) : 0;
-  const finalTotal = subtotal - giftCardDiscount;
+
+  // Referral code: pre-filled from CartPage or sessionStorage
+  const [showRefField, setShowRefField] = useState(false);
+  const [pendingReferralCode, setPendingReferralCode] = useState(() => location.state?.referralCode || sessionStorage.getItem('pendingReferralCode') || '');
+  const [referralValid, setReferralValid] = useState(false);
+  const [referralChecking, setReferralChecking] = useState(false);
+  const [referralMsg, setReferralMsg] = useState('');
+  const referralDiscount = referralValid ? Math.min(REFERRAL_DISCOUNT, subtotal) : 0;
+
+  // Loyalty points redemption
+  const [loyaltyBalance, setLoyaltyBalance] = useState(0);
+  const [loyaltyUnits, setLoyaltyUnits] = useState(location.state?.presetLoyaltyUnits || 0);
+  const [pendingReward] = useState(() => getPendingLoyaltyReward());
+  const maxLoyaltyUnits = Math.floor(loyaltyBalance / REDEMPTION_UNIT);
+  const loyaltyDiscount = Math.min(loyaltyUnits * REDEMPTION_VALUE, subtotal);
+
+  const finalTotal = Math.max(0, subtotal - giftCardDiscount - referralDiscount - loyaltyDiscount);
 
   const hasDeliverables = products.length > 0 || pressOns.length > 0;
 
   const [form, setForm] = useState({ name: '', phone: '', address: '', state: '', lga: '' });
   const [submitting, setSubmitting] = useState(false);
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
+
+  // Fetch loyalty balance for logged-in user
+  useEffect(() => {
+    if (!user) return;
+    getLoyaltyData(user.uid).then((d) => { const pts = d.loyaltyPoints || 0; setLoyaltyBalance(pts); if (!location.state?.presetLoyaltyUnits) { const pr = getPendingLoyaltyReward(); if (pr && pr.units > 0) setLoyaltyUnits(Math.min(pr.units, Math.floor(pts / REDEMPTION_UNIT))); } }).catch(() => {});
+  }, [user]);
+
+  // Validate referral code on mount
+  useEffect(() => {
+    const code = location.state?.referralCode || sessionStorage.getItem('pendingReferralCode');
+    if (!code || !user) return;
+    setShowRefField(true);
+    validateReferralCode(code).then((referrerUid) => {
+      const valid = !!referrerUid && referrerUid !== user?.uid;
+      setReferralValid(valid);
+      setReferralMsg(valid ? '\u20a6500 off applied!' : '');
+    }).catch(() => {});
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleApplyReferral = async () => {
+    if (!pendingReferralCode.trim()) return;
+    setReferralChecking(true);
+    setReferralMsg('');
+    try {
+      const referrerUid = await validateReferralCode(pendingReferralCode.trim());
+      if (!referrerUid) { setReferralValid(false); setReferralMsg('Invalid code.'); }
+      else if (referrerUid === user?.uid) { setReferralValid(false); setReferralMsg("You can't use your own referral code."); }
+      else { setReferralValid(true); setReferralMsg('\u20a6500 off applied!'); }
+    } catch { setReferralValid(false); setReferralMsg('Could not verify code.'); }
+    setReferralChecking(false);
+  };
 
   // Redirect if no deliverable items in cart
   useEffect(() => {
@@ -160,6 +213,14 @@ export default function CheckoutPage() {
     let totalLine = `Estimated Total: ${formatNaira(subtotal)}`;
     if (appliedGiftCard && giftCardDiscount > 0) {
       totalLine += `\nGift Card Applied: ${appliedGiftCard.code} \u2014 Discount: ${formatNaira(giftCardDiscount)}`;
+    }
+    if (referralValid && referralDiscount > 0) {
+      totalLine += `\nReferral Code Applied: ${pendingReferralCode} \u2014 Discount: ${formatNaira(referralDiscount)}`;
+    }
+    if (loyaltyUnits > 0 && loyaltyDiscount > 0) {
+      totalLine += `\nLoyalty Points Applied: ${loyaltyUnits * REDEMPTION_UNIT} pts \u2014 Discount: ${formatNaira(loyaltyDiscount)}`;
+    }
+    if (giftCardDiscount > 0 || referralDiscount > 0 || loyaltyDiscount > 0) {
       totalLine += `\nAmount Due: ${formatNaira(finalTotal)}`;
     }
 
@@ -202,7 +263,11 @@ export default function CheckoutPage() {
       const allItems = [
         ...services.map((s) => ({ kind: 'service', name: s.name, price: s.price, quantity: 1 })),
         ...products.map((p) => ({ kind: 'retail', name: p.name, price: p.price, quantity: p.quantity })),
-        ...pressOns.map((p) => ({ kind: 'pressOn', name: p.name, price: p.price, quantity: p.quantity || 1 })),
+        ...pressOns.map((p) => ({
+          kind: 'pressOn', name: p.name, price: p.price, quantity: p.quantity || 1,
+          ...(p.nailBedSize && { nailBedSize: p.nailBedSize }),
+          ...(p.presetSize && { presetSize: p.presetSize }),
+        })),
       ];
       const orderData = {
         type: orderType,
@@ -216,10 +281,24 @@ export default function CheckoutPage() {
         orderData.giftCardCode = appliedGiftCard.code;
         orderData.giftCardDiscount = giftCardDiscount;
       }
+      if (referralValid && referralDiscount > 0) {
+        orderData.referralCode = pendingReferralCode;
+        orderData.referralDiscount = referralDiscount;
+      }
+      if (loyaltyUnits > 0) {
+        orderData.loyaltyPointsUsed = loyaltyUnits * REDEMPTION_UNIT;
+        orderData.loyaltyDiscount = loyaltyDiscount;
+      }
       const docRef = await saveOrder(user.uid, orderData);
       orderId = docRef?.id || null;
     } catch {
       // continue even if order save fails
+    }
+
+    // Deduct redeemed loyalty points
+    if (loyaltyUnits > 0) {
+      redeemLoyaltyPoints(user.uid, loyaltyUnits * REDEMPTION_UNIT).catch(() => {});
+      clearPendingLoyaltyReward();
     }
 
     // Redeem gift card if applied
@@ -229,6 +308,12 @@ export default function CheckoutPage() {
       } catch (err) {
         console.error('Gift card redemption failed:', err);
       }
+    }
+
+    // Apply referral: award referrer points and track usage
+    if (referralValid && pendingReferralCode) {
+      applyReferral(pendingReferralCode, user.uid).catch(() => {});
+      sessionStorage.removeItem('pendingReferralCode');
     }
 
     setSubmitting(false);
@@ -425,6 +510,30 @@ export default function CheckoutPage() {
 
               <Divider sx={{ borderColor: '#F0C0D0', my: 2 }} />
 
+              {/* Referral code input */}
+              <Box sx={{ mb: 1.5 }}>
+                <Box onClick={() => setShowRefField((v) => !v)} sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', mb: showRefField ? 1 : 0 }}>
+                  <LocalOfferIcon sx={{ fontSize: 15, color: referralValid ? '#2e7d32' : '#E91E8C' }} />
+                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: referralValid ? '#2e7d32' : '#E91E8C', fontFamily: '"Georgia", serif' }}>
+                    {referralValid ? '\u20a6500 off applied!' : 'Have a referral code?'}
+                  </Typography>
+                </Box>
+                <Collapse in={showRefField}>
+                  <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+                    <TextField size="small" placeholder="e.g. CHIZZYS-ABC123" value={pendingReferralCode}
+                      onChange={(e) => { setPendingReferralCode(e.target.value.toUpperCase()); setReferralValid(false); setReferralMsg(''); }}
+                      sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#F0C0D0' }, '&.Mui-focused fieldset': { borderColor: '#E91E8C' } } }}
+                      inputProps={{ style: { fontFamily: 'monospace', fontSize: '0.82rem' } }}
+                    />
+                    <Button onClick={handleApplyReferral} disabled={!pendingReferralCode.trim() || referralChecking}
+                      sx={{ backgroundColor: '#E91E8C', color: '#fff', borderRadius: 2, px: 2, fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.78rem', whiteSpace: 'nowrap', '&:hover': { backgroundColor: '#C2185B' }, '&.Mui-disabled': { backgroundColor: '#F0C0D0', color: '#fff' } }}>
+                      {referralChecking ? <CircularProgress size={14} sx={{ color: '#fff' }} /> : 'Apply'}
+                    </Button>
+                  </Box>
+                  {referralMsg && <Typography sx={{ fontSize: '0.75rem', color: referralValid ? '#2e7d32' : '#d32f2f', mt: 0.3 }}>{referralMsg}</Typography>}
+                </Collapse>
+              </Box>
+
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                 <Typography sx={{ color: '#666', fontSize: '0.9rem' }}>Subtotal</Typography>
                 <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{formatNaira(subtotal)}</Typography>
@@ -437,6 +546,68 @@ export default function CheckoutPage() {
                   </Typography>
                   <Typography sx={{ color: '#2e7d32', fontWeight: 600, fontSize: '0.9rem' }}>
                     -{formatNaira(giftCardDiscount)}
+                  </Typography>
+                </Box>
+              )}
+
+              {referralDiscount > 0 && (
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography sx={{ color: '#2e7d32', fontSize: '0.9rem' }}>Referral ({pendingReferralCode})</Typography>
+                  <Typography sx={{ color: '#2e7d32', fontWeight: 600, fontSize: '0.9rem' }}>-{formatNaira(referralDiscount)}</Typography>
+                </Box>
+              )}
+
+              {/* Loyalty Points */}
+              {maxLoyaltyUnits > 0 && (
+                <Box sx={{ my: 1.5, p: 1.5, borderRadius: 2, backgroundColor: '#FFF8E1', border: '1px solid #FFD54F' }}>
+                  {/* Pending loyalty reward banner */}
+                  {pendingReward && loyaltyUnits === 0 && (
+                    <Box sx={{ mb: 1.5, p: 1.2, borderRadius: 2, background: 'linear-gradient(135deg, #FFF8E1, #FFF3E0)', border: '1.5px solid #FFD54F', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                      <Box>
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#B8860B' }}>🎁 ₦{pendingReward.naira.toLocaleString()} loyalty reward ready</Typography>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>{pendingReward.pts} pts saved — tap Apply to use</Typography>
+                      </Box>
+                      <Button size="small" onClick={() => setLoyaltyUnits(Math.min(pendingReward.units, maxLoyaltyUnits))} sx={{ border: '1.5px solid #E91E8C', borderRadius: '20px', color: '#E91E8C', px: 2, py: 0.4, fontSize: '0.78rem', fontWeight: 700, textTransform: 'none', '&:hover': { backgroundColor: '#E91E8C', color: '#fff' } }}>Apply</Button>
+                    </Box>
+                  )}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#B8860B' }}>
+                      🏆 Loyalty Points
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>
+                      {loyaltyBalance} pts available
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <IconButton
+                      size="small"
+                      onClick={() => setLoyaltyUnits((u) => Math.max(0, u - 1))}
+                      disabled={loyaltyUnits === 0}
+                      sx={{ border: '1px solid #FFD54F', color: '#B8860B', p: 0.3 }}
+                    >
+                      <RemoveIcon sx={{ fontSize: 16 }} />
+                    </IconButton>
+                    <Typography sx={{ flex: 1, textAlign: 'center', fontSize: '0.8rem', fontWeight: 600, color: loyaltyUnits > 0 ? '#B8860B' : '#aaa' }}>
+                      {loyaltyUnits === 0 ? 'Not applied' : `${loyaltyUnits * REDEMPTION_UNIT} pts → -${formatNaira(loyaltyDiscount)}`}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))}
+                      disabled={loyaltyUnits >= maxLoyaltyUnits}
+                      sx={{ border: '1px solid #FFD54F', color: '#B8860B', p: 0.3 }}
+                    >
+                      <AddIcon sx={{ fontSize: 16 }} />
+                    </IconButton>
+                  </Box>
+                </Box>
+              )}
+              {loyaltyDiscount > 0 && (
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography sx={{ color: '#B8860B', fontSize: '0.9rem' }}>
+                    Loyalty ({loyaltyUnits * REDEMPTION_UNIT} pts)
+                  </Typography>
+                  <Typography sx={{ color: '#B8860B', fontWeight: 600, fontSize: '0.9rem' }}>
+                    -{formatNaira(loyaltyDiscount)}
                   </Typography>
                 </Box>
               )}

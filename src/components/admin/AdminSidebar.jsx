@@ -21,6 +21,7 @@ import ArticleIcon from '@mui/icons-material/Article';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import PeopleIcon from '@mui/icons-material/People';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import CloseIcon from '@mui/icons-material/Close';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -36,6 +37,7 @@ const sections = [
   { key: 'pressons', label: 'Press-On Products', icon: <StorefrontIcon /> },
   { key: 'retail', label: 'Retail Products', icon: <InventoryIcon /> },
   { key: 'services', label: 'Services', icon: <LocalOfferIcon /> },
+  { key: 'loyalty', label: 'Loyalty & Referrals', icon: <EmojiEventsIcon /> },
   { key: 'blog', label: 'Blog Posts', icon: <ArticleIcon /> },
   { key: 'giftcards', label: 'Gift Cards', icon: <CardGiftcardIcon /> },
   { key: 'gallery', label: 'Gallery', icon: <PhotoLibraryIcon /> },
@@ -58,7 +60,7 @@ export default function AdminSidebar({ active, onSelect, mobileOpen, onMobileClo
         flexDirection: 'column',
         pt: isMobile ? 0 : '72px',
         transition: 'width 0.2s ease',
-        overflow: 'hidden',
+        overflowX: 'hidden',
       }}
     >
       <Box
@@ -89,7 +91,7 @@ export default function AdminSidebar({ active, onSelect, mobileOpen, onMobileClo
           </IconButton>
         )}
       </Box>
-      <List sx={{ flex: 1 }}>
+      <List sx={{ flex: 1, overflowY: 'auto' }}>
         {sections.map((s) => {
           const button = (
             <ListItemButton

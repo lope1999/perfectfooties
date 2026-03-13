@@ -402,9 +402,17 @@ export default function ProductsMenuPage() {
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                 >
                   <MenuItem value="">All Shapes</MenuItem>
-                  {pressOnNailShapes.map((s) => (
-                    <MenuItem key={s} value={s}>{s}</MenuItem>
-                  ))}
+                  {pressOnNailShapes.map((s) => {
+                    const paths = { Almond: 'M3,35 Q2,20 10,4 Q18,20 17,35 Q14,36 10,36 Q6,36 3,35 Z', Coffin: 'M2,35 L5,5 L15,5 L18,35 Z', Stiletto: 'M3,35 L7,16 L10,4 L13,16 L17,35 Z', Square: 'M2,35 L2,4 L18,4 L18,35 Z', Round: 'M2,35 L2,14 Q2,4 10,4 Q18,4 18,14 L18,35 Z', Oval: 'M2,35 Q2,22 10,4 Q18,22 18,35 Z', Ballerina: 'M2,35 L7,6 L13,6 L18,35 Z' };
+                    return (
+                      <MenuItem key={s} value={s} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <svg viewBox="0 0 20 36" width="14" height="26" style={{ flexShrink: 0 }}>
+                          <path d={paths[s] || ''} fill="#F0C0D0" stroke="#d48fa0" strokeWidth="0.8" />
+                        </svg>
+                        {s}
+                      </MenuItem>
+                    );
+                  })}
                 </TextField>
               </Grid>
               <Grid item xs={6} sm={4}>
@@ -496,6 +504,7 @@ export default function ProductsMenuPage() {
           </Typography>
         </Box>
       )}
+
 
       {/* Product Sections */}
       {filteredCategories.map((category, index) => (
@@ -696,6 +705,25 @@ export default function ProductsMenuPage() {
                                   height: 22,
                                 }}
                               />
+                            )}
+                            {category.readyMade && (
+                              <Box sx={{
+                                position: 'absolute',
+                                bottom: 8,
+                                right: 8,
+                                backgroundColor: 'rgba(74,14,78,0.85)',
+                                color: '#fff',
+                                borderRadius: '10px',
+                                px: 1,
+                                py: 0.3,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.4,
+                              }}>
+                                <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, lineHeight: 1.2 }}>
+                                  Ships 4–7 days
+                                </Typography>
+                              </Box>
                             )}
                             {hasDiscount(product) && (
                               <Chip

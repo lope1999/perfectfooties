@@ -28,4 +28,26 @@ async function sendBackInStockEmail({ serviceId, templateId, publicKey, privateK
   }
 }
 
-module.exports = { sendBackInStockEmail };
+/**
+ * Send an appointment confirmation email via the EmailJS REST API (server-side).
+ */
+async function sendAppointmentConfirmationEmail({ serviceId, templateId, publicKey, privateKey, templateParams }) {
+  const res = await fetch("https://api.emailjs.com/api/v1.6/email/send", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      service_id: serviceId,
+      template_id: templateId,
+      user_id: publicKey,
+      accessToken: privateKey,
+      template_params: templateParams,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`EmailJS send failed (${res.status}): ${body}`);
+  }
+}
+
+module.exports = { sendBackInStockEmail, sendAppointmentConfirmationEmail };

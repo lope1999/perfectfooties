@@ -231,6 +231,7 @@ export default function CustomersSection({ users, loading }) {
         <Table size="small">
           <TableHead>
             <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
+              <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 32 }}>#</TableCell>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
                 {sortableHead('Customer', 'displayName')}
               </TableCell>
@@ -252,7 +253,7 @@ export default function CustomersSection({ users, loading }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filtered.map((u) => {
+            {filtered.map((u, idx) => {
               const name = u.displayName || u.email || 'Unknown';
               const initials = name
                 .split(' ')
@@ -266,6 +267,7 @@ export default function CustomersSection({ users, loading }) {
 
               return (
                 <TableRow key={u.uid} sx={{ '&:hover': { bgcolor: '#f3e5f5' } }}>
+                  <TableCell sx={{ fontFamily, fontSize: '0.78rem', color: '#999', width: 32 }}>{idx + 1}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Avatar
@@ -325,7 +327,7 @@ export default function CustomersSection({ users, loading }) {
             })}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} sx={{ textAlign: 'center', fontFamily, py: 4, color: '#777' }}>
+                <TableCell colSpan={7} sx={{ textAlign: 'center', fontFamily, py: 4, color: '#777' }}>
                   {search ? 'No customers match your search' : 'No customers yet'}
                 </TableCell>
               </TableRow>

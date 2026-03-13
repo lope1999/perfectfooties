@@ -21,6 +21,7 @@ import {
   validateOrderStatus,
 } from './validate';
 import { updateBookedSlotStatus } from './bookedSlotsService';
+import { awardPointsForOrder } from './loyaltyService';
 
 // ─── Orders ─────────────────────────────────────────────
 
@@ -73,7 +74,17 @@ export async function updateOrderStatus(uid, orderId, status) {
   validateOrderStatus(status, kind);
   const ref = doc(db, 'users', uid, 'orders', orderId);
   updateBookedSlotStatus(orderId, status).catch(() => {});
-  return updateDoc(ref, { status });
+  await updateDoc(ref, { status });
+  // Award loyalty points: retail/press-on orders on 'received', service appointments on 'completed'
+  if (status === 'received' || status === 'completed') {
+    const snap = await getDoc(ref).catch(() => null);
+    const orderType = snap?.data()?.type || 'retail';
+    if (status === 'received' && orderType !== 'service') {
+      awardPointsForOrder(uid, orderId, orderType).catch(() => {});
+    } else if (status === 'completed' && orderType === 'service') {
+      awardPointsForOrder(uid, orderId, orderType).catch(() => {});
+    }
+  }
 }
 
 export async function updateOrder(uid, orderId, updates) {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -17,11 +17,12 @@ import {
   CircularProgress,
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import EventNoteIcon from '@mui/icons-material/EventNote';
 import { serviceCategories } from '../data/services';
 import ScrollReveal from '../components/ScrollReveal';
 import { useAuth } from '../context/AuthContext';
 import { fetchOrders, saveOrder, updateOrderStatus } from '../lib/orderService';
+import CalendarWidget from '../components/CalendarWidget';
+import { fetchBookedSlots } from '../lib/bookedSlotsService';
 
 const confirmButtonSx = {
   border: '2px solid #E91E8C',
@@ -54,11 +55,15 @@ const RESCHEDULABLE_STATUSES = new Set(['pending', 'confirmed']);
 
 export default function () {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [customerName, setCustomerName] = useState('');
   const [selectedService, setSelectedService] = useState('');
   const [reason, setReason] = useState('');
   const [preferredDate, setPreferredDate] = useState('');
+  const [preferredTime, setPreferredTime] = useState('');
+  const [bookedSlots, setBookedSlots] = useState([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -85,6 +90,13 @@ export default function () {
       .finally(() => setLoadingAppointments(false));
   }, [user]);
 
+  // Pre-select appointment passed via route state (from account page)
+  useEffect(() => {
+    if (location.state?.orderId && appointments.length > 0 && !selectedAppointmentId) {
+      setSelectedAppointmentId(location.state.orderId);
+    }
+  }, [location.state, appointments]);
+
   // Pre-fill form when an appointment is selected
   useEffect(() => {
     if (!selectedAppointmentId) return;
@@ -100,16 +112,23 @@ export default function () {
 
   const selectedAppointment = appointments.find((a) => a.id === selectedAppointmentId);
 
+  // Load booked slots whenever the preferred date changes
+  useEffect(() => {
+    if (!preferredDate) { setBookedSlots([]); return; }
+    setSlotsLoading(true);
+    fetchBookedSlots(formatDate(preferredDate))
+      .then((slots) => {
+        setBookedSlots(slots);
+        setPreferredTime((prev) => (slots.includes(prev) ? '' : prev));
+      })
+      .catch(() => setBookedSlots([]))
+      .finally(() => setSlotsLoading(false));
+  }, [preferredDate]);
+
   const getMinDate = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow.toISOString().split('T')[0];
-  };
-
-  const isWeekend = (dateString) => {
-    if (!dateString) return true;
-    const day = new Date(dateString).getDay();
-    return day === 0 || day === 6;
   };
 
   const formatDate = (dateString) => {
@@ -129,7 +148,7 @@ export default function () {
 
   const handleComplete = async () => {
     const selected = allServices.find((s) => s.id === selectedService);
-    const message = `Hi! I'd like to reschedule my appointment.\n\nName: ${customerName}\nOriginal Service: ${selected?.name || 'N/A'}\nReason for Rescheduling: ${reason}\nPreferred New Date: ${formatDate(preferredDate)}\n\nPlease confirm the new slot. Thank you!`;
+    const message = `Hi! I'd like to reschedule my appointment.\n\nName: ${customerName}\nOriginal Service: ${selected?.name || 'N/A'}\nReason for Rescheduling: ${reason}\nPreferred New Date: ${formatDate(preferredDate)} at ${preferredTime}\n\nPlease confirm the new slot. Thank you!`;
     const encoded = encodeURIComponent(message);
 
     // Save to Firebase for logged-in users with a selected appointment
@@ -142,14 +161,14 @@ export default function () {
           total: selected?.price || 0,
           customerName: customerName.trim(),
           email: user.email || '',
-          appointmentDate: formatDate(preferredDate),
+          appointmentDate: `${formatDate(preferredDate)} at ${preferredTime}`,
           rescheduledFrom: selectedAppointmentId,
           rescheduleReason: reason.trim(),
           items: selectedAppointment?.items || [{
             kind: 'service',
             serviceName: selected?.name || '',
             price: selected?.price || 0,
-            date: formatDate(preferredDate),
+            date: `${formatDate(preferredDate)} at ${preferredTime}`,
           }],
         });
       } catch {
@@ -165,7 +184,7 @@ export default function () {
   };
 
   const isFormValid =
-    customerName.trim() && selectedService && reason.trim() && preferredDate.trim() && isWeekend(preferredDate);
+    customerName.trim() && selectedService && reason.trim() && preferredDate && preferredTime;
 
   return (
 		<Box sx={{ pt: { xs: 7, md: 8 } }}>
@@ -400,7 +419,7 @@ export default function () {
 						</Box>
 					</ScrollReveal>
 
-					{/* Preferred New Date */}
+					{/* Preferred New Date & Time */}
 					<ScrollReveal direction="up" delay={0.3}>
 						<Box sx={{ mb: 3 }}>
 							<Typography
@@ -412,41 +431,19 @@ export default function () {
 									fontSize: "1.05rem",
 								}}
 							>
-								Preferred New Date
+								Preferred New Date &amp; Time
 							</Typography>
-							<TextField
-								fullWidth
-								type="date"
-								value={preferredDate}
-								onChange={(e) => setPreferredDate(e.target.value)}
-								size="small"
-								inputProps={{ min: getMinDate() }}
-								sx={textFieldSx}
-							/>
-							<Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.8 }}>
-								<EventNoteIcon sx={{ fontSize: 16, color: "#E91E8C" }} />
-								<Typography
-									sx={{
-										fontSize: "0.78rem",
-										color: "#7a0064",
-										fontStyle: "italic",
-									}}
-								>
-									Appointments are only on weekends (Sat & Sun), 12 PM – 6 PM
-								</Typography>
+							<Box sx={{ border: '1px solid #F0C0D0', borderRadius: 2, p: 2, backgroundColor: '#fff' }}>
+								<CalendarWidget
+									selectedDate={preferredDate}
+									onDateChange={setPreferredDate}
+									selectedTime={preferredTime}
+									onTimeChange={setPreferredTime}
+									minDate={getMinDate()}
+									bookedSlots={bookedSlots}
+									slotsLoading={slotsLoading}
+								/>
 							</Box>
-							{preferredDate && !isWeekend(preferredDate) && (
-								<Typography
-									sx={{
-										fontSize: "0.78rem",
-										color: "#d32f2f",
-										fontWeight: 600,
-										mt: 0.5,
-									}}
-								>
-									Please select a Saturday or Sunday.
-								</Typography>
-							)}
 						</Box>
 					</ScrollReveal>
 

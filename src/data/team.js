@@ -37,7 +37,7 @@ export const teamMembers = [
 		role: "Brand Designer",
 		department: "Design",
 		image: "/images/team/stylist-1.jpg.jpg",
-		bio: "Chizoba is the visual storyteller behind the Chizzystyles brand. From social media graphics to packaging design, she ensures everything looks cohesive, elegant, and on-brand. She also designs our gift card templates and promotional materials.",
+		bio: "Chizoba is the visual storyteller behind the Chizzystyles brand. From social media graphics to packaging design to website design and email marketing, she ensures everything looks cohesive, elegant, and on-brand. She also designs our gift card templates and promotional materials.",
 	},
 	{
 		id: "marketer",

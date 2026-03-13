@@ -8,6 +8,7 @@ export default function ScrollReveal({
   duration = 0.7,
   distance = 60,
   once = true,
+  sx = {},
 }) {
   const ref = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -45,6 +46,7 @@ export default function ScrollReveal({
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'none' : transforms[direction],
         transition: `opacity ${duration}s ease ${delay}s, transform ${duration}s ease ${delay}s`,
+        ...sx,
       }}
     >
       {children}

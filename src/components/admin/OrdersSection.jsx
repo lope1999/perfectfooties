@@ -24,6 +24,8 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  Checkbox,
+  Toolbar,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
@@ -66,6 +68,9 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   const [emailFeedback, setEmailFeedback] = useState(null);
   const [sendingEmailId, setSendingEmailId] = useState(null);
   const [addDialog, setAddDialog] = useState(false);
+  const [selectedOrders, setSelectedOrders] = useState(new Set());
+  const [bulkStatus, setBulkStatus] = useState('');
+  const [bulkBusy, setBulkBusy] = useState(false);
   const [addForm, setAddForm] = useState({
     customerName: '', email: '', phone: '', status: 'pending',
     total: '', notes: '', createdAt: '',
@@ -223,6 +228,38 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
     }
   };
 
+  const handleBulkStatusUpdate = async () => {
+    if (!bulkStatus || selectedOrders.size === 0) return;
+    setBulkBusy(true);
+    try {
+      const targets = filtered.filter((o) => selectedOrders.has(o.id));
+      await Promise.all(targets.map((o) => updateOrderStatus(o.uid, o.id, bulkStatus)));
+      await onRefresh();
+      setSelectedOrders(new Set());
+      setBulkStatus('');
+    } catch (err) {
+      console.error('Bulk update error:', err);
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedOrders((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedOrders.size === filtered.length) {
+      setSelectedOrders(new Set());
+    } else {
+      setSelectedOrders(new Set(filtered.map((o) => o.id)));
+    }
+  };
+
   if (loading) {
     return (
       <Box>
@@ -295,12 +332,69 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
         </Select>
       </Box>
 
+      {/* Bulk action toolbar */}
+      {selectedOrders.size > 0 && (
+        <Toolbar
+          sx={{
+            mb: 1.5,
+            borderRadius: 2,
+            backgroundColor: '#EDE7F6',
+            border: '1.5px solid #CE93D8',
+            gap: 2,
+            flexWrap: 'wrap',
+            minHeight: '48px !important',
+            px: 2,
+          }}
+        >
+          <Typography sx={{ fontFamily, fontWeight: 600, fontSize: '0.9rem', color: '#4A0E4E', flex: 1 }}>
+            {selectedOrders.size} selected
+          </Typography>
+          <Select
+            size="small"
+            displayEmpty
+            value={bulkStatus}
+            onChange={(e) => setBulkStatus(e.target.value)}
+            sx={{ fontFamily, minWidth: 140, backgroundColor: '#fff', borderRadius: 1 }}
+          >
+            <MenuItem value="" disabled>Set status…</MenuItem>
+            {statusOptions.map((s) => (
+              <MenuItem key={s} value={s}>{s}</MenuItem>
+            ))}
+          </Select>
+          <Button
+            variant="contained"
+            size="small"
+            disabled={!bulkStatus || bulkBusy}
+            onClick={handleBulkStatusUpdate}
+            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' }, fontWeight: 600, textTransform: 'none' }}
+          >
+            {bulkBusy ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Apply'}
+          </Button>
+          <Button
+            size="small"
+            onClick={() => setSelectedOrders(new Set())}
+            sx={{ fontFamily, color: '#777', textTransform: 'none' }}
+          >
+            Clear
+          </Button>
+        </Toolbar>
+      )}
+
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table size="small">
           <TableHead>
             <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
+              <TableCell sx={{ color: '#fff', width: 40, p: 0.5 }}>
+                <Checkbox
+                  size="small"
+                  checked={filtered.length > 0 && selectedOrders.size === filtered.length}
+                  indeterminate={selectedOrders.size > 0 && selectedOrders.size < filtered.length}
+                  onChange={toggleSelectAll}
+                  sx={{ color: 'rgba(255,255,255,0.7)', '&.Mui-checked': { color: '#fff' }, '&.MuiCheckbox-indeterminate': { color: '#fff' }, p: 0.5 }}
+                />
+              </TableCell>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 40 }} />
-              {['Order ID', 'Customer', 'Type', 'Status', 'Total', 'Appointment Date', 'Time', 'Date Booked', 'Actions'].map((h) => (
+              {['#', 'Order ID', 'Customer', 'Type', 'Status', 'Total', 'Discounts', 'Date Booked', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
                   {h}
                 </TableCell>
@@ -308,14 +402,23 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             </TableRow>
           </TableHead>
           <TableBody>
-            {filtered.map((o) => (
+            {filtered.map((o, idx) => (
               <>
-                <TableRow key={o.id} hover>
+                <TableRow key={o.id} hover selected={selectedOrders.has(o.id)} sx={{ '&.Mui-selected': { backgroundColor: '#f3e5f5' }, '&.Mui-selected:hover': { backgroundColor: '#ede0f5' } }}>
+                  <TableCell sx={{ p: 0.5 }}>
+                    <Checkbox
+                      size="small"
+                      checked={selectedOrders.has(o.id)}
+                      onChange={() => toggleSelect(o.id)}
+                      sx={{ color: '#CE93D8', '&.Mui-checked': { color: '#4A0E4E' }, p: 0.5 }}
+                    />
+                  </TableCell>
                   <TableCell>
                     <IconButton size="small" onClick={() => setExpandedId(expandedId === o.id ? null : o.id)}>
                       {expandedId === o.id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     </IconButton>
                   </TableCell>
+                  <TableCell sx={{ fontFamily, fontSize: '0.78rem', color: '#999', width: 32 }}>{idx + 1}</TableCell>
                   <TableCell sx={{ fontFamily, fontSize: '0.8rem' }}>{o.id.slice(0, 8)}…</TableCell>
                   <TableCell sx={{ fontFamily }}>{o.customerName || o.name || '—'}</TableCell>
                   <TableCell>
@@ -337,20 +440,18 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                     </Select>
                   </TableCell>
                   <TableCell sx={{ fontFamily }}>₦{(o.total || 0).toLocaleString()}</TableCell>
-                  <TableCell sx={{ fontFamily, fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                  <TableCell sx={{ fontFamily, fontSize: '0.78rem', maxWidth: 180 }}>
                     {(() => {
-                      const raw = o.appointmentDate || o.items?.[0]?.date;
-                      if (!raw) return '—';
-                      const [datePart] = raw.split(' at ');
-                      return datePart || '—';
-                    })()}
-                  </TableCell>
-                  <TableCell sx={{ fontFamily, fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
-                    {(() => {
-                      const raw = o.appointmentDate || o.items?.[0]?.date;
-                      if (!raw) return '—';
-                      const parts = raw.split(' at ');
-                      return parts[1]?.trim() || '—';
+                      const parts = [];
+                      if (o.referralCode) parts.push(`Referral: ${o.referralCode} (-₦${(o.referralDiscount || 0).toLocaleString()})`);
+                      if (o.loyaltyPointsUsed) parts.push(`Loyalty: ${o.loyaltyPointsUsed} pts (-₦${(o.loyaltyDiscount || 0).toLocaleString()})`);
+                      if (o.giftCardCode) parts.push(`Gift Card: ${o.giftCardCode} (-₦${(o.giftCardDiscount || 0).toLocaleString()})`);
+                      if (parts.length === 0) return <span style={{ color: '#bbb' }}>—</span>;
+                      return parts.map((p, i) => (
+                        <Box key={i} sx={{ whiteSpace: 'nowrap', color: i === 0 && o.referralCode ? '#2e7d32' : i === parts.findIndex(x => x.startsWith('Loyalty')) ? '#B8860B' : '#555' }}>
+                          {p}
+                        </Box>
+                      ));
                     })()}
                   </TableCell>
                   <TableCell sx={{ fontFamily, fontSize: '0.8rem' }}>
@@ -378,7 +479,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                   </TableCell>
                 </TableRow>
                 <TableRow key={`${o.id}-detail`}>
-                  <TableCell colSpan={10} sx={{ p: 0, border: 0 }}>
+                  <TableCell colSpan={11} sx={{ p: 0, border: 0 }}>
                     <Collapse in={expandedId === o.id}>
                       <Box sx={{ p: 2, backgroundColor: '#fafafa' }}>
                         {o.appointmentDate && (
@@ -438,6 +539,26 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                             ))}
                           </Box>
                         )}
+                        {(o.referralCode || o.loyaltyPointsUsed || o.giftCardCode) && (
+                          <Box sx={{ mb: 1.5, p: 1.5, borderRadius: 2, backgroundColor: '#F1F8E9', border: '1px solid #C5E1A5' }}>
+                            <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, color: '#2e7d32', mb: 0.5 }}>Discounts Applied</Typography>
+                            {o.referralCode && (
+                              <Typography sx={{ fontFamily, fontSize: '0.82rem', color: '#2e7d32' }}>
+                                Referral Code: <strong>{o.referralCode}</strong> — -₦{(o.referralDiscount || 0).toLocaleString()}
+                              </Typography>
+                            )}
+                            {o.loyaltyPointsUsed && (
+                              <Typography sx={{ fontFamily, fontSize: '0.82rem', color: '#B8860B' }}>
+                                Loyalty Points: <strong>{o.loyaltyPointsUsed} pts</strong> — -₦{(o.loyaltyDiscount || 0).toLocaleString()}
+                              </Typography>
+                            )}
+                            {o.giftCardCode && (
+                              <Typography sx={{ fontFamily, fontSize: '0.82rem', color: '#555' }}>
+                                Gift Card: <strong>{o.giftCardCode}</strong> — -₦{(o.giftCardDiscount || 0).toLocaleString()}
+                              </Typography>
+                            )}
+                          </Box>
+                        )}
                         {o.notes && (
                           <Typography sx={{ fontFamily, fontSize: '0.85rem', mb: 1 }}>
                             <strong>Customer Notes:</strong> {o.notes}
@@ -488,7 +609,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={10} sx={{ textAlign: 'center', fontFamily, py: 4 }}>
+                <TableCell colSpan={11} sx={{ textAlign: 'center', fontFamily, py: 4 }}>
                   No {title.toLowerCase()} found
                 </TableCell>
               </TableRow>

@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
 import { CircularProgress, Box } from '@mui/material';
@@ -7,8 +7,11 @@ import Navbar from './components/Navbar';
 import AppointmentReminderPopup from './components/AppointmentReminderPopup';
 import StatusChangeToast from './components/StatusChangeToast';
 import Footer from './components/Footer';
+import WhatsAppBubble from './components/WhatsAppBubble';
+import MobileBottomNav from './components/MobileBottomNav';
 import HomePage from './pages/HomePage';
 import ServiceMenuPage from './pages/ServiceMenuPage';
+import ServiceDetailPage from './pages/ServiceDetailPage';
 import BookAppointmentPage from './pages/BookAppointmentPage';
 import OurStoryPage from './pages/OurStoryPage';
 import BlogPage from './pages/BlogPage';
@@ -35,38 +38,50 @@ const LazyFallback = (
 function App() {
   const location = useLocation();
 
+  // Capture referral code from URL (?ref=CHIZZYS-XXXX) and persist in sessionStorage
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) sessionStorage.setItem('pendingReferralCode', ref.toUpperCase().trim());
+  }, []);
+
   return (
     <>
       <ScrollToTop />
       <Navbar />
       <AppointmentReminderPopup />
       <StatusChangeToast />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/services" element={<ServiceMenuPage />} />
-        <Route path="/products" element={<ProductsMenuPage />} />
-        <Route path="/shop" element={<NailShopPage />} />
-        <Route path="/book" element={<BookAppointmentPage />} />
-        <Route path="/reschedule" element={<RescheduleAppointmentPage />} />
-        <Route path="/order" element={<PlaceOrderPage />} />
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/account" element={<AccountPage />} />
-        <Route path="/our-story" element={<OurStoryPage />} />
-        <Route path="/blog" element={<BlogPage />} />
-        <Route path="/testimonials" element={<TestimonialsPage />} />
-        <Route path="/gift-cards" element={<GiftCardPage />} />
-        <Route path="/our-team" element={<OurTeamPage />} />
-        <Route path="/gallery" element={<GalleryPage />} />
-        <Route
-          path="/admin"
-          element={
-            <Suspense fallback={LazyFallback}>
-              <AdminPage />
-            </Suspense>
-          }
-        />
-      </Routes>
+      <Box sx={{ pb: { xs: '64px', md: 0 } }}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/services" element={<ServiceMenuPage />} />
+          <Route path="/services/:serviceId" element={<ServiceDetailPage />} />
+          <Route path="/products" element={<ProductsMenuPage />} />
+          <Route path="/shop" element={<NailShopPage />} />
+          <Route path="/book" element={<BookAppointmentPage />} />
+          <Route path="/reschedule" element={<RescheduleAppointmentPage />} />
+          <Route path="/order" element={<PlaceOrderPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/account" element={<AccountPage />} />
+          <Route path="/our-story" element={<OurStoryPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/testimonials" element={<TestimonialsPage />} />
+          <Route path="/gift-cards" element={<GiftCardPage />} />
+          <Route path="/our-team" element={<OurTeamPage />} />
+          <Route path="/gallery" element={<GalleryPage />} />
+          <Route
+            path="/admin"
+            element={
+              <Suspense fallback={LazyFallback}>
+                <AdminPage />
+              </Suspense>
+            }
+          />
+        </Routes>
+      </Box>
+      <WhatsAppBubble />
+      <MobileBottomNav />
       {location.pathname !== '/admin' && <Footer />}
       <Analytics />
     </>
