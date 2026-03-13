@@ -220,741 +220,935 @@ export default function ProductsMenuPage() {
   };
 
   return (
-    <Box sx={{ pt: 12 }}>
-      {/* Page Header */}
-      <Box sx={{ textAlign: "center", py: 6, backgroundColor: "#fff" }}>
-        <ScrollReveal direction="up">
-          <Typography
-            variant="h3"
-            sx={{
-              fontFamily: '"Georgia", serif',
-              fontWeight: 700,
-              color: "#000",
-              mb: 2,
-              fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" },
-            }}
-          >
-            Press-on Products Menu
-          </Typography>
-        </ScrollReveal>
-        <ScrollReveal direction="up" delay={0.15}>
-          <Typography
-            sx={{
-              maxWidth: 620,
-              mx: "auto",
-              color: "#555",
-              fontSize: "1.1rem",
-              lineHeight: 1.7,
-              px: 2,
-            }}
-          >
-            Shop our handmade press-on nails — salon-quality designs you
-            can apply at home. Each set comes with a complimentary nail
-            kit. Choose your style, customize your fit, and place your
-            order below.
-          </Typography>
-        </ScrollReveal>
-        <ScrollReveal direction="up" delay={0.25}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 1,
-              mt: 2,
-            }}
-          >
-            <LocalShippingOutlinedIcon
-              sx={{ color: "#E91E8C", fontSize: 20 }}
-            />
-            <Typography
-              sx={{
-                color: "#E91E8C",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-              }}
-            >
-              Delivery available only within Nigeria
-            </Typography>
-          </Box>
-        </ScrollReveal>
-        {!user && (
-          <ScrollReveal direction="up" delay={0.3}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 1.5,
-                mt: 3,
-                py: 1.5,
-                px: 3,
-                mx: "auto",
-                maxWidth: 480,
-                backgroundColor: "#FFF0F5",
-                borderRadius: 3,
-                border: "1px solid #F0C0D0",
-              }}
-            >
-              <Typography
-                sx={{
-                  fontFamily: '"Georgia", serif',
-                  fontSize: "0.9rem",
-                  color: "#555",
-                }}
-              >
-                Sign in to track your orders
-              </Typography>
-              <Button
-                size="small"
-                startIcon={
-                  signingIn ? (
-                    <CircularProgress
-                      size={16}
-                      sx={{ color: "inherit" }}
-                    />
-                  ) : (
-                    <LoginIcon sx={{ fontSize: 18 }} />
-                  )
-                }
-                onClick={handleSignIn}
-                disabled={signingIn}
-                sx={{
-                  fontFamily: '"Georgia", serif',
-                  fontSize: "0.85rem",
-                  fontWeight: 600,
-                  color: "#E91E8C",
-                  border: "1.5px solid #E91E8C",
-                  borderRadius: "20px",
-                  px: 2,
-                  whiteSpace: "nowrap",
-                  "&:hover": {
-                    backgroundColor: "#E91E8C",
-                    color: "#fff",
-                  },
-                }}
-              >
-                {signingIn ? "Signing In\u2026" : "Sign In"}
-              </Button>
-            </Box>
-          </ScrollReveal>
-        )}
+		<Box sx={{ pt: 12, pb: { xs: 12, md: 6 } }}>
+			{/* Page Header */}
+			<Box sx={{ textAlign: "center", py: 6, backgroundColor: "#fff" }}>
+				<ScrollReveal direction="up">
+					<Typography
+						variant="h3"
+						sx={{
+							fontFamily: '"Georgia", serif',
+							fontWeight: 700,
+							color: "#000",
+							mb: 2,
+							fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" },
+						}}
+					>
+						Press-on Nails Menu
+					</Typography>
+				</ScrollReveal>
+				<ScrollReveal direction="up" delay={0.15}>
+					<Typography
+						sx={{
+							maxWidth: 620,
+							mx: "auto",
+							color: "#555",
+							fontSize: "1.1rem",
+							lineHeight: 1.7,
+							px: 2,
+						}}
+					>
+						Shop our handmade press-on nails — salon-quality designs you
+						can apply at home. Each set comes with a complimentary nail
+						kit. Choose your style, customize your fit, and place your
+						order below.
+					</Typography>
+				</ScrollReveal>
+				<ScrollReveal direction="up" delay={0.25}>
+					<Box
+						sx={{
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							gap: 1,
+							mt: 2,
+						}}
+					>
+						<LocalShippingOutlinedIcon
+							sx={{ color: "#E91E8C", fontSize: 20 }}
+						/>
+						<Typography
+							sx={{
+								color: "#E91E8C",
+								fontSize: "0.9rem",
+								fontWeight: 600,
+							}}
+						>
+							Delivery available only within Nigeria
+						</Typography>
+					</Box>
+				</ScrollReveal>
+				{!user && (
+					<ScrollReveal direction="up" delay={0.3}>
+						<Box
+							sx={{
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								gap: 1.5,
+								mt: 3,
+								py: 1.5,
+								px: 3,
+								mx: "auto",
+								maxWidth: 480,
+								backgroundColor: "#FFF0F5",
+								borderRadius: 3,
+								border: "1px solid #F0C0D0",
+							}}
+						>
+							<Typography
+								sx={{
+									fontFamily: '"Georgia", serif',
+									fontSize: "0.9rem",
+									color: "#555",
+								}}
+							>
+								Sign in to track your orders
+							</Typography>
+							<Button
+								size="small"
+								startIcon={
+									signingIn ? (
+										<CircularProgress
+											size={16}
+											sx={{ color: "inherit" }}
+										/>
+									) : (
+										<LoginIcon sx={{ fontSize: 18 }} />
+									)
+								}
+								onClick={handleSignIn}
+								disabled={signingIn}
+								sx={{
+									fontFamily: '"Georgia", serif',
+									fontSize: "0.85rem",
+									fontWeight: 600,
+									color: "#E91E8C",
+									border: "1.5px solid #E91E8C",
+									borderRadius: "20px",
+									px: 2,
+									whiteSpace: "nowrap",
+									"&:hover": {
+										backgroundColor: "#E91E8C",
+										color: "#fff",
+									},
+								}}
+							>
+								{signingIn ? "Signing In\u2026" : "Sign In"}
+							</Button>
+						</Box>
+					</ScrollReveal>
+				)}
 
-        {/* Filter & Sort Toggle */}
-        <Box sx={{ mt: 3 }}>
-          <Button
-            startIcon={<FilterListIcon />}
-            onClick={() => setFiltersOpen(!filtersOpen)}
-            sx={{
-              fontFamily: '"Georgia", serif',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              color: hasActiveFilters ? '#fff' : '#E91E8C',
-              backgroundColor: hasActiveFilters ? '#E91E8C' : 'transparent',
-              border: '1.5px solid #E91E8C',
-              borderRadius: '20px',
-              px: 2.5,
-              '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
-            }}
-          >
-            {filtersOpen ? 'Hide Filters' : 'Filter & Sort'}
-          </Button>
-        </Box>
+				{/* Filter & Sort Toggle */}
+				<Box sx={{ mt: 3 }}>
+					<Button
+						startIcon={<FilterListIcon />}
+						onClick={() => setFiltersOpen(!filtersOpen)}
+						sx={{
+							fontFamily: '"Georgia", serif',
+							fontWeight: 600,
+							fontSize: "0.85rem",
+							color: hasActiveFilters ? "#fff" : "#E91E8C",
+							backgroundColor: hasActiveFilters
+								? "#E91E8C"
+								: "transparent",
+							border: "1.5px solid #E91E8C",
+							borderRadius: "20px",
+							px: 2.5,
+							"&:hover": { backgroundColor: "#E91E8C", color: "#fff" },
+						}}
+					>
+						{filtersOpen ? "Hide Filters" : "Filter & Sort"}
+					</Button>
+				</Box>
 
-        {/* Filter Controls */}
-        <Collapse in={filtersOpen}>
-          <Box
-            sx={{
-              mx: 'auto',
-              maxWidth: 700,
-              mt: 2,
-              p: 3,
-              backgroundColor: '#FFF0F5',
-              borderRadius: 3,
-              border: '1px solid #F0C0D0',
-              textAlign: 'left',
-            }}
-          >
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  select
-                  fullWidth
-                  size="small"
-                  label="Sort By"
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                >
-                  <MenuItem value="default">Default</MenuItem>
-                  <MenuItem value="price-asc">Price: Low to High</MenuItem>
-                  <MenuItem value="price-desc">Price: High to Low</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  select
-                  fullWidth
-                  size="small"
-                  label="Shape"
-                  value={shapeFilter}
-                  onChange={(e) => setShapeFilter(e.target.value)}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                >
-                  <MenuItem value="">All Shapes</MenuItem>
-                  {pressOnNailShapes.map((s) => {
-                    const paths = { Almond: 'M3,35 Q2,20 10,4 Q18,20 17,35 Q14,36 10,36 Q6,36 3,35 Z', Coffin: 'M2,35 L5,5 L15,5 L18,35 Z', Stiletto: 'M3,35 L7,16 L10,4 L13,16 L17,35 Z', Square: 'M2,35 L2,4 L18,4 L18,35 Z', Round: 'M2,35 L2,14 Q2,4 10,4 Q18,4 18,14 L18,35 Z', Oval: 'M2,35 Q2,22 10,4 Q18,22 18,35 Z', Ballerina: 'M2,35 L7,6 L13,6 L18,35 Z' };
-                    return (
-                      <MenuItem key={s} value={s} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <svg viewBox="0 0 20 36" width="14" height="26" style={{ flexShrink: 0 }}>
-                          <path d={paths[s] || ''} fill="#F0C0D0" stroke="#d48fa0" strokeWidth="0.8" />
-                        </svg>
-                        {s}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  select
-                  fullWidth
-                  size="small"
-                  label="Length"
-                  value={lengthFilter}
-                  onChange={(e) => setLengthFilter(e.target.value)}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                >
-                  <MenuItem value="">All Lengths</MenuItem>
-                  {lengthOptions.map((l) => (
-                    <MenuItem key={l} value={l}>{l}</MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={12} sm={8}>
-                <Typography sx={{ fontSize: '0.8rem', color: '#555', mb: 0.5, fontFamily: '"Georgia", serif' }}>
-                  Price Range: {formatNaira(priceRange[0])} — {formatNaira(priceRange[1])}
-                </Typography>
-                <Slider
-                  value={priceRange}
-                  onChange={(_, val) => setPriceRange(val)}
-                  min={0}
-                  max={30000}
-                  step={500}
-                  sx={{
-                    color: '#E91E8C',
-                    '& .MuiSlider-thumb': { width: 16, height: 16 },
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={inStockOnly}
-                      onChange={(e) => setInStockOnly(e.target.checked)}
-                      sx={{ color: '#E91E8C', '&.Mui-checked': { color: '#E91E8C' } }}
-                    />
-                  }
-                  label={<Typography sx={{ fontSize: '0.85rem', fontFamily: '"Georgia", serif' }}>In Stock Only</Typography>}
-                />
-              </Grid>
-            </Grid>
+				{/* Filter Controls */}
+				<Collapse in={filtersOpen}>
+					<Box
+						sx={{
+							mx: "auto",
+							maxWidth: 700,
+							mt: 2,
+							p: 3,
+							backgroundColor: "#FFF0F5",
+							borderRadius: 3,
+							border: "1px solid #F0C0D0",
+							textAlign: "left",
+						}}
+					>
+						<Grid container spacing={2} alignItems="center">
+							<Grid item xs={12} sm={4}>
+								<TextField
+									select
+									fullWidth
+									size="small"
+									label="Sort By"
+									value={sortBy}
+									onChange={(e) => setSortBy(e.target.value)}
+									sx={{
+										"& .MuiOutlinedInput-root": { borderRadius: 2 },
+									}}
+								>
+									<MenuItem value="default">Default</MenuItem>
+									<MenuItem value="price-asc">
+										Price: Low to High
+									</MenuItem>
+									<MenuItem value="price-desc">
+										Price: High to Low
+									</MenuItem>
+								</TextField>
+							</Grid>
+							<Grid item xs={6} sm={4}>
+								<TextField
+									select
+									fullWidth
+									size="small"
+									label="Shape"
+									value={shapeFilter}
+									onChange={(e) => setShapeFilter(e.target.value)}
+									sx={{
+										"& .MuiOutlinedInput-root": { borderRadius: 2 },
+									}}
+								>
+									<MenuItem value="">All Shapes</MenuItem>
+									{pressOnNailShapes.map((s) => {
+										const paths = {
+											Almond:
+												"M3,35 Q2,20 10,4 Q18,20 17,35 Q14,36 10,36 Q6,36 3,35 Z",
+											Coffin: "M2,35 L5,5 L15,5 L18,35 Z",
+											Stiletto: "M3,35 L7,16 L10,4 L13,16 L17,35 Z",
+											Square: "M2,35 L2,4 L18,4 L18,35 Z",
+											Round: "M2,35 L2,14 Q2,4 10,4 Q18,4 18,14 L18,35 Z",
+											Oval: "M2,35 Q2,22 10,4 Q18,22 18,35 Z",
+											Ballerina: "M2,35 L7,6 L13,6 L18,35 Z",
+										};
+										return (
+											<MenuItem
+												key={s}
+												value={s}
+												sx={{
+													display: "flex",
+													alignItems: "center",
+													gap: 1.5,
+												}}
+											>
+												<svg
+													viewBox="0 0 20 36"
+													width="14"
+													height="26"
+													style={{ flexShrink: 0 }}
+												>
+													<path
+														d={paths[s] || ""}
+														fill="#F0C0D0"
+														stroke="#d48fa0"
+														strokeWidth="0.8"
+													/>
+												</svg>
+												{s}
+											</MenuItem>
+										);
+									})}
+								</TextField>
+							</Grid>
+							<Grid item xs={6} sm={4}>
+								<TextField
+									select
+									fullWidth
+									size="small"
+									label="Length"
+									value={lengthFilter}
+									onChange={(e) => setLengthFilter(e.target.value)}
+									sx={{
+										"& .MuiOutlinedInput-root": { borderRadius: 2 },
+									}}
+								>
+									<MenuItem value="">All Lengths</MenuItem>
+									{lengthOptions.map((l) => (
+										<MenuItem key={l} value={l}>
+											{l}
+										</MenuItem>
+									))}
+								</TextField>
+							</Grid>
+							<Grid item xs={12} sm={8}>
+								<Typography
+									sx={{
+										fontSize: "0.8rem",
+										color: "#555",
+										mb: 0.5,
+										fontFamily: '"Georgia", serif',
+									}}
+								>
+									Price Range: {formatNaira(priceRange[0])} —{" "}
+									{formatNaira(priceRange[1])}
+								</Typography>
+								<Slider
+									value={priceRange}
+									onChange={(_, val) => setPriceRange(val)}
+									min={0}
+									max={30000}
+									step={500}
+									sx={{
+										color: "#E91E8C",
+										"& .MuiSlider-thumb": { width: 16, height: 16 },
+									}}
+								/>
+							</Grid>
+							<Grid item xs={12} sm={4}>
+								<FormControlLabel
+									control={
+										<Checkbox
+											checked={inStockOnly}
+											onChange={(e) =>
+												setInStockOnly(e.target.checked)
+											}
+											sx={{
+												color: "#E91E8C",
+												"&.Mui-checked": { color: "#E91E8C" },
+											}}
+										/>
+									}
+									label={
+										<Typography
+											sx={{
+												fontSize: "0.85rem",
+												fontFamily: '"Georgia", serif',
+											}}
+										>
+											In Stock Only
+										</Typography>
+									}
+								/>
+							</Grid>
+						</Grid>
 
-            {/* Active filter chips */}
-            {hasActiveFilters && (
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 2, alignItems: 'center' }}>
-                {sortBy !== 'default' && (
-                  <Chip label={sortBy === 'price-asc' ? 'Price: Low→High' : 'Price: High→Low'} size="small" onDelete={() => setSortBy('default')} sx={{ backgroundColor: '#FCE4EC' }} />
-                )}
-                {shapeFilter && (
-                  <Chip label={shapeFilter} size="small" onDelete={() => setShapeFilter('')} sx={{ backgroundColor: '#FCE4EC' }} />
-                )}
-                {lengthFilter && (
-                  <Chip label={lengthFilter} size="small" onDelete={() => setLengthFilter('')} sx={{ backgroundColor: '#FCE4EC' }} />
-                )}
-                {(priceRange[0] > 0 || priceRange[1] < 30000) && (
-                  <Chip label={`${formatNaira(priceRange[0])}–${formatNaira(priceRange[1])}`} size="small" onDelete={() => setPriceRange([0, 30000])} sx={{ backgroundColor: '#FCE4EC' }} />
-                )}
-                {inStockOnly && (
-                  <Chip label="In Stock" size="small" onDelete={() => setInStockOnly(false)} sx={{ backgroundColor: '#FCE4EC' }} />
-                )}
-                <Button size="small" onClick={clearFilters} sx={{ fontSize: '0.75rem', color: '#E91E8C', textTransform: 'none' }}>
-                  Clear All
-                </Button>
-              </Box>
-            )}
-          </Box>
-        </Collapse>
-      </Box>
+						{/* Active filter chips */}
+						{hasActiveFilters && (
+							<Box
+								sx={{
+									display: "flex",
+									gap: 1,
+									flexWrap: "wrap",
+									mt: 2,
+									alignItems: "center",
+								}}
+							>
+								{sortBy !== "default" && (
+									<Chip
+										label={
+											sortBy === "price-asc"
+												? "Price: Low→High"
+												: "Price: High→Low"
+										}
+										size="small"
+										onDelete={() => setSortBy("default")}
+										sx={{ backgroundColor: "#FCE4EC" }}
+									/>
+								)}
+								{shapeFilter && (
+									<Chip
+										label={shapeFilter}
+										size="small"
+										onDelete={() => setShapeFilter("")}
+										sx={{ backgroundColor: "#FCE4EC" }}
+									/>
+								)}
+								{lengthFilter && (
+									<Chip
+										label={lengthFilter}
+										size="small"
+										onDelete={() => setLengthFilter("")}
+										sx={{ backgroundColor: "#FCE4EC" }}
+									/>
+								)}
+								{(priceRange[0] > 0 || priceRange[1] < 30000) && (
+									<Chip
+										label={`${formatNaira(priceRange[0])}–${formatNaira(priceRange[1])}`}
+										size="small"
+										onDelete={() => setPriceRange([0, 30000])}
+										sx={{ backgroundColor: "#FCE4EC" }}
+									/>
+								)}
+								{inStockOnly && (
+									<Chip
+										label="In Stock"
+										size="small"
+										onDelete={() => setInStockOnly(false)}
+										sx={{ backgroundColor: "#FCE4EC" }}
+									/>
+								)}
+								<Button
+									size="small"
+									onClick={clearFilters}
+									sx={{
+										fontSize: "0.75rem",
+										color: "#E91E8C",
+										textTransform: "none",
+									}}
+								>
+									Clear All
+								</Button>
+							</Box>
+						)}
+					</Box>
+				</Collapse>
+			</Box>
 
-      {/* Loading / Error */}
-      {loading && (
-        <Box sx={{ textAlign: "center", py: 10 }}>
-          <CircularProgress sx={{ color: "#E91E8C" }} />
-          <Typography sx={{ mt: 2, color: "#999" }}>
-            Loading products…
-          </Typography>
-        </Box>
-      )}
-      {error && !loading && (
-        <Box sx={{ textAlign: "center", py: 4 }}>
-          <Typography sx={{ color: "#d32f2f", fontSize: "0.9rem" }}>
-            Could not load products from the server. Showing cached data.
-          </Typography>
-        </Box>
-      )}
+			{/* Loading / Error */}
+			{loading && (
+				<Box sx={{ textAlign: "center", py: 10 }}>
+					<CircularProgress sx={{ color: "#E91E8C" }} />
+					<Typography sx={{ mt: 2, color: "#999" }}>
+						Loading products…
+					</Typography>
+				</Box>
+			)}
+			{error && !loading && (
+				<Box sx={{ textAlign: "center", py: 4 }}>
+					<Typography sx={{ color: "#d32f2f", fontSize: "0.9rem" }}>
+						Could not load products from the server. Showing cached data.
+					</Typography>
+				</Box>
+			)}
 
+			{/* Product Sections */}
+			{filteredCategories.map((category, index) => (
+				<Box key={category.id}>
+					<Box
+						sx={{
+							backgroundColor:
+								sectionColors[index % sectionColors.length],
+							py: 8,
+						}}
+					>
+						<Container maxWidth="lg">
+							<ScrollReveal direction="up">
+								<Typography
+									variant="h4"
+									sx={{
+										fontFamily: '"Georgia", serif',
+										fontWeight: 700,
+										color: "#000",
+										mb: 1,
+										textAlign: "center",
+										fontSize: {
+											xs: "1.3rem",
+											sm: "1.7rem",
+											md: "2.1rem",
+										},
+										px: 1,
+									}}
+								>
+									{category.title}
+								</Typography>
+							</ScrollReveal>
+							<ScrollReveal direction="up" delay={0.1}>
+								<Typography
+									sx={{
+										textAlign: "center",
+										color: "#555",
+										mb: 1,
+										maxWidth: 580,
+										mx: "auto",
+										lineHeight: 1.6,
+									}}
+								>
+									{category.description}
+								</Typography>
 
-      {/* Product Sections */}
-      {filteredCategories.map((category, index) => (
-        <Box key={category.id}>
-          <Box
-            sx={{
-              backgroundColor:
-                sectionColors[index % sectionColors.length],
-              py: 8,
-            }}
-          >
-            <Container maxWidth="lg">
-              <ScrollReveal direction="up">
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontFamily: '"Georgia", serif',
-                    fontWeight: 700,
-                    color: "#000",
-                    mb: 1,
-                    textAlign: "center",
-                    fontSize: {
-                      xs: "1.3rem",
-                      sm: "1.7rem",
-                      md: "2.1rem",
-                    },
-                    px: 1,
-                  }}
-                >
-                  {category.title}
-                </Typography>
-              </ScrollReveal>
-              <ScrollReveal direction="up" delay={0.1}>
-                <Typography
-                  sx={{
-                    textAlign: "center",
-                    color: "#555",
-                    mb: 1,
-                    maxWidth: 580,
-                    mx: "auto",
-                    lineHeight: 1.6,
-                  }}
-                >
-                  {category.description}
-                </Typography>
+								{/* Preset sizes info for ready-made products */}
+								{category.readyMade && (
+									<Box
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "center",
+											gap: 1,
+											mt: 1,
+											mb: 0.5,
+											flexWrap: "wrap",
+										}}
+									>
+										<Typography
+											sx={{
+												color: "#4A0E4E",
+												fontSize: "0.9rem",
+												fontWeight: 600,
+											}}
+										>
+											XS, S, M & L preset nail sizes available
+										</Typography>
+										<Typography
+											onClick={() => setSizeGuideOpen(true)}
+											sx={{
+												color: "#E91E8C",
+												fontSize: "0.85rem",
+												fontWeight: 600,
+												cursor: "pointer",
+												textDecoration: "underline",
+												textUnderlineOffset: 2,
+												"&:hover": { color: "#C2185B" },
+											}}
+										>
+											What are preset sizes?
+										</Typography>
+										<Tooltip title="Contact us for help" arrow>
+											<IconButton
+												onClick={handleContactClick}
+												size="small"
+												sx={{
+													color: "#E91E8C",
+													border: "1.5px solid #E91E8C",
+													width: 30,
+													height: 30,
+													"&:hover": {
+														backgroundColor: "#E91E8C",
+														color: "#fff",
+													},
+												}}
+											>
+												<PhoneOutlinedIcon sx={{ fontSize: 16 }} />
+											</IconButton>
+										</Tooltip>
+									</Box>
+								)}
 
-                {/* Preset sizes info for ready-made products */}
-                {category.readyMade && (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 1,
-                      mt: 1,
-                      mb: 0.5,
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        color: "#4A0E4E",
-                        fontSize: "0.9rem",
-                        fontWeight: 600,
-                      }}
-                    >
-                      XS, S, M & L preset nail sizes available
-                    </Typography>
-                    <Typography
-                      onClick={() => setSizeGuideOpen(true)}
-                      sx={{
-                        color: "#E91E8C",
-                        fontSize: "0.85rem",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        textDecoration: "underline",
-                        textUnderlineOffset: 2,
-                        "&:hover": { color: "#C2185B" },
-                      }}
-                    >
-                      What are preset sizes?
-                    </Typography>
-                    <Tooltip title="Contact us for help" arrow>
-                      <IconButton
-                        onClick={handleContactClick}
-                        size="small"
-                        sx={{
-                          color: "#E91E8C",
-                          border: "1.5px solid #E91E8C",
-                          width: 30,
-                          height: 30,
-                          "&:hover": {
-                            backgroundColor: "#E91E8C",
-                            color: "#fff",
-                          },
-                        }}
-                      >
-                        <PhoneOutlinedIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                )}
+								{category.note && (
+									<Typography
+										sx={{
+											textAlign: "center",
+											color: "#E91E8C",
+											fontWeight: 600,
+											fontSize: "0.9rem",
+											mb: 4,
+										}}
+									>
+										{category.note}
+									</Typography>
+								)}
+								{!category.note && <Box sx={{ mb: 4 }} />}
+							</ScrollReveal>
 
-                {category.note && (
-                  <Typography
-                    sx={{
-                      textAlign: "center",
-                      color: "#E91E8C",
-                      fontWeight: 600,
-                      fontSize: "0.9rem",
-                      mb: 4,
-                    }}
-                  >
-                    {category.note}
-                  </Typography>
-                )}
-                {!category.note && <Box sx={{ mb: 4 }} />}
-              </ScrollReveal>
+							<Grid container spacing={3}>
+								{category.filteredProducts.map((product, pIdx) => {
+									const oos = isOutOfStock(product);
+									const wishlisted = isInWishlist(product.id);
 
-              <Grid container spacing={3}>
-                {category.filteredProducts.map((product, pIdx) => {
-                  const oos = isOutOfStock(product);
-                  const wishlisted = isInWishlist(product.id);
+									return (
+										<Grid
+											item
+											xs={12}
+											sm={6}
+											md={category.readyMade ? 4 : 3}
+											key={product.id}
+										>
+											<ScrollReveal
+												direction="up"
+												delay={pIdx * 0.1}
+											>
+												<Card
+													elevation={0}
+													onClick={() =>
+														handleCardClick(product, category)
+													}
+													sx={{
+														borderRadius: 3,
+														border: "1px solid #F0C0D0",
+														height: "100%",
+														display: "flex",
+														flexDirection: "column",
+														overflow: "hidden",
+														cursor: oos ? "default" : "pointer",
+														transition:
+															"transform 0.3s ease, box-shadow 0.3s ease",
+														"& .hover-prompt": {
+															opacity: 0,
+															transition: "opacity 0.2s ease",
+														},
+														"&:hover": oos
+															? {}
+															: {
+																	transform:
+																		"translateY(-6px)",
+																	boxShadow:
+																		"0 12px 32px rgba(233,30,140,0.15)",
+																	"& .hover-prompt": {
+																		opacity: 1,
+																	},
+																},
+													}}
+												>
+													<Box sx={{ position: "relative" }}>
+														<Box
+															component="img"
+															src={product.image}
+															alt={product.name}
+															sx={{
+																width: "100%",
+																height: 160,
+																objectFit: "cover",
+																opacity: oos ? 0.5 : 1,
+																filter: oos
+																	? "grayscale(40%)"
+																	: "none",
+																transition:
+																	"opacity 0.3s ease, filter 0.3s ease",
+															}}
+														/>
+														{product.type && (
+															<Chip
+																label={product.type}
+																size="small"
+																sx={{
+																	position: "absolute",
+																	top: 8,
+																	left: 8,
+																	backgroundColor: "#4A0E4E",
+																	color: "#fff",
+																	fontSize: "0.7rem",
+																	fontWeight: 700,
+																	height: 22,
+																}}
+															/>
+														)}
+														{product.stock !== undefined &&
+															product.stock > 0 && (
+																<Chip
+																	label="Ready to ship"
+																	size="small"
+																	sx={{
+																		position: "absolute",
+																		top: 8,
+																		right: 8,
+																		backgroundColor:
+																			"#E91E8C",
+																		color: "#fff",
+																		fontSize: "0.7rem",
+																		fontWeight: 600,
+																		height: 22,
+																	}}
+																/>
+															)}
+														{category.readyMade && (
+															<Box
+																sx={{
+																	position: "absolute",
+																	bottom: 8,
+																	right: 8,
+																	backgroundColor:
+																		"rgba(74,14,78,0.85)",
+																	color: "#fff",
+																	borderRadius: "10px",
+																	px: 1,
+																	py: 0.3,
+																	display: "flex",
+																	alignItems: "center",
+																	gap: 0.4,
+																}}
+															>
+																<Typography
+																	sx={{
+																		fontSize: "0.62rem",
+																		fontWeight: 700,
+																		lineHeight: 1.2,
+																	}}
+																>
+																	Ships 4–7 days
+																</Typography>
+															</Box>
+														)}
+														{hasDiscount(product) && (
+															<Chip
+																label={getDiscountLabel(
+																	product,
+																)}
+																size="small"
+																sx={{
+																	position: "absolute",
+																	bottom: 8,
+																	left: 8,
+																	backgroundColor: "#2e7d32",
+																	color: "#fff",
+																	fontSize: "0.7rem",
+																	fontWeight: 700,
+																	height: 22,
+																}}
+															/>
+														)}
 
-                  return (
-                    <Grid
-                      item
-                      xs={12}
-                      sm={6}
-                      md={category.readyMade ? 4 : 3}
-                      key={product.id}
-                    >
-                      <ScrollReveal direction="up" delay={pIdx * 0.1}>
-                        <Card
-                          elevation={0}
-                          onClick={() => handleCardClick(product, category)}
-                          sx={{
-                            borderRadius: 3,
-                            border: "1px solid #F0C0D0",
-                            height: "100%",
-                            display: "flex",
-                            flexDirection: "column",
-                            overflow: "hidden",
-                            cursor: oos ? 'default' : 'pointer',
-                            transition:
-                              "transform 0.3s ease, box-shadow 0.3s ease",
-                            '& .hover-prompt': { opacity: 0, transition: 'opacity 0.2s ease' },
-                            "&:hover": oos ? {} : {
-                              transform: "translateY(-6px)",
-                              boxShadow:
-                                "0 12px 32px rgba(233,30,140,0.15)",
-                              '& .hover-prompt': { opacity: 1 },
-                            },
-                          }}
-                        >
-                          <Box sx={{ position: "relative" }}>
-                            <Box
-                              component="img"
-                              src={product.image}
-                              alt={product.name}
-                              sx={{
-                                width: "100%",
-                                height: 160,
-                                objectFit: "cover",
-                                opacity: oos ? 0.5 : 1,
-                                filter: oos ? 'grayscale(40%)' : 'none',
-                                transition: 'opacity 0.3s ease, filter 0.3s ease',
-                              }}
-                            />
-                            {product.type && (
-                              <Chip
-                                label={product.type}
-                                size="small"
-                                sx={{
-                                  position: "absolute",
-                                  top: 8,
-                                  left: 8,
-                                  backgroundColor: "#4A0E4E",
-                                  color: "#fff",
-                                  fontSize: "0.7rem",
-                                  fontWeight: 700,
-                                  height: 22,
-                                }}
-                              />
-                            )}
-                            {product.stock !== undefined && product.stock > 0 && (
-                              <Chip
-                                label="Ready to ship"
-                                size="small"
-                                sx={{
-                                  position: "absolute",
-                                  top: 8,
-                                  right: 8,
-                                  backgroundColor: "#E91E8C",
-                                  color: "#fff",
-                                  fontSize: "0.7rem",
-                                  fontWeight: 600,
-                                  height: 22,
-                                }}
-                              />
-                            )}
-                            {category.readyMade && (
-                              <Box sx={{
-                                position: 'absolute',
-                                bottom: 8,
-                                right: 8,
-                                backgroundColor: 'rgba(74,14,78,0.85)',
-                                color: '#fff',
-                                borderRadius: '10px',
-                                px: 1,
-                                py: 0.3,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 0.4,
-                              }}>
-                                <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, lineHeight: 1.2 }}>
-                                  Ships 4–7 days
-                                </Typography>
-                              </Box>
-                            )}
-                            {hasDiscount(product) && (
-                              <Chip
-                                label={getDiscountLabel(product)}
-                                size="small"
-                                sx={{
-                                  position: "absolute",
-                                  bottom: 8,
-                                  left: 8,
-                                  backgroundColor: "#2e7d32",
-                                  color: "#fff",
-                                  fontSize: "0.7rem",
-                                  fontWeight: 700,
-                                  height: 22,
-                                }}
-                              />
-                            )}
+														{/* Out of stock overlay */}
+														{oos && (
+															<Box
+																sx={{
+																	position: "absolute",
+																	top: 0,
+																	left: 0,
+																	right: 0,
+																	bottom: 0,
+																	backgroundColor:
+																		"rgba(0,0,0,0.45)",
+																	display: "flex",
+																	alignItems: "center",
+																	justifyContent: "center",
+																}}
+															>
+																<Typography
+																	sx={{
+																		color: "#fff",
+																		fontFamily:
+																			'"Georgia", serif',
+																		fontWeight: 700,
+																		fontSize: "1rem",
+																		textTransform:
+																			"uppercase",
+																		letterSpacing: 1,
+																	}}
+																>
+																	Out of Stock
+																</Typography>
+															</Box>
+														)}
 
-                            {/* Out of stock overlay */}
-                            {oos && (
-                              <Box
-                                sx={{
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  backgroundColor: 'rgba(0,0,0,0.45)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                }}
-                              >
-                                <Typography
-                                  sx={{
-                                    color: '#fff',
-                                    fontFamily: '"Georgia", serif',
-                                    fontWeight: 700,
-                                    fontSize: '1rem',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: 1,
-                                  }}
-                                >
-                                  Out of Stock
-                                </Typography>
-                              </Box>
-                            )}
+														{/* Click to view hover prompt */}
+														{!oos && (
+															<Box
+																className="hover-prompt"
+																sx={{
+																	position: "absolute",
+																	top: 0,
+																	left: 0,
+																	right: 0,
+																	bottom: 0,
+																	backgroundColor:
+																		"rgba(74, 14, 78, 0.35)",
+																	display: "flex",
+																	alignItems: "center",
+																	justifyContent: "center",
+																	pointerEvents: "none",
+																}}
+															>
+																<Typography
+																	sx={{
+																		color: "#fff",
+																		fontFamily:
+																			'"Georgia", serif',
+																		fontWeight: 700,
+																		fontSize: "0.85rem",
+																		letterSpacing: 0.5,
+																		textTransform:
+																			"uppercase",
+																	}}
+																>
+																	Click to View
+																</Typography>
+															</Box>
+														)}
 
-                            {/* Click to view hover prompt */}
-                            {!oos && (
-                              <Box
-                                className="hover-prompt"
-                                sx={{
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  backgroundColor: 'rgba(74, 14, 78, 0.35)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  pointerEvents: 'none',
-                                }}
-                              >
-                                <Typography
-                                  sx={{
-                                    color: '#fff',
-                                    fontFamily: '"Georgia", serif',
-                                    fontWeight: 700,
-                                    fontSize: '0.85rem',
-                                    letterSpacing: 0.5,
-                                    textTransform: 'uppercase',
-                                  }}
-                                >
-                                  Click to View
-                                </Typography>
-                              </Box>
-                            )}
+														{/* Wishlist heart */}
+														<IconButton
+															onClick={(e) =>
+																handleWishlistToggle(
+																	e,
+																	product,
+																	category,
+																)
+															}
+															size="small"
+															sx={{
+																position: "absolute",
+																bottom: 8,
+																right: 8,
+																backgroundColor:
+																	"rgba(255,255,255,0.9)",
+																width: 32,
+																height: 32,
+																"&:hover": {
+																	backgroundColor: "#fff",
+																},
+															}}
+														>
+															{wishlisted ? (
+																<FavoriteIcon
+																	sx={{
+																		color: "#E91E8C",
+																		fontSize: 18,
+																	}}
+																/>
+															) : (
+																<FavoriteBorderIcon
+																	sx={{
+																		color: "#E91E8C",
+																		fontSize: 18,
+																	}}
+																/>
+															)}
+														</IconButton>
+													</Box>
+													<CardContent
+														sx={{
+															flex: 1,
+															p: 3,
+															display: "flex",
+															flexDirection: "column",
+														}}
+													>
+														<Typography
+															variant="h6"
+															sx={{
+																fontFamily: '"Georgia", serif',
+																fontWeight: 700,
+																color: "#000",
+																fontSize: "1rem",
+																mb: 0.5,
+															}}
+														>
+															{product.name}
+														</Typography>
+														{product.shape && product.length && (
+															<Typography
+																sx={{
+																	color: "#999",
+																	fontSize: "0.78rem",
+																	mb: 0.8,
+																}}
+															>
+																{product.shape} ·{" "}
+																{product.length}
+															</Typography>
+														)}
+														<Typography
+															sx={{
+																color: "#666",
+																fontSize: "0.85rem",
+																lineHeight: 1.5,
+																mb: 2,
+																display: "-webkit-box",
+																WebkitLineClamp: 3,
+																WebkitBoxOrient: "vertical",
+																overflow: "hidden",
+															}}
+														>
+															{product.description}
+														</Typography>
+														<Box
+															sx={{
+																display: "flex",
+																alignItems: "center",
+																gap: 1,
+																flexWrap: "wrap",
+																mt: "auto",
+															}}
+														>
+															{hasDiscount(product) ? (
+																<>
+																	<Chip
+																		label={formatNaira(
+																			getEffectivePrice(
+																				product,
+																			),
+																		)}
+																		sx={{
+																			backgroundColor:
+																				"#2e7d32",
+																			color: "#fff",
+																			fontFamily:
+																				'"Georgia", serif',
+																			fontWeight: 700,
+																			fontSize: "0.9rem",
+																		}}
+																	/>
+																	<Typography
+																		component="span"
+																		sx={{
+																			textDecoration:
+																				"line-through",
+																			color: "#999",
+																			fontSize: "0.8rem",
+																			fontFamily:
+																				'"Georgia", serif',
+																		}}
+																	>
+																		{formatNaira(
+																			product.price,
+																		)}
+																	</Typography>
+																</>
+															) : (
+																<Chip
+																	label={formatNaira(
+																		product.price,
+																	)}
+																	sx={{
+																		backgroundColor:
+																			"#E91E8C",
+																		color: "#fff",
+																		fontFamily:
+																			'"Georgia", serif',
+																		fontWeight: 700,
+																		fontSize: "0.9rem",
+																	}}
+																/>
+															)}
+															{product.stock !== undefined &&
+																product.stock > 0 && (
+																	<Typography
+																		sx={{
+																			color:
+																				product.stock <= 2
+																					? "#E91E8C"
+																					: "#999",
+																			fontSize: "0.78rem",
+																			fontWeight:
+																				product.stock <= 2
+																					? 600
+																					: 400,
+																			fontStyle: "italic",
+																		}}
+																	>
+																		{product.stock} in stock
+																	</Typography>
+																)}
+														</Box>
 
-                            {/* Wishlist heart */}
-                            <IconButton
-                              onClick={(e) => handleWishlistToggle(e, product, category)}
-                              size="small"
-                              sx={{
-                                position: 'absolute',
-                                bottom: 8,
-                                right: 8,
-                                backgroundColor: 'rgba(255,255,255,0.9)',
-                                width: 32,
-                                height: 32,
-                                '&:hover': { backgroundColor: '#fff' },
-                              }}
-                            >
-                              {wishlisted ? (
-                                <FavoriteIcon sx={{ color: '#E91E8C', fontSize: 18 }} />
-                              ) : (
-                                <FavoriteBorderIcon sx={{ color: '#E91E8C', fontSize: 18 }} />
-                              )}
-                            </IconButton>
-                          </Box>
-                          <CardContent sx={{ flex: 1, p: 3, display: "flex", flexDirection: "column" }}>
-                            <Typography
-                              variant="h6"
-                              sx={{
-                                fontFamily: '"Georgia", serif',
-                                fontWeight: 700,
-                                color: "#000",
-                                fontSize: "1rem",
-                                mb: 0.5,
-                              }}
-                            >
-                              {product.name}
-                            </Typography>
-                            {product.shape && product.length && (
-                              <Typography
-                                sx={{
-                                  color: "#999",
-                                  fontSize: "0.78rem",
-                                  mb: 0.8,
-                                }}
-                              >
-                                {product.shape} · {product.length}
-                              </Typography>
-                            )}
-                            <Typography
-                              sx={{
-                                color: "#666",
-                                fontSize: "0.85rem",
-                                lineHeight: 1.5,
-                                mb: 2,
-                                display: "-webkit-box",
-                                WebkitLineClamp: 3,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                              }}
-                            >
-                              {product.description}
-                            </Typography>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                                flexWrap: "wrap",
-                                mt: "auto",
-                              }}
-                            >
-                              {hasDiscount(product) ? (
-                                <>
-                                  <Chip
-                                    label={formatNaira(getEffectivePrice(product))}
-                                    sx={{
-                                      backgroundColor: "#2e7d32",
-                                      color: "#fff",
-                                      fontFamily: '"Georgia", serif',
-                                      fontWeight: 700,
-                                      fontSize: "0.9rem",
-                                    }}
-                                  />
-                                  <Typography
-                                    component="span"
-                                    sx={{
-                                      textDecoration: 'line-through',
-                                      color: '#999',
-                                      fontSize: '0.8rem',
-                                      fontFamily: '"Georgia", serif',
-                                    }}
-                                  >
-                                    {formatNaira(product.price)}
-                                  </Typography>
-                                </>
-                              ) : (
-                                <Chip
-                                  label={formatNaira(product.price)}
-                                  sx={{
-                                    backgroundColor: "#E91E8C",
-                                    color: "#fff",
-                                    fontFamily: '"Georgia", serif',
-                                    fontWeight: 700,
-                                    fontSize: "0.9rem",
-                                  }}
-                                />
-                              )}
-                              {product.stock !== undefined && product.stock > 0 && (
-                                <Typography
-                                  sx={{
-                                    color:
-                                      product.stock <= 2
-                                        ? "#E91E8C"
-                                        : "#999",
-                                    fontSize: "0.78rem",
-                                    fontWeight:
-                                      product.stock <= 2
-                                        ? 600
-                                        : 400,
-                                    fontStyle: "italic",
-                                  }}
-                                >
-                                  {product.stock} in stock
-                                </Typography>
-                              )}
-                            </Box>
+														{!category.readyMade && (
+															<Button
+																size="small"
+																startIcon={
+																	<StraightenIcon
+																		sx={{ fontSize: 16 }}
+																	/>
+																}
+																onClick={(e) => {
+																	e.stopPropagation();
+																	setSizeGuideOpen(true);
+																}}
+																sx={{
+																	mt: 1.5,
+																	border:
+																		"1.5px solid #E91E8C",
+																	borderRadius: "20px",
+																	color: "#E91E8C",
+																	fontFamily:
+																		'"Georgia", serif',
+																	fontWeight: 600,
+																	fontSize: "0.75rem",
+																	textTransform: "none",
+																	px: 2,
+																	py: 0.5,
+																	"&:hover": {
+																		backgroundColor:
+																			"#E91E8C",
+																		color: "#fff",
+																	},
+																}}
+															>
+																Preset Size Guide
+															</Button>
+														)}
 
-                            {!category.readyMade && (
-                              <Button
-                                size="small"
-                                startIcon={<StraightenIcon sx={{ fontSize: 16 }} />}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSizeGuideOpen(true);
-                                }}
-                                sx={{
-                                  mt: 1.5,
-                                  border: '1.5px solid #E91E8C',
-                                  borderRadius: '20px',
-                                  color: '#E91E8C',
-                                  fontFamily: '"Georgia", serif',
-                                  fontWeight: 600,
-                                  fontSize: '0.75rem',
-                                  textTransform: 'none',
-                                  px: 2,
-                                  py: 0.5,
-                                  '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
-                                }}
-                              >
-                                Preset Size Guide
-                              </Button>
-                            )}
-
-                            {/* Notify Me button for out-of-stock — disabled until EmailJS plan upgrade
+														{/* Notify Me button for out-of-stock — disabled until EmailJS plan upgrade
                             {oos && (
                               <Button
                                 size="small"
@@ -976,57 +1170,68 @@ export default function ProductsMenuPage() {
                               </Button>
                             )}
                             */}
-                          </CardContent>
-                        </Card>
-                      </ScrollReveal>
-                    </Grid>
-                  );
-                })}
-              </Grid>
+													</CardContent>
+												</Card>
+											</ScrollReveal>
+										</Grid>
+									);
+								})}
+							</Grid>
 
-              <ScrollReveal direction="up" delay={0.2}>
-                <Box sx={{ textAlign: "center" }}>
-                  <Button
-                    sx={orderButtonSx}
-                    onClick={() => navigate("/order", { state: { categoryId: category.id } })}
-                  >
-                    Place Order
-                  </Button>
-                </Box>
-              </ScrollReveal>
-            </Container>
-          </Box>
-        </Box>
-      ))}
+							<ScrollReveal direction="up" delay={0.2}>
+								<Box sx={{ textAlign: "center" }}>
+									<Button
+										sx={orderButtonSx}
+										onClick={() =>
+											navigate("/order", {
+												state: { categoryId: category.id },
+											})
+										}
+									>
+										Place Order
+									</Button>
+								</Box>
+							</ScrollReveal>
+						</Container>
+					</Box>
+				</Box>
+			))}
 
-      {/* Preset Size Guide Modal */}
-      <PresetSizeGuide
-        open={sizeGuideOpen}
-        onClose={() => setSizeGuideOpen(false)}
-      />
+			{/* Preset Size Guide Modal */}
+			<PresetSizeGuide
+				open={sizeGuideOpen}
+				onClose={() => setSizeGuideOpen(false)}
+			/>
 
-      {/* Quick View Modal */}
-      <ProductQuickView
-        open={!!quickViewProduct}
-        onClose={() => { setQuickViewProduct(null); setQuickViewCategory(null); }}
-        product={quickViewProduct}
-        category={quickViewCategory}
-        onAddedToCart={() => setSnackOpen(true)}
-      />
+			{/* Quick View Modal */}
+			<ProductQuickView
+				open={!!quickViewProduct}
+				onClose={() => {
+					setQuickViewProduct(null);
+					setQuickViewCategory(null);
+				}}
+				product={quickViewProduct}
+				category={quickViewCategory}
+				onAddedToCart={() => setSnackOpen(true)}
+			/>
 
-      {/* Added to cart snackbar */}
-      <Snackbar
-        open={snackOpen}
-        autoHideDuration={3000}
-        onClose={() => setSnackOpen(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={() => setSnackOpen(false)} severity="success" sx={{ borderRadius: 2 }}>
-          Added to cart!
-        </Alert>
-      </Snackbar>
+			{/* Added to cart snackbar */}
+			<Snackbar
+				open={snackOpen}
+				autoHideDuration={3000}
+				onClose={() => setSnackOpen(false)}
+				anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+			>
+				<Alert
+					onClose={() => setSnackOpen(false)}
+					severity="success"
+					sx={{ borderRadius: 2 }}
+				>
+					Added to cart!
+				</Alert>
+			</Snackbar>
 
-      {/* Notify Me Dialog — disabled until EmailJS plan upgrade
+			{/* Notify Me Dialog — disabled until EmailJS plan upgrade
       <Dialog
         open={!!notifyDialog}
         onClose={() => setNotifyDialog(null)}
@@ -1129,6 +1334,6 @@ export default function ProductsMenuPage() {
         </DialogActions>
       </Dialog>
       */}
-    </Box>
+		</Box>
   );
 }

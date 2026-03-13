@@ -339,7 +339,7 @@ export default function CheckoutPage() {
   if (!hasDeliverables) return null;
 
   return (
-    <Box sx={{ pt: { xs: 10, md: 12 }, pb: 10, minHeight: '100vh', backgroundColor: '#FFF0F5' }}>
+    <Box sx={{ pt: { xs: 10, md: 12 }, pb: { xs: 16, md: 10 }, minHeight: '100vh', backgroundColor: '#FFF0F5' }}>
       <Container maxWidth="lg">
         {/* Header */}
         <Typography

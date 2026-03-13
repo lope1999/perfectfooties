@@ -37,7 +37,7 @@ export default function ServiceMenuPage() {
   };
 
   return (
-    <Box sx={{ pt: 12 }}>
+    <Box sx={{ pt: 12, pb: { xs: 12, md: 6 } }}>
       {/* Page Header */}
       <Box sx={{ textAlign: 'center', py: 6, backgroundColor: '#fff' }}>
         <ScrollReveal direction="up">

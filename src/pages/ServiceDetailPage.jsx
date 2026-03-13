@@ -328,7 +328,7 @@ export default function ServiceDetailPage() {
   };
 
   return (
-    <Box sx={{ pt: { xs: 7, md: 8 }, minHeight: '100vh', backgroundColor: '#FFF8FC' }}>
+    <Box sx={{ pt: { xs: 7, md: 8 }, pb: { xs: 12, md: 6 }, minHeight: '100vh', backgroundColor: '#FFF8FC' }}>
       {/* Back button */}
       <Container maxWidth="lg" sx={{ pt: 3 }}>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/services')} sx={{ fontFamily: ff, color: '#E91E8C', textTransform: 'none', mb: 2, '&:hover': { backgroundColor: '#FFF0F5' } }}>

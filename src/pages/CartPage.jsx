@@ -300,7 +300,7 @@ export default function CartPage() {
   };
 
   return (
-    <Box sx={{ pt: { xs: 10, md: 12 }, pb: 16, minHeight: '100vh', backgroundColor: '#FFF0F5' }}>
+    <Box sx={{ pt: { xs: 10, md: 12 }, pb: { xs: 22, md: 16 }, minHeight: '100vh', backgroundColor: '#FFF0F5' }}>
       <Container maxWidth="md">
         {/* Header */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
@@ -752,7 +752,7 @@ export default function CartPage() {
         <Box
           sx={{
             position: 'fixed',
-            bottom: 0,
+            bottom: { xs: '64px', md: 0 },
             left: 0,
             right: 0,
             zIndex: 1100,

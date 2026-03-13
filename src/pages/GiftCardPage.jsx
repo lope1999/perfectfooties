@@ -175,7 +175,7 @@ export default function GiftCardPage() {
   const isFormValid = formData.senderName.trim() && formData.giftedTo.trim() && formData.amount && Number(formData.amount) > 0;
 
   return (
-		<Box sx={{ pt: 12, pb: 8, minHeight: "100vh" }}>
+		<Box sx={{ pt: 12, pb: { xs: 14, md: 8 }, minHeight: "100vh" }}>
 			{/* Header */}
 			<Box sx={{ textAlign: "center", py: 6, backgroundColor: "#fff" }}>
 				<ScrollReveal direction="up">
