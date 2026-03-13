@@ -247,7 +247,27 @@ export default function ServiceDetailPage() {
         }
       }).catch(() => {});
     }
-    navigate('/');
+    navigate('/thank-you', {
+      state: {
+        type: 'service',
+        customerName,
+        serviceName: service.name,
+        appointmentDate: `${formatDate(appointmentDate)} at ${appointmentTime}`,
+        total: effectivePrice,
+        finalTotal: finalPrice,
+        referralDiscount,
+        loyaltyDiscount,
+        depositAmount,
+        items: [{
+          kind: 'service',
+          serviceName: service.name,
+          price: finalPrice,
+          date: `${formatDate(appointmentDate)} at ${appointmentTime}`,
+          nailShape,
+          nailLength,
+        }],
+      },
+    });
   };
 
   const payWithPaystack = () => {

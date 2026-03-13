@@ -371,7 +371,27 @@ export default function BookAppointmentPage() {
 				.catch(() => {});
 		}
 
-		navigate("/");
+		navigate("/thank-you", {
+			state: {
+				type: "service",
+				customerName,
+				serviceName: selected?.name || "",
+				appointmentDate: fullDate,
+				total: effectivePrice,
+				finalTotal: finalBookingPrice,
+				referralDiscount,
+				loyaltyDiscount,
+				depositAmount,
+				items: [{
+					kind: "service",
+					serviceName: selected?.name || "",
+					price: finalBookingPrice,
+					date: fullDate,
+					nailShape: formData.nailShape,
+					nailLength: formData.nailLength,
+				}],
+			},
+		});
 	};
 
 	const payWithPaystack = () => {

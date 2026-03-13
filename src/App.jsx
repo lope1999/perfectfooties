@@ -26,6 +26,7 @@ import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import AccountPage from './pages/AccountPage';
 import GalleryPage from './pages/GalleryPage';
+import ThankYouPage from './pages/ThankYouPage';
 
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 
@@ -70,6 +71,7 @@ function App() {
           <Route path="/gift-cards" element={<GiftCardPage />} />
           <Route path="/our-team" element={<OurTeamPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
+          <Route path="/thank-you" element={<ThankYouPage />} />
           <Route
             path="/admin"
             element={

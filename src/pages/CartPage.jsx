@@ -282,7 +282,21 @@ export default function CartPage() {
 
     setAppliedGiftCard(null);
     clearCart();
-    navigate('/');
+    navigate('/thank-you', {
+      state: {
+        type: services.length > 0 && products.length === 0 && pressOns.length === 0 ? 'service' : 'retail',
+        items: [
+          ...services.map((s) => ({ kind: 'service', serviceName: s.name, price: s.price, date: s.appointmentDate })),
+          ...products.map((p) => ({ kind: 'product', name: p.name, price: p.price * (p.quantity || 1), quantity: p.quantity })),
+          ...pressOns.map((p) => ({ kind: 'press-on', name: p.name, price: p.price * (p.quantity || 1), nailShape: p.nailShape, quantity: p.quantity })),
+        ],
+        total,
+        finalTotal,
+        giftCardDiscount,
+        referralDiscount,
+        loyaltyDiscount,
+      },
+    });
   };
 
   return (

@@ -318,7 +318,22 @@ export default function CheckoutPage() {
 
     setSubmitting(false);
     clearCart();
-    navigate('/');
+    navigate('/thank-you', {
+      state: {
+        type: orderType,
+        customerName: shipping.name,
+        items: [
+          ...services.map((s) => ({ kind: 'service', serviceName: s.name, price: s.price })),
+          ...products.map((p) => ({ kind: 'retail', name: p.name, price: p.price * (p.quantity || 1), quantity: p.quantity })),
+          ...pressOns.map((p) => ({ kind: 'press-on', name: p.name, price: p.price * (p.quantity || 1), nailShape: p.nailShape, quantity: p.quantity || 1 })),
+        ],
+        total: services.reduce((s, i) => s + i.price, 0) + products.reduce((s, i) => s + i.price * (i.quantity || 1), 0) + pressOns.reduce((s, i) => s + i.price * (i.quantity || 1), 0),
+        finalTotal,
+        giftCardDiscount,
+        referralDiscount,
+        loyaltyDiscount,
+      },
+    });
   };
 
   if (!hasDeliverables) return null;
