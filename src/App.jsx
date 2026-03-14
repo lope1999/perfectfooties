@@ -27,6 +27,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import AccountPage from './pages/AccountPage';
 import GalleryPage from './pages/GalleryPage';
 import ThankYouPage from './pages/ThankYouPage';
+import PressOnDetailPage from './pages/PressOnDetailPage';
 
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 
@@ -58,6 +59,7 @@ function App() {
           <Route path="/services" element={<ServiceMenuPage />} />
           <Route path="/services/:serviceId" element={<ServiceDetailPage />} />
           <Route path="/products" element={<ProductsMenuPage />} />
+          <Route path="/products/:categoryId/:productId" element={<PressOnDetailPage />} />
           <Route path="/shop" element={<NailShopPage />} />
           <Route path="/book" element={<BookAppointmentPage />} />
           <Route path="/reschedule" element={<RescheduleAppointmentPage />} />

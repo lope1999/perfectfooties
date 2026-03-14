@@ -1,46 +1,50 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Box,
-  Typography,
-  Container,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Button,
-  TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
-} from '@mui/material';
+	Box,
+	Typography,
+	Container,
+	FormControl,
+	InputLabel,
+	Select,
+	MenuItem,
+	Button,
+	TextField,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogActions,
+	CircularProgress,
+	Chip,
+} from "@mui/material";
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import EventNoteIcon from "@mui/icons-material/EventNote";
 import { serviceCategories } from '../data/services';
 import ScrollReveal from '../components/ScrollReveal';
 import { useAuth } from '../context/AuthContext';
 import { fetchOrders, updateOrderStatus } from '../lib/orderService';
 import { serverTimestamp } from 'firebase/firestore';
 import CalendarWidget from '../components/CalendarWidget';
-import { fetchBookedSlots } from '../lib/bookedSlotsService';
+import { fetchBookedSlots, saveBookedSlot } from "../lib/bookedSlotsService";
+
+const ff = '"Georgia", serif';
 
 const confirmButtonSx = {
-  border: '2px solid #E91E8C',
-  borderRadius: '30px',
-  color: '#000',
-  backgroundColor: 'transparent',
-  px: 5,
-  py: 1.5,
-  fontSize: '1rem',
-  fontFamily: '"Georgia", serif',
-  fontWeight: 600,
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    backgroundColor: '#E91E8C',
-    color: '#fff',
-    borderColor: '#E91E8C',
-  },
+	border: "2px solid #E91E8C",
+	borderRadius: "30px",
+	color: "#000",
+	backgroundColor: "transparent",
+	px: 5,
+	py: 1.5,
+	fontSize: "1rem",
+	fontFamily: ff,
+	fontWeight: 600,
+	transition: "all 0.3s ease",
+	"&:hover": {
+		backgroundColor: "#E91E8C",
+		color: "#fff",
+		borderColor: "#E91E8C",
+	},
 };
 
 const textFieldSx = {
@@ -52,156 +56,193 @@ const textFieldSx = {
   },
 };
 
-const RESCHEDULABLE_STATUSES = new Set(['pending', 'confirmed']);
+function formatDate(dateString) {
+	if (!dateString) return "";
+	const date = new Date(dateString);
+	return date.toLocaleDateString("en-GB", {
+		weekday: "long",
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+	});
+}
 
-export default function () {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user } = useAuth();
-  const [customerName, setCustomerName] = useState('');
-  const [selectedService, setSelectedService] = useState('');
-  const [reason, setReason] = useState('');
-  const [preferredDate, setPreferredDate] = useState('');
-  const [preferredTime, setPreferredTime] = useState('');
-  const [bookedSlots, setBookedSlots] = useState([]);
-  const [slotsLoading, setSlotsLoading] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+function getMinDate() {
+	const tomorrow = new Date();
+	tomorrow.setDate(tomorrow.getDate() + 1);
+	return tomorrow.toISOString().split("T")[0];
+}
 
-  // Appointment selection state (logged-in users)
-  const [appointments, setAppointments] = useState([]);
-  const [loadingAppointments, setLoadingAppointments] = useState(false);
-  const [selectedAppointmentId, setSelectedAppointmentId] = useState('');
+export default function RescheduleAppointmentPage() {
+	const navigate = useNavigate();
+	const location = useLocation();
+	const { user } = useAuth();
 
-  const allServices = serviceCategories.flatMap((cat) =>
-    cat.services.map((s) => ({ ...s, category: cat.title }))
-  );
+	// Appointment selection
+	const [appointments, setAppointments] = useState([]);
+	const [loadingAppointments, setLoadingAppointments] = useState(false);
+	const [selectedAppointmentId, setSelectedAppointmentId] = useState("");
 
-  // Pre-fill name from auth and fetch reschedulable appointments
-  useEffect(() => {
-    if (!user) return;
-    if (user.displayName && !customerName) setCustomerName(user.displayName);
-    setLoadingAppointments(true);
-    fetchOrders(user.uid, 'service')
-      .then((orders) => {
-        const reschedulable = orders.filter((o) => RESCHEDULABLE_STATUSES.has(o.status));
-        setAppointments(reschedulable);
-      })
-      .catch(() => {})
-      .finally(() => setLoadingAppointments(false));
-  }, [user]);
+	// Form fields
+	const [customerName, setCustomerName] = useState("");
+	const [selectedService, setSelectedService] = useState("");
+	const [reason, setReason] = useState("");
 
-  // Pre-select appointment passed via route state (from account page)
-  useEffect(() => {
-    if (location.state?.orderId && appointments.length > 0 && !selectedAppointmentId) {
-      setSelectedAppointmentId(location.state.orderId);
-    }
-  }, [location.state, appointments]);
+	// New date/time
+	const [preferredDate, setPreferredDate] = useState("");
+	const [preferredTime, setPreferredTime] = useState("");
+	const [calendarOpen, setCalendarOpen] = useState(false);
+	const [bookedSlots, setBookedSlots] = useState([]);
+	const [slotsLoading, setSlotsLoading] = useState(false);
 
-  // Pre-fill form when an appointment is selected
-  useEffect(() => {
-    if (!selectedAppointmentId) return;
-    const appt = appointments.find((a) => a.id === selectedAppointmentId);
-    if (!appt) return;
-    setCustomerName(appt.customerName || '');
-    const serviceItem = appt.items?.[0];
-    if (serviceItem) {
-      const match = allServices.find((s) => s.name === serviceItem.serviceName);
-      if (match) setSelectedService(match.id);
-    }
-  }, [selectedAppointmentId]);
+	// Submit state
+	const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+	const [submitting, setSubmitting] = useState(false);
 
-  const selectedAppointment = appointments.find((a) => a.id === selectedAppointmentId);
+	const allServices = serviceCategories.flatMap((cat) =>
+		cat.services.map((s) => ({ ...s, category: cat.title })),
+	);
 
-  // Load booked slots whenever the preferred date changes
-  useEffect(() => {
-    if (!preferredDate) { setBookedSlots([]); return; }
-    setSlotsLoading(true);
-    fetchBookedSlots(formatDate(preferredDate))
-      .then((slots) => {
-        setBookedSlots(slots);
-        setPreferredTime((prev) => (slots.includes(prev) ? '' : prev));
-      })
-      .catch(() => setBookedSlots([]))
-      .finally(() => setSlotsLoading(false));
-  }, [preferredDate]);
+	// Fetch confirmed appointments only
+	useEffect(() => {
+		if (!user) return;
+		if (user.displayName && !customerName) setCustomerName(user.displayName);
+		setLoadingAppointments(true);
+		fetchOrders(user.uid)
+			.then((orders) => {
+				const confirmed = orders.filter(
+					(o) => o.type === "service" && o.status === "confirmed",
+				);
+				setAppointments(confirmed);
+			})
+			.catch(() => {})
+			.finally(() => setLoadingAppointments(false));
+	}, [user]);
 
-  const getMinDate = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
-  };
+	// Pre-select appointment passed from account page
+	useEffect(() => {
+		if (
+			location.state?.orderId &&
+			appointments.length > 0 &&
+			!selectedAppointmentId
+		) {
+			setSelectedAppointmentId(location.state.orderId);
+		}
+	}, [location.state, appointments]);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-  };
+	// Auto-populate form when an appointment is selected
+	useEffect(() => {
+		if (!selectedAppointmentId) return;
+		const appt = appointments.find((a) => a.id === selectedAppointmentId);
+		if (!appt) return;
+		if (appt.customerName) setCustomerName(appt.customerName);
+		const serviceItem = appt.items?.[0];
+		if (serviceItem?.serviceName) {
+			const match = allServices.find(
+				(s) => s.name === serviceItem.serviceName,
+			);
+			if (match) setSelectedService(match.id);
+		}
+	}, [selectedAppointmentId, appointments]);
 
-  const handleConfirm = () => {
-    setModalOpen(true);
-  };
+	const selectedAppointment = appointments.find(
+		(a) => a.id === selectedAppointmentId,
+	);
 
-  const handleComplete = async () => {
-    const selected = allServices.find((s) => s.id === selectedService);
-    const newDate = `${formatDate(preferredDate)} at ${preferredTime}`;
-    const message = `Hi! I'd like to reschedule my appointment.\n\nName: ${customerName}\nOriginal Service: ${selected?.name || 'N/A'}\nReason for Rescheduling: ${reason}\nPreferred New Date: ${newDate}\n\nPlease confirm the new slot. Thank you!`;
-    const encoded = encodeURIComponent(message);
+	// Load booked slots when preferred date changes
+	useEffect(() => {
+		if (!preferredDate) {
+			setBookedSlots([]);
+			return;
+		}
+		setSlotsLoading(true);
+		fetchBookedSlots(formatDate(preferredDate))
+			.then((slots) => {
+				setBookedSlots(slots);
+				setPreferredTime((prev) => (slots.includes(prev) ? "" : prev));
+			})
+			.catch(() => setBookedSlots([]))
+			.finally(() => setSlotsLoading(false));
+	}, [preferredDate]);
 
-    // Update the existing appointment in Firebase
-    if (user && selectedAppointmentId) {
-      setSubmitting(true);
-      try {
-        const updatedItems = (selectedAppointment?.items || [{
-          kind: 'service',
-          serviceName: selected?.name || '',
-          price: selected?.price || 0,
-        }]).map((item) => ({ ...item, date: newDate }));
+	const handleComplete = async () => {
+		const selected = allServices.find((s) => s.id === selectedService);
+		const newDate = `${formatDate(preferredDate)} at ${preferredTime}`;
+		const message = `Hi! I'd like to reschedule my appointment.\n\nName: ${customerName}\nOriginal Service: ${selected?.name || "N/A"}\nReason for Rescheduling: ${reason}\nPreferred New Date: ${newDate}\n\nPlease confirm the new slot. Thank you!`;
 
-        await updateOrderStatus(user.uid, selectedAppointmentId, 'rescheduled', {
-          appointmentDate: newDate,
-          previousDate: selectedAppointment?.appointmentDate || '',
-          rescheduleReason: reason.trim(),
-          rescheduledAt: serverTimestamp(),
-          items: updatedItems,
-        });
-      } catch {
-        // Still proceed to WhatsApp even if Firebase save fails
-      } finally {
-        setSubmitting(false);
-      }
-    }
+		if (user && selectedAppointmentId) {
+			setSubmitting(true);
+			try {
+				const updatedItems = (
+					selectedAppointment?.items || [
+						{
+							kind: "service",
+							serviceName: selected?.name || "",
+							price: selected?.price || 0,
+						},
+					]
+				).map((item) => ({ ...item, date: newDate }));
 
-    setModalOpen(false);
-    window.open(`https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`, '_blank');
-    navigate('/thank-you', {
-      state: {
-        type: 'service',
-        customerName,
-        serviceName: selected?.name || '',
-        appointmentDate: newDate,
-        isReschedule: true,
-        items: [{
-          kind: 'service',
-          serviceName: selected?.name || '',
-          price: selected?.price || 0,
-          date: newDate,
-        }],
-        total: selected?.price || 0,
-        finalTotal: selected?.price || 0,
-      },
-    });
-  };
+				await updateOrderStatus(
+					user.uid,
+					selectedAppointmentId,
+					"rescheduled",
+					{
+						appointmentDate: newDate,
+						previousDate: selectedAppointment?.appointmentDate || "",
+						rescheduleReason: reason.trim(),
+						rescheduledAt: serverTimestamp(),
+						items: updatedItems,
+					},
+				);
+				// Book the new slot so it shows as unavailable on the calendar
+				saveBookedSlot({
+					date: formatDate(preferredDate),
+					time: preferredTime,
+					orderId: selectedAppointmentId,
+					uid: user.uid,
+				}).catch(() => {});
+			} catch {
+				// proceed to WhatsApp even if Firestore update fails
+			} finally {
+				setSubmitting(false);
+			}
+		}
 
-  const isFormValid =
-    customerName.trim() && selectedService && reason.trim() && preferredDate && preferredTime;
+		setConfirmModalOpen(false);
+		window.open(
+			`https://api.whatsapp.com/send?phone=2349053714197&text=${encodeURIComponent(message)}`,
+			"_blank",
+		);
+		navigate("/thank-you", {
+			state: {
+				type: "service",
+				customerName,
+				serviceName: selected?.name || "",
+				appointmentDate: newDate,
+				isReschedule: true,
+				items: [
+					{
+						kind: "service",
+						serviceName: selected?.name || "",
+						price: selected?.price || 0,
+						date: newDate,
+					},
+				],
+				total: selected?.price || 0,
+				finalTotal: selected?.price || 0,
+			},
+		});
+	};
 
-  return (
+	const isFormValid =
+		customerName.trim() &&
+		selectedService &&
+		reason.trim() &&
+		preferredDate &&
+		preferredTime;
+
+	return (
 		<Box sx={{ pt: { xs: 7, md: 8 } }}>
 			<Box sx={{ py: 8, backgroundColor: "#FFF0F5" }}>
 				<Container maxWidth="md">
@@ -211,7 +252,7 @@ export default function () {
 							<Typography
 								variant="h3"
 								sx={{
-									fontFamily: '"Georgia", serif',
+									fontFamily: ff,
 									fontWeight: 700,
 									color: "#000",
 									mb: 2,
@@ -228,9 +269,9 @@ export default function () {
 									mx: "auto",
 								}}
 							>
-								Need to change your appointment? Fill in the details
-								below and we will connect you on WhatsApp to confirm a
-								new time slot.
+								Need to change your appointment? Select your booking
+								below and choose a new date — we'll confirm via
+								WhatsApp.
 							</Typography>
 							<Box
 								sx={{
@@ -261,13 +302,13 @@ export default function () {
 						</Box>
 					</ScrollReveal>
 
-					{/* Appointment Selector (logged-in users only) */}
+					{/* Appointment Selector — confirmed only */}
 					{user && (
 						<ScrollReveal direction="up">
-							<Box sx={{ mb: 3 }}>
+							<Box sx={{ mb: 4 }}>
 								<Typography
 									sx={{
-										fontFamily: '"Georgia", serif',
+										fontFamily: ff,
 										fontWeight: 700,
 										color: "#4A0E4E",
 										mb: 1,
@@ -276,11 +317,24 @@ export default function () {
 								>
 									Select Appointment to Reschedule
 								</Typography>
+
 								{loadingAppointments ? (
-									<Box sx={{ display: "flex", alignItems: "center", gap: 1, py: 1 }}>
-										<CircularProgress size={20} sx={{ color: "#E91E8C" }} />
-										<Typography sx={{ fontSize: "0.9rem", color: "#555" }}>
-											Loading your appointments...
+									<Box
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											gap: 1,
+											py: 1,
+										}}
+									>
+										<CircularProgress
+											size={20}
+											sx={{ color: "#E91E8C" }}
+										/>
+										<Typography
+											sx={{ fontSize: "0.9rem", color: "#555" }}
+										>
+											Loading your appointments…
 										</Typography>
 									</Box>
 								) : appointments.length > 0 ? (
@@ -290,46 +344,157 @@ export default function () {
 											<Select
 												value={selectedAppointmentId}
 												label="Choose an appointment"
-												onChange={(e) => setSelectedAppointmentId(e.target.value)}
+												onChange={(e) => {
+													setSelectedAppointmentId(e.target.value);
+													setPreferredDate("");
+													setPreferredTime("");
+												}}
 												sx={{ borderRadius: 2 }}
 											>
 												{appointments.map((appt) => {
-													const serviceName = appt.items?.[0]?.serviceName || 'Service';
-													const date = appt.appointmentDate || 'No date';
+													const serviceName =
+														appt.items?.[0]?.serviceName ||
+														"Service";
+													const date =
+														appt.appointmentDate || "No date set";
 													return (
-														<MenuItem key={appt.id} value={appt.id}>
+														<MenuItem
+															key={appt.id}
+															value={appt.id}
+														>
 															{serviceName} — {date}
 														</MenuItem>
 													);
 												})}
 											</Select>
 										</FormControl>
+
+										{/* Selected appointment summary card */}
 										{selectedAppointment && (
 											<Box
 												sx={{
-													mt: 1.5,
-													p: 1.5,
+													mt: 2,
+													p: 2,
 													borderRadius: 2,
-													backgroundColor: "#FCE4EC",
-													border: "1px solid #F0C0D0",
+													backgroundColor: "#fff",
+													border: "1.5px solid #E91E8C",
+													display: "flex",
+													flexDirection: "column",
+													gap: 0.8,
 												}}
 											>
-												<Typography sx={{ fontSize: "0.85rem", color: "#4A0E4E", fontWeight: 600 }}>
-													Original Date: {selectedAppointment.appointmentDate || 'Not set'}
-												</Typography>
+												<Box
+													sx={{
+														display: "flex",
+														alignItems: "center",
+														justifyContent: "space-between",
+														flexWrap: "wrap",
+														gap: 1,
+													}}
+												>
+													<Typography
+														sx={{
+															fontFamily: ff,
+															fontWeight: 700,
+															color: "#4A0E4E",
+															fontSize: "0.95rem",
+														}}
+													>
+														{selectedAppointment.items?.[0]
+															?.serviceName || "Service"}
+													</Typography>
+													<Chip
+														label="Confirmed"
+														size="small"
+														sx={{
+															backgroundColor: "#e8f5e9",
+															color: "#2e7d32",
+															fontWeight: 700,
+															fontSize: "0.72rem",
+														}}
+													/>
+												</Box>
+												<Box
+													sx={{
+														display: "flex",
+														alignItems: "center",
+														gap: 0.8,
+													}}
+												>
+													<EventNoteIcon
+														sx={{
+															fontSize: 15,
+															color: "#E91E8C",
+														}}
+													/>
+													<Typography
+														sx={{
+															fontSize: "0.85rem",
+															color: "#555",
+														}}
+													>
+														<strong>Original date:</strong>{" "}
+														{selectedAppointment.appointmentDate ||
+															"Not set"}
+													</Typography>
+												</Box>
+												{selectedAppointment.customerName && (
+													<Typography
+														sx={{
+															fontSize: "0.82rem",
+															color: "#777",
+														}}
+													>
+														Booked for:{" "}
+														{selectedAppointment.customerName}
+													</Typography>
+												)}
+												{selectedAppointment.items?.[0]
+													?.nailShape && (
+													<Typography
+														sx={{
+															fontSize: "0.82rem",
+															color: "#777",
+														}}
+													>
+														Shape:{" "}
+														{
+															selectedAppointment.items[0]
+																.nailShape
+														}
+														{selectedAppointment.items[0]
+															.nailLength
+															? ` · Length: ${selectedAppointment.items[0].nailLength}`
+															: ""}
+													</Typography>
+												)}
 											</Box>
 										)}
 									</>
 								) : (
-									<Typography sx={{ fontSize: "0.9rem", color: "#888", fontStyle: "italic" }}>
-										No reschedulable appointments found. You can still fill in the form manually below.
-									</Typography>
+									<Box
+										sx={{
+											p: 2,
+											borderRadius: 2,
+											backgroundColor: "#FFF8E1",
+											border: "1px solid #FFD54F",
+										}}
+									>
+										<Typography
+											sx={{ fontSize: "0.9rem", color: "#5D4037" }}
+										>
+											No confirmed appointments found. Only confirmed
+											bookings can be rescheduled. If you have a
+											pending booking, it will appear here once
+											confirmed.
+										</Typography>
+									</Box>
 								)}
 							</Box>
 						</ScrollReveal>
 					)}
 
-					{/* Sticky Name Field */}
+					{/* Your Name */}
 					<Box
 						sx={{
 							position: "sticky",
@@ -343,7 +508,7 @@ export default function () {
 					>
 						<Typography
 							sx={{
-								fontFamily: '"Georgia", serif',
+								fontFamily: ff,
 								fontWeight: 700,
 								color: "#4A0E4E",
 								mb: 1,
@@ -362,12 +527,12 @@ export default function () {
 						/>
 					</Box>
 
-					{/* Original Service Dropdown */}
+					{/* Original Service */}
 					<ScrollReveal direction="up" delay={0.1}>
 						<Box sx={{ mb: 3 }}>
 							<Typography
 								sx={{
-									fontFamily: '"Georgia", serif',
+									fontFamily: ff,
 									fontWeight: 700,
 									color: "#4A0E4E",
 									mb: 1,
@@ -407,12 +572,12 @@ export default function () {
 						</Box>
 					</ScrollReveal>
 
-					{/* Reason for Rescheduling */}
+					{/* Reason */}
 					<ScrollReveal direction="up" delay={0.2}>
 						<Box sx={{ mb: 3 }}>
 							<Typography
 								sx={{
-									fontFamily: '"Georgia", serif',
+									fontFamily: ff,
 									fontWeight: 700,
 									color: "#4A0E4E",
 									mb: 1,
@@ -434,12 +599,12 @@ export default function () {
 						</Box>
 					</ScrollReveal>
 
-					{/* Preferred New Date & Time */}
+					{/* Preferred New Date & Time — click to open calendar modal */}
 					<ScrollReveal direction="up" delay={0.3}>
 						<Box sx={{ mb: 3 }}>
 							<Typography
 								sx={{
-									fontFamily: '"Georgia", serif',
+									fontFamily: ff,
 									fontWeight: 700,
 									color: "#4A0E4E",
 									mb: 1,
@@ -448,21 +613,85 @@ export default function () {
 							>
 								Preferred New Date &amp; Time
 							</Typography>
-							<Box sx={{ border: '1px solid #F0C0D0', borderRadius: 2, p: 2, backgroundColor: '#fff' }}>
-								<CalendarWidget
-									selectedDate={preferredDate}
-									onDateChange={setPreferredDate}
-									selectedTime={preferredTime}
-									onTimeChange={setPreferredTime}
-									minDate={getMinDate()}
-									bookedSlots={bookedSlots}
-									slotsLoading={slotsLoading}
+							<Box
+								onClick={() => setCalendarOpen(true)}
+								sx={{
+									display: "flex",
+									alignItems: "center",
+									gap: 1.5,
+									px: 2,
+									py: 1.5,
+									borderRadius: 2,
+									border:
+										preferredDate && preferredTime
+											? "2px solid #E91E8C"
+											: "1.5px solid #F0C0D0",
+									backgroundColor: "#fff",
+									cursor: "pointer",
+									transition: "all 0.2s",
+									"&:hover": {
+										borderColor: "#E91E8C",
+										backgroundColor: "#FFF8FC",
+									},
+								}}
+							>
+								<EventNoteIcon
+									sx={{
+										color: "#E91E8C",
+										fontSize: 20,
+										flexShrink: 0,
+									}}
 								/>
+								<Typography
+									sx={{
+										flex: 1,
+										fontSize: "0.92rem",
+										color:
+											preferredDate && preferredTime
+												? "#222"
+												: "#aaa",
+										fontFamily: ff,
+									}}
+								>
+									{preferredDate && preferredTime
+										? `${formatDate(preferredDate)} · ${preferredTime}`
+										: "Tap to select a new date & time"}
+								</Typography>
+								{(preferredDate || preferredTime) && (
+									<Typography
+										onClick={(e) => {
+											e.stopPropagation();
+											setPreferredDate("");
+											setPreferredTime("");
+										}}
+										sx={{
+											fontSize: "0.72rem",
+											color: "#E91E8C",
+											cursor: "pointer",
+											whiteSpace: "nowrap",
+											"&:hover": { textDecoration: "underline" },
+										}}
+									>
+										Clear
+									</Typography>
+								)}
 							</Box>
+							<Typography
+								sx={{
+									fontSize: "0.72rem",
+									color: "#7a0064",
+									mt: 0.5,
+									display: "flex",
+									alignItems: "center",
+									gap: 0.4,
+								}}
+							>
+								<EventNoteIcon sx={{ fontSize: 11 }} /> Weekends only ·
+								12 PM – 5 PM · At least 12 hrs in advance
+							</Typography>
 						</Box>
 					</ScrollReveal>
 
-					{/* Spacer for sticky button */}
 					<Box sx={{ height: { xs: 130, md: 80 } }} />
 				</Container>
 			</Box>
@@ -483,21 +712,91 @@ export default function () {
 				}}
 			>
 				<Button
-					sx={{
-						...confirmButtonSx,
-						opacity: isFormValid ? 1 : 0.5,
-					}}
-					onClick={handleConfirm}
+					sx={{ ...confirmButtonSx, opacity: isFormValid ? 1 : 0.5 }}
+					onClick={() => setConfirmModalOpen(true)}
 					disabled={!isFormValid}
 				>
 					Confirm Reschedule
 				</Button>
 			</Box>
 
-			{/* Success Modal */}
+			{/* Calendar Dialog */}
 			<Dialog
-				open={modalOpen}
-				onClose={() => setModalOpen(false)}
+				open={calendarOpen}
+				onClose={() => setCalendarOpen(false)}
+				maxWidth="xs"
+				fullWidth
+				PaperProps={{ sx: { borderRadius: 3 } }}
+			>
+				<DialogTitle
+					sx={{
+						fontFamily: ff,
+						fontWeight: 700,
+						pb: 0,
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "space-between",
+					}}
+				>
+					Select New Date &amp; Time
+					<Box
+						onClick={() => setCalendarOpen(false)}
+						sx={{
+							cursor: "pointer",
+							color: "#aaa",
+							fontSize: "1.3rem",
+							lineHeight: 1,
+							"&:hover": { color: "#555" },
+						}}
+					>
+						✕
+					</Box>
+				</DialogTitle>
+				<DialogContent sx={{ pt: "12px !important" }}>
+					<CalendarWidget
+						selectedDate={preferredDate}
+						onDateChange={setPreferredDate}
+						selectedTime={preferredTime}
+						onTimeChange={setPreferredTime}
+						minDate={getMinDate()}
+						bookedSlots={bookedSlots}
+						slotsLoading={slotsLoading}
+					/>
+				</DialogContent>
+				<DialogActions sx={{ px: 3, pb: 3 }}>
+					<Button
+						onClick={() => setCalendarOpen(false)}
+						sx={{ color: "#777", fontFamily: ff, textTransform: "none" }}
+					>
+						Cancel
+					</Button>
+					<Button
+						onClick={() => setCalendarOpen(false)}
+						disabled={!preferredDate || !preferredTime}
+						sx={{
+							backgroundColor: "#E91E8C",
+							color: "#fff",
+							borderRadius: "20px",
+							px: 3,
+							fontFamily: ff,
+							fontWeight: 600,
+							textTransform: "none",
+							"&:hover": { backgroundColor: "#C2185B" },
+							"&.Mui-disabled": {
+								backgroundColor: "#F0C0D0",
+								color: "#fff",
+							},
+						}}
+					>
+						Confirm
+					</Button>
+				</DialogActions>
+			</Dialog>
+
+			{/* Confirm Reschedule Modal */}
+			<Dialog
+				open={confirmModalOpen}
+				onClose={() => setConfirmModalOpen(false)}
 				PaperProps={{
 					sx: {
 						borderRadius: 4,
@@ -513,19 +812,65 @@ export default function () {
 					/>
 					<Typography
 						variant="h5"
-						sx={{ fontFamily: '"Georgia", serif', fontWeight: 700 }}
+						sx={{ fontFamily: ff, fontWeight: 700 }}
 					>
-						Reschedule Request Sent!
+						Confirm Reschedule?
 					</Typography>
 				</DialogTitle>
 				<DialogContent>
-					<Typography sx={{ color: "#555", mt: 1, lineHeight: 1.7 }}>
-						Your reschedule request is being processed. We will navigate
-						you to WhatsApp to confirm the new appointment date with your
-						stylist.
+					<Box
+						sx={{
+							mt: 1,
+							p: 1.5,
+							borderRadius: 2,
+							backgroundColor: "#FFF0F5",
+							border: "1px solid #F0C0D0",
+							textAlign: "left",
+						}}
+					>
+						<Typography
+							sx={{
+								fontSize: "0.85rem",
+								color: "#4A0E4E",
+								fontWeight: 600,
+								mb: 0.5,
+							}}
+						>
+							{allServices.find((s) => s.id === selectedService)?.name ||
+								""}
+						</Typography>
+						<Typography sx={{ fontSize: "0.82rem", color: "#555" }}>
+							New date:{" "}
+							{preferredDate && preferredTime
+								? `${formatDate(preferredDate)} at ${preferredTime}`
+								: ""}
+						</Typography>
+						{selectedAppointment?.appointmentDate && (
+							<Typography
+								sx={{ fontSize: "0.78rem", color: "#999", mt: 0.3 }}
+							>
+								Original: {selectedAppointment.appointmentDate}
+							</Typography>
+						)}
+					</Box>
+					<Typography
+						sx={{
+							color: "#555",
+							mt: 2,
+							lineHeight: 1.7,
+							fontSize: "0.9rem",
+						}}
+					>
+						We'll open WhatsApp so your stylist can confirm the new slot.
 					</Typography>
 				</DialogContent>
-				<DialogActions sx={{ justifyContent: "center", pb: 3 }}>
+				<DialogActions sx={{ justifyContent: "center", pb: 3, gap: 1 }}>
+					<Button
+						onClick={() => setConfirmModalOpen(false)}
+						sx={{ fontFamily: ff, color: "#777", textTransform: "none" }}
+					>
+						Go Back
+					</Button>
 					<Button
 						onClick={handleComplete}
 						disabled={submitting}
@@ -535,18 +880,20 @@ export default function () {
 							borderRadius: "30px",
 							px: 4,
 							py: 1.2,
-							fontFamily: '"Georgia", serif',
+							fontFamily: ff,
 							fontWeight: 600,
 							fontSize: "0.95rem",
-							"&:hover": {
-								backgroundColor: "#C2185B",
-							},
+							"&:hover": { backgroundColor: "#C2185B" },
 						}}
 					>
-						{submitting ? <CircularProgress size={22} sx={{ color: "#fff" }} /> : 'Complete'}
+						{submitting ? (
+							<CircularProgress size={22} sx={{ color: "#fff" }} />
+						) : (
+							"Proceed to WhatsApp"
+						)}
 					</Button>
 				</DialogActions>
 			</Dialog>
 		</Box>
-  );
+	);
 }

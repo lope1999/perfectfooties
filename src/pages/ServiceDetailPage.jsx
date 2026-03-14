@@ -305,7 +305,7 @@ export default function ServiceDetailPage() {
       nailLength,
       customerName: customerName.trim(),
     });
-    navigate('/cart');
+    navigate('/services');
   };
 
   const handleJoinWaitlist = async () => {

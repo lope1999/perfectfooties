@@ -2117,13 +2117,15 @@ function OrderCard({ order, rated, onRate, onReschedule, onCancel }) {
 			)}
 		{order.type === 'service' && (order.status === 'pending' || order.status === 'confirmed') && (
 			<Box sx={{ mt: 1.5, display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-				<Button
-					size="small"
-					onClick={onReschedule}
-					sx={{ border: '1.5px solid #4A0E4E', borderRadius: '20px', color: '#4A0E4E', px: 2, fontFamily: ff, fontWeight: 600, fontSize: '0.78rem', textTransform: 'none', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' } }}
-				>
-					Reschedule
-				</Button>
+				{order.status === 'confirmed' && (
+					<Button
+						size="small"
+						onClick={onReschedule}
+						sx={{ border: '1.5px solid #4A0E4E', borderRadius: '20px', color: '#4A0E4E', px: 2, fontFamily: ff, fontWeight: 600, fontSize: '0.78rem', textTransform: 'none', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' } }}
+					>
+						Reschedule
+					</Button>
+				)}
 				<Button
 					size="small"
 					onClick={onCancel}

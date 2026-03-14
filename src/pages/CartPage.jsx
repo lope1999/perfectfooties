@@ -10,6 +10,10 @@ import {
   CircularProgress,
   Collapse,
   TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AddIcon from '@mui/icons-material/Add';
@@ -52,6 +56,7 @@ export default function CartPage() {
   const [loyaltyBalance, setLoyaltyBalance] = useState(0);
   const [loyaltyUnits, setLoyaltyUnits] = useState(0);
   const [pendingReward] = useState(() => getPendingLoyaltyReward());
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const {
     cart,
     removeService,
@@ -70,6 +75,8 @@ export default function CartPage() {
   const referralDiscount = referralValid ? Math.min(REFERRAL_DISCOUNT, total) : 0;
   const loyaltyDiscount = Math.min(loyaltyUnits * REDEMPTION_VALUE, Math.max(0, total - giftCardDiscount - referralDiscount));
   const finalTotal = Math.max(0, total - giftCardDiscount - referralDiscount - loyaltyDiscount);
+  const serviceSubtotal = services.reduce((sum, s) => sum + s.price, 0);
+  const depositAmount = services.length > 0 ? Math.round(serviceSubtotal * 0.5) : 0;
 
   useEffect(() => {
     if (!user) return;
@@ -108,25 +115,74 @@ export default function CartPage() {
       return;
     }
 
-    // Services-only: proceed directly to WhatsApp
+    // Services-only: show payment modal
+    setPaymentModalOpen(true);
+    return;
+  };
+
+  const handleCompleteServiceOrder = async (paymentReference = '') => {
+    setPaymentModalOpen(false);
     setCheckoutLoading(true);
 
-    try {
-      // Build stock decrement items for retail products and ready-made press-ons
-      const stockItems = [];
+    // Build WhatsApp message synchronously BEFORE any awaits — browsers block
+    // window.open() when called after async operations break the user-gesture chain
+    const lines = [];
 
+    lines.push('--- SERVICE APPOINTMENTS ---');
+    services.forEach((s, i) => {
+      let line = `${i + 1}. ${s.name} \u2014 ${formatNaira(s.price)}`;
+      if (s.customerName) line += `\n   Name: ${s.customerName}`;
+      if (s.isHomeService) {
+        line += `\n   Type: Home Service`;
+        if (s.homeLocation) line += `\n   Location: ${s.homeLocation}`;
+        if (s.homeAddress) line += `\n   Address: ${s.homeAddress}`;
+        if (s.hasTableArea) line += `\n   Table Area: ${s.hasTableArea}`;
+        if (s.transportRange) line += `\n   Est. Transport Fee: ${s.transportRange}`;
+      }
+      line += `\n   Date: ${s.date}\n   Shape: ${s.nailShape} | Length: ${s.nailLength}`;
+      lines.push(line);
+    });
+    lines.push('');
+
+    let totalLine = `Estimated Total: ${formatNaira(total)}`;
+    if (appliedGiftCard && giftCardDiscount > 0) {
+      totalLine += `\nGift Card Applied: ${appliedGiftCard.code} \u2014 Discount: ${formatNaira(giftCardDiscount)}`;
+    }
+    if (referralValid && referralDiscount > 0) {
+      totalLine += `\nReferral Code Applied: ${refCodeInput} \u2014 Discount: ${formatNaira(referralDiscount)}`;
+    }
+    if (loyaltyUnits > 0 && loyaltyDiscount > 0) {
+      totalLine += `\nLoyalty Points Applied: ${loyaltyUnits * REDEMPTION_UNIT} pts \u2014 Discount: ${formatNaira(loyaltyDiscount)}`;
+    }
+    if (giftCardDiscount > 0 || referralDiscount > 0 || loyaltyDiscount > 0) {
+      totalLine += `\nAmount Due: ${formatNaira(finalTotal)}`;
+    }
+
+    let depositLine = '';
+    if (paymentReference) {
+      depositLine = `\n\n\u2705 Appointment Deposit Paid: ${formatNaira(depositAmount)} (Paystack Ref: ${paymentReference})`;
+    } else {
+      depositLine = `\n\n\u26A0\uFE0F Appointment Deposit (50%): ${formatNaira(depositAmount)} \u2014 To be arranged via WhatsApp`;
+    }
+
+    const message = `Hi! I\u2019d like to place a combined order.\n\n${lines.join('\n')}\n${totalLine}${depositLine}\n\nPlease confirm availability and payment details. Thank you!`;
+    const encoded = encodeURIComponent(message);
+    const whatsAppUrl = `https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`;
+    window.open(whatsAppUrl, '_blank');
+
+    // Async operations after window.open
+    try {
+      const stockItems = [];
       products.forEach((p) => {
         if (p.categoryId && p.stock !== undefined) {
           stockItems.push({ collection: 'retailCategories', categoryId: p.categoryId, productId: p.productId, quantity: p.quantity });
         }
       });
-
       pressOns.forEach((p) => {
         if (p.readyMade && p.categoryId && p.stock !== undefined) {
           stockItems.push({ collection: 'productCategories', categoryId: p.categoryId, productId: p.productId, quantity: Number(p.quantity) || 1 });
         }
       });
-
       if (stockItems.length > 0) {
         await decrementStockBatch(stockItems);
       }
@@ -134,7 +190,6 @@ export default function CartPage() {
       console.error('Stock decrement failed:', err);
     }
 
-    // Redeem gift card if applied
     let orderId = null;
     if (user) {
       const allItems = [
@@ -171,6 +226,10 @@ export default function CartPage() {
           }),
           items: allItems,
         };
+        if (paymentReference) {
+          orderData.paymentReference = paymentReference;
+          orderData.depositPaid = depositAmount;
+        }
         if (appliedGiftCard) {
           orderData.giftCardCode = appliedGiftCard.code;
           orderData.giftCardDiscount = giftCardDiscount;
@@ -208,78 +267,6 @@ export default function CartPage() {
     }
 
     setCheckoutLoading(false);
-
-    const lines = [];
-
-    if (services.length > 0) {
-      lines.push('--- SERVICE APPOINTMENTS ---');
-      services.forEach((s, i) => {
-        let line = `${i + 1}. ${s.name} \u2014 ${formatNaira(s.price)}`;
-        if (s.customerName) line += `\n   Name: ${s.customerName}`;
-        if (s.isHomeService) {
-          line += `\n   Type: Home Service`;
-          if (s.homeLocation) line += `\n   Location: ${s.homeLocation}`;
-          if (s.homeAddress) line += `\n   Address: ${s.homeAddress}`;
-          if (s.hasTableArea) line += `\n   Table Area: ${s.hasTableArea}`;
-          if (s.transportRange) line += `\n   Est. Transport Fee: ${s.transportRange}`;
-        }
-        line += `\n   Date: ${s.date}\n   Shape: ${s.nailShape} | Length: ${s.nailLength}`;
-        lines.push(line);
-      });
-      lines.push('');
-    }
-
-    if (products.length > 0) {
-      lines.push('--- NAIL CARE PRODUCTS ---');
-      products.forEach((p, i) => {
-        let line = `${i + 1}. ${p.name} x${p.quantity} \u2014 ${formatNaira(p.price * p.quantity)}`;
-        if (p.customerName) line += `\n   Name: ${p.customerName}`;
-        lines.push(line);
-      });
-      lines.push('');
-    }
-
-    if (pressOns.length > 0) {
-      lines.push('--- PRESS-ON ORDERS ---');
-      pressOns.forEach((p, i) => {
-        let detail = `${i + 1}. ${p.name} \u2014 ${formatNaira(p.price)}`;
-        if (p.customerName) detail += `\n   Name: ${p.customerName}`;
-        if (p.type) detail += `\n   Type: ${p.type}`;
-        detail += `\n   Shape: ${p.nailShape || 'N/A'}`;
-        detail += `\n   Quantity: ${p.quantity} set(s)`;
-        if (p.nailBedSize) detail += `\n   Nail Bed Size: ${p.nailBedSize}`;
-        if (p.presetSize) detail += `\n   Preset Size: ${p.presetSize}`;
-        if (p.orderingForOthers && p.otherPeople?.length > 0) {
-          p.otherPeople.forEach((o) => {
-            detail += `\n   Also for: ${o.name || 'N/A'} \u2014 Shape: ${o.nailShape || 'Same'} \u2014 Nail Bed: ${o.nailBedSize || 'N/A'}`;
-          });
-        }
-        lines.push(detail);
-      });
-      lines.push('');
-    }
-
-    let totalLine = `Estimated Total: ${formatNaira(total)}`;
-    if (appliedGiftCard && giftCardDiscount > 0) {
-      totalLine += `\nGift Card Applied: ${appliedGiftCard.code} \u2014 Discount: ${formatNaira(giftCardDiscount)}`;
-    }
-    if (referralValid && referralDiscount > 0) {
-      totalLine += `\nReferral Code Applied: ${refCodeInput} \u2014 Discount: ${formatNaira(referralDiscount)}`;
-    }
-    if (loyaltyUnits > 0 && loyaltyDiscount > 0) {
-      totalLine += `\nLoyalty Points Applied: ${loyaltyUnits * REDEMPTION_UNIT} pts \u2014 Discount: ${formatNaira(loyaltyDiscount)}`;
-    }
-    if (giftCardDiscount > 0 || referralDiscount > 0 || loyaltyDiscount > 0) {
-      totalLine += `\nAmount Due: ${formatNaira(finalTotal)}`;
-    }
-
-    const message = `Hi! I'd like to place a combined order.\n\n${lines.join('\n')}\n${totalLine}\n\nPlease confirm availability and payment details. Thank you!`;
-    const encoded = encodeURIComponent(message);
-    window.open(
-      `https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`,
-      '_blank'
-    );
-
     setAppliedGiftCard(null);
     clearCart();
     navigate('/thank-you', {
@@ -297,6 +284,22 @@ export default function CartPage() {
         loyaltyDiscount,
       },
     });
+  };
+
+  const payWithPaystackCart = () => {
+    const pk = import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY || '';
+    if (!pk || !window.PaystackPop) { handleCompleteServiceOrder(''); return; }
+    const handler = window.PaystackPop.setup({
+      key: pk,
+      email: user?.email || 'guest@chizzys.com',
+      amount: depositAmount * 100,
+      currency: 'NGN',
+      ref: `CHIZZYS-APT-${Date.now()}`,
+      metadata: { appointmentCount: services.length },
+      callback: (response) => handleCompleteServiceOrder(response.reference),
+      onClose: () => {},
+    });
+    handler.openIframe();
   };
 
   return (
@@ -668,6 +671,26 @@ export default function CartPage() {
               </Box>
             )}
 
+            {/* Appointment Deposit Info */}
+            {services.length > 0 && (
+              <Box sx={{ mb: 3, p: 2.5, borderRadius: 3, border: '1.5px solid #E91E8C', backgroundColor: '#FFF0F8' }}>
+                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', fontSize: '0.95rem', mb: 1.5 }}>
+                  Appointment Deposit Required
+                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography sx={{ fontSize: '0.88rem', color: '#555' }}>Appointment subtotal</Typography>
+                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#555' }}>{formatNaira(serviceSubtotal)}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
+                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#E91E8C' }}>50% deposit to secure slot</Typography>
+                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#E91E8C' }}>{formatNaira(depositAmount)}</Typography>
+                </Box>
+                <Typography sx={{ fontSize: '0.78rem', color: '#999' }}>
+                  Remaining {formatNaira(serviceSubtotal - depositAmount)} is due on the day of your appointment
+                </Typography>
+              </Box>
+            )}
+
             {/* Discounts & Rewards */}
             <Box sx={{ mt: 2, mb: 3, p: 3, borderRadius: 3, backgroundColor: '#fff', border: '1px solid #F0C0D0' }}>
               <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 2, fontSize: '0.95rem' }}>
@@ -815,6 +838,76 @@ export default function CartPage() {
           </Box>
         </Box>
       )}
+
+      {/* Payment Modal */}
+      <Dialog
+        open={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 3 } }}
+      >
+        <DialogTitle sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', pb: 1 }}>
+          Secure Your Appointment{services.length > 1 ? 's' : ''}
+        </DialogTitle>
+        <DialogContent>
+          {/* Appointment list */}
+          <Box sx={{ mb: 2, p: 2, borderRadius: 2, backgroundColor: '#FFF0F8', border: '1px solid #F0C0D0' }}>
+            {services.map((s) => (
+              <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
+                <Box sx={{ flex: 1, mr: 1 }}>
+                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#333' }}>{s.name}</Typography>
+                  <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>{s.date}</Typography>
+                </Box>
+                <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#E91E8C', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
+              </Box>
+            ))}
+          </Box>
+
+          <Divider sx={{ borderColor: '#F0C0D0', mb: 2 }} />
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+            <Typography sx={{ fontSize: '0.9rem', color: '#555' }}>Appointment total</Typography>
+            <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>{formatNaira(serviceSubtotal)}</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
+            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#E91E8C' }}>Deposit (50%)</Typography>
+            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#E91E8C' }}>{formatNaira(depositAmount)}</Typography>
+          </Box>
+          <Typography sx={{ fontSize: '0.78rem', color: '#999', mb: 2 }}>
+            Balance {formatNaira(serviceSubtotal - depositAmount)} due on appointment day
+          </Typography>
+
+          <Typography sx={{ fontSize: '0.85rem', color: '#555', lineHeight: 1.6 }}>
+            Pay the 50% deposit via Paystack to confirm your booking, or proceed to WhatsApp to arrange payment manually.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <Button
+            onClick={() => handleCompleteServiceOrder('')}
+            sx={{ color: '#888', fontSize: '0.82rem', textTransform: 'none', fontFamily: '"Georgia", serif' }}
+          >
+            Skip — Pay on WhatsApp
+          </Button>
+          <Button
+            onClick={payWithPaystackCart}
+            sx={{
+              backgroundColor: '#E91E8C',
+              color: '#fff',
+              borderRadius: '30px',
+              px: 3,
+              py: 1,
+              fontFamily: '"Georgia", serif',
+              fontWeight: 600,
+              fontSize: '0.88rem',
+              whiteSpace: 'nowrap',
+              '&:hover': { backgroundColor: '#C2185B' },
+            }}
+          >
+            Pay {formatNaira(depositAmount)} Deposit
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Sign In Prompt */}
       <SignInPrompt

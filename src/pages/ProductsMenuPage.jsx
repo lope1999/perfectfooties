@@ -1,30 +1,28 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Box,
-  Typography,
-  Container,
-  Card,
-  CardContent,
-  Grid,
-  Button,
-  Chip,
-  Tooltip,
-  IconButton,
-  CircularProgress,
-  Collapse,
-  Slider,
-  MenuItem,
-  TextField,
-  Checkbox,
-  FormControlLabel,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Snackbar,
-  Alert,
-} from '@mui/material';
+	Box,
+	Typography,
+	Container,
+	Card,
+	CardContent,
+	Grid,
+	Button,
+	Chip,
+	Tooltip,
+	IconButton,
+	CircularProgress,
+	Collapse,
+	Slider,
+	MenuItem,
+	TextField,
+	Checkbox,
+	FormControlLabel,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogActions,
+} from "@mui/material";
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import LoginIcon from '@mui/icons-material/Login';
@@ -35,8 +33,7 @@ import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import CloseIcon from '@mui/icons-material/Close';
 import StraightenIcon from '@mui/icons-material/Straighten';
 import ScrollReveal from '../components/ScrollReveal';
-import PresetSizeGuide from '../components/PresetSizeGuide';
-import ProductQuickView from '../components/ProductQuickView';
+import PresetSizeGuide from "../components/PresetSizeGuide";
 import useProductCategories from '../hooks/useProductCategories';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -49,25 +46,6 @@ const sectionColors = ['#FFF0F5', '#FCE4EC', '#F3E5F6', '#F8E8F0', '#FFF5F8'];
 function formatNaira(amount) {
   return `₦${amount.toLocaleString()}`;
 }
-
-const orderButtonSx = {
-  border: '2px solid #E91E8C',
-  borderRadius: '30px',
-  color: '#000',
-  backgroundColor: 'transparent',
-  px: 4,
-  py: 1.2,
-  fontSize: '0.95rem',
-  fontFamily: '"Georgia", serif',
-  fontWeight: 600,
-  mt: 4,
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    backgroundColor: '#E91E8C',
-    color: '#fff',
-    borderColor: '#E91E8C',
-  },
-};
 
 const lengthOptions = ['Short', 'Medium', 'Long'];
 
@@ -83,11 +61,6 @@ export default function ProductsMenuPage() {
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
   const { categories: productCategories, loading, error } = useProductCategories();
-
-  // Quick-view state
-  const [quickViewProduct, setQuickViewProduct] = useState(null);
-  const [quickViewCategory, setQuickViewCategory] = useState(null);
-  const [snackOpen, setSnackOpen] = useState(false);
 
   // Filter state
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -168,8 +141,7 @@ export default function ProductsMenuPage() {
 
   const handleCardClick = (product, category) => {
     if (!isOutOfStock(product)) {
-      setQuickViewProduct(product);
-      setQuickViewCategory(category);
+      navigate(`/products/${category.id}/${product.id}`);
     }
   };
 
@@ -941,7 +913,7 @@ export default function ProductsMenuPage() {
 																			"uppercase",
 																	}}
 																>
-																	Click to View
+																	View & Order
 																</Typography>
 															</Box>
 														)}
@@ -1178,20 +1150,6 @@ export default function ProductsMenuPage() {
 								})}
 							</Grid>
 
-							<ScrollReveal direction="up" delay={0.2}>
-								<Box sx={{ textAlign: "center" }}>
-									<Button
-										sx={orderButtonSx}
-										onClick={() =>
-											navigate("/order", {
-												state: { categoryId: category.id },
-											})
-										}
-									>
-										Place Order
-									</Button>
-								</Box>
-							</ScrollReveal>
 						</Container>
 					</Box>
 				</Box>
@@ -1203,33 +1161,6 @@ export default function ProductsMenuPage() {
 				onClose={() => setSizeGuideOpen(false)}
 			/>
 
-			{/* Quick View Modal */}
-			<ProductQuickView
-				open={!!quickViewProduct}
-				onClose={() => {
-					setQuickViewProduct(null);
-					setQuickViewCategory(null);
-				}}
-				product={quickViewProduct}
-				category={quickViewCategory}
-				onAddedToCart={() => setSnackOpen(true)}
-			/>
-
-			{/* Added to cart snackbar */}
-			<Snackbar
-				open={snackOpen}
-				autoHideDuration={3000}
-				onClose={() => setSnackOpen(false)}
-				anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-			>
-				<Alert
-					onClose={() => setSnackOpen(false)}
-					severity="success"
-					sx={{ borderRadius: 2 }}
-				>
-					Added to cart!
-				</Alert>
-			</Snackbar>
 
 			{/* Notify Me Dialog — disabled until EmailJS plan upgrade
       <Dialog
