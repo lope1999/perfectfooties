@@ -219,11 +219,11 @@ export default function ServiceDetailPage() {
     return `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nType: Salon Visit\nPreferred Date: ${fullDate}\nService: ${service.name}\nPrice: ${formatNaira(priceWithLength)}${discountStr}${depositInfo}\n\nDetails:\n- Nail Shape: ${nailShape}\n- Nail Length: ${nailLength}\n\nPlease confirm availability. Thank you!`;
   };
 
-  const handleCompleteOrder = (paymentReference = '', waWin = null) => {
+  const handleCompleteOrder = (paymentReference = '') => {
     setPaymentModalOpen(false);
     const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
     const waUrl = `https://api.whatsapp.com/send?phone=2349053714197&text=${encodeURIComponent(buildMessage(paymentReference))}`;
-    if (waWin) { waWin.location.href = waUrl; } else { window.open(waUrl, '_blank'); }
+    if (!paymentReference) window.open(waUrl, '_blank');
 
     if (user) {
       saveOrder(user.uid, {
@@ -259,6 +259,8 @@ export default function ServiceDetailPage() {
         }
       }).catch(() => {});
     }
+    // Push /thank-you into history FIRST, then navigate to WhatsApp.
+    // History stack becomes [..., /thank-you, whatsapp] so pressing back returns to thank-you page.
     navigate('/thank-you', {
       state: {
         type: 'service',
@@ -280,12 +282,12 @@ export default function ServiceDetailPage() {
         }],
       },
     });
+    if (paymentReference) window.location.href = waUrl;
   };
 
   const payWithPaystack = () => {
-    const waWin = window.open('about:blank', '_blank');
     const pk = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY) || '';
-    if (!pk || !window.PaystackPop) { handleCompleteOrder('', waWin); return; }
+    if (!pk || !window.PaystackPop) { handleCompleteOrder(''); return; }
     const handler = window.PaystackPop.setup({
       key: pk,
       email: user?.email || 'guest@chizzys.com',
@@ -293,8 +295,8 @@ export default function ServiceDetailPage() {
       currency: 'NGN',
       ref: `CHIZZYS-${Date.now()}`,
       metadata: { serviceName: service.name, appointmentDate, appointmentTime },
-      callback: (response) => handleCompleteOrder(response.reference, waWin),
-      onClose: () => { waWin?.close(); },
+      callback: (response) => handleCompleteOrder(response.reference),
+      onClose: () => {},
     });
     handler.openIframe();
   };

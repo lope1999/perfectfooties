@@ -120,7 +120,7 @@ export default function CartPage() {
     return;
   };
 
-  const handleCompleteServiceOrder = async (paymentReference = '', waWin = null) => {
+  const handleCompleteServiceOrder = async (paymentReference = '') => {
     setPaymentModalOpen(false);
     setCheckoutLoading(true);
 
@@ -168,7 +168,8 @@ export default function CartPage() {
     const message = `Hi! I\u2019d like to place a combined order.\n\n${lines.join('\n')}\n${totalLine}${depositLine}\n\nPlease confirm availability and payment details. Thank you!`;
     const encoded = encodeURIComponent(message);
     const whatsAppUrl = `https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`;
-    if (waWin) { waWin.location.href = whatsAppUrl; } else { window.open(whatsAppUrl, '_blank'); }
+    // Skip/no-payment path: still inside user gesture, open new tab before any awaits
+    if (!paymentReference) window.open(whatsAppUrl, '_blank');
 
     // Async operations after window.open
     try {
@@ -269,6 +270,8 @@ export default function CartPage() {
     setCheckoutLoading(false);
     setAppliedGiftCard(null);
     clearCart();
+    // Push /thank-you into history FIRST, then navigate to WhatsApp.
+    // History stack becomes [..., /thank-you, whatsapp] so pressing back returns to thank-you page.
     navigate('/thank-you', {
       state: {
         type: services.length > 0 && products.length === 0 && pressOns.length === 0 ? 'service' : 'retail',
@@ -284,12 +287,12 @@ export default function CartPage() {
         loyaltyDiscount,
       },
     });
+    if (paymentReference) window.location.href = whatsAppUrl;
   };
 
   const payWithPaystackCart = () => {
-    const waWin = window.open('about:blank', '_blank');
     const pk = import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY || '';
-    if (!pk || !window.PaystackPop) { handleCompleteServiceOrder('', waWin); return; }
+    if (!pk || !window.PaystackPop) { handleCompleteServiceOrder(''); return; }
     const handler = window.PaystackPop.setup({
       key: pk,
       email: user?.email || 'guest@chizzys.com',
@@ -297,8 +300,8 @@ export default function CartPage() {
       currency: 'NGN',
       ref: `CHIZZYS-APT-${Date.now()}`,
       metadata: { appointmentCount: services.length },
-      callback: (response) => handleCompleteServiceOrder(response.reference, waWin),
-      onClose: () => { waWin?.close(); },
+      callback: (response) => handleCompleteServiceOrder(response.reference),
+      onClose: () => {},
     });
     handler.openIframe();
   };

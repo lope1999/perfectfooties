@@ -11,7 +11,7 @@ export const serviceCategories = [
 				name: "Simple Gel X Manicure",
 				description:
 					"A clean, classic gel extension with a single colour finish.",
-				price: 12000,
+				price: 10000,
 				image: "/images/services/gel-extensions.jpg.jpg",
 			},
 			{
@@ -19,7 +19,7 @@ export const serviceCategories = [
 				name: "French Tip Gel X",
 				description:
 					"Elegant French tip design on gel extensions for a timeless look.",
-				price: 14000,
+				price: 12000,
 				image: "/images/services/french-tip.PNG",
 			},
 			{
@@ -27,7 +27,7 @@ export const serviceCategories = [
 				name: "Gel X with Minimal Nail Art",
 				description:
 					"Custom nail art designs on gel extensions — for my soft, minimalist girlies.",
-				price: 16000,
+				price: 14000,
 				image: "/images/services/glossy-red.jpg.jpg",
 			},
 			{
@@ -35,7 +35,7 @@ export const serviceCategories = [
 				name: "Gel X with more intricate Nail Art & Designs",
 				description:
 					"Beautiful soft glam nails with detailed minimal art formy girls who love bold elegance.",
-				price: 18500,
+				price: 16500,
 				image: "/images/services/chrome-nails.jpg.jpg",
 			},
 		],
@@ -52,7 +52,7 @@ export const serviceCategories = [
 				name: "Hard Gel Overlay",
 				description:
 					"Strengthening hard gel applied over your natural nails.",
-				price: 13000,
+				price: 12000,
 				image: "/images/services/overlay-nails.jpg.jpg",
 			},
 			{
@@ -60,7 +60,7 @@ export const serviceCategories = [
 				name: "Hard Gel Extension",
 				description:
 					"Full hard gel nail extensions sculpted to your desired shape.",
-				price: 16000,
+				price: 14000,
 				image: "/images/services/hardgel-extension.PNG",
 			},
 			{
@@ -68,14 +68,14 @@ export const serviceCategories = [
 				name: "Hard Gel with Nail Art",
 				description:
 					"Hard gel extensions with custom art and embellishments- minimalist to bold.",
-				price: 20000,
+				price: 18000,
 				image: "/images/services/complex-overlay.JPG",
 			},
 			{
 				id: "hardgel-refill",
 				name: "Hard Gel Refill",
 				description: "Maintenance refill for existing hard gel extensions.",
-				price: 15000,
+				price: 13000,
 				image: "/images/services/classic-gel.png",
 			},
 		],

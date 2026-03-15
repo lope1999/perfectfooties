@@ -1126,7 +1126,10 @@ export default function ProductsMenuPage() {
 															startIcon={<PlayCircleOutlineIcon sx={{ fontSize: 16 }} />}
 															onClick={(e) => {
 																e.stopPropagation();
-																window.open('https://www.instagram.com/chizzysstyles/', '_blank');
+																window.open(
+																	"https://www.instagram.com/reel/DVdYNG7DFSy/?igsh=dDlvN2Z5ZzB3Y2l2",
+																	"_blank",
+																);
 															}}
 															sx={{
 																mt: 1,

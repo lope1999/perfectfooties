@@ -156,7 +156,7 @@ export default function CheckoutPage() {
     form.state &&
     form.lga.trim();
 
-  const handleCompleteOrder = async (paymentReference, shipping, waWin = null) => {
+  const handleCompleteOrder = async (paymentReference, shipping) => {
     setPaymentModalOpen(false);
     setSubmitting(true);
 
@@ -235,7 +235,8 @@ export default function CheckoutPage() {
 
     const message = `Hi! I\u2019d like to place an order.\n\n${lines.join('\n')}\n${totalLine}${depositLine}\n\nPlease confirm availability and payment details. Thank you!`;
     const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
-    if (waWin) { waWin.location.href = waUrl; } else { window.open(waUrl, '_blank'); }
+    // Skip/no-payment path: still inside user gesture, open new tab before any awaits
+    if (!paymentReference) window.open(waUrl, '_blank');
 
     // Background async operations (save shipping, decrement stock, save order, redeem gift card)
     saveShippingDetails(user.uid, shipping).catch(() => {});
@@ -332,6 +333,8 @@ export default function CheckoutPage() {
 
     setSubmitting(false);
     clearCart();
+    // Push /thank-you into history FIRST, then navigate to WhatsApp.
+    // History stack becomes [..., /thank-you, whatsapp] so pressing back returns to thank-you page.
     navigate('/thank-you', {
       state: {
         type: orderType,
@@ -348,6 +351,7 @@ export default function CheckoutPage() {
         loyaltyDiscount,
       },
     });
+    if (paymentReference) window.location.href = waUrl;
   };
 
   const handleSubmit = async () => {
@@ -371,9 +375,8 @@ export default function CheckoutPage() {
   };
 
   const payWithPaystack = () => {
-    const waWin = window.open('about:blank', '_blank');
     const pk = import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY || '';
-    if (!pk || !window.PaystackPop) { handleCompleteOrder('', pendingShipping, waWin); return; }
+    if (!pk || !window.PaystackPop) { handleCompleteOrder('', pendingShipping); return; }
     window.PaystackPop.setup({
       key: pk,
       email: user?.email || 'guest@chizzys.com',
@@ -381,8 +384,8 @@ export default function CheckoutPage() {
       currency: 'NGN',
       ref: `CHIZZYS-CART-${Date.now()}`,
       metadata: { appointmentCount: services.length },
-      callback: (response) => handleCompleteOrder(response.reference, pendingShipping, waWin),
-      onClose: () => { waWin?.close(); },
+      callback: (response) => handleCompleteOrder(response.reference, pendingShipping),
+      onClose: () => {},
     }).openIframe();
   };
 

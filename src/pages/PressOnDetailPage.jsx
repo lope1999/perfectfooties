@@ -209,408 +209,787 @@ export default function PressOnDetailPage() {
   const effectivePrice = getEffectivePrice(product);
 
   return (
-    <Box sx={{ pt: { xs: 7, md: 8 }, pb: { xs: 18, md: 10 } }}>
-      {/* Hero Image */}
-      <Box sx={{ position: 'relative', width: '100%', maxHeight: { xs: 320, md: 420 }, overflow: 'hidden' }}>
-        <Box
-          component="img"
-          src={product.image}
-          alt={product.name}
-          sx={{ width: '100%', height: { xs: 280, md: 400 }, objectFit: 'cover', display: 'block' }}
-        />
-        {/* Back button overlay */}
-        <Box sx={{ position: 'absolute', top: 16, left: 16, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton
-            onClick={() => navigate('/products')}
-            sx={{
-              backgroundColor: 'rgba(255,255,255,0.9)',
-              '&:hover': { backgroundColor: '#fff' },
-              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            }}
-          >
-            <ArrowBackIcon sx={{ color: '#E91E8C' }} />
-          </IconButton>
-          <Button
-            startIcon={<PlayCircleOutlineIcon />}
-            onClick={() => window.open('https://www.instagram.com/chizzysstyles/', '_blank')}
-            sx={{
-              color: '#4A0E4E',
-              fontFamily: '"Georgia", serif',
-              fontWeight: 600,
-              fontSize: '0.82rem',
-              textTransform: 'none',
-              border: '1.5px solid #4A0E4E',
-              borderRadius: '20px',
-              px: 2,
-              py: 0.5,
-              backgroundColor: 'rgba(255,255,255,0.9)',
-              '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' },
-            }}
-          >
-            How to Apply
-          </Button>
-        </Box>
-      </Box>
+		<Box sx={{ pt: { xs: 7, md: 8 }, pb: { xs: 18, md: 10 } }}>
+			{/* Hero Image */}
+			<Box
+				sx={{
+					position: "relative",
+					width: "100%",
+					maxHeight: { xs: 320, md: 420 },
+					overflow: "hidden",
+				}}
+			>
+				<Box
+					component="img"
+					src={product.image}
+					alt={product.name}
+					sx={{
+						width: "100%",
+						height: { xs: 280, md: 400 },
+						objectFit: "cover",
+						display: "block",
+					}}
+				/>
+				{/* Back button overlay */}
+				<Box
+					sx={{
+						position: "absolute",
+						top: 16,
+						left: 16,
+						display: "flex",
+						alignItems: "center",
+						gap: 2,
+					}}
+				>
+					<IconButton
+						onClick={() => navigate("/products")}
+						sx={{
+							backgroundColor: "rgba(255,255,255,0.9)",
+							"&:hover": { backgroundColor: "#fff" },
+							boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+						}}
+					>
+						<ArrowBackIcon sx={{ color: "#E91E8C" }} />
+					</IconButton>
+					<Button
+						startIcon={<PlayCircleOutlineIcon />}
+						onClick={() =>
+							window.open(
+								"https://www.instagram.com/reel/DVdYNG7DFSy/?igsh=dDlvN2Z5ZzB3Y2l2",
+								"_blank",
+							)
+						}
+						sx={{
+							color: "#4A0E4E",
+							fontFamily: '"Georgia", serif',
+							fontWeight: 600,
+							fontSize: "0.82rem",
+							textTransform: "none",
+							border: "1.5px solid #4A0E4E",
+							borderRadius: "20px",
+							px: 2,
+							py: 0.5,
+							backgroundColor: "rgba(255,255,255,0.9)",
+							"&:hover": { backgroundColor: "#4A0E4E", color: "#fff" },
+						}}
+					>
+						How to Apply
+					</Button>
+				</Box>
+			</Box>
 
-      <Container maxWidth="sm" sx={{ py: 3 }}>
-        {/* Product title */}
-        <Typography
-          variant="h4"
-          sx={{
-            fontFamily: '"Georgia", serif',
-            fontWeight: 700,
-            color: '#000',
-            mb: 1,
-            fontSize: { xs: '1.6rem', md: '2rem' },
-          }}
-        >
-          {product.name}
-        </Typography>
+			<Container maxWidth="sm" sx={{ py: 3 }}>
+				{/* Product title */}
+				<Typography
+					variant="h4"
+					sx={{
+						fontFamily: '"Georgia", serif',
+						fontWeight: 700,
+						color: "#000",
+						mb: 1,
+						fontSize: { xs: "1.6rem", md: "2rem" },
+					}}
+				>
+					{product.name}
+				</Typography>
 
-        {/* Info chips */}
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-          {product.shape && (
-            <Chip label={product.shape} size="small" sx={{ backgroundColor: '#F3E5F6', color: '#4A0E4E', fontWeight: 600 }} />
-          )}
-          {product.length && (
-            <Chip label={product.length} size="small" sx={{ backgroundColor: '#F3E5F6', color: '#4A0E4E', fontWeight: 600 }} />
-          )}
-          {product.type && (
-            <Chip label={product.type} size="small" sx={{ backgroundColor: '#4A0E4E', color: '#fff', fontWeight: 600 }} />
-          )}
-          {isReadyMade && (
-            <Chip label="Ready Made" size="small" sx={{ backgroundColor: '#E91E8C', color: '#fff', fontWeight: 600 }} />
-          )}
-          {hasDiscount(product) ? (
-            <>
-              <Chip
-                label={formatNaira(effectivePrice)}
-                sx={{ backgroundColor: '#2e7d32', color: '#fff', fontFamily: '"Georgia", serif', fontWeight: 700 }}
-              />
-              <Chip
-                label={getDiscountLabel(product)}
-                size="small"
-                sx={{ backgroundColor: '#e8f5e9', color: '#2e7d32', fontWeight: 700, fontSize: '0.7rem' }}
-              />
-            </>
-          ) : (
-            <Chip
-              label={formatNaira(product.price)}
-              sx={{ backgroundColor: '#E91E8C', color: '#fff', fontFamily: '"Georgia", serif', fontWeight: 700 }}
-            />
-          )}
-          {hasDiscount(product) && (
-            <Typography
-              component="span"
-              sx={{ textDecoration: 'line-through', color: '#999', fontSize: '0.85rem', fontFamily: '"Georgia", serif', alignSelf: 'center' }}
-            >
-              {formatNaira(product.price)}
-            </Typography>
-          )}
-        </Box>
+				{/* Info chips */}
+				<Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
+					{product.shape && (
+						<Chip
+							label={product.shape}
+							size="small"
+							sx={{
+								backgroundColor: "#F3E5F6",
+								color: "#4A0E4E",
+								fontWeight: 600,
+							}}
+						/>
+					)}
+					{product.length && (
+						<Chip
+							label={product.length}
+							size="small"
+							sx={{
+								backgroundColor: "#F3E5F6",
+								color: "#4A0E4E",
+								fontWeight: 600,
+							}}
+						/>
+					)}
+					{product.type && (
+						<Chip
+							label={product.type}
+							size="small"
+							sx={{
+								backgroundColor: "#4A0E4E",
+								color: "#fff",
+								fontWeight: 600,
+							}}
+						/>
+					)}
+					{isReadyMade && (
+						<Chip
+							label="Ready Made"
+							size="small"
+							sx={{
+								backgroundColor: "#E91E8C",
+								color: "#fff",
+								fontWeight: 600,
+							}}
+						/>
+					)}
+					{hasDiscount(product) ? (
+						<>
+							<Chip
+								label={formatNaira(effectivePrice)}
+								sx={{
+									backgroundColor: "#2e7d32",
+									color: "#fff",
+									fontFamily: '"Georgia", serif',
+									fontWeight: 700,
+								}}
+							/>
+							<Chip
+								label={getDiscountLabel(product)}
+								size="small"
+								sx={{
+									backgroundColor: "#e8f5e9",
+									color: "#2e7d32",
+									fontWeight: 700,
+									fontSize: "0.7rem",
+								}}
+							/>
+						</>
+					) : (
+						<Chip
+							label={formatNaira(product.price)}
+							sx={{
+								backgroundColor: "#E91E8C",
+								color: "#fff",
+								fontFamily: '"Georgia", serif',
+								fontWeight: 700,
+							}}
+						/>
+					)}
+					{hasDiscount(product) && (
+						<Typography
+							component="span"
+							sx={{
+								textDecoration: "line-through",
+								color: "#999",
+								fontSize: "0.85rem",
+								fontFamily: '"Georgia", serif',
+								alignSelf: "center",
+							}}
+						>
+							{formatNaira(product.price)}
+						</Typography>
+					)}
+				</Box>
 
-        {/* Description */}
-        {product.description && (
-          <Typography sx={{ color: '#555', fontSize: '0.95rem', lineHeight: 1.7, mb: 3 }}>
-            {product.description}
-          </Typography>
-        )}
+				{/* Description */}
+				{product.description && (
+					<Typography
+						sx={{
+							color: "#555",
+							fontSize: "0.95rem",
+							lineHeight: 1.7,
+							mb: 3,
+						}}
+					>
+						{product.description}
+					</Typography>
+				)}
 
-        <Box sx={{ borderTop: '1px solid #F0C0D0', pt: 3 }}>
-          {/* Customer Name */}
-          <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1, fontSize: '1rem' }}>
-            Your Name
-          </Typography>
-          <TextField
-            fullWidth
-            size="small"
-            placeholder="Enter your full name"
-            value={customerName}
-            onChange={(e) => { setCustomerName(e.target.value); setError(''); }}
-            sx={{
-              mb: 3,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-                '& fieldset': { borderColor: '#F0C0D0' },
-                '&:hover fieldset': { borderColor: '#E91E8C' },
-                '&.Mui-focused fieldset': { borderColor: '#E91E8C' },
-              },
-            }}
-          />
+				<Box sx={{ borderTop: "1px solid #F0C0D0", pt: 3 }}>
+					{/* Customer Name */}
+					<Typography
+						sx={{
+							fontFamily: '"Georgia", serif',
+							fontWeight: 700,
+							color: "#4A0E4E",
+							mb: 1,
+							fontSize: "1rem",
+						}}
+					>
+						Your Name
+					</Typography>
+					<TextField
+						fullWidth
+						size="small"
+						placeholder="Enter your full name"
+						value={customerName}
+						onChange={(e) => {
+							setCustomerName(e.target.value);
+							setError("");
+						}}
+						sx={{
+							mb: 3,
+							"& .MuiOutlinedInput-root": {
+								borderRadius: 2,
+								"& fieldset": { borderColor: "#F0C0D0" },
+								"&:hover fieldset": { borderColor: "#E91E8C" },
+								"&.Mui-focused fieldset": { borderColor: "#E91E8C" },
+							},
+						}}
+					/>
 
-          {/* Conditional form fields */}
-          {isReadyMade ? (
-            <>
-              <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1, fontSize: '1rem' }}>
-                Select Preset Size
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
-                {presetSizes.map((size) => (
-                  <Chip
-                    key={size}
-                    label={size}
-                    onClick={() => { setPresetSize(size); setError(''); }}
-                    sx={{
-                      cursor: 'pointer',
-                      fontWeight: 700,
-                      fontSize: '0.9rem',
-                      px: 1,
-                      border: '2px solid',
-                      borderColor: presetSize === size ? '#E91E8C' : '#F0C0D0',
-                      backgroundColor: presetSize === size ? '#E91E8C' : 'transparent',
-                      color: presetSize === size ? '#fff' : '#000',
-                      '&:hover': { backgroundColor: presetSize === size ? '#C2185B' : '#FCE4EC' },
-                    }}
-                  />
-                ))}
-              </Box>
+					{/* Conditional form fields */}
+					{isReadyMade ? (
+						<>
+							<Typography
+								sx={{
+									fontFamily: '"Georgia", serif',
+									fontWeight: 700,
+									color: "#4A0E4E",
+									mb: 1,
+									fontSize: "1rem",
+								}}
+							>
+								Select Preset Size
+							</Typography>
+							<Box
+								sx={{
+									display: "flex",
+									gap: 1,
+									flexWrap: "wrap",
+									mb: 3,
+								}}
+							>
+								{presetSizes.map((size) => (
+									<Chip
+										key={size}
+										label={size}
+										onClick={() => {
+											setPresetSize(size);
+											setError("");
+										}}
+										sx={{
+											cursor: "pointer",
+											fontWeight: 700,
+											fontSize: "0.9rem",
+											px: 1,
+											border: "2px solid",
+											borderColor:
+												presetSize === size ? "#E91E8C" : "#F0C0D0",
+											backgroundColor:
+												presetSize === size
+													? "#E91E8C"
+													: "transparent",
+											color: presetSize === size ? "#fff" : "#000",
+											"&:hover": {
+												backgroundColor:
+													presetSize === size
+														? "#C2185B"
+														: "#FCE4EC",
+											},
+										}}
+									/>
+								))}
+							</Box>
 
-              <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1, fontSize: '1rem' }}>
-                Quantity
-              </Typography>
-              <TextField
-                select
-                size="small"
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                sx={{ width: 110, mb: 3, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-              >
-                {Array.from({ length: maxQty }, (_, i) => i + 1).map((q) => (
-                  <MenuItem key={q} value={q}>{q}</MenuItem>
-                ))}
-              </TextField>
+							<Typography
+								sx={{
+									fontFamily: '"Georgia", serif',
+									fontWeight: 700,
+									color: "#4A0E4E",
+									mb: 1,
+									fontSize: "1rem",
+								}}
+							>
+								Quantity
+							</Typography>
+							<TextField
+								select
+								size="small"
+								value={quantity}
+								onChange={(e) => setQuantity(Number(e.target.value))}
+								sx={{
+									width: 110,
+									mb: 3,
+									"& .MuiOutlinedInput-root": { borderRadius: 2 },
+								}}
+							>
+								{Array.from({ length: maxQty }, (_, i) => i + 1).map(
+									(q) => (
+										<MenuItem key={q} value={q}>
+											{q}
+										</MenuItem>
+									),
+								)}
+							</TextField>
 
-              {product.stock !== undefined && (
-                <Typography sx={{ color: product.stock <= 2 ? '#E91E8C' : '#999', fontSize: '0.8rem', fontStyle: 'italic', mb: 3, mt: -2 }}>
-                  {product.stock} in stock
-                </Typography>
-              )}
-            </>
-          ) : (
-            <>
-              <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1, fontSize: '1rem' }}>
-                Nail Shape
-              </Typography>
-              <Box sx={{ mb: 3 }}>
-                <NailShapeSelector value={nailShape} onChange={(s) => { setNailShape(s); setError(''); }} />
-              </Box>
+							{product.stock !== undefined && (
+								<Typography
+									sx={{
+										color: product.stock <= 2 ? "#E91E8C" : "#999",
+										fontSize: "0.8rem",
+										fontStyle: "italic",
+										mb: 3,
+										mt: -2,
+									}}
+								>
+									{product.stock} in stock
+								</Typography>
+							)}
+						</>
+					) : (
+						<>
+							<Typography
+								sx={{
+									fontFamily: '"Georgia", serif',
+									fontWeight: 700,
+									color: "#4A0E4E",
+									mb: 1,
+									fontSize: "1rem",
+								}}
+							>
+								Nail Shape
+							</Typography>
+							<Box sx={{ mb: 3 }}>
+								<NailShapeSelector
+									value={nailShape}
+									onChange={(s) => {
+										setNailShape(s);
+										setError("");
+									}}
+								/>
+							</Box>
 
-              <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1, fontSize: '1rem' }}>
-                Quantity
-              </Typography>
-              <TextField
-                select
-                size="small"
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                sx={{ width: 110, mb: 3, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-              >
-                {pressOnQuantities.map((q) => (
-                  <MenuItem key={q} value={q}>{q}</MenuItem>
-                ))}
-              </TextField>
+							<Typography
+								sx={{
+									fontFamily: '"Georgia", serif',
+									fontWeight: 700,
+									color: "#4A0E4E",
+									mb: 1,
+									fontSize: "1rem",
+								}}
+							>
+								Quantity
+							</Typography>
+							<TextField
+								select
+								size="small"
+								value={quantity}
+								onChange={(e) => setQuantity(Number(e.target.value))}
+								sx={{
+									width: 110,
+									mb: 3,
+									"& .MuiOutlinedInput-root": { borderRadius: 2 },
+								}}
+							>
+								{pressOnQuantities.map((q) => (
+									<MenuItem key={q} value={q}>
+										{q}
+									</MenuItem>
+								))}
+							</TextField>
 
-              <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1, fontSize: '1rem' }}>
-                Nail Bed Sizes
-              </Typography>
-              <Box sx={{ mb: 3 }}>
-                <NailBedSizeInput value={nailBedSize} onChange={setNailBedSize} required />
-              </Box>
-            </>
-          )}
+							<Typography
+								sx={{
+									fontFamily: '"Georgia", serif',
+									fontWeight: 700,
+									color: "#4A0E4E",
+									mb: 1,
+									fontSize: "1rem",
+								}}
+							>
+								Nail Bed Sizes
+							</Typography>
+							<Box sx={{ mb: 3 }}>
+								<NailBedSizeInput
+									value={nailBedSize}
+									onChange={setNailBedSize}
+									required
+								/>
+							</Box>
+						</>
+					)}
 
-          {/* Discounts & Rewards */}
-          {isFormValid && (
-            <Box sx={{ p: 2.5, borderRadius: 3, backgroundColor: '#FFF0F5', border: '1px solid #F0C0D0', mb: 3 }}>
-              <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1.5, fontSize: '0.95rem' }}>
-                Discounts &amp; Rewards
-              </Typography>
+					{/* Discounts & Rewards */}
+					{isFormValid && (
+						<Box
+							sx={{
+								p: 2.5,
+								borderRadius: 3,
+								backgroundColor: "#FFF0F5",
+								border: "1px solid #F0C0D0",
+								mb: 3,
+							}}
+						>
+							<Typography
+								sx={{
+									fontFamily: '"Georgia", serif',
+									fontWeight: 700,
+									color: "#4A0E4E",
+									mb: 1.5,
+									fontSize: "0.95rem",
+								}}
+							>
+								Discounts &amp; Rewards
+							</Typography>
 
-              {/* Referral code */}
-              <Box
-                onClick={() => setShowRefField((v) => !v)}
-                sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', mb: showRefField ? 1.5 : 0 }}
-              >
-                <LocalOfferIcon sx={{ fontSize: 15, color: referralValid ? '#2e7d32' : '#E91E8C' }} />
-                <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: referralValid ? '#2e7d32' : '#E91E8C', fontFamily: '"Georgia", serif' }}>
-                  {referralValid ? '₦500 off applied at checkout!' : 'Have a referral code?'}
-                </Typography>
-              </Box>
-              <Collapse in={showRefField}>
-                <Box sx={{ display: 'flex', gap: 1, mb: 0.5 }}>
-                  <TextField
-                    size="small"
-                    placeholder="e.g. CHIZZYS-ABC123"
-                    value={refCodeInput}
-                    onChange={(e) => { setRefCodeInput(e.target.value.toUpperCase()); setReferralValid(false); setReferralMsg(''); }}
-                    sx={{
-                      flex: 1,
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        '& fieldset': { borderColor: '#F0C0D0' },
-                        '&.Mui-focused fieldset': { borderColor: '#E91E8C' },
-                      },
-                    }}
-                    inputProps={{ style: { fontFamily: 'monospace', letterSpacing: 1, fontSize: '0.82rem' } }}
-                  />
-                  <Button
-                    onClick={handleApplyReferral}
-                    disabled={!refCodeInput.trim() || referralChecking}
-                    sx={{
-                      backgroundColor: '#E91E8C',
-                      color: '#fff',
-                      borderRadius: 2,
-                      px: 2,
-                      fontFamily: '"Georgia", serif',
-                      fontWeight: 600,
-                      fontSize: '0.78rem',
-                      whiteSpace: 'nowrap',
-                      '&:hover': { backgroundColor: '#C2185B' },
-                      '&.Mui-disabled': { backgroundColor: '#F0C0D0', color: '#fff' },
-                    }}
-                  >
-                    {referralChecking ? <CircularProgress size={14} sx={{ color: '#fff' }} /> : 'Apply'}
-                  </Button>
-                </Box>
-                {referralMsg && (
-                  <Typography sx={{ fontSize: '0.75rem', color: referralValid ? '#2e7d32' : '#d32f2f', mt: 0.3 }}>
-                    {referralMsg}
-                  </Typography>
-                )}
-              </Collapse>
+							{/* Referral code */}
+							<Box
+								onClick={() => setShowRefField((v) => !v)}
+								sx={{
+									display: "flex",
+									alignItems: "center",
+									gap: 1,
+									cursor: "pointer",
+									mb: showRefField ? 1.5 : 0,
+								}}
+							>
+								<LocalOfferIcon
+									sx={{
+										fontSize: 15,
+										color: referralValid ? "#2e7d32" : "#E91E8C",
+									}}
+								/>
+								<Typography
+									sx={{
+										fontSize: "0.85rem",
+										fontWeight: 600,
+										color: referralValid ? "#2e7d32" : "#E91E8C",
+										fontFamily: '"Georgia", serif',
+									}}
+								>
+									{referralValid
+										? "₦500 off applied at checkout!"
+										: "Have a referral code?"}
+								</Typography>
+							</Box>
+							<Collapse in={showRefField}>
+								<Box sx={{ display: "flex", gap: 1, mb: 0.5 }}>
+									<TextField
+										size="small"
+										placeholder="e.g. CHIZZYS-ABC123"
+										value={refCodeInput}
+										onChange={(e) => {
+											setRefCodeInput(e.target.value.toUpperCase());
+											setReferralValid(false);
+											setReferralMsg("");
+										}}
+										sx={{
+											flex: 1,
+											"& .MuiOutlinedInput-root": {
+												borderRadius: 2,
+												"& fieldset": { borderColor: "#F0C0D0" },
+												"&.Mui-focused fieldset": {
+													borderColor: "#E91E8C",
+												},
+											},
+										}}
+										inputProps={{
+											style: {
+												fontFamily: "monospace",
+												letterSpacing: 1,
+												fontSize: "0.82rem",
+											},
+										}}
+									/>
+									<Button
+										onClick={handleApplyReferral}
+										disabled={
+											!refCodeInput.trim() || referralChecking
+										}
+										sx={{
+											backgroundColor: "#E91E8C",
+											color: "#fff",
+											borderRadius: 2,
+											px: 2,
+											fontFamily: '"Georgia", serif',
+											fontWeight: 600,
+											fontSize: "0.78rem",
+											whiteSpace: "nowrap",
+											"&:hover": { backgroundColor: "#C2185B" },
+											"&.Mui-disabled": {
+												backgroundColor: "#F0C0D0",
+												color: "#fff",
+											},
+										}}
+									>
+										{referralChecking ? (
+											<CircularProgress
+												size={14}
+												sx={{ color: "#fff" }}
+											/>
+										) : (
+											"Apply"
+										)}
+									</Button>
+								</Box>
+								{referralMsg && (
+									<Typography
+										sx={{
+											fontSize: "0.75rem",
+											color: referralValid ? "#2e7d32" : "#d32f2f",
+											mt: 0.3,
+										}}
+									>
+										{referralMsg}
+									</Typography>
+								)}
+							</Collapse>
 
-              {/* Loyalty points */}
-              {user && maxLoyaltyUnits > 0 && (
-                <Box sx={{ mt: 1.5 }}>
-                  {pendingReward && loyaltyUnits === 0 && (
-                    <Box sx={{ mb: 1.5, p: 1.2, borderRadius: 2, background: 'linear-gradient(135deg, #FFF8E1, #FFF3E0)', border: '1.5px solid #FFD54F', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                      <Box>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#B8860B' }}>
-                          🎁 ₦{pendingReward.naira.toLocaleString()} loyalty reward ready
-                        </Typography>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>
-                          {pendingReward.pts} pts saved — tap Apply to use
-                        </Typography>
-                      </Box>
-                      <Button
-                        size="small"
-                        onClick={() => setLoyaltyUnits(Math.min(pendingReward.units, maxLoyaltyUnits))}
-                        sx={{ border: '1.5px solid #E91E8C', borderRadius: '20px', color: '#E91E8C', px: 2, py: 0.4, fontSize: '0.78rem', fontWeight: 700, textTransform: 'none', '&:hover': { backgroundColor: '#E91E8C', color: '#fff' } }}
-                      >
-                        Apply
-                      </Button>
-                    </Box>
-                  )}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.8 }}>
-                    <StarIcon sx={{ fontSize: 15, color: '#B8860B' }} />
-                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#B8860B', fontFamily: '"Georgia", serif' }}>
-                      Loyalty — {loyaltyBalance} pts (redeemable at checkout)
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <IconButton
-                      size="small"
-                      onClick={() => setLoyaltyUnits((u) => Math.max(0, u - 1))}
-                      disabled={loyaltyUnits === 0}
-                      sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 28, height: 28 }}
-                    >
-                      <RemoveIcon sx={{ fontSize: 14 }} />
-                    </IconButton>
-                    <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, minWidth: 20, textAlign: 'center' }}>
-                      {loyaltyUnits}
-                    </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))}
-                      disabled={loyaltyUnits >= maxLoyaltyUnits}
-                      sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 28, height: 28 }}
-                    >
-                      <AddIcon sx={{ fontSize: 14 }} />
-                    </IconButton>
-                    <Typography sx={{ fontSize: '0.78rem', color: '#555' }}>
-                      units × ₦1,000 = <strong style={{ color: '#B8860B' }}>-₦{(loyaltyUnits * REDEMPTION_VALUE).toLocaleString()} off</strong>
-                    </Typography>
-                  </Box>
-                </Box>
-              )}
+							{/* Loyalty points */}
+							{user && maxLoyaltyUnits > 0 && (
+								<Box sx={{ mt: 1.5 }}>
+									{pendingReward && loyaltyUnits === 0 && (
+										<Box
+											sx={{
+												mb: 1.5,
+												p: 1.2,
+												borderRadius: 2,
+												background:
+													"linear-gradient(135deg, #FFF8E1, #FFF3E0)",
+												border: "1.5px solid #FFD54F",
+												display: "flex",
+												alignItems: "center",
+												justifyContent: "space-between",
+												gap: 1,
+											}}
+										>
+											<Box>
+												<Typography
+													sx={{
+														fontWeight: 700,
+														fontSize: "0.82rem",
+														color: "#B8860B",
+													}}
+												>
+													🎁 ₦
+													{pendingReward.naira.toLocaleString()}{" "}
+													loyalty reward ready
+												</Typography>
+												<Typography
+													sx={{
+														fontSize: "0.72rem",
+														color: "#888",
+													}}
+												>
+													{pendingReward.pts} pts saved — tap Apply
+													to use
+												</Typography>
+											</Box>
+											<Button
+												size="small"
+												onClick={() =>
+													setLoyaltyUnits(
+														Math.min(
+															pendingReward.units,
+															maxLoyaltyUnits,
+														),
+													)
+												}
+												sx={{
+													border: "1.5px solid #E91E8C",
+													borderRadius: "20px",
+													color: "#E91E8C",
+													px: 2,
+													py: 0.4,
+													fontSize: "0.78rem",
+													fontWeight: 700,
+													textTransform: "none",
+													"&:hover": {
+														backgroundColor: "#E91E8C",
+														color: "#fff",
+													},
+												}}
+											>
+												Apply
+											</Button>
+										</Box>
+									)}
+									<Box
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											gap: 1,
+											mb: 0.8,
+										}}
+									>
+										<StarIcon
+											sx={{ fontSize: 15, color: "#B8860B" }}
+										/>
+										<Typography
+											sx={{
+												fontSize: "0.82rem",
+												fontWeight: 600,
+												color: "#B8860B",
+												fontFamily: '"Georgia", serif',
+											}}
+										>
+											Loyalty — {loyaltyBalance} pts (redeemable at
+											checkout)
+										</Typography>
+									</Box>
+									<Box
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											gap: 1.5,
+										}}
+									>
+										<IconButton
+											size="small"
+											onClick={() =>
+												setLoyaltyUnits((u) => Math.max(0, u - 1))
+											}
+											disabled={loyaltyUnits === 0}
+											sx={{
+												border: "1.5px solid #F0C0D0",
+												borderRadius: "50%",
+												width: 28,
+												height: 28,
+											}}
+										>
+											<RemoveIcon sx={{ fontSize: 14 }} />
+										</IconButton>
+										<Typography
+											sx={{
+												fontFamily: '"Georgia", serif',
+												fontWeight: 700,
+												minWidth: 20,
+												textAlign: "center",
+											}}
+										>
+											{loyaltyUnits}
+										</Typography>
+										<IconButton
+											size="small"
+											onClick={() =>
+												setLoyaltyUnits((u) =>
+													Math.min(maxLoyaltyUnits, u + 1),
+												)
+											}
+											disabled={loyaltyUnits >= maxLoyaltyUnits}
+											sx={{
+												border: "1.5px solid #F0C0D0",
+												borderRadius: "50%",
+												width: 28,
+												height: 28,
+											}}
+										>
+											<AddIcon sx={{ fontSize: 14 }} />
+										</IconButton>
+										<Typography
+											sx={{ fontSize: "0.78rem", color: "#555" }}
+										>
+											units × ₦1,000 ={" "}
+											<strong style={{ color: "#B8860B" }}>
+												-₦
+												{(
+													loyaltyUnits * REDEMPTION_VALUE
+												).toLocaleString()}{" "}
+												off
+											</strong>
+										</Typography>
+									</Box>
+								</Box>
+							)}
 
-              {(referralValid || loyaltyUnits > 0) && (
-                <Typography sx={{ mt: 1.5, fontSize: '0.75rem', color: '#888', fontStyle: 'italic' }}>
-                  Discounts will be applied to your total at checkout.
-                </Typography>
-              )}
-            </Box>
-          )}
+							{(referralValid || loyaltyUnits > 0) && (
+								<Typography
+									sx={{
+										mt: 1.5,
+										fontSize: "0.75rem",
+										color: "#888",
+										fontStyle: "italic",
+									}}
+								>
+									Discounts will be applied to your total at checkout.
+								</Typography>
+							)}
+						</Box>
+					)}
 
-          {error && (
-            <Typography sx={{ color: '#d32f2f', fontSize: '0.88rem', mb: 2 }}>
-              {error}
-            </Typography>
-          )}
-        </Box>
-      </Container>
+					{error && (
+						<Typography
+							sx={{ color: "#d32f2f", fontSize: "0.88rem", mb: 2 }}
+						>
+							{error}
+						</Typography>
+					)}
+				</Box>
+			</Container>
 
-      {/* Sticky action bar */}
-      <Box
-        sx={{
-          position: 'fixed',
-          bottom: { xs: '64px', md: 0 },
-          left: 0,
-          right: 0,
-          zIndex: 1100,
-          backgroundColor: 'rgba(255, 240, 245, 0.97)',
-          backdropFilter: 'blur(8px)',
-          borderTop: '1px solid #F0C0D0',
-          py: 1.5,
-          px: 2,
-          display: 'flex',
-          gap: 1.5,
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-        }}
-      >
-        <Button
-          onClick={handleAddToCart}
-          disabled={!isFormValid}
-          startIcon={<ShoppingCartOutlinedIcon />}
-          sx={{
-            border: '2px solid #4A0E4E',
-            borderRadius: '30px',
-            color: '#4A0E4E',
-            px: 3,
-            py: 1,
-            fontFamily: '"Georgia", serif',
-            fontWeight: 600,
-            fontSize: '0.9rem',
-            opacity: isFormValid ? 1 : 0.5,
-            '&:hover': { backgroundColor: '#4A0E4E', color: '#fff', borderColor: '#4A0E4E' },
-            '&.Mui-disabled': { opacity: 0.5, border: '2px solid #4A0E4E', color: '#4A0E4E' },
-          }}
-        >
-          Add to Cart
-        </Button>
-        <Button
-          onClick={handleCheckout}
-          disabled={!isFormValid}
-          sx={{
-            backgroundColor: '#E91E8C',
-            color: '#fff',
-            borderRadius: '30px',
-            px: 3,
-            py: 1,
-            fontFamily: '"Georgia", serif',
-            fontWeight: 600,
-            fontSize: '0.9rem',
-            opacity: isFormValid ? 1 : 0.5,
-            '&:hover': { backgroundColor: '#C2185B' },
-            '&.Mui-disabled': { backgroundColor: '#F0C0D0', color: '#fff' },
-          }}
-        >
-          Proceed to Checkout
-        </Button>
-      </Box>
+			{/* Sticky action bar */}
+			<Box
+				sx={{
+					position: "fixed",
+					bottom: { xs: "64px", md: 0 },
+					left: 0,
+					right: 0,
+					zIndex: 1100,
+					backgroundColor: "rgba(255, 240, 245, 0.97)",
+					backdropFilter: "blur(8px)",
+					borderTop: "1px solid #F0C0D0",
+					py: 1.5,
+					px: 2,
+					display: "flex",
+					gap: 1.5,
+					justifyContent: "center",
+					flexWrap: "wrap",
+				}}
+			>
+				<Button
+					onClick={handleAddToCart}
+					disabled={!isFormValid}
+					startIcon={<ShoppingCartOutlinedIcon />}
+					sx={{
+						border: "2px solid #4A0E4E",
+						borderRadius: "30px",
+						color: "#4A0E4E",
+						px: 3,
+						py: 1,
+						fontFamily: '"Georgia", serif',
+						fontWeight: 600,
+						fontSize: "0.9rem",
+						opacity: isFormValid ? 1 : 0.5,
+						"&:hover": {
+							backgroundColor: "#4A0E4E",
+							color: "#fff",
+							borderColor: "#4A0E4E",
+						},
+						"&.Mui-disabled": {
+							opacity: 0.5,
+							border: "2px solid #4A0E4E",
+							color: "#4A0E4E",
+						},
+					}}
+				>
+					Add to Cart
+				</Button>
+				<Button
+					onClick={handleCheckout}
+					disabled={!isFormValid}
+					sx={{
+						backgroundColor: "#E91E8C",
+						color: "#fff",
+						borderRadius: "30px",
+						px: 3,
+						py: 1,
+						fontFamily: '"Georgia", serif',
+						fontWeight: 600,
+						fontSize: "0.9rem",
+						opacity: isFormValid ? 1 : 0.5,
+						"&:hover": { backgroundColor: "#C2185B" },
+						"&.Mui-disabled": {
+							backgroundColor: "#F0C0D0",
+							color: "#fff",
+						},
+					}}
+				>
+					Proceed to Checkout
+				</Button>
+			</Box>
 
-      <SignInPrompt open={signInPromptOpen} onClose={() => setSignInPromptOpen(false)} />
-    </Box>
+			<SignInPrompt
+				open={signInPromptOpen}
+				onClose={() => setSignInPromptOpen(false)}
+			/>
+		</Box>
   );
 }
