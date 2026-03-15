@@ -32,6 +32,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import CloseIcon from '@mui/icons-material/Close';
 import StraightenIcon from '@mui/icons-material/Straighten';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import ScrollReveal from '../components/ScrollReveal';
 import PresetSizeGuide from "../components/PresetSizeGuide";
 import useProductCategories from '../hooks/useProductCategories';
@@ -1119,6 +1120,33 @@ export default function ProductsMenuPage() {
 																Preset Size Guide
 															</Button>
 														)}
+
+														<Button
+															size="small"
+															startIcon={<PlayCircleOutlineIcon sx={{ fontSize: 16 }} />}
+															onClick={(e) => {
+																e.stopPropagation();
+																window.open('https://www.instagram.com/chizzysstyles/', '_blank');
+															}}
+															sx={{
+																mt: 1,
+																border: '1.5px solid #4A0E4E',
+																borderRadius: '20px',
+																color: '#4A0E4E',
+																fontFamily: '"Georgia", serif',
+																fontWeight: 600,
+																fontSize: '0.75rem',
+																textTransform: 'none',
+																px: 2,
+																py: 0.5,
+																'&:hover': {
+																	backgroundColor: '#4A0E4E',
+																	color: '#fff',
+																},
+															}}
+														>
+															How to Apply
+														</Button>
 
 														{/* Notify Me button for out-of-stock — disabled until EmailJS plan upgrade
                             {oos && (

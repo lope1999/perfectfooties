@@ -50,6 +50,14 @@ import {
 } from '../lib/loyaltyService';
 import SignInPrompt from '../components/SignInPrompt';
 
+const LENGTH_SURCHARGE = {
+  'XS (Extra Short)': 0,
+  'S (Short)': 500,
+  'M (Medium)': 1000,
+  'L (Long)': 1500,
+  'XL (Extra Long)': 2000,
+};
+
 const ff = '"Georgia", serif';
 
 function formatNaira(amount) {
@@ -170,10 +178,12 @@ export default function ServiceDetailPage() {
 
   const effectivePrice = getServiceEffectivePrice(service, discounts);
   const discounted = hasServiceDiscount(service.id, discounts);
+  const lengthSurcharge = nailLength ? (LENGTH_SURCHARGE[nailLength] ?? 0) : 0;
+  const priceWithLength = effectivePrice + lengthSurcharge;
   const maxLoyaltyUnits = Math.floor(loyaltyBalance / REDEMPTION_UNIT);
-  const referralDiscount = referralValid ? Math.min(REFERRAL_DISCOUNT, effectivePrice) : 0;
-  const loyaltyDiscount = Math.min(loyaltyUnits * REDEMPTION_VALUE, Math.max(0, effectivePrice - referralDiscount));
-  const finalPrice = Math.max(0, effectivePrice - referralDiscount - loyaltyDiscount);
+  const referralDiscount = referralValid ? Math.min(REFERRAL_DISCOUNT, priceWithLength) : 0;
+  const loyaltyDiscount = Math.min(loyaltyUnits * REDEMPTION_VALUE, Math.max(0, priceWithLength - referralDiscount));
+  const finalPrice = Math.max(0, priceWithLength - referralDiscount - loyaltyDiscount);
   const depositAmount = Math.round(finalPrice * 0.5);
 
   const isFormValid = customerName.trim() && appointmentDate && appointmentTime && nailShape && nailLength;
@@ -202,16 +212,18 @@ export default function ServiceDetailPage() {
       ? `\n\n✅ Deposit Paid: ${formatNaira(depositAmount)} (Paystack Ref: ${paymentReference})`
       : `\n\n⚠️ Deposit: To be paid via WhatsApp`;
     const discountLines = [];
+    if (lengthSurcharge > 0) discountLines.push(`- Length add-on (${nailLength}): +${formatNaira(lengthSurcharge)}`);
     if (referralDiscount > 0) discountLines.push(`- Referral Code (${refCodeInput.toUpperCase()}): -${formatNaira(referralDiscount)}`);
     if (loyaltyDiscount > 0) discountLines.push(`- Loyalty Points (${loyaltyUnits * REDEMPTION_UNIT} pts): -${formatNaira(loyaltyDiscount)}`);
     const discountStr = discountLines.length > 0 ? `\n\nDiscounts:\n${discountLines.join('\n')}\nFinal Price: ${formatNaira(finalPrice)}` : '';
-    return `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nType: Salon Visit\nPreferred Date: ${fullDate}\nService: ${service.name}\nPrice: ${formatNaira(effectivePrice)}${discountStr}${depositInfo}\n\nDetails:\n- Nail Shape: ${nailShape}\n- Nail Length: ${nailLength}\n\nPlease confirm availability. Thank you!`;
+    return `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nType: Salon Visit\nPreferred Date: ${fullDate}\nService: ${service.name}\nPrice: ${formatNaira(priceWithLength)}${discountStr}${depositInfo}\n\nDetails:\n- Nail Shape: ${nailShape}\n- Nail Length: ${nailLength}\n\nPlease confirm availability. Thank you!`;
   };
 
-  const handleCompleteOrder = (paymentReference = '') => {
+  const handleCompleteOrder = (paymentReference = '', waWin = null) => {
     setPaymentModalOpen(false);
     const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
-    window.open(`https://api.whatsapp.com/send?phone=2349053714197&text=${encodeURIComponent(buildMessage(paymentReference))}`, '_blank');
+    const waUrl = `https://api.whatsapp.com/send?phone=2349053714197&text=${encodeURIComponent(buildMessage(paymentReference))}`;
+    if (waWin) { waWin.location.href = waUrl; } else { window.open(waUrl, '_blank'); }
 
     if (user) {
       saveOrder(user.uid, {
@@ -271,8 +283,9 @@ export default function ServiceDetailPage() {
   };
 
   const payWithPaystack = () => {
+    const waWin = window.open('about:blank', '_blank');
     const pk = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY) || '';
-    if (!pk || !window.PaystackPop) { handleCompleteOrder(''); return; }
+    if (!pk || !window.PaystackPop) { handleCompleteOrder('', waWin); return; }
     const handler = window.PaystackPop.setup({
       key: pk,
       email: user?.email || 'guest@chizzys.com',
@@ -280,8 +293,8 @@ export default function ServiceDetailPage() {
       currency: 'NGN',
       ref: `CHIZZYS-${Date.now()}`,
       metadata: { serviceName: service.name, appointmentDate, appointmentTime },
-      callback: (response) => handleCompleteOrder(response.reference),
-      onClose: () => {},
+      callback: (response) => handleCompleteOrder(response.reference, waWin),
+      onClose: () => { waWin?.close(); },
     });
     handler.openIframe();
   };
@@ -297,7 +310,7 @@ export default function ServiceDetailPage() {
     addServiceToCart({
       serviceId: service.id,
       name: service.name,
-      price: effectivePrice,
+      price: finalPrice,
       originalPrice: discounted ? service.price : undefined,
       discountLabel: discounted ? getServiceDiscountLabel(service.id, discounts) : undefined,
       date: fullDate,
@@ -367,6 +380,11 @@ export default function ServiceDetailPage() {
                   A 50% deposit is required to confirm your booking. The remaining balance is due on the day of your appointment.
                 </Typography>
               </Box>
+              <Box sx={{ p: 2, borderRadius: 2, backgroundColor: '#F3E5F5', border: '1px solid #CE93D8', mb: 2 }}>
+                <Typography sx={{ fontSize: '0.82rem', color: '#4A0E4E', lineHeight: 1.6 }}>
+                  💡 Prices are base estimates — final price may vary depending on design complexity and nail length.
+                </Typography>
+              </Box>
               <Box sx={{ p: 2, borderRadius: 2, backgroundColor: '#FFF8E1', border: '1px solid #FFD54F' }}>
                 <Typography sx={{ fontSize: '0.82rem', color: '#5D4037', lineHeight: 1.6 }}>{removalNote}</Typography>
               </Box>
@@ -421,6 +439,12 @@ export default function ServiceDetailPage() {
                   {nailLengths.map((len) => <MenuItem key={len} value={len}>{len}</MenuItem>)}
                 </Select>
               </FormControl>
+
+              {nailLength && lengthSurcharge > 0 && (
+                <Typography sx={{ fontSize: '0.78rem', color: '#4A0E4E', fontWeight: 600, mt: -2, mb: 3 }}>
+                  + {formatNaira(lengthSurcharge)} length surcharge · Subtotal: {formatNaira(priceWithLength)}
+                </Typography>
+              )}
 
               {/* ── Discounts section ── */}
               <Box sx={{ borderTop: '1px solid #F0C0D0', pt: 2.5, mb: 2.5 }}>
@@ -493,12 +517,18 @@ export default function ServiceDetailPage() {
                 )}
 
                 {/* Price summary */}
-                {(referralDiscount > 0 || loyaltyDiscount > 0) && (
+                {(referralDiscount > 0 || loyaltyDiscount > 0 || lengthSurcharge > 0) && (
                   <Box sx={{ mt: 2, p: 1.5, borderRadius: 2, backgroundColor: '#F1F8E9', border: '1px solid #C5E1A5' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography sx={{ fontSize: '0.82rem', color: '#555' }}>Original price</Typography>
+                      <Typography sx={{ fontSize: '0.82rem', color: '#555' }}>Base price</Typography>
                       <Typography sx={{ fontSize: '0.82rem', color: '#555', textDecoration: 'line-through' }}>{formatNaira(effectivePrice)}</Typography>
                     </Box>
+                    {lengthSurcharge > 0 && (
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                        <Typography sx={{ fontSize: '0.82rem', color: '#4A0E4E' }}>Length add-on ({nailLength.split(' ')[0]})</Typography>
+                        <Typography sx={{ fontSize: '0.82rem', color: '#4A0E4E', fontWeight: 700 }}>+{formatNaira(lengthSurcharge)}</Typography>
+                      </Box>
+                    )}
                     {referralDiscount > 0 && (
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                         <Typography sx={{ fontSize: '0.82rem', color: '#2e7d32' }}>Referral discount</Typography>

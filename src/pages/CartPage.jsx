@@ -120,7 +120,7 @@ export default function CartPage() {
     return;
   };
 
-  const handleCompleteServiceOrder = async (paymentReference = '') => {
+  const handleCompleteServiceOrder = async (paymentReference = '', waWin = null) => {
     setPaymentModalOpen(false);
     setCheckoutLoading(true);
 
@@ -168,7 +168,7 @@ export default function CartPage() {
     const message = `Hi! I\u2019d like to place a combined order.\n\n${lines.join('\n')}\n${totalLine}${depositLine}\n\nPlease confirm availability and payment details. Thank you!`;
     const encoded = encodeURIComponent(message);
     const whatsAppUrl = `https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`;
-    window.open(whatsAppUrl, '_blank');
+    if (waWin) { waWin.location.href = whatsAppUrl; } else { window.open(whatsAppUrl, '_blank'); }
 
     // Async operations after window.open
     try {
@@ -287,8 +287,9 @@ export default function CartPage() {
   };
 
   const payWithPaystackCart = () => {
+    const waWin = window.open('about:blank', '_blank');
     const pk = import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY || '';
-    if (!pk || !window.PaystackPop) { handleCompleteServiceOrder(''); return; }
+    if (!pk || !window.PaystackPop) { handleCompleteServiceOrder('', waWin); return; }
     const handler = window.PaystackPop.setup({
       key: pk,
       email: user?.email || 'guest@chizzys.com',
@@ -296,8 +297,8 @@ export default function CartPage() {
       currency: 'NGN',
       ref: `CHIZZYS-APT-${Date.now()}`,
       metadata: { appointmentCount: services.length },
-      callback: (response) => handleCompleteServiceOrder(response.reference),
-      onClose: () => {},
+      callback: (response) => handleCompleteServiceOrder(response.reference, waWin),
+      onClose: () => { waWin?.close(); },
     });
     handler.openIframe();
   };

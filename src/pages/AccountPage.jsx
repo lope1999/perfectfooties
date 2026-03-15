@@ -297,7 +297,7 @@ export default function AccountPage() {
 		}
 	};
 
-	const serviceOrders = orders.filter((o) => o.type === "service");
+	const serviceOrders = orders.filter((o) => o.type === "service" || o.type === "mixed");
 	const otherOrders = orders.filter((o) => o.type !== "service");
 	const reviewCount = Object.keys(ratedOrders).length;
 	const giftCardOrders = orders.filter((o) =>
@@ -2115,7 +2115,7 @@ function OrderCard({ order, rated, onRate, onReschedule, onCancel }) {
 					</Button>
 				</Box>
 			)}
-		{order.type === 'service' && (order.status === 'pending' || order.status === 'confirmed') && (
+		{(order.type === 'service' || order.type === 'mixed') && (order.status === 'pending' || order.status === 'confirmed') && (
 			<Box sx={{ mt: 1.5, display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
 				{order.status === 'confirmed' && (
 					<Button

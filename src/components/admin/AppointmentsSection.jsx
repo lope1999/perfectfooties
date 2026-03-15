@@ -99,7 +99,7 @@ function StatCard({ icon, label, value, color }) {
 }
 
 export default function AppointmentsSection({ orders, loading, onRefresh }) {
-  const serviceOrders = useMemo(() => orders.filter((o) => o.type === 'service'), [orders]);
+  const serviceOrders = useMemo(() => orders.filter((o) => o.type === 'service' || o.type === 'mixed'), [orders]);
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');

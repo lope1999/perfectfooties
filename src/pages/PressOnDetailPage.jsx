@@ -13,6 +13,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -218,19 +219,37 @@ export default function PressOnDetailPage() {
           sx={{ width: '100%', height: { xs: 280, md: 400 }, objectFit: 'cover', display: 'block' }}
         />
         {/* Back button overlay */}
-        <IconButton
-          onClick={() => navigate('/products')}
-          sx={{
-            position: 'absolute',
-            top: 16,
-            left: 16,
-            backgroundColor: 'rgba(255,255,255,0.9)',
-            '&:hover': { backgroundColor: '#fff' },
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          }}
-        >
-          <ArrowBackIcon sx={{ color: '#E91E8C' }} />
-        </IconButton>
+        <Box sx={{ position: 'absolute', top: 16, left: 16, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <IconButton
+            onClick={() => navigate('/products')}
+            sx={{
+              backgroundColor: 'rgba(255,255,255,0.9)',
+              '&:hover': { backgroundColor: '#fff' },
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            }}
+          >
+            <ArrowBackIcon sx={{ color: '#E91E8C' }} />
+          </IconButton>
+          <Button
+            startIcon={<PlayCircleOutlineIcon />}
+            onClick={() => window.open('https://www.instagram.com/chizzysstyles/', '_blank')}
+            sx={{
+              color: '#4A0E4E',
+              fontFamily: '"Georgia", serif',
+              fontWeight: 600,
+              fontSize: '0.82rem',
+              textTransform: 'none',
+              border: '1.5px solid #4A0E4E',
+              borderRadius: '20px',
+              px: 2,
+              py: 0.5,
+              backgroundColor: 'rgba(255,255,255,0.9)',
+              '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' },
+            }}
+          >
+            How to Apply
+          </Button>
+        </Box>
       </Box>
 
       <Container maxWidth="sm" sx={{ py: 3 }}>
