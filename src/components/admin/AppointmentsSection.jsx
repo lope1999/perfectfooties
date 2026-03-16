@@ -32,6 +32,7 @@ import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import AddIcon from '@mui/icons-material/Add';
 import HomeIcon from '@mui/icons-material/Home';
 import StoreIcon from '@mui/icons-material/Store';
@@ -99,6 +100,12 @@ function StatCard({ icon, label, value, color }) {
 }
 
 export default function AppointmentsSection({ orders, loading, onRefresh }) {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try { await onRefresh(); } finally { setRefreshing(false); }
+  };
   const serviceOrders = useMemo(() => orders.filter((o) => o.type === 'service' || o.type === 'mixed'), [orders]);
 
   const [search, setSearch] = useState('');
@@ -328,6 +335,17 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
           Appointments ({filtered.length})
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title="Refresh appointments">
+            <span>
+              <IconButton
+                onClick={handleRefresh}
+                disabled={refreshing || loading}
+                sx={{ border: '1px solid #E0E0E0', borderRadius: 2, '&:hover': { backgroundColor: '#F3E5F5' } }}
+              >
+                <RefreshIcon sx={{ fontSize: 20, color: '#4A0E4E', transition: 'transform 0.4s', transform: refreshing ? 'rotate(360deg)' : 'rotate(0deg)' }} />
+              </IconButton>
+            </span>
+          </Tooltip>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
