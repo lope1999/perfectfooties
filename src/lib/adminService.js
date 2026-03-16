@@ -277,6 +277,57 @@ export async function removeServiceDiscount(serviceId) {
   return deleteDoc(ref);
 }
 
+// ─── Service Category + Service Item CRUD ───────────────
+
+export async function addServiceCategory(id, data) {
+  const ref = doc(db, 'serviceCategories', id);
+  const snap = await getDocs(collection(db, 'serviceCategories'));
+  return setDoc(ref, { ...data, services: data.services || [], order: snap.size });
+}
+
+export async function updateServiceCategory(id, updates) {
+  const ref = doc(db, 'serviceCategories', id);
+  return updateDoc(ref, updates);
+}
+
+export async function deleteServiceCategory(id) {
+  const ref = doc(db, 'serviceCategories', id);
+  return deleteDoc(ref);
+}
+
+export async function addServiceItem(categoryId, item) {
+  const ref = doc(db, 'serviceCategories', categoryId);
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(ref);
+    if (!snap.exists()) throw new Error(`Category ${categoryId} not found`);
+    const services = [...(snap.data().services || [])];
+    services.push({ ...item, id: item.id || crypto.randomUUID() });
+    transaction.update(ref, { services });
+  });
+}
+
+export async function updateServiceItem(categoryId, serviceId, updates) {
+  const ref = doc(db, 'serviceCategories', categoryId);
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(ref);
+    if (!snap.exists()) throw new Error(`Category ${categoryId} not found`);
+    const services = (snap.data().services || []).map((s) =>
+      s.id === serviceId ? { ...s, ...updates } : s
+    );
+    transaction.update(ref, { services });
+  });
+}
+
+export async function deleteServiceItem(categoryId, serviceId) {
+  const ref = doc(db, 'serviceCategories', categoryId);
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(ref);
+    if (!snap.exists()) throw new Error(`Category ${categoryId} not found`);
+    const services = (snap.data().services || []).filter((s) => s.id !== serviceId);
+    transaction.update(ref, { services });
+  });
+}
+
 // ─── Stats ──────────────────────────────────────────────
 
 export function computeDashboardStats(orders) {

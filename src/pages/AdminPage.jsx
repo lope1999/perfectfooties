@@ -9,16 +9,18 @@ import AppointmentsSection from '../components/admin/AppointmentsSection';
 import ProductsSection from '../components/admin/ProductsSection';
 import CustomersSection from '../components/admin/CustomersSection';
 import ServiceDiscountsSection from '../components/admin/ServiceDiscountsSection';
+import ServicesSection from '../components/admin/ServicesSection';
 import GiftCardsSection from '../components/admin/GiftCardsSection';
 import BlogPostsSection from '../components/admin/BlogPostsSection';
 import GallerySection from '../components/admin/GallerySection';
 import LoyaltySection from '../components/admin/LoyaltySection';
-import { fetchAllOrders, seedAndFetchCategories, fetchAllUsers, computeUserStats, fetchServiceDiscounts } from '../lib/adminService';
+import { fetchAllOrders, seedAndFetchCategories, fetchAllUsers, computeUserStats, fetchServiceDiscounts, fetchCategories } from '../lib/adminService';
 import { fetchGalleryImages } from '../lib/galleryService';
 import { fetchAllGiftCards } from '../lib/giftCardService';
 import { seedAndFetchBlogPosts } from '../lib/blogService';
 import { productCategories as staticPressOns } from '../data/products';
 import { retailCategories as staticRetail } from '../data/retailProducts';
+import { serviceCategories as staticServiceCategories } from '../data/services';
 import { blogPosts as staticBlogPosts } from '../data/blog';
 
 export default function AdminPage() {
@@ -33,6 +35,7 @@ export default function AdminPage() {
   const [galleryImages, setGalleryImages] = useState([]);
   const [users, setUsers] = useState([]);
   const [serviceDiscounts, setServiceDiscounts] = useState({});
+  const [serviceCategories, setServiceCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const theme = useTheme();
@@ -42,13 +45,14 @@ export default function AdminPage() {
     setLoading(true);
     try {
       // Seed + fetch categories in one read each, all requests in parallel
-      const [o, pc, rc, gc, uf, sd, bp, gi] = await Promise.allSettled([
+      const [o, pc, rc, gc, uf, sd, sc, bp, gi] = await Promise.allSettled([
         fetchAllOrders(),
         seedAndFetchCategories('productCategories', staticPressOns),
         seedAndFetchCategories('retailCategories', staticRetail),
         fetchAllGiftCards(),
         fetchAllUsers(),
         fetchServiceDiscounts(),
+        seedAndFetchCategories('serviceCategories', staticServiceCategories),
         seedAndFetchBlogPosts(staticBlogPosts),
         fetchGalleryImages(),
       ]);
@@ -72,6 +76,11 @@ export default function AdminPage() {
       const allOrders = o.status === 'fulfilled' ? o.value : [];
       setUsers(computeUserStats(rawUsers, allOrders));
       setServiceDiscounts(sd.status === 'fulfilled' ? sd.value : {});
+      if (sc.status === 'fulfilled') {
+        setServiceCategories(sc.value);
+      } else {
+        setServiceCategories(staticServiceCategories);
+      }
     } catch (err) {
       console.error('Admin data load error:', err);
       setPressOnCategories(staticPressOns);
@@ -125,13 +134,7 @@ export default function AdminPage() {
       case 'customers':
         return <CustomersSection users={users} loading={loading} />;
       case 'services':
-        return (
-          <ServiceDiscountsSection
-            serviceDiscounts={serviceDiscounts}
-            loading={loading}
-            onRefresh={loadData}
-          />
-        );
+        return <ServicesSection serviceCategories={serviceCategories} serviceDiscounts={serviceDiscounts} loading={loading} onRefresh={loadData} />;
       case 'blog':
         return (
           <BlogPostsSection

@@ -12,7 +12,7 @@ import {
   Chip,
 } from '@mui/material';
 import LoginIcon from '@mui/icons-material/Login';
-import { serviceCategories } from '../data/services';
+import useServiceCategories from '../hooks/useServiceCategories';
 import { useAuth } from '../context/AuthContext';
 import useServiceDiscounts from '../hooks/useServiceDiscounts';
 import { hasServiceDiscount, getServiceEffectivePrice, getServiceDiscountLabel } from '../lib/discountUtils';
@@ -29,6 +29,7 @@ export default function ServiceMenuPage() {
   const navigate = useNavigate();
   const { user, signInWithGoogle } = useAuth();
   const { discounts } = useServiceDiscounts();
+  const { categories: serviceCategories } = useServiceCategories();
   const [signingIn, setSigningIn] = useState(false);
 
   const handleSignIn = async () => {

@@ -29,7 +29,8 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import StarIcon from '@mui/icons-material/Star';
-import { serviceCategories, nailLengths, removalNote } from '../data/services';
+import { nailLengths, removalNote } from '../data/services';
+import useServiceCategories from '../hooks/useServiceCategories';
 import useServiceDiscounts from '../hooks/useServiceDiscounts';
 import { hasServiceDiscount, getServiceEffectivePrice, getServiceDiscountLabel } from '../lib/discountUtils';
 import NailShapeSelector from '../components/NailShapeSelector';
@@ -85,11 +86,13 @@ export default function ServiceDetailPage() {
   const { addService: addServiceToCart } = useCart();
   const { discounts } = useServiceDiscounts();
 
+  const { categories, loading: categoriesLoading } = useServiceCategories();
+
   // Find service from all categories
   let service = null;
   let category = null;
-  for (const cat of serviceCategories) {
-    const found = cat.services.find((s) => s.id === serviceId);
+  for (const cat of categories) {
+    const found = (cat.services || []).find((s) => s.id === serviceId);
     if (found) { service = found; category = cat; break; }
   }
 
@@ -169,6 +172,14 @@ export default function ServiceDetailPage() {
       .catch(() => setBookedSlots([]))
       .finally(() => setSlotsLoading(false));
   }, [appointmentDate]);
+
+  if (categoriesLoading) {
+    return (
+      <Box sx={{ pt: 14, display: 'flex', justifyContent: 'center', py: 8 }}>
+        <CircularProgress sx={{ color: '#E91E8C' }} />
+      </Box>
+    );
+  }
 
   if (!service || !category) {
     return (
