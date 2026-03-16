@@ -18,6 +18,8 @@ import {
 	IconButton,
 	Tooltip,
 	Divider,
+	Snackbar,
+	Alert,
 } from "@mui/material";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
@@ -183,6 +185,7 @@ export default function AccountPage() {
 	const [rateDialog, setRateDialog] = useState(null);
 	const [cancelDialog, setCancelDialog] = useState(null);
 	const [cancelLoading, setCancelLoading] = useState(false);
+	const [cancelError, setCancelError] = useState(false);
 
 	// Loyalty & referral state (from Firestore)
 	const [firestorePoints, setFirestorePoints] = useState(null); // null = loading
@@ -281,17 +284,23 @@ export default function AccountPage() {
 
 	const handleCancelAppointment = async () => {
 		if (!cancelDialog) return;
+		const id = cancelDialog.id;
+		const prevStatus = cancelDialog.status;
 		setCancelLoading(true);
+		setCancelError(false);
+		// Optimistic update — card reflects cancelled immediately
+		setOrders((prev) =>
+			prev.map((o) => (o.id === id ? { ...o, status: 'cancelled' } : o)),
+		);
+		setCancelDialog(null);
 		try {
-			await updateOrderStatus(user.uid, cancelDialog.id, 'cancelled');
-			setOrders((prev) =>
-				prev.map((o) =>
-					o.id === cancelDialog.id ? { ...o, status: 'cancelled' } : o,
-				),
-			);
-			setCancelDialog(null);
+			await updateOrderStatus(user.uid, id, 'cancelled');
 		} catch (_) {
-			// ignore
+			// Revert if Firestore write fails
+			setOrders((prev) =>
+				prev.map((o) => (o.id === id ? { ...o, status: prevStatus } : o)),
+			);
+			setCancelError(true);
 		} finally {
 			setCancelLoading(false);
 		}
@@ -1483,6 +1492,18 @@ export default function AccountPage() {
 						)}
 					</Box>
 				)}
+
+				{/* ── Cancel error snackbar ── */}
+				<Snackbar
+					open={cancelError}
+					autoHideDuration={4000}
+					onClose={() => setCancelError(false)}
+					anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+				>
+					<Alert severity="error" onClose={() => setCancelError(false)} sx={{ fontFamily: ff }}>
+						Could not cancel — please try again.
+					</Alert>
+				</Snackbar>
 
 				{/* ── Cancel Appointment Dialog ── */}
 				<Dialog
