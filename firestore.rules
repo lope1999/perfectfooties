@@ -22,7 +22,11 @@ service cloud.firestore {
                       && request.resource.data.total is number
                       && request.resource.data.customerName is string
                       && request.resource.data.customerName.size() <= 200;
-        allow update, delete: if isAdmin();
+        // Users can cancel their own orders; admin can do anything
+        allow update: if isAdmin()
+                      || (request.auth != null && request.auth.uid == uid
+                          && request.resource.data.status == 'cancelled');
+        allow delete: if isAdmin();
       }
     }
 
@@ -127,6 +131,15 @@ service cloud.firestore {
     // --- Loyalty Adjustments (admin only) ---
     match /loyaltyAdjustments/{docId} {
       allow read, write: if isAdmin();
+    }
+
+    // --- Cancellation Requests (authenticated create, admin read/write) ---
+    match /cancellationRequests/{docId} {
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasAll(['orderId', 'uid', 'reason'])
+                    && request.resource.data.reason is string
+                    && request.resource.data.reason.size() <= 1000;
+      allow read, update, delete: if isAdmin();
     }
 
     // --- Collection group query for admin to fetch all orders ---

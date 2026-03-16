@@ -20,6 +20,10 @@ import {
 	Divider,
 	Snackbar,
 	Alert,
+	Select,
+	MenuItem,
+	FormControl,
+	InputLabel,
 } from "@mui/material";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
@@ -47,6 +51,7 @@ import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { fetchOrders, updateOrderStatus } from "../lib/orderService";
+import { addCancellationRequest } from "../lib/cancellationService";
 import {
 	saveTestimonial,
 	getReviewedOrderIds,
@@ -184,6 +189,8 @@ export default function AccountPage() {
 	const [ratedOrders, setRatedOrders] = useState({});
 	const [rateDialog, setRateDialog] = useState(null);
 	const [cancelDialog, setCancelDialog] = useState(null);
+	const [cancelReason, setCancelReason] = useState('');
+	const [cancelReasonOther, setCancelReasonOther] = useState('');
 	const [cancelLoading, setCancelLoading] = useState(false);
 	const [cancelError, setCancelError] = useState(false);
 
@@ -283,9 +290,11 @@ export default function AccountPage() {
 	};
 
 	const handleCancelAppointment = async () => {
-		if (!cancelDialog) return;
+		if (!cancelDialog || !cancelReason) return;
 		const id = cancelDialog.id;
 		const prevStatus = cancelDialog.status;
+		const finalReason = cancelReason === 'Other' ? cancelReasonOther.trim() : cancelReason;
+		if (!finalReason) return;
 		setCancelLoading(true);
 		setCancelError(false);
 		// Optimistic update — card reflects cancelled immediately
@@ -295,6 +304,17 @@ export default function AccountPage() {
 		setCancelDialog(null);
 		try {
 			await updateOrderStatus(user.uid, id, 'cancelled');
+			// Save cancellation reason to Firestore for admin review
+			await addCancellationRequest({
+				orderId: id,
+				uid: user.uid,
+				customerName: cancelDialog.customerName || user.displayName || '',
+				customerEmail: user.email || '',
+				orderType: cancelDialog.type || '',
+				serviceName: cancelDialog.items?.[0]?.serviceName || cancelDialog.items?.[0]?.name || '',
+				appointmentDate: cancelDialog.appointmentDate || '',
+				reason: finalReason,
+			});
 		} catch (_) {
 			// Revert if Firestore write fails
 			setOrders((prev) =>
@@ -303,6 +323,8 @@ export default function AccountPage() {
 			setCancelError(true);
 		} finally {
 			setCancelLoading(false);
+			setCancelReason('');
+			setCancelReasonOther('');
 		}
 	};
 
@@ -1508,29 +1530,63 @@ export default function AccountPage() {
 				{/* ── Cancel Appointment Dialog ── */}
 				<Dialog
 					open={!!cancelDialog}
-					onClose={() => setCancelDialog(null)}
-					PaperProps={{ sx: { borderRadius: 4, p: 1, maxWidth: 380 } }}
+					onClose={() => { setCancelDialog(null); setCancelReason(''); setCancelReasonOther(''); }}
+					PaperProps={{ sx: { borderRadius: 4, p: 1, maxWidth: 420 } }}
 				>
 					<DialogTitle sx={{ pb: 0 }}>
 						<Typography variant="h6" sx={{ fontFamily: ff, fontWeight: 700, color: '#d32f2f' }}>
-							Cancel Appointment?
+							Cancel {cancelDialog?.type === 'service' ? 'Appointment' : 'Order'}?
 						</Typography>
 					</DialogTitle>
 					<DialogContent>
-						<Typography sx={{ color: '#555', fontSize: '0.9rem', mt: 1 }}>
-							This will cancel your appointment for{" "}
-							<strong>{cancelDialog?.items?.[0]?.serviceName || 'this service'}</strong>
+						<Typography sx={{ color: '#555', fontSize: '0.9rem', mt: 1, mb: 2.5 }}>
+							You are cancelling{" "}
+							<strong>{cancelDialog?.items?.[0]?.serviceName || cancelDialog?.items?.[0]?.name || 'this item'}</strong>
 							{cancelDialog?.appointmentDate ? <> on <strong>{cancelDialog.appointmentDate}</strong></> : null}.
-							{" "}This action cannot be undone.
+							{" "}This action cannot be undone. Please tell us why:
 						</Typography>
+						<FormControl fullWidth size="small" sx={{ mb: cancelReason === 'Other' ? 2 : 0 }}>
+							<InputLabel sx={{ fontFamily: ff }}>Reason for cancelling</InputLabel>
+							<Select
+								value={cancelReason}
+								label="Reason for cancelling"
+								onChange={(e) => { setCancelReason(e.target.value); setCancelReasonOther(''); }}
+								sx={{ fontFamily: ff, borderRadius: 2 }}
+							>
+								<MenuItem value="Wrong order / appointment booked" sx={{ fontFamily: ff }}>Wrong order / appointment booked</MenuItem>
+								<MenuItem value="Price too high" sx={{ fontFamily: ff }}>Price too high</MenuItem>
+								<MenuItem value="Schedule conflict" sx={{ fontFamily: ff }}>Schedule conflict / can't make it</MenuItem>
+								<MenuItem value="Changed my mind" sx={{ fontFamily: ff }}>Changed my mind</MenuItem>
+								<MenuItem value="Booked by mistake" sx={{ fontFamily: ff }}>Booked by mistake</MenuItem>
+								<MenuItem value="Found a better option" sx={{ fontFamily: ff }}>Found a better option</MenuItem>
+								<MenuItem value="Personal emergency" sx={{ fontFamily: ff }}>Personal emergency</MenuItem>
+								<MenuItem value="Other" sx={{ fontFamily: ff }}>Other</MenuItem>
+							</Select>
+						</FormControl>
+						{cancelReason === 'Other' && (
+							<TextField
+								fullWidth
+								size="small"
+								multiline
+								minRows={2}
+								placeholder="Please describe your reason..."
+								value={cancelReasonOther}
+								onChange={(e) => setCancelReasonOther(e.target.value)}
+								inputProps={{ maxLength: 500 }}
+								sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontFamily: ff } }}
+							/>
+						)}
 					</DialogContent>
 					<DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
-						<Button onClick={() => setCancelDialog(null)} sx={{ color: '#777', fontFamily: ff, fontWeight: 600, textTransform: 'none' }}>
-							Keep Appointment
+						<Button
+							onClick={() => { setCancelDialog(null); setCancelReason(''); setCancelReasonOther(''); }}
+							sx={{ color: '#777', fontFamily: ff, fontWeight: 600, textTransform: 'none' }}
+						>
+							Keep {cancelDialog?.type === 'service' ? 'Appointment' : 'Order'}
 						</Button>
 						<Button
 							onClick={handleCancelAppointment}
-							disabled={cancelLoading}
+							disabled={cancelLoading || !cancelReason || (cancelReason === 'Other' && !cancelReasonOther.trim())}
 							sx={{ backgroundColor: '#d32f2f', color: '#fff', borderRadius: '20px', px: 3, fontFamily: ff, fontWeight: 600, textTransform: 'none', '&:hover': { backgroundColor: '#b71c1c' }, '&.Mui-disabled': { backgroundColor: '#ffcdd2', color: '#fff' } }}
 						>
 							{cancelLoading ? 'Cancelling…' : 'Yes, Cancel'}

@@ -14,6 +14,7 @@ import GiftCardsSection from '../components/admin/GiftCardsSection';
 import BlogPostsSection from '../components/admin/BlogPostsSection';
 import GallerySection from '../components/admin/GallerySection';
 import LoyaltySection from '../components/admin/LoyaltySection';
+import CancellationsSection from '../components/admin/CancellationsSection';
 import { fetchAllOrders, seedAndFetchCategories, fetchAllUsers, computeUserStats, fetchServiceDiscounts, fetchCategories } from '../lib/adminService';
 import { fetchGalleryImages } from '../lib/galleryService';
 import { fetchAllGiftCards } from '../lib/giftCardService';
@@ -161,6 +162,8 @@ export default function AdminPage() {
         );
       case 'loyalty':
         return <LoyaltySection loading={loading} />;
+      case 'cancellations':
+        return <CancellationsSection />;
       default:
         return null;
     }

@@ -22,6 +22,7 @@ import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import PeopleIcon from '@mui/icons-material/People';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import CancelIcon from '@mui/icons-material/Cancel';
 import CloseIcon from '@mui/icons-material/Close';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -41,6 +42,7 @@ const sections = [
   { key: 'blog', label: 'Blog Posts', icon: <ArticleIcon /> },
   { key: 'giftcards', label: 'Gift Cards', icon: <CardGiftcardIcon /> },
   { key: 'gallery', label: 'Gallery', icon: <PhotoLibraryIcon /> },
+  { key: 'cancellations', label: 'Cancellations', icon: <CancelIcon /> },
 ];
 
 export default function AdminSidebar({ active, onSelect, mobileOpen, onMobileClose, collapsed, onToggleCollapse }) {
