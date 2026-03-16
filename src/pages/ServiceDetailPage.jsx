@@ -19,6 +19,7 @@ import {
   CircularProgress,
   IconButton,
   Collapse,
+  Switch,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EventNoteIcon from '@mui/icons-material/EventNote';
@@ -96,6 +97,8 @@ export default function ServiceDetailPage() {
   const [customerName, setCustomerName] = useState('');
   const [nailShape, setNailShape] = useState('');
   const [nailLength, setNailLength] = useState('');
+  const [hasExtensions, setHasExtensions] = useState(false);
+  const [extensionType, setExtensionType] = useState('');
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('');
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -216,14 +219,18 @@ export default function ServiceDetailPage() {
     if (referralDiscount > 0) discountLines.push(`- Referral Code (${refCodeInput.toUpperCase()}): -${formatNaira(referralDiscount)}`);
     if (loyaltyDiscount > 0) discountLines.push(`- Loyalty Points (${loyaltyUnits * REDEMPTION_UNIT} pts): -${formatNaira(loyaltyDiscount)}`);
     const discountStr = discountLines.length > 0 ? `\n\nDiscounts:\n${discountLines.join('\n')}\nFinal Price: ${formatNaira(finalPrice)}` : '';
-    return `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nType: Salon Visit\nPreferred Date: ${fullDate}\nService: ${service.name}\nPrice: ${formatNaira(priceWithLength)}${discountStr}${depositInfo}\n\nDetails:\n- Nail Shape: ${nailShape}\n- Nail Length: ${nailLength}\n\nPlease confirm availability. Thank you!`;
+    const extensionLine = hasExtensions === true
+      ? `\n- Existing Extensions: Yes (${extensionType || 'Type not specified'})`
+      : hasExtensions === false
+      ? '\n- Existing Extensions: No'
+      : '';
+    return `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nType: Salon Visit\nPreferred Date: ${fullDate}\nService: ${service.name}\nPrice: ${formatNaira(priceWithLength)}${discountStr}${depositInfo}\n\nDetails:\n- Nail Shape: ${nailShape}\n- Nail Length: ${nailLength}${extensionLine}\n\nPlease confirm availability. Thank you!`;
   };
 
   const handleCompleteOrder = (paymentReference = '') => {
     setPaymentModalOpen(false);
     const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
     const waUrl = `https://api.whatsapp.com/send?phone=2349053714197&text=${encodeURIComponent(buildMessage(paymentReference))}`;
-    if (!paymentReference) window.open(waUrl, '_blank');
 
     if (user) {
       saveOrder(user.uid, {
@@ -242,6 +249,8 @@ export default function ServiceDetailPage() {
           date: fullDate,
           nailShape,
           nailLength,
+          hasExtensions,
+          extensionType: hasExtensions ? extensionType : '',
         }],
       }).then((orderRef) => {
         saveBookedSlot({ date: formatDate(appointmentDate), time: appointmentTime, orderId: orderRef.id, uid: user.uid }).catch(() => {});
@@ -259,8 +268,6 @@ export default function ServiceDetailPage() {
         }
       }).catch(() => {});
     }
-    // Push /thank-you into history FIRST, then navigate to WhatsApp.
-    // History stack becomes [..., /thank-you, whatsapp] so pressing back returns to thank-you page.
     navigate('/thank-you', {
       state: {
         type: 'service',
@@ -272,6 +279,8 @@ export default function ServiceDetailPage() {
         referralDiscount,
         loyaltyDiscount,
         depositAmount,
+        whatsappUrl: waUrl,
+        paidDeposit: !!paymentReference,
         items: [{
           kind: 'service',
           serviceName: service.name,
@@ -279,10 +288,11 @@ export default function ServiceDetailPage() {
           date: `${formatDate(appointmentDate)} at ${appointmentTime}`,
           nailShape,
           nailLength,
+          hasExtensions,
+          extensionType: hasExtensions ? extensionType : '',
         }],
       },
     });
-    if (paymentReference) window.location.href = waUrl;
   };
 
   const payWithPaystack = () => {
@@ -319,6 +329,8 @@ export default function ServiceDetailPage() {
       nailShape,
       nailLength,
       customerName: customerName.trim(),
+      hasExtensions,
+      extensionType: hasExtensions ? extensionType : '',
     });
     navigate('/services');
   };
@@ -447,6 +459,51 @@ export default function ServiceDetailPage() {
                   + {formatNaira(lengthSurcharge)} length surcharge · Subtotal: {formatNaira(priceWithLength)}
                 </Typography>
               )}
+
+              {/* ── Existing Extensions ── */}
+              <Box sx={{ mb: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography sx={{ fontFamily: ff, fontWeight: 600, fontSize: '0.9rem' }}>
+                      Existing extensions?
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.73rem', color: '#aaa' }}>
+                      Toggle on if you&apos;re coming in with extensions
+                    </Typography>
+                  </Box>
+                  <Switch
+                    checked={hasExtensions}
+                    onChange={(e) => { setHasExtensions(e.target.checked); if (!e.target.checked) setExtensionType(''); }}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': { color: '#E91E8C' },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#E91E8C' },
+                    }}
+                  />
+                </Box>
+
+                <Collapse in={hasExtensions}>
+                  <Box sx={{ mt: 1.5 }}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel sx={{ '&.Mui-focused': { color: '#E91E8C' } }}>Type of extension</InputLabel>
+                      <Select
+                        value={extensionType}
+                        label="Type of extension"
+                        onChange={(e) => setExtensionType(e.target.value)}
+                        sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#F0C0D0' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' } }}
+                      >
+                        {['Acrylic', 'Hard Gel', 'Gel X', 'Overlay'].map((ext) => (
+                          <MenuItem key={ext} value={ext}>{ext}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <Box sx={{ mt: 1, p: 1.2, borderRadius: 2, backgroundColor: '#FFF8E1', border: '1px solid #FFD54F' }}>
+                      <Typography sx={{ fontSize: '0.75rem', color: '#5D4037', lineHeight: 1.55 }}>
+                        ⚠️ Removal of existing extensions may attract an additional fee. Our technician will advise you on the day.
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Collapse>
+              </Box>
 
               {/* ── Discounts section ── */}
               <Box sx={{ borderTop: '1px solid #F0C0D0', pt: 2.5, mb: 2.5 }}>
@@ -611,6 +668,11 @@ export default function ServiceDetailPage() {
             <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: '#4A0E4E', mb: 0.5 }}>{service.name}</Typography>
             <Typography sx={{ fontSize: '0.85rem', color: '#555' }}>{formatDate(appointmentDate)} at {appointmentTime}</Typography>
             <Typography sx={{ fontSize: '0.85rem', color: '#555' }}>Shape: {nailShape} · Length: {nailLength}</Typography>
+            {hasExtensions !== null && (
+              <Typography sx={{ fontSize: '0.85rem', color: '#555' }}>
+                Existing extensions: {hasExtensions ? `Yes — ${extensionType || 'type not specified'}` : 'No'}
+              </Typography>
+            )}
             {(referralDiscount > 0 || loyaltyDiscount > 0) && (
               <Box sx={{ mt: 1, pt: 1, borderTop: '1px dashed #F0C0D0' }}>
                 {referralDiscount > 0 && <Typography sx={{ fontSize: '0.78rem', color: '#2e7d32' }}>Referral: -{formatNaira(referralDiscount)}</Typography>}

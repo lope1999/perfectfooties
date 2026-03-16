@@ -43,6 +43,7 @@ export default function ThankYouPage() {
   const navigate = useNavigate();
   const state = location.state || {};
   const [show, setShow] = useState(false);
+  const [waOpened, setWaOpened] = useState(false);
 
   const isReschedule = !!state.isReschedule;
   const isAppointment =
@@ -51,10 +52,23 @@ export default function ThankYouPage() {
     state.type === 'appointment' ||
     (state.appointmentDate && !state.items?.some?.((i) => i.kind !== 'service'));
 
+  const whatsappUrl = state.whatsappUrl || '';
+
   useEffect(() => {
     const t = setTimeout(() => setShow(true), 80);
     return () => clearTimeout(t);
   }, []);
+
+  // Attempt auto-redirect to WhatsApp once page is visible.
+  // Works on most Android browsers; iOS Safari requires a direct user tap (button below handles that).
+  useEffect(() => {
+    if (!whatsappUrl || waOpened) return;
+    const t = setTimeout(() => {
+      window.location.href = whatsappUrl;
+      setWaOpened(true);
+    }, 600);
+    return () => clearTimeout(t);
+  }, [whatsappUrl]);
 
   // Derived values
   const customerName = state.customerName || '';
@@ -286,7 +300,9 @@ export default function ThankYouPage() {
           {[
             {
               icon: <WhatsAppIcon sx={{ fontSize: 18, color: '#25D366' }} />,
-              text: 'You\'ll receive a WhatsApp message from us to confirm details and arrange payment.',
+              text: whatsappUrl
+                ? 'Tap "Send Booking to WhatsApp" above to send your appointment details directly to our stylist.'
+                : 'You\'ll receive a WhatsApp message from us to confirm details and arrange payment.',
             },
             {
               icon: <AccessTimeIcon sx={{ fontSize: 18, color: '#E91E8C' }} />,
@@ -351,6 +367,58 @@ export default function ThankYouPage() {
                 Great job using your discounts on this order
               </Typography>
             </Box>
+          </Box>
+        )}
+
+        {/* WhatsApp send button — shown for appointments so the stylist receives details */}
+        {whatsappUrl && (
+          <Box
+            sx={{
+              mb: 2.5,
+              opacity: show ? 1 : 0,
+              transform: show ? 'translateY(0)' : 'translateY(16px)',
+              transition: 'all 0.65s cubic-bezier(0.34,1.56,0.64,1) 0.25s',
+            }}
+          >
+            <Box
+              sx={{
+                p: 1.5,
+                mb: 1.5,
+                borderRadius: 3,
+                background: 'linear-gradient(135deg, #E8F5E9, #F1F8E9)',
+                border: '1.5px solid #A5D6A7',
+                textAlign: 'center',
+              }}
+            >
+              <Typography sx={{ fontSize: '0.8rem', color: '#2e7d32', fontWeight: 600, mb: 0.3 }}>
+                📲 One more step — send your booking to our stylist!
+              </Typography>
+              <Typography sx={{ fontSize: '0.74rem', color: '#555' }}>
+                Tap below to open WhatsApp with your appointment details pre-filled.
+              </Typography>
+            </Box>
+            <Button
+              fullWidth
+              component="a"
+              href={whatsappUrl}
+              startIcon={<WhatsAppIcon />}
+              sx={{
+                py: 1.5,
+                borderRadius: '50px',
+                background: 'linear-gradient(135deg, #25D366, #128C7E)',
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: '0.95rem',
+                boxShadow: '0 4px 18px rgba(37,211,102,0.35)',
+                textDecoration: 'none',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #1ebe5d, #0e7063)',
+                  boxShadow: '0 6px 24px rgba(37,211,102,0.45)',
+                },
+              }}
+            >
+              Send Booking to WhatsApp
+            </Button>
           </Box>
         )}
 
