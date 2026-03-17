@@ -10,13 +10,13 @@ const NAIL_LENGTH_PATHS = {
   'XL (Extra Long)':  'M3,34 L3,11 Q3,4  10,4  Q17,4  17,11 L17,34 Z',
 };
 
-// Short label shown under each option
-const SHORT_LABEL = {
-  'XS (Extra Short)': 'XS',
-  'S (Short)':        'S',
-  'M (Medium)':       'M',
-  'L (Long)':         'L',
-  'XL (Extra Long)':  'XL',
+// Full label shown under each option
+const FULL_LABEL = {
+  'XS (Extra Short)': 'Extra Short',
+  'S (Short)':        'Short',
+  'M (Medium)':       'Medium',
+  'L (Long)':         'Long',
+  'XL (Extra Long)':  'Extra Long',
 };
 
 function formatNaira(amount) {
@@ -49,7 +49,7 @@ export default function NailLengthSelector({ value, onChange, surcharges }) {
                 backgroundColor: selected ? '#FFF0F5' : '#fff',
                 transition: 'all 0.15s',
                 '&:hover': { borderColor: '#E91E8C', backgroundColor: '#FFF0F5' },
-                minWidth: 52,
+                minWidth: 64,
               }}
             >
               <svg viewBox="0 0 20 40" width="22" height="44" style={{ display: 'block' }}>
@@ -68,8 +68,8 @@ export default function NailLengthSelector({ value, onChange, surcharges }) {
                   strokeWidth="0.8"
                 />
               </svg>
-              <Typography sx={{ fontSize: '0.65rem', fontWeight: selected ? 700 : 500, color: selected ? '#E91E8C' : '#555', lineHeight: 1, textAlign: 'center' }}>
-                {SHORT_LABEL[length]}
+              <Typography sx={{ fontSize: '0.65rem', fontWeight: selected ? 700 : 500, color: selected ? '#E91E8C' : '#555', lineHeight: 1.2, textAlign: 'center' }}>
+                {FULL_LABEL[length]}
               </Typography>
               {surcharge !== null && (
                 <Typography sx={{ fontSize: '0.6rem', color: surcharge > 0 ? '#7b1fa2' : '#888', fontWeight: surcharge > 0 ? 700 : 400, lineHeight: 1, textAlign: 'center' }}>
