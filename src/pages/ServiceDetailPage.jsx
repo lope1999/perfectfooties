@@ -34,6 +34,7 @@ import useServiceCategories from '../hooks/useServiceCategories';
 import useServiceDiscounts from '../hooks/useServiceDiscounts';
 import { hasServiceDiscount, getServiceEffectivePrice, getServiceDiscountLabel } from '../lib/discountUtils';
 import NailShapeSelector from '../components/NailShapeSelector';
+import NailLengthSelector from '../components/NailLengthSelector';
 import CalendarWidget from '../components/CalendarWidget';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -461,12 +462,9 @@ export default function ServiceDetailPage() {
 
               {/* Nail Length */}
               <Typography sx={{ fontFamily: ff, fontWeight: 600, fontSize: '0.9rem', mb: 0.8 }}>Nail Length</Typography>
-              <FormControl fullWidth size="small" sx={{ mb: 3 }}>
-                <InputLabel sx={{ '&.Mui-focused': { color: '#E91E8C' } }}>Select length</InputLabel>
-                <Select value={nailLength} label="Select length" onChange={(e) => setNailLength(e.target.value)} sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#F0C0D0' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' } }}>
-                  {nailLengths.map((len) => <MenuItem key={len} value={len}>{len}</MenuItem>)}
-                </Select>
-              </FormControl>
+              <Box sx={{ mb: 3 }}>
+                <NailLengthSelector value={nailLength} onChange={setNailLength} surcharges={LENGTH_SURCHARGE} />
+              </Box>
 
               {nailLength && lengthSurcharge > 0 && (
                 <Typography sx={{ fontSize: '0.78rem', color: '#4A0E4E', fontWeight: 600, mt: -2, mb: 3 }}>

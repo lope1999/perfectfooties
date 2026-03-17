@@ -31,6 +31,7 @@ import useServiceDiscounts from '../hooks/useServiceDiscounts';
 import { hasServiceDiscount, getServiceEffectivePrice, getServiceDiscountLabel } from '../lib/discountUtils';
 import ScrollReveal from '../components/ScrollReveal';
 import NailShapeSelector from '../components/NailShapeSelector';
+import NailLengthSelector from '../components/NailLengthSelector';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -990,36 +991,14 @@ export default function BookAppointmentPage() {
 																	}
 																/>
 															</Grid>
-															<Grid item xs={12} sm={6}>
-																<FormControl
-																	fullWidth
-																	size="small"
-																>
-																	<InputLabel>
-																		Nail Length
-																	</InputLabel>
-																	<Select
-																		value={
-																			formData.nailLength
-																		}
-																		label="Nail Length"
-																		onChange={handleFieldChange(
-																			"nailLength",
-																		)}
-																		sx={{ borderRadius: 2 }}
-																	>
-																		{nailLengths.map(
-																			(len) => (
-																				<MenuItem
-																					key={len}
-																					value={len}
-																				>
-																					{len}
-																				</MenuItem>
-																			),
-																		)}
-																	</Select>
-																</FormControl>
+															<Grid item xs={12}>
+																<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1.5, fontSize: '0.9rem' }}>
+																	Nail Length
+																</Typography>
+																<NailLengthSelector
+																	value={formData.nailLength}
+																	onChange={(len) => setFormData((prev) => ({ ...prev, nailLength: len }))}
+																/>
 															</Grid>
 														</Grid>
 													</Box>
