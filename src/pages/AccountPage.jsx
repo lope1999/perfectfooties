@@ -52,6 +52,7 @@ import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { fetchOrders, updateOrderStatus } from "../lib/orderService";
 import { addCancellationRequest } from "../lib/cancellationService";
+import { useNotifications } from "../context/NotificationContext";
 import {
 	saveTestimonial,
 	getReviewedOrderIds,
@@ -178,6 +179,7 @@ export default function AccountPage() {
 	const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth();
 	const { wishlist, removeFromWishlist } = useWishlist();
 	const { addProduct } = useCart();
+	const { showToast } = useNotifications();
 	const location = useLocation();
 	const navigate = useNavigate();
 
@@ -304,6 +306,7 @@ export default function AccountPage() {
 		setCancelDialog(null);
 		try {
 			await updateOrderStatus(user.uid, id, 'cancelled');
+			showToast('Your cancellation has been submitted.', 'info');
 			// Save cancellation reason to Firestore for admin review
 			await addCancellationRequest({
 				orderId: id,
@@ -1478,7 +1481,7 @@ export default function AccountPage() {
 									</Tooltip>
 									<Tooltip title="Add to cart">
 										<IconButton
-											onClick={() =>
+											onClick={() => {
 												addProduct({
 													productId: item.productId,
 													name: item.name,
@@ -1486,8 +1489,9 @@ export default function AccountPage() {
 													quantity: 1,
 													stock: item.stock ?? 999,
 													categoryId: item.categoryId,
-												})
-											}
+												});
+												showToast(`${item.name} added to cart`, 'success');
+											}}
 											sx={{
 												color: "#999",
 												"&:hover": { color: "#E91E8C" },
@@ -1688,6 +1692,7 @@ export default function AccountPage() {
 					onSubmitted={(orderId) => {
 						setRatedOrders((prev) => ({ ...prev, [orderId]: true }));
 						setRateDialog(null);
+						showToast('Thank you! Your review has been submitted.', 'success');
 					}}
 				/>
 
@@ -1927,7 +1932,7 @@ function RateDialog({ open, order, userName, onClose, onSubmitted }) {
 				name: resolvedName,
 				occupation: occupation.trim() || "Client",
 				service: serviceName,
-				type: order.type === "service" ? "appointment" : "purchase",
+				type: (order.type === "service" || order.type === "mixed") ? "appointment" : "purchase",
 				rating,
 				testimonial: review.trim(),
 				avatar: resolvedName.charAt(0).toUpperCase(),
@@ -1953,10 +1958,23 @@ function RateDialog({ open, order, userName, onClose, onSubmitted }) {
 			PaperProps={{ sx: { borderRadius: 3 } }}
 		>
 			<DialogTitle
-				sx={{ fontFamily: ff, fontWeight: 700, textAlign: "center" }}
+				sx={{ fontFamily: ff, fontWeight: 700, textAlign: "center", pb: 0.5 }}
 			>
 				Rate Your Experience
 			</DialogTitle>
+			<Box sx={{ display: 'flex', justifyContent: 'center', mb: 0.5 }}>
+				<Chip
+					label={order?.type === 'service' || order?.type === 'mixed' ? 'Appointment Review' : 'Product Order Review'}
+					size="small"
+					sx={{
+						backgroundColor: order?.type === 'service' || order?.type === 'mixed' ? '#4A0E4E' : '#E91E8C',
+						color: '#fff',
+						fontFamily: ff,
+						fontWeight: 600,
+						fontSize: '0.72rem',
+					}}
+				/>
+			</Box>
 			<DialogContent>
 				<Box
 					sx={{

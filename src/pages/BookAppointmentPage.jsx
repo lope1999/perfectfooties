@@ -33,6 +33,7 @@ import ScrollReveal from '../components/ScrollReveal';
 import NailShapeSelector from '../components/NailShapeSelector';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { saveOrder } from '../lib/orderService';
 import { fetchBookedSlots, saveBookedSlot, addToWaitlist } from '../lib/bookedSlotsService';
 import SignInPrompt from '../components/SignInPrompt';
@@ -83,6 +84,7 @@ export default function BookAppointmentPage() {
 	const homeServiceEnabled = true; // Set to false to hide home service option
 	const { user } = useAuth();
 	const { discounts } = useServiceDiscounts();
+	const { showToast } = useNotifications();
 	const [customerName, setCustomerName] = useState("");
 	const [signInPromptOpen, setSignInPromptOpen] = useState(false);
 
@@ -445,6 +447,7 @@ export default function BookAppointmentPage() {
 					: "",
 			}),
 		});
+		showToast(`${selected.name} added to cart`, 'success');
 		setSelectedService("");
 		setAppointmentDate("");
 		setAppointmentTime("");

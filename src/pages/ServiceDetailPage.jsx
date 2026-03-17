@@ -37,6 +37,7 @@ import NailShapeSelector from '../components/NailShapeSelector';
 import CalendarWidget from '../components/CalendarWidget';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { saveOrder } from '../lib/orderService';
 import { fetchBookedSlots, saveBookedSlot, addToWaitlist } from '../lib/bookedSlotsService';
 import { verifyPaystackDeposit } from '../lib/paymentService';
@@ -85,6 +86,7 @@ export default function ServiceDetailPage() {
   const { user } = useAuth();
   const { addService: addServiceToCart } = useCart();
   const { discounts } = useServiceDiscounts();
+  const { showToast } = useNotifications();
 
   const { categories, loading: categoriesLoading } = useServiceCategories();
 
@@ -330,6 +332,7 @@ export default function ServiceDetailPage() {
   const handleAddToCart = () => {
     if (!user) { setSignInPromptOpen(true); return; }
     const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
+    showToast(`${service.name} added to cart`, 'success');
     addServiceToCart({
       serviceId: service.id,
       name: service.name,

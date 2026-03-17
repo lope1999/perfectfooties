@@ -28,6 +28,7 @@ import ScrollReveal from '../components/ScrollReveal';
 import useRetailCategories from '../hooks/useRetailCategories';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { hasDiscount, getEffectivePrice, getDiscountLabel } from '../lib/discountUtils';
 import SignInPrompt from '../components/SignInPrompt';
 
@@ -76,6 +77,7 @@ export default function NailShopPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const { addProduct: addToGlobalCart } = useCart();
+  const { showToast } = useNotifications();
   const { categories: retailCategories, loading, error } = useRetailCategories();
 
   const allProducts = retailCategories.flatMap((cat) =>
@@ -148,6 +150,8 @@ export default function NailShopPage() {
         });
       }
     });
+    const count = cartItems.length;
+    if (count > 0) showToast(`${count} item${count > 1 ? 's' : ''} added to cart`, 'success');
     setCart({});
   };
 

@@ -201,6 +201,20 @@ export function NotificationProvider({ children }) {
     };
   }, [user?.uid]);
 
+  const showToast = useCallback((message, severity = 'success', title = '') => {
+    setToastQueue((prev) => [
+      ...prev,
+      {
+        id: `action-${Date.now()}-${Math.random()}`,
+        type: 'action',
+        severity,
+        title,
+        message,
+        timestamp: Date.now(),
+      },
+    ]);
+  }, []);
+
   const dismiss = useCallback((id) => {
     setDismissed((prev) => {
       const next = [...prev, id];
@@ -243,6 +257,7 @@ export function NotificationProvider({ children }) {
         loading,
         currentToast,
         dismissToast,
+        showToast,
       }}
     >
       {children}

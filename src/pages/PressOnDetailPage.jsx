@@ -22,6 +22,7 @@ import StarIcon from '@mui/icons-material/Star';
 import { pressOnQuantities } from '../data/products';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { saveNailBedSizes, fetchNailBedSizes } from '../lib/orderService';
 import {
   validateReferralCode,
@@ -47,6 +48,7 @@ export default function PressOnDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addPressOn } = useCart();
+  const { showToast } = useNotifications();
   const { categories, loading } = useProductCategories();
 
   // Find category and product
@@ -168,14 +170,18 @@ export default function PressOnDetailPage() {
   const handleAddToCart = () => {
     if (!user) { setSignInPromptOpen(true); return; }
     if (!validate()) return;
-    addPressOn(buildCartItem());
+    const item = buildCartItem();
+    addPressOn(item);
+    showToast(`${item.name} added to cart`, 'success');
     navigate('/products');
   };
 
   const handleCheckout = () => {
     if (!user) { setSignInPromptOpen(true); return; }
     if (!validate()) return;
-    addPressOn(buildCartItem());
+    const item = buildCartItem();
+    addPressOn(item);
+    showToast(`${item.name} added to cart`, 'success');
     if (!isReadyMade && nailBedSize) {
       saveNailBedSizes(user.uid, nailBedSize).catch(() => {});
     }
