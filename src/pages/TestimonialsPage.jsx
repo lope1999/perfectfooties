@@ -100,7 +100,10 @@ function groupByName(items) {
       service: t.service,
       rating: t.rating,
       review: t.review || t.testimonial,
+      type: t.type,
     });
+    // Always keep group type in sync with the most recent review
+    map[key].type = t.type;
   });
   return Object.values(map);
 }
@@ -700,19 +703,27 @@ function ReviewDetailModal({ group, onClose }) {
 				{group.reviews.map((rev, i) => (
 					<Box key={i} sx={{ mb: i < group.reviews.length - 1 ? 3 : 0 }}>
 						{group.reviews.length > 1 && (
-							<Typography
-								sx={{
-									fontFamily: ff,
-									fontSize: "0.7rem",
-									fontWeight: 700,
-									color: "#E91E8C",
-									textTransform: "uppercase",
-									letterSpacing: 0.8,
-									mb: 0.5,
-								}}
-							>
-								Review {i + 1}
-							</Typography>
+							<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+								<Typography
+									sx={{
+										fontFamily: ff,
+										fontSize: "0.7rem",
+										fontWeight: 700,
+										color: "#E91E8C",
+										textTransform: "uppercase",
+										letterSpacing: 0.8,
+									}}
+								>
+									Review {i + 1}
+								</Typography>
+								{rev.type && (
+									<Chip
+										label={rev.type === 'appointment' ? 'Appointment' : 'Purchase'}
+										size="small"
+										sx={{ backgroundColor: rev.type === 'appointment' ? '#4A0E4E' : '#E91E8C', color: '#fff', fontWeight: 600, fontSize: '0.62rem', fontFamily: ff, height: 18 }}
+									/>
+								)}
+							</Box>
 						)}
 						<Typography
 							sx={{
