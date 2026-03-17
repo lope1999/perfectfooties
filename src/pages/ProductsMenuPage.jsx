@@ -38,6 +38,7 @@ import PresetSizeGuide from "../components/PresetSizeGuide";
 import useProductCategories from '../hooks/useProductCategories';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useNotifications } from '../context/NotificationContext';
 import { pressOnNailShapes } from '../data/products';
 import { saveStockNotification } from '../lib/stockService';
 import { hasDiscount, getEffectivePrice, getDiscountLabel } from '../lib/discountUtils';
@@ -59,6 +60,7 @@ export default function ProductsMenuPage() {
   const location = useLocation();
   const { user, signInWithGoogle } = useAuth();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { showToast } = useNotifications();
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
   const { categories: productCategories, loading, error } = useProductCategories();
@@ -150,6 +152,7 @@ export default function ProductsMenuPage() {
     e.stopPropagation();
     if (isInWishlist(product.id)) {
       removeFromWishlist(product.id);
+      showToast(`${product.name} removed from wishlist`, 'info');
     } else {
       addToWishlist({
         productId: product.id,
@@ -159,6 +162,7 @@ export default function ProductsMenuPage() {
         categoryId: category.id,
         stock: product.stock,
       });
+      showToast(`${product.name} added to wishlist`, 'success');
     }
   };
 
