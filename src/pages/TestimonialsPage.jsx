@@ -136,7 +136,8 @@ export default function TestimonialsPage() {
 					review: t.testimonial || t.review,
 					avatar: t.avatar || t.name?.charAt(0)?.toUpperCase() || "?",
 				}));
-				setGroups(groupByName([...staticTestimonials, ...mapped]));
+				// Reverse so newest Firestore review is processed last → group.type = most recent type
+			setGroups(groupByName([...staticTestimonials, ...mapped.slice().reverse()]));
 			})
 			.catch(() => {});
 	}, []);
@@ -421,8 +422,8 @@ export default function TestimonialsPage() {
 												<Chip
 													label={
 														group.type === "appointment"
-															? "Appt"
-															: "Order"
+															? "Appointment"
+															: "Purchase"
 													}
 													size="small"
 													sx={{
