@@ -10,7 +10,7 @@ service cloud.firestore {
     // --- Users ---
     match /users/{uid} {
       allow read: if isAdmin() || (request.auth != null && request.auth.uid == uid);
-      allow update: if request.auth != null && request.auth.uid == uid;
+      allow update: if isAdmin() || (request.auth != null && request.auth.uid == uid);
       allow create: if request.auth != null && request.auth.uid == uid;
 
       // Orders subcollection

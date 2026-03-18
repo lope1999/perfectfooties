@@ -869,10 +869,11 @@ export default function AccountPage() {
 						</Box>
 
 						{/* Client Status */}
-						{(() => {
-							const tier = getClientTier(reviewCount);
-							const next = getNextTier(reviewCount);
-							return (
+						{reviewCount > 0 &&
+							(() => {
+								const tier = getClientTier(reviewCount);
+								const next = getNextTier(reviewCount);
+								return (
 									<Box
 										sx={{
 											mb: 3,
@@ -1006,7 +1007,7 @@ export default function AccountPage() {
 										)}
 									</Box>
 								);
-						})()}
+							})()}
 
 						{/* Loyalty Points Card */}
 						<Box
@@ -1766,7 +1767,7 @@ export default function AccountPage() {
 									</Typography>
 								</Box>
 								<Button
-									onClick={() => navigate("/book")}
+									onClick={() => navigate("/services")}
 									sx={{
 										backgroundColor: "#E91E8C",
 										color: "#fff",
@@ -2419,76 +2420,134 @@ export default function AccountPage() {
 				</Dialog>
 
 				{/* ── Edit Pending Order Dialog ── */}
-			<Dialog
-				open={!!editOrderDialog}
-				onClose={() => setEditOrderDialog(null)}
-				maxWidth="xs"
-				fullWidth
-				PaperProps={{ sx: { borderRadius: 4 } }}
-			>
-				<DialogTitle sx={{ fontFamily: ff, fontWeight: 700, pb: 0.5 }}>
-					Edit {editOrderDialog?.type === 'service' || editOrderDialog?.type === 'mixed' ? 'Appointment' : 'Order'} Details
-					<Typography sx={{ fontSize: '0.78rem', color: '#777', fontFamily: ff, fontWeight: 400, mt: 0.3 }}>
-						You can update these details while your order is still pending.
-					</Typography>
-				</DialogTitle>
-				<DialogContent sx={{ pt: '12px !important', display: 'flex', flexDirection: 'column', gap: 2 }}>
-					<TextField
-						fullWidth
-						label="Your Name"
-						size="small"
-						value={editOrderForm.customerName || ''}
-						onChange={(e) => setEditOrderForm((f) => ({ ...f, customerName: e.target.value }))}
-						sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontFamily: ff } }}
-					/>
-					<TextField
-						fullWidth
-						label="Phone Number"
-						size="small"
-						value={editOrderForm.phone || ''}
-						onChange={(e) => setEditOrderForm((f) => ({ ...f, phone: e.target.value }))}
-						sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontFamily: ff } }}
-					/>
-					<TextField
-						fullWidth
-						label="Notes / Special Requests"
-						size="small"
-						multiline
-						minRows={2}
-						value={editOrderForm.notes || ''}
-						onChange={(e) => setEditOrderForm((f) => ({ ...f, notes: e.target.value }))}
-						inputProps={{ maxLength: 500 }}
-						sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontFamily: ff } }}
-					/>
-				</DialogContent>
-				<DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-					<Button
-						onClick={() => setEditOrderDialog(null)}
-						sx={{ fontFamily: ff, color: '#777', textTransform: 'none' }}
-					>
-						Cancel
-					</Button>
-					<Button
-						onClick={handleEditOrderSave}
-						disabled={editOrderSaving}
+				<Dialog
+					open={!!editOrderDialog}
+					onClose={() => setEditOrderDialog(null)}
+					maxWidth="xs"
+					fullWidth
+					PaperProps={{ sx: { borderRadius: 4 } }}
+				>
+					<DialogTitle sx={{ fontFamily: ff, fontWeight: 700, pb: 0.5 }}>
+						Edit{" "}
+						{editOrderDialog?.type === "service" ||
+						editOrderDialog?.type === "mixed"
+							? "Appointment"
+							: "Order"}{" "}
+						Details
+						<Typography
+							sx={{
+								fontSize: "0.78rem",
+								color: "#777",
+								fontFamily: ff,
+								fontWeight: 400,
+								mt: 0.3,
+							}}
+						>
+							You can update these details while your order is still
+							pending.
+						</Typography>
+					</DialogTitle>
+					<DialogContent
 						sx={{
-							backgroundColor: '#E91E8C',
-							color: '#fff',
-							borderRadius: '20px',
-							px: 3,
-							fontFamily: ff,
-							fontWeight: 600,
-							textTransform: 'none',
-							'&:hover': { backgroundColor: '#C2185B' },
-							'&.Mui-disabled': { backgroundColor: '#F0C0D0', color: '#fff' },
+							pt: "12px !important",
+							display: "flex",
+							flexDirection: "column",
+							gap: 2,
 						}}
 					>
-						{editOrderSaving ? 'Saving…' : 'Save Changes'}
-					</Button>
-				</DialogActions>
-			</Dialog>
+						<TextField
+							fullWidth
+							label="Your Name"
+							size="small"
+							value={editOrderForm.customerName || ""}
+							onChange={(e) =>
+								setEditOrderForm((f) => ({
+									...f,
+									customerName: e.target.value,
+								}))
+							}
+							sx={{
+								"& .MuiOutlinedInput-root": {
+									borderRadius: 2,
+									fontFamily: ff,
+								},
+							}}
+						/>
+						<TextField
+							fullWidth
+							label="Phone Number"
+							size="small"
+							value={editOrderForm.phone || ""}
+							onChange={(e) =>
+								setEditOrderForm((f) => ({
+									...f,
+									phone: e.target.value,
+								}))
+							}
+							sx={{
+								"& .MuiOutlinedInput-root": {
+									borderRadius: 2,
+									fontFamily: ff,
+								},
+							}}
+						/>
+						<TextField
+							fullWidth
+							label="Notes / Special Requests"
+							size="small"
+							multiline
+							minRows={2}
+							value={editOrderForm.notes || ""}
+							onChange={(e) =>
+								setEditOrderForm((f) => ({
+									...f,
+									notes: e.target.value,
+								}))
+							}
+							inputProps={{ maxLength: 500 }}
+							sx={{
+								"& .MuiOutlinedInput-root": {
+									borderRadius: 2,
+									fontFamily: ff,
+								},
+							}}
+						/>
+					</DialogContent>
+					<DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+						<Button
+							onClick={() => setEditOrderDialog(null)}
+							sx={{
+								fontFamily: ff,
+								color: "#777",
+								textTransform: "none",
+							}}
+						>
+							Cancel
+						</Button>
+						<Button
+							onClick={handleEditOrderSave}
+							disabled={editOrderSaving}
+							sx={{
+								backgroundColor: "#E91E8C",
+								color: "#fff",
+								borderRadius: "20px",
+								px: 3,
+								fontFamily: ff,
+								fontWeight: 600,
+								textTransform: "none",
+								"&:hover": { backgroundColor: "#C2185B" },
+								"&.Mui-disabled": {
+									backgroundColor: "#F0C0D0",
+									color: "#fff",
+								},
+							}}
+						>
+							{editOrderSaving ? "Saving…" : "Save Changes"}
+						</Button>
+					</DialogActions>
+				</Dialog>
 
-			{/* ── Rate Dialog ── */}
+				{/* ── Rate Dialog ── */}
 				<RateDialog
 					open={!!rateDialog}
 					order={rateDialog}

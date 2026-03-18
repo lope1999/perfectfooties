@@ -575,6 +575,24 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                                     Nail Bed Size: {item.nailBedSize}
                                   </Typography>
                                 )}
+                                {item.otherPeople?.length > 0 && (
+                                  <Box sx={{ mt: 0.5, pl: 1, borderLeft: '2px solid #E0B0C0', ml: 0.5 }}>
+                                    <Typography sx={{ fontFamily, fontSize: '0.75rem', fontWeight: 700, color: '#4A0E4E' }}>Also ordering for:</Typography>
+                                    {item.otherPeople.map((person, pi) => (
+                                      <Box key={pi} sx={{ mt: 0.25 }}>
+                                        <Typography sx={{ fontFamily, fontSize: '0.75rem', color: '#555' }}>
+                                          {person.name || `Person ${pi + 1}`}
+                                          {person.nailShape ? ` • Shape: ${person.nailShape}` : ''}
+                                        </Typography>
+                                        {person.nailBedSize && (
+                                          <Typography sx={{ fontFamily, fontSize: '0.75rem', color: '#777' }}>
+                                            Nail Bed Size: {person.nailBedSize}
+                                          </Typography>
+                                        )}
+                                      </Box>
+                                    ))}
+                                  </Box>
+                                )}
                               </Box>
                             ))}
                           </Box>

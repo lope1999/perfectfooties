@@ -31,7 +31,7 @@ export default function TermsModal({ open, onClose }) {
 					Terms & Conditions
 				</Typography>
 				<Typography sx={{ color: "#999", fontSize: "0.85rem", mt: 0.5 }}>
-					Last updated: February 23, 2026
+					Last updated: March 18, 2026
 				</Typography>
 			</DialogTitle>
 
@@ -104,7 +104,8 @@ export default function TermsModal({ open, onClose }) {
 						Custom press-on nail orders require accurate nail bed
 						measurements provided by the client. Chizzystyles is not
 						responsible for sizing issues caused by incorrect
-						measurements. All custom orders are final sale and
+						measurements.No two of the same custom sets can be an exact
+						copy as it is handmade. All custom orders are final sale and
 						non-refundable. Production time is 4–7 business days.
 					</Typography>
 

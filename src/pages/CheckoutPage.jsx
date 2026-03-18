@@ -276,8 +276,10 @@ export default function CheckoutPage() {
         ...products.map((p) => ({ kind: 'retail', name: p.name, price: p.price, quantity: p.quantity })),
         ...pressOns.map((p) => ({
           kind: 'pressOn', name: p.name, price: p.price, quantity: p.quantity || 1,
+          ...(p.nailShape && { nailShape: p.nailShape }),
           ...(p.nailBedSize && { nailBedSize: p.nailBedSize }),
           ...(p.presetSize && { presetSize: p.presetSize }),
+          ...(p.orderingForOthers && p.otherPeople?.length > 0 && { otherPeople: p.otherPeople }),
         })),
       ];
       const orderData = {
