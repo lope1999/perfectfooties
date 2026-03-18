@@ -36,9 +36,22 @@ import { hasDiscount, getEffectivePrice, getDiscountLabel } from '../lib/discoun
 import NailBedSizeInput from '../components/NailBedSizeInput';
 import NailShapeSelector from '../components/NailShapeSelector';
 import SignInPrompt from '../components/SignInPrompt';
+import PresetSizeGuide from '../components/PresetSizeGuide';
 import useProductCategories from '../hooks/useProductCategories';
 
 const presetSizes = ['XS', 'S', 'M', 'L'];
+
+const presetSizeData = [
+  { label: 'XS', thumb: 3, index: 7, middle: 5, ring: 6, pinky: 9 },
+  { label: 'S',  thumb: 2, index: 6, middle: 4, ring: 5, pinky: 8 },
+  { label: 'M',  thumb: 1, index: 5, middle: 3, ring: 4, pinky: 7 },
+  { label: 'L',  thumb: 0, index: 4, middle: 2, ring: 3, pinky: 6 },
+];
+
+const tipApprox = {
+  0: '~18mm', 1: '~17mm', 2: '~16mm', 3: '~15mm', 4: '~14mm',
+  5: '~13mm', 6: '~12mm', 7: '~11mm', 8: '~10mm', 9: '~9mm',
+};
 
 function formatNaira(amount) {
   return `₦${Number(amount).toLocaleString()}`;
@@ -67,6 +80,7 @@ export default function PressOnDetailPage() {
   const [nailBedSize, setNailBedSize] = useState('');
   const [error, setError] = useState('');
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
 
   // Referral / loyalty
   const [showRefField, setShowRefField] = useState(false);
@@ -409,7 +423,8 @@ export default function PressOnDetailPage() {
 					</Typography>
 				)}
 
-				{/* Image guide note */}
+				{/* Image guide note — only for custom press-ons */}
+				{!isReadyMade && (
 				<Box
 					sx={{
 						display: "flex",
@@ -449,6 +464,7 @@ export default function PressOnDetailPage() {
 						</Typography>
 					</Box>
 				</Box>
+				)}
 
 				<Box sx={{ borderTop: "1px solid #F0C0D0", pt: 3 }}>
 					{/* Customer Name */}
@@ -536,6 +552,97 @@ export default function PressOnDetailPage() {
 									/>
 								))}
 							</Box>
+
+							{/* What are preset sizes button */}
+							<Box sx={{ mb: 2, mt: -1.5 }}>
+								<Button
+									size="small"
+									onClick={() => setSizeGuideOpen(true)}
+									sx={{
+										color: "#E91E8C",
+										textTransform: "none",
+										fontSize: "0.82rem",
+										fontFamily: '"Georgia", serif',
+										fontWeight: 600,
+										p: 0,
+										minWidth: 0,
+										"&:hover": {
+											backgroundColor: "transparent",
+											textDecoration: "underline",
+										},
+									}}
+								>
+									What are preset sizes?
+								</Button>
+							</Box>
+
+							{/* Selected preset size breakdown */}
+							{presetSize && (() => {
+								const row = presetSizeData.find((s) => s.label === presetSize);
+								const fingers = [
+									{ label: 'Thumb', key: 'thumb' },
+									{ label: 'Index', key: 'index' },
+									{ label: 'Middle', key: 'middle' },
+									{ label: 'Ring', key: 'ring' },
+									{ label: 'Pinky', key: 'pinky' },
+								];
+								return (
+									<Box
+										sx={{
+											mb: 3,
+											p: 2,
+											backgroundColor: "#FFF0F5",
+											border: "1px solid #F0C0D0",
+											borderRadius: 3,
+										}}
+									>
+										<Typography
+											sx={{
+												fontFamily: '"Georgia", serif',
+												fontWeight: 700,
+												color: "#4A0E4E",
+												fontSize: "0.88rem",
+												mb: 1.5,
+											}}
+										>
+											Size {presetSize} &mdash; nail tip numbers &amp; approximate widths
+										</Typography>
+										<Box
+											sx={{
+												display: "grid",
+												gridTemplateColumns: "repeat(5, 1fr)",
+												gap: 0.8,
+											}}
+										>
+											{fingers.map(({ label, key }) => {
+												const tip = row ? row[key] : null;
+												return (
+													<Box
+														key={key}
+														sx={{
+															textAlign: "center",
+															p: 1,
+															backgroundColor: "#fff",
+															borderRadius: 2,
+															border: "1px solid #F0C0D0",
+														}}
+													>
+														<Typography sx={{ fontSize: "0.65rem", color: "#999", mb: 0.3, lineHeight: 1.2 }}>
+															{label}
+														</Typography>
+														<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: "1rem", color: "#E91E8C", lineHeight: 1.2 }}>
+															{tip}
+														</Typography>
+														<Typography sx={{ fontSize: "0.62rem", color: "#888", mt: 0.2 }}>
+															{tip !== null ? tipApprox[tip] : ""}
+														</Typography>
+													</Box>
+												);
+											})}
+										</Box>
+									</Box>
+								);
+							})()}
 
 							<Typography
 								sx={{
@@ -651,6 +758,27 @@ export default function PressOnDetailPage() {
 									onChange={setNailBedSize}
 									required
 								/>
+							</Box>
+							<Box sx={{ mb: 3, mt: -2 }}>
+								<Button
+									size="small"
+									onClick={() => setSizeGuideOpen(true)}
+									sx={{
+										color: "#E91E8C",
+										textTransform: "none",
+										fontSize: "0.82rem",
+										fontFamily: '"Georgia", serif',
+										fontWeight: 600,
+										p: 0,
+										minWidth: 0,
+										"&:hover": {
+											backgroundColor: "transparent",
+											textDecoration: "underline",
+										},
+									}}
+								>
+									What are preset sizes?
+								</Button>
 							</Box>
 						</>
 					)}
@@ -1033,6 +1161,11 @@ export default function PressOnDetailPage() {
 					Proceed to Checkout
 				</Button>
 			</Box>
+
+			<PresetSizeGuide
+				open={sizeGuideOpen}
+				onClose={() => setSizeGuideOpen(false)}
+			/>
 
 			<SignInPrompt
 				open={signInPromptOpen}
