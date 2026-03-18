@@ -47,6 +47,7 @@ import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import ReplayIcon from "@mui/icons-material/Replay";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
@@ -183,7 +184,7 @@ const statBtnSx = {
 export default function AccountPage() {
 	const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth();
 	const { wishlist, removeFromWishlist } = useWishlist();
-	const { addProduct } = useCart();
+	const { addProduct, addPressOn } = useCart();
 	const { showToast } = useNotifications();
 	const location = useLocation();
 	const navigate = useNavigate();
@@ -364,6 +365,25 @@ export default function AccountPage() {
 			phone: order.phone || "",
 		});
 		setEditOrderDialog(order);
+	};
+
+	const handleReorder = (order) => {
+		const pressOnItems = order.items?.filter((i) => i.kind === 'pressOn') || [];
+		if (!pressOnItems.length) return;
+		pressOnItems.forEach((item) => {
+			addPressOn({
+				name: item.name,
+				price: item.price,
+				quantity: item.quantity || 1,
+				nailShape: item.nailShape || '',
+				nailBedSize: item.nailBedSize || '',
+				presetSize: item.presetSize || '',
+				type: item.type || '',
+				stock: 99,
+			});
+		});
+		showToast(`${pressOnItems.length} item(s) added to cart`, 'success');
+		navigate('/cart');
 	};
 
 	const handleEditOrderSave = async () => {
@@ -1718,6 +1738,7 @@ export default function AccountPage() {
 									order={order}
 									rated={!!ratedOrders[order.id]}
 									onRate={() => setRateDialog(order)}
+									onReorder={() => handleReorder(order)}
 								/>
 							))
 						)}
@@ -2933,13 +2954,31 @@ const ORDER_STEPS = [
 	{ key: 'received',   label: 'Delivered'       },
 ];
 
-function OrderProgressTracker({ status }) {
+function OrderProgressTracker({ status, order }) {
 	const activeIdx = (() => {
 		if (status === 'completed' || status === 'received') return 4;
 		if (status === 'shipping') return 3;
 		if (status === 'production') return 2;
 		if (status === 'confirmed') return 1;
 		return 0;
+	})();
+
+	const deliveryText = (() => {
+		if (!order || !['pending', 'confirmed', 'production'].includes(status)) return null;
+		const isCustom = order.items?.some((i) => i.nailBedSize);
+		const [dMin, dMax] = isCustom ? [4, 7] : [2, 3];
+		const raw = order.createdAt?.toDate ? order.createdAt.toDate() : order.createdAt ? new Date(order.createdAt) : null;
+		if (!raw) return null;
+		const addBizDays = (date, n) => {
+			const d = new Date(date);
+			let count = 0;
+			while (count < n) {
+				d.setDate(d.getDate() + 1);
+				if (d.getDay() !== 0 && d.getDay() !== 6) count++;
+			}
+			return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+		};
+		return `${addBizDays(raw, dMin)} – ${addBizDays(raw, dMax)}`;
 	})();
 
 	return (
@@ -2972,11 +3011,16 @@ function OrderProgressTracker({ status }) {
 					</Box>
 				))}
 			</Box>
+			{deliveryText && (
+				<Typography sx={{ fontSize: '0.68rem', color: '#888', mt: 0.6, textAlign: 'center' }}>
+					Est. delivery: {deliveryText}
+				</Typography>
+			)}
 		</Box>
 	);
 }
 
-function OrderCard({ order, rated, onRate, onReschedule, onCancel, onEdit }) {
+function OrderCard({ order, rated, onRate, onReschedule, onCancel, onEdit, onReorder }) {
 	const statusColor = {
 		pending: "#FF9800",
 		confirmed: "#2196F3",
@@ -3037,7 +3081,7 @@ function OrderCard({ order, rated, onRate, onReschedule, onCancel, onEdit }) {
 				{formatDate(order.createdAt)}
 			</Typography>
 			{order.type !== "service" && !["cancelled","rescheduled","no-show"].includes(order.status) && (
-				<OrderProgressTracker status={order.status} />
+				<OrderProgressTracker status={order.status} order={order} />
 			)}
 			{order.items?.length > 0 && (
 				<Box sx={{ mt: 1 }}>
@@ -3077,7 +3121,30 @@ function OrderCard({ order, rated, onRate, onReschedule, onCancel, onEdit }) {
 					</Button>
 				</Box>
 			)}
-		{order.status === 'pending' && onEdit && (
+		{onReorder && order.items?.some((i) => i.kind === 'pressOn') &&
+		['confirmed', 'production', 'shipping', 'received', 'completed'].includes(order.status) && (
+		<Box sx={{ mt: 1.5 }}>
+			<Button
+				size="small"
+				startIcon={<ReplayIcon sx={{ fontSize: 14 }} />}
+				onClick={onReorder}
+				sx={{
+					border: '1.5px solid #9C27B0',
+					borderRadius: '20px',
+					color: '#9C27B0',
+					px: 2,
+					fontFamily: ff,
+					fontWeight: 600,
+					fontSize: '0.78rem',
+					textTransform: 'none',
+					'&:hover': { backgroundColor: '#9C27B0', color: '#fff' },
+				}}
+			>
+				Reorder
+			</Button>
+		</Box>
+	)}
+	{order.status === 'pending' && onEdit && (
 		<Box sx={{ mt: 1.5 }}>
 			<Button
 				size="small"

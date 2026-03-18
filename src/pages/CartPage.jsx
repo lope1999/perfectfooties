@@ -28,6 +28,7 @@ import { saveOrder } from '../lib/orderService';
 import { redeemGiftCard } from '../lib/giftCardService';
 import { validateReferralCode, applyReferral, getLoyaltyData, redeemLoyaltyPoints, REFERRAL_DISCOUNT, REDEMPTION_UNIT, REDEMPTION_VALUE, getPendingLoyaltyReward, clearPendingLoyaltyReward } from '../lib/loyaltyService';
 import GiftCardRedeemInput from '../components/GiftCardRedeemInput';
+import { getRecentlyViewed } from '../lib/recentlyViewed';
 import SignInPrompt from '../components/SignInPrompt';
 
 function formatNaira(amount) {
@@ -57,6 +58,7 @@ export default function CartPage() {
   const [loyaltyUnits, setLoyaltyUnits] = useState(0);
   const [pendingReward] = useState(() => getPendingLoyaltyReward());
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [recentlyViewed] = useState(() => getRecentlyViewed());
   const {
     cart,
     removeService,
@@ -771,6 +773,40 @@ export default function CartPage() {
               onRemoved={() => setAppliedGiftCard(null)}
             />
           </>
+        )}
+
+        {/* Recently Viewed */}
+        {recentlyViewed.length > 0 && (
+          <Box sx={{ mt: 4 }}>
+            <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1.5, fontSize: '1.1rem' }}>
+              Recently Viewed
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { height: 4 }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#F0C0D0', borderRadius: 2 } }}>
+              {recentlyViewed.map((item) => (
+                <Box
+                  key={`${item.categoryId}-${item.id}`}
+                  onClick={() => window.location.href = `/products/${item.categoryId}/${item.id}`}
+                  sx={{ minWidth: 130, maxWidth: 130, borderRadius: 2, border: '1px solid #F0C0D0', overflow: 'hidden', cursor: 'pointer', flexShrink: 0, backgroundColor: '#fff', transition: 'all 0.2s', '&:hover': { borderColor: '#E91E8C', boxShadow: '0 2px 8px rgba(233,30,140,0.15)' } }}
+                >
+                  {item.image ? (
+                    <Box component="img" src={item.image} alt={item.name} sx={{ width: '100%', height: 95, objectFit: 'cover', display: 'block' }} />
+                  ) : (
+                    <Box sx={{ width: '100%', height: 95, backgroundColor: '#FFF0F8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Typography sx={{ fontSize: '1.8rem' }}>💅</Typography>
+                    </Box>
+                  )}
+                  <Box sx={{ p: 1 }}>
+                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#333', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                      {item.name}
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.75rem', color: '#E91E8C', fontWeight: 700, mt: 0.3 }}>
+                      ₦{item.price?.toLocaleString()}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          </Box>
         )}
       </Container>
 

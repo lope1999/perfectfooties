@@ -281,6 +281,73 @@ export default function ThankYouPage() {
           </Box>
         </Box>
 
+        {/* Order Progress Tracker — product orders only */}
+        {!isAppointment && (
+          <Box
+            sx={{
+              background: '#fff',
+              borderRadius: 4,
+              border: '1.5px solid #F0C8DC',
+              p: 2.5,
+              mb: 2.5,
+              opacity: show ? 1 : 0,
+              transform: show ? 'translateY(0)' : 'translateY(24px)',
+              transition: 'all 0.62s cubic-bezier(0.34,1.56,0.64,1) 0.15s',
+            }}
+          >
+            <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#C2185B', mb: 2 }}>
+              Order Progress
+            </Typography>
+            {(() => {
+              const steps = [
+                { key: 'pending',    label: 'Placed'       },
+                { key: 'confirmed',  label: 'Confirmed'    },
+                { key: 'production', label: 'In Production'},
+                { key: 'shipping',   label: 'Shipped'      },
+                { key: 'received',   label: 'Delivered'    },
+              ];
+              const activeIdx = 0; // freshly placed
+              return (
+                <>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    {steps.map((step, idx) => (
+                      <Box key={step.key} sx={{ display: 'flex', alignItems: 'center', flex: idx < steps.length - 1 ? 1 : 0 }}>
+                        <Box
+                          sx={{
+                            width: idx === activeIdx ? 14 : 10,
+                            height: idx === activeIdx ? 14 : 10,
+                            borderRadius: '50%',
+                            backgroundColor: idx <= activeIdx ? '#E91E8C' : '#e0e0e0',
+                            border: idx === activeIdx ? '2px solid #C2185B' : 'none',
+                            flexShrink: 0,
+                          }}
+                        />
+                        {idx < steps.length - 1 && (
+                          <Box sx={{ flex: 1, height: 2, backgroundColor: idx < activeIdx ? '#E91E8C' : '#e0e0e0', mx: 0.3 }} />
+                        )}
+                      </Box>
+                    ))}
+                  </Box>
+                  <Box sx={{ display: 'flex', mt: 0.8 }}>
+                    {steps.map((step, idx) => (
+                      <Box key={step.key} sx={{ flex: idx < steps.length - 1 ? 1 : 0, textAlign: idx === 0 ? 'left' : idx === steps.length - 1 ? 'right' : 'center' }}>
+                        <Typography sx={{ fontSize: '0.62rem', fontWeight: idx === activeIdx ? 700 : 400, color: idx <= activeIdx ? '#E91E8C' : '#aaa', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                          {step.label}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                  <Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 1, textAlign: 'center' }}>
+                    {items.some((i) => i.nailBedSize)
+                      ? 'Custom sets take 4–7 business days to make'
+                      : 'Ready-made sets ship within 2–3 business days'}
+                  </Typography>
+                </>
+              );
+            })()}
+          </Box>
+        )}
+
         {/* What's next */}
         <Box
           sx={{

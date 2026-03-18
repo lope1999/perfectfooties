@@ -38,6 +38,7 @@ import NailShapeSelector from '../components/NailShapeSelector';
 import SignInPrompt from '../components/SignInPrompt';
 import PresetSizeGuide from '../components/PresetSizeGuide';
 import useProductCategories from '../hooks/useProductCategories';
+import { addRecentlyViewed, getRecentlyViewed } from '../lib/recentlyViewed';
 
 const presetSizes = ['XS', 'S', 'M', 'L'];
 
@@ -81,6 +82,7 @@ export default function PressOnDetailPage() {
   const [error, setError] = useState('');
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
 
   // Referral / loyalty
   const [showRefField, setShowRefField] = useState(false);
@@ -118,6 +120,23 @@ export default function PressOnDetailPage() {
       }
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!product || !category) return;
+    addRecentlyViewed({
+      id: product.id,
+      categoryId: category.id,
+      name: product.name,
+      price: getEffectivePrice(product),
+      image: product.images?.[0] || product.image || '',
+      type: product.type || '',
+    });
+    setRecentlyViewed(
+      getRecentlyViewed().filter(
+        (p) => !(p.id === product.id && p.categoryId === category.id)
+      )
+    );
+  }, [product?.id]);
 
   const maxLoyaltyUnits = Math.floor(loyaltyBalance / REDEMPTION_UNIT);
 
@@ -1091,7 +1110,41 @@ export default function PressOnDetailPage() {
 				</Box>
 			</Container>
 
-			{/* Sticky action bar */}
+			{/* Recently Viewed */}
+		{recentlyViewed.length > 0 && (
+			<Container maxWidth="sm" sx={{ mt: 4, mb: 2 }}>
+				<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1.5, fontSize: '1rem' }}>
+					Recently Viewed
+				</Typography>
+				<Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { height: 4 }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#F0C0D0', borderRadius: 2 } }}>
+					{recentlyViewed.map((item) => (
+						<Box
+							key={`${item.categoryId}-${item.id}`}
+							onClick={() => navigate(`/products/${item.categoryId}/${item.id}`)}
+							sx={{ minWidth: 120, maxWidth: 120, borderRadius: 2, border: '1px solid #F0C0D0', overflow: 'hidden', cursor: 'pointer', flexShrink: 0, transition: 'all 0.2s', '&:hover': { borderColor: '#E91E8C', boxShadow: '0 2px 8px rgba(233,30,140,0.15)' } }}
+						>
+							{item.image ? (
+								<Box component="img" src={item.image} alt={item.name} sx={{ width: '100%', height: 90, objectFit: 'cover', display: 'block' }} />
+							) : (
+								<Box sx={{ width: '100%', height: 90, backgroundColor: '#FFF0F8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+									<Typography sx={{ fontSize: '1.5rem' }}>💅</Typography>
+								</Box>
+							)}
+							<Box sx={{ p: 0.8 }}>
+								<Typography sx={{ fontSize: '0.7rem', fontWeight: 600, color: '#333', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+									{item.name}
+								</Typography>
+								<Typography sx={{ fontSize: '0.72rem', color: '#E91E8C', fontWeight: 700, mt: 0.3 }}>
+									₦{item.price?.toLocaleString()}
+								</Typography>
+							</Box>
+						</Box>
+					))}
+				</Box>
+			</Container>
+		)}
+
+		{/* Sticky action bar */}
 			<Box
 				sx={{
 					position: "fixed",
