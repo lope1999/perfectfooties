@@ -1,7 +1,14 @@
 // ─── Product discount helpers ────────────────────────────
 
+function hasSaleExpired(product) {
+  const endsAt = product?.saleEndsAt;
+  if (!endsAt) return false;
+  const end = typeof endsAt?.toDate === 'function' ? endsAt.toDate() : new Date(endsAt);
+  return end <= new Date();
+}
+
 export function hasDiscount(product) {
-  return !!(product?.discountEnabled && product.discountPrice != null);
+  return !!(product?.discountEnabled && product.discountPrice != null && !hasSaleExpired(product));
 }
 
 export function getEffectivePrice(product) {
@@ -10,6 +17,12 @@ export function getEffectivePrice(product) {
 
 export function getDiscountLabel(product) {
   return hasDiscount(product) ? product.discountLabel || 'Sale' : '';
+}
+
+export function getSaleEndsAt(product) {
+  if (!product?.saleEndsAt || hasSaleExpired(product)) return null;
+  const endsAt = product.saleEndsAt;
+  return typeof endsAt?.toDate === 'function' ? endsAt.toDate().toISOString() : String(endsAt);
 }
 
 // ─── Service discount helpers ────────────────────────────

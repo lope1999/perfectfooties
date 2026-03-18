@@ -45,6 +45,8 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import StarIcon from '@mui/icons-material/Star';
+import GroupsIcon from '@mui/icons-material/Groups';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 function formatNaira(amount) {
   return `₦${amount.toLocaleString()}`;
@@ -138,6 +140,16 @@ export default function BookAppointmentPage() {
 	const [waitlistSubmitting, setWaitlistSubmitting] = useState(false);
 	const [waitlistSuccess, setWaitlistSuccess] = useState(false);
 	const [calendarModalOpen, setCalendarModalOpen] = useState(false);
+
+	// Group booking
+	const GROUP_DISCOUNT_PCT = 0.10;
+	const [isGroupBooking, setIsGroupBooking] = useState(false);
+	const [groupPeople, setGroupPeople] = useState([{ name: '', serviceId: '' }]);
+
+	const addGroupPerson = () => setGroupPeople((p) => [...p, { name: '', serviceId: '' }]);
+	const removeGroupPerson = (i) => setGroupPeople((p) => p.filter((_, idx) => idx !== i));
+	const updateGroupPerson = (i, field, val) =>
+		setGroupPeople((p) => p.map((person, idx) => idx === i ? { ...person, [field]: val } : person));
 
 	// Referral code
 	const [showRefField, setShowRefField] = useState(false);
@@ -311,8 +323,50 @@ export default function BookAppointmentPage() {
 		const discountLines = [];
 		if (referralDiscount > 0) discountLines.push(`- Referral Code (${refCodeInput}): -${formatNaira(referralDiscount)}`);
 		if (loyaltyDiscount > 0) discountLines.push(`- Loyalty Points (${loyaltyUnits * REDEMPTION_UNIT} pts): -${formatNaira(loyaltyDiscount)}`);
-		const discountStr = discountLines.length > 0 ? `\n\nDiscounts:\n${discountLines.join('\n')}\nFinal Price: ${formatNaira(finalBookingPrice)}` : '';
-		const message = `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nType: ${appointmentType === "home" ? "Home Service" : "Salon Visit"}\nPreferred Date: ${fullDate}\nService: ${selected?.name || "a service"}\nPrice: ${formatNaira(effectivePrice)}${discountStr}${depositInfo}${homeServiceInfo}\n\nDetails:\n- Nail Shape: ${formData.nailShape}\n- Nail Length: ${formData.nailLength}\n\nPlease confirm availability for this request. Thank you!`;
+		const discountStr = discountLines.length > 0 ? `
+
+Discounts:
+${discountLines.join('\n')}
+Final Price: ${formatNaira(finalBookingPrice)}` : '';
+
+		const groupStr = isGroupBooking
+			? `
+
+👥 GROUP BOOKING (${allGroupPeople.length} people):
+` +
+			  allGroupPeople.map((p, i) => {
+					const svc = allServices.find((s) => s.id === p.serviceId);
+					return `${i + 1}. ${p.name} — ${svc?.name || 'Service'} (${formatNaira(getServiceEffectivePrice(svc || { price: 0 }, discounts))})`;
+			  }).join('\n') +
+			  (groupDiscountApplies ? `
+10% Group Discount: -${formatNaira(groupDiscountAmount)}
+Group Total: ${formatNaira(groupFinalTotal)}` : '')
+			: '';
+
+		const message = isGroupBooking
+			? `Hi! I'd like to book a GROUP appointment.
+
+Lead: ${customerName}
+Date: ${fullDate}${groupStr}${depositInfo}
+
+Nail Preferences (all):
+- Shape: ${formData.nailShape}
+- Length: ${formData.nailLength}
+
+Please confirm availability. Thank you!`
+			: `Hi! I'd like to book an appointment.
+
+Name: ${customerName}
+Type: ${appointmentType === "home" ? "Home Service" : "Salon Visit"}
+Preferred Date: ${fullDate}
+Service: ${selected?.name || "a service"}
+Price: ${formatNaira(effectivePrice)}${discountStr}${depositInfo}${homeServiceInfo}
+
+Details:
+- Nail Shape: ${formData.nailShape}
+- Nail Length: ${formData.nailLength}
+
+Please confirm availability for this request. Thank you!`;
 		const encoded = encodeURIComponent(message);
 		window.open(
 			`https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`,
@@ -320,12 +374,43 @@ export default function BookAppointmentPage() {
 		);
 
 		if (user) {
+			const orderItems = isGroupBooking
+				? allGroupPeople.map((p) => {
+						const svc = allServices.find((s) => s.id === p.serviceId);
+						return {
+							kind: "service",
+							serviceName: svc?.name || "",
+							price: svc ? getServiceEffectivePrice(svc, discounts) : 0,
+							guestName: p.name,
+							date: fullDate,
+							nailShape: formData.nailShape,
+							nailLength: formData.nailLength,
+						};
+					})
+				: [
+						{
+							kind: "service",
+							serviceName: selected?.name || "",
+							price: effectivePrice,
+							date: fullDate,
+							nailShape: formData.nailShape,
+							nailLength: formData.nailLength,
+							...(appointmentType === "home" && {
+								isHomeService: true,
+								homeLocation,
+								homeAddress: homeAddress.trim(),
+								hasTableArea,
+								transportRange: transportRangeStr,
+							}),
+						},
+				  ];
 			saveOrder(user.uid, {
 				type: "service",
-				total: effectivePrice,
+				total: isGroupBooking ? groupFinalTotal : effectivePrice,
 				customerName: customerName.trim(),
 				email: user.email || "",
 				appointmentDate: fullDate,
+				...(isGroupBooking && { isGroup: true, groupSize: allGroupPeople.length }),
 				...(paymentReference && { depositPaid: true, paymentReference }),
 				...(appointmentType === "home" && {
 					isHomeService: true,
@@ -334,23 +419,7 @@ export default function BookAppointmentPage() {
 					hasTableArea,
 					transportRange: transportRangeStr,
 				}),
-				items: [
-					{
-						kind: "service",
-						serviceName: selected?.name || "",
-						price: effectivePrice,
-						date: fullDate,
-						nailShape: formData.nailShape,
-						nailLength: formData.nailLength,
-						...(appointmentType === "home" && {
-							isHomeService: true,
-							homeLocation,
-							homeAddress: homeAddress.trim(),
-							hasTableArea,
-							transportRange: transportRangeStr,
-						}),
-					},
-				],
+				items: orderItems,
 			})
 				.then((orderRef) => {
 					saveBookedSlot({
@@ -378,21 +447,28 @@ export default function BookAppointmentPage() {
 			state: {
 				type: "service",
 				customerName,
-				serviceName: selected?.name || "",
+				serviceName: isGroupBooking ? `Group Booking (${allGroupPeople.length} people)` : (selected?.name || ""),
 				appointmentDate: fullDate,
-				total: effectivePrice,
-				finalTotal: finalBookingPrice,
+				total: isGroupBooking ? groupFinalTotal : effectivePrice,
+				finalTotal: isGroupBooking ? groupFinalTotal : finalBookingPrice,
 				referralDiscount,
 				loyaltyDiscount,
-				depositAmount,
-				items: [{
-					kind: "service",
-					serviceName: selected?.name || "",
-					price: finalBookingPrice,
-					date: fullDate,
-					nailShape: formData.nailShape,
-					nailLength: formData.nailLength,
-				}],
+				depositAmount: isGroupBooking ? groupDeposit : depositAmount,
+				isGroup: isGroupBooking,
+				groupSize: isGroupBooking ? allGroupPeople.length : undefined,
+				items: isGroupBooking
+					? allGroupPeople.map((p) => {
+							const svc = allServices.find((s) => s.id === p.serviceId);
+							return { kind: "service", serviceName: svc?.name || "", price: svc ? getServiceEffectivePrice(svc, discounts) : 0, guestName: p.name, date: fullDate, nailShape: formData.nailShape, nailLength: formData.nailLength };
+						})
+					: [{
+						kind: "service",
+						serviceName: selected?.name || "",
+						price: finalBookingPrice,
+						date: fullDate,
+						nailShape: formData.nailShape,
+						nailLength: formData.nailLength,
+					}],
 			},
 		});
 	};
@@ -473,6 +549,21 @@ export default function BookAppointmentPage() {
 		executeAddToCart();
 	};
 
+	const allGroupPeople = isGroupBooking
+		? [{ name: customerName, serviceId: selectedService }, ...groupPeople]
+		: [];
+	const groupTotal = isGroupBooking
+		? allGroupPeople.reduce((sum, p) => {
+				const svc = allServices.find((s) => s.id === p.serviceId);
+				return sum + (svc ? getServiceEffectivePrice(svc, discounts) : 0);
+			}, 0)
+		: 0;
+	const groupDiscountApplies = isGroupBooking && allGroupPeople.length >= 3;
+	const groupDiscountAmount = groupDiscountApplies ? Math.round(groupTotal * GROUP_DISCOUNT_PCT) : 0;
+	const groupFinalTotal = groupTotal - groupDiscountAmount;
+	const groupDeposit = Math.round(groupFinalTotal * 0.5);
+
+	const isGroupValid = !isGroupBooking || groupPeople.every((p) => p.name.trim() && p.serviceId);
 	const isFormValid =
 		customerName.trim() &&
 		appointmentDate &&
@@ -480,7 +571,8 @@ export default function BookAppointmentPage() {
 		appointmentTime &&
 		selectedService &&
 		formData.nailShape &&
-		formData.nailLength;
+		formData.nailLength &&
+		isGroupValid;
 
 	const isHomeDetailsValid =
 		homeAddress.trim() && hasTableArea && homeLocation;
@@ -1010,6 +1102,116 @@ export default function BookAppointmentPage() {
 							</ScrollReveal>
 						))}
 					</RadioGroup>
+
+					{/* Group / Bridal Booking */}
+					{selectedService && (
+						<Box sx={{ mt: 3, p: 3, borderRadius: 3, backgroundColor: '#FFF0F8', border: '1px solid #F0C0D0' }}>
+							<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+								<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+									<GroupsIcon sx={{ color: '#E91E8C', fontSize: '1.3rem' }} />
+									<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', fontSize: '0.95rem' }}>
+										Group / Bridal Booking
+									</Typography>
+								</Box>
+								<Button
+									size="small"
+									variant={isGroupBooking ? 'contained' : 'outlined'}
+									onClick={() => setIsGroupBooking((v) => !v)}
+									sx={{
+										fontFamily: '"Georgia", serif',
+										fontSize: '0.75rem',
+										borderRadius: '20px',
+										borderColor: '#E91E8C',
+										color: isGroupBooking ? '#fff' : '#E91E8C',
+										backgroundColor: isGroupBooking ? '#E91E8C' : 'transparent',
+										'&:hover': { backgroundColor: '#E91E8C', color: '#fff', borderColor: '#E91E8C' },
+									}}
+								>
+									{isGroupBooking ? 'Cancel Group' : 'Book for a Group'}
+								</Button>
+							</Box>
+							{isGroupBooking && (
+								<Box sx={{ mt: 2 }}>
+									<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', color: '#666', mb: 2 }}>
+										Add each person's name and their service. Groups of 3+ get 10% off the total.
+									</Typography>
+									<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, p: 1.5, borderRadius: 2, backgroundColor: '#fff', border: '1px solid #F0C0D0' }}>
+										<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', color: '#4A0E4E', fontWeight: 700, minWidth: 24 }}>1.</Typography>
+										<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', flex: 1, color: '#333' }}>
+											{customerName || 'You (lead)'} — {allServices.find((s) => s.id === selectedService)?.name || 'Selected service'}
+										</Typography>
+									</Box>
+									{groupPeople.map((person, idx) => (
+										<Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+											<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', color: '#4A0E4E', fontWeight: 700, minWidth: 24 }}>
+												{idx + 2}.
+											</Typography>
+											<TextField
+												size="small"
+												placeholder="Name"
+												value={person.name}
+												onChange={(e) => updateGroupPerson(idx, 'name', e.target.value)}
+												sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#F0C0D0' }, '&:hover fieldset': { borderColor: '#E91E8C' } } }}
+												InputProps={{ sx: { fontFamily: '"Georgia", serif', fontSize: '0.82rem' } }}
+											/>
+											<FormControl size="small" sx={{ flex: 1.5 }}>
+												<Select
+													value={person.serviceId}
+													onChange={(e) => updateGroupPerson(idx, 'serviceId', e.target.value)}
+													displayEmpty
+													sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', '& fieldset': { borderColor: '#F0C0D0' }, '&:hover fieldset': { borderColor: '#E91E8C' } }}
+												>
+													<MenuItem value="" disabled sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem' }}>Service</MenuItem>
+													{allServices.map((s) => (
+														<MenuItem key={s.id} value={s.id} sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem' }}>
+															{s.name}
+														</MenuItem>
+													))}
+												</Select>
+											</FormControl>
+											<IconButton size="small" onClick={() => removeGroupPerson(idx)} sx={{ color: '#E91E8C' }}>
+												<DeleteOutlineIcon fontSize="small" />
+											</IconButton>
+										</Box>
+									))}
+									<Button
+										startIcon={<AddIcon />}
+										onClick={addGroupPerson}
+										size="small"
+										sx={{ fontFamily: '"Georgia", serif', fontSize: '0.8rem', color: '#E91E8C', mt: 0.5 }}
+									>
+										Add Person
+									</Button>
+									{allGroupPeople.length >= 2 && (
+										<Box sx={{ mt: 2, p: 1.5, borderRadius: 2, backgroundColor: groupDiscountApplies ? '#e8f5e9' : '#f5f5f5', border: '1px solid ' + (groupDiscountApplies ? '#a5d6a7' : '#eee') }}>
+											<Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+												<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', color: '#555' }}>Subtotal ({allGroupPeople.length} people)</Typography>
+												<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', fontWeight: 600, color: '#333' }}>₦{groupTotal.toLocaleString()}</Typography>
+											</Box>
+											{groupDiscountApplies && (
+												<Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+													<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', color: '#2e7d32', fontWeight: 600 }}>10% Group Discount</Typography>
+													<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', color: '#2e7d32', fontWeight: 600 }}>-₦{groupDiscountAmount.toLocaleString()}</Typography>
+												</Box>
+											)}
+											{!groupDiscountApplies && allGroupPeople.length === 2 && (
+												<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.75rem', color: '#E91E8C', mt: 0.5 }}>
+													Add 1 more person to unlock 10% group discount!
+												</Typography>
+											)}
+											<Box sx={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #ddd', pt: 0.5, mt: 0.5 }}>
+												<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.9rem', fontWeight: 700, color: '#4A0E4E' }}>Total</Typography>
+												<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.9rem', fontWeight: 700, color: '#4A0E4E' }}>₦{groupFinalTotal.toLocaleString()}</Typography>
+											</Box>
+											<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.75rem', color: '#888', mt: 0.5 }}>
+												50% deposit: ₦{groupDeposit.toLocaleString()}
+											</Typography>
+										</Box>
+									)}
+								</Box>
+							)}
+						</Box>
+					)}
 
 					{/* Discounts & Rewards */}
 					{isFormValid && (

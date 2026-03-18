@@ -39,6 +39,8 @@ import SignInPrompt from '../components/SignInPrompt';
 import PresetSizeGuide from '../components/PresetSizeGuide';
 import useProductCategories from '../hooks/useProductCategories';
 import { addRecentlyViewed, getRecentlyViewed } from '../lib/recentlyViewed';
+import { getSaleEndsAt } from '../lib/discountUtils';
+import FlashSaleCountdown from '../components/FlashSaleCountdown';
 
 const presetSizes = ['XS', 'S', 'M', 'L'];
 
@@ -427,6 +429,11 @@ export default function PressOnDetailPage() {
 						</Typography>
 					)}
 				</Box>
+
+				{/* Flash sale countdown */}
+				{getSaleEndsAt(product) && (
+					<Box sx={{ mt: 0.5 }}><FlashSaleCountdown endsAt={getSaleEndsAt(product)} /></Box>
+				)}
 
 				{/* Description */}
 				{product.description && (
@@ -1144,7 +1151,18 @@ export default function PressOnDetailPage() {
 			</Container>
 		)}
 
-		{/* Sticky action bar */}
+		{/* Nail Care Guide link */}
+	<Container maxWidth="sm" sx={{ mt: 2, mb: 1, textAlign: "center" }}>
+		<Typography
+			component="a"
+			href="/nail-care"
+			sx={{ fontFamily: '"Georgia", serif', fontSize: "0.82rem", color: "#E91E8C", textDecoration: "underline", cursor: "pointer", "&:hover": { color: "#C2185B" } }}
+		>
+			How to apply &amp; care for your press-ons →
+		</Typography>
+	</Container>
+
+	{/* Sticky action bar */}
 			<Box
 				sx={{
 					position: "fixed",

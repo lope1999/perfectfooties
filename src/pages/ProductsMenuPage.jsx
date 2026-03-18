@@ -42,7 +42,8 @@ import { useWishlist } from '../context/WishlistContext';
 import { useNotifications } from '../context/NotificationContext';
 import { pressOnNailShapes } from '../data/products';
 import { saveStockNotification } from '../lib/stockService';
-import { hasDiscount, getEffectivePrice, getDiscountLabel } from '../lib/discountUtils';
+import { hasDiscount, getEffectivePrice, getDiscountLabel, getSaleEndsAt } from '../lib/discountUtils';
+import FlashSaleCountdown from '../components/FlashSaleCountdown';
 
 const sectionColors = ['#FFF0F5', '#FCE4EC', '#F3E5F6', '#F8E8F0', '#FFF5F8'];
 
@@ -927,22 +928,16 @@ export default function ProductsMenuPage() {
 															</Box>
 														)}
 														{hasDiscount(product) && (
-															<Chip
-																label={getDiscountLabel(
-																	product,
+															<Box sx={{ position: "absolute", bottom: 8, left: 8, display: "flex", flexDirection: "column", gap: 0.5 }}>
+																<Chip
+																	label={getDiscountLabel(product)}
+																	size="small"
+																	sx={{ backgroundColor: "#2e7d32", color: "#fff", fontSize: "0.7rem", fontWeight: 700, height: 22 }}
+																/>
+																{getSaleEndsAt(product) && (
+																	<FlashSaleCountdown endsAt={getSaleEndsAt(product)} compact />
 																)}
-																size="small"
-																sx={{
-																	position: "absolute",
-																	bottom: 8,
-																	left: 8,
-																	backgroundColor: "#2e7d32",
-																	color: "#fff",
-																	fontSize: "0.7rem",
-																	fontWeight: 700,
-																	height: 22,
-																}}
-															/>
+															</Box>
 														)}
 
 														{/* Out of stock overlay */}

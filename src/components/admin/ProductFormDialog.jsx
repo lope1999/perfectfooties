@@ -31,6 +31,7 @@ const initialState = {
   discountEnabled: false,
   discountPrice: '',
   discountLabel: '',
+  saleEndsAt: '',
 };
 
 export default function ProductFormDialog({ open, onClose, onSave, product, type }) {
@@ -54,6 +55,7 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
         discountEnabled: !!product.discountEnabled,
         discountPrice: product.discountPrice ?? '',
         discountLabel: product.discountLabel ?? '',
+        saleEndsAt: product.saleEndsAt ?? '',
       });
     } else {
       setForm(initialState);
@@ -77,6 +79,7 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
         discountEnabled: form.discountEnabled,
         discountPrice: form.discountEnabled ? (parseFloat(form.discountPrice) || 0) : null,
         discountLabel: form.discountEnabled ? (form.discountLabel || '') : '',
+        saleEndsAt: form.discountEnabled && form.saleEndsAt ? form.saleEndsAt : null,
       };
       // Only include stock if a value was provided (Firestore rejects undefined)
       if (form.stock !== '') {
@@ -228,6 +231,18 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
                   onChange={handleChange('discountLabel')}
                   InputProps={{ sx: { fontFamily } }}
                   InputLabelProps={{ sx: { fontFamily } }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Sale ends at (optional)"
+                  type="datetime-local"
+                  value={form.saleEndsAt}
+                  onChange={handleChange('saleEndsAt')}
+                  InputLabelProps={{ shrink: true, sx: { fontFamily } }}
+                  InputProps={{ sx: { fontFamily } }}
+                  helperText="Leave empty for no expiry. Timer shown on product cards."
                 />
               </Grid>
             </>

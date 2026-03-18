@@ -571,6 +571,24 @@ export default function ThankYouPage() {
               </Button>
             </>
           )}
+          {!isAppointment && (
+            <Button
+              fullWidth
+              onClick={() => navigate('/nail-care')}
+              sx={{
+                py: 1.2,
+                borderRadius: '50px',
+                background: 'transparent',
+                color: '#E91E8C',
+                fontWeight: 600,
+                fontSize: '0.84rem',
+                border: '1.5px solid #F0C0D0',
+                '&:hover': { background: '#FFF0F8', borderColor: '#E91E8C' },
+              }}
+            >
+              Nail Care Guide
+            </Button>
+          )}
           <Button
             fullWidth
             onClick={() => navigate('/account')}
