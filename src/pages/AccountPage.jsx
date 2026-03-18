@@ -50,7 +50,11 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
-import { fetchOrders, updateOrderStatus } from "../lib/orderService";
+import {
+	fetchOrders,
+	updateOrderStatus,
+	updateOrderDetails,
+} from "../lib/orderService";
 import { addCancellationRequest } from "../lib/cancellationService";
 import { useNotifications } from "../context/NotificationContext";
 import {
@@ -144,6 +148,7 @@ const CLIENT_TIERS = [
 	{ min: 3, label: 'Nail Lover',    emoji: '💅', color: '#C2185B', bg: '#FCE4EC', border: '#F48FB1', desc: 'Three visits strong — dedicated to the craft!' },
 	{ min: 2, label: 'Glam Client',   emoji: '✨', color: '#6A1B9A', bg: '#EDE7F6', border: '#B39DDB', desc: "You came back — we love your loyalty!" },
 	{ min: 1, label: 'Fresh Darling', emoji: '🌸', color: '#2E7D32', bg: '#F1F8E9', border: '#A5D6A7', desc: 'Brand new — welcome to Chizzys Nails!' },
+	{ min: 0, label: 'New Member',    emoji: '🌟', color: '#E91E8C', bg: '#FFF0F5', border: '#F0C0D0', desc: 'Welcome! Leave your first review to start your loyalty journey.' },
 ];
 
 function getClientTier(reviewCount) {
@@ -191,10 +196,15 @@ export default function AccountPage() {
 	const [ratedOrders, setRatedOrders] = useState({});
 	const [rateDialog, setRateDialog] = useState(null);
 	const [cancelDialog, setCancelDialog] = useState(null);
-	const [cancelReason, setCancelReason] = useState('');
-	const [cancelReasonOther, setCancelReasonOther] = useState('');
+	const [cancelReason, setCancelReason] = useState("");
+	const [cancelReasonOther, setCancelReasonOther] = useState("");
 	const [cancelLoading, setCancelLoading] = useState(false);
 	const [cancelError, setCancelError] = useState(false);
+
+	// Edit pending order state
+	const [editOrderDialog, setEditOrderDialog] = useState(null);
+	const [editOrderForm, setEditOrderForm] = useState({});
+	const [editOrderSaving, setEditOrderSaving] = useState(false);
 
 	// Loyalty & referral state (from Firestore)
 	const [firestorePoints, setFirestorePoints] = useState(null); // null = loading
@@ -253,14 +263,22 @@ export default function AccountPage() {
 			getLoyaltyData(user.uid),
 			ensureReferralCode(user.uid),
 			getReferralStats(user.uid),
-		]).then(([loyalty, , refStats]) => {
-			console.log('[Loyalty Debug] Firestore user doc loyalty fields:', loyalty);
-			console.log('[Loyalty Debug] loyaltyPoints from Firestore:', loyalty.loyaltyPoints);
-			setFirestorePoints(loyalty.loyaltyPoints);
-			setReferralUses(refStats.totalUses);
-		}).catch((err) => {
-			console.error('[Loyalty Debug] Error loading loyalty data:', err);
-		});
+		])
+			.then(([loyalty, , refStats]) => {
+				console.log(
+					"[Loyalty Debug] Firestore user doc loyalty fields:",
+					loyalty,
+				);
+				console.log(
+					"[Loyalty Debug] loyaltyPoints from Firestore:",
+					loyalty.loyaltyPoints,
+				);
+				setFirestorePoints(loyalty.loyaltyPoints);
+				setReferralUses(refStats.totalUses);
+			})
+			.catch((err) => {
+				console.error("[Loyalty Debug] Error loading loyalty data:", err);
+			});
 	}, [user]);
 
 	const handleRedeem = () => {
@@ -295,27 +313,31 @@ export default function AccountPage() {
 		if (!cancelDialog || !cancelReason) return;
 		const id = cancelDialog.id;
 		const prevStatus = cancelDialog.status;
-		const finalReason = cancelReason === 'Other' ? cancelReasonOther.trim() : cancelReason;
+		const finalReason =
+			cancelReason === "Other" ? cancelReasonOther.trim() : cancelReason;
 		if (!finalReason) return;
 		setCancelLoading(true);
 		setCancelError(false);
 		// Optimistic update — card reflects cancelled immediately
 		setOrders((prev) =>
-			prev.map((o) => (o.id === id ? { ...o, status: 'cancelled' } : o)),
+			prev.map((o) => (o.id === id ? { ...o, status: "cancelled" } : o)),
 		);
 		setCancelDialog(null);
 		try {
-			await updateOrderStatus(user.uid, id, 'cancelled');
-			showToast('Your cancellation has been submitted.', 'info');
+			await updateOrderStatus(user.uid, id, "cancelled");
+			showToast("Your cancellation has been submitted.", "info");
 			// Save cancellation reason to Firestore for admin review
 			await addCancellationRequest({
 				orderId: id,
 				uid: user.uid,
-				customerName: cancelDialog.customerName || user.displayName || '',
-				customerEmail: user.email || '',
-				orderType: cancelDialog.type || '',
-				serviceName: cancelDialog.items?.[0]?.serviceName || cancelDialog.items?.[0]?.name || '',
-				appointmentDate: cancelDialog.appointmentDate || '',
+				customerName: cancelDialog.customerName || user.displayName || "",
+				customerEmail: user.email || "",
+				orderType: cancelDialog.type || "",
+				serviceName:
+					cancelDialog.items?.[0]?.serviceName ||
+					cancelDialog.items?.[0]?.name ||
+					"",
+				appointmentDate: cancelDialog.appointmentDate || "",
 				reason: finalReason,
 			});
 		} catch (_) {
@@ -326,12 +348,78 @@ export default function AccountPage() {
 			setCancelError(true);
 		} finally {
 			setCancelLoading(false);
-			setCancelReason('');
-			setCancelReasonOther('');
+			setCancelReason("");
+			setCancelReasonOther("");
 		}
 	};
 
-	const serviceOrders = orders.filter((o) => o.type === "service" || o.type === "mixed");
+	const handleOpenEditOrder = (order) => {
+		const firstItem = order.items?.[0] || {};
+		setEditOrderForm({
+			customerName: order.customerName || "",
+			notes: order.notes || "",
+			nailShape: firstItem.nailShape || "",
+			nailBedSize: firstItem.nailBedSize || "",
+			presetSize: firstItem.presetSize || "",
+			phone: order.phone || "",
+		});
+		setEditOrderDialog(order);
+	};
+
+	const handleEditOrderSave = async () => {
+		if (!editOrderDialog || !user) return;
+		setEditOrderSaving(true);
+		try {
+			const updates = {};
+			if (editOrderForm.customerName.trim())
+				updates.customerName = editOrderForm.customerName.trim();
+			if (editOrderForm.notes !== undefined)
+				updates.notes = editOrderForm.notes;
+			if (editOrderForm.phone !== undefined)
+				updates.phone = editOrderForm.phone;
+			const isService =
+				editOrderDialog.type === "service" ||
+				editOrderDialog.type === "mixed";
+			const isPressOn = !isService && editOrderDialog.items?.[0];
+			if (isPressOn) {
+				updates.items = editOrderDialog.items.map((item, i) =>
+					i === 0
+						? {
+								...item,
+								nailShape:
+									editOrderForm.nailShape !== undefined
+										? editOrderForm.nailShape
+										: item.nailShape,
+								nailBedSize:
+									editOrderForm.nailBedSize !== undefined
+										? editOrderForm.nailBedSize
+										: item.nailBedSize,
+								presetSize:
+									editOrderForm.presetSize !== undefined
+										? editOrderForm.presetSize
+										: item.presetSize,
+							}
+						: item,
+				);
+			}
+			await updateOrderDetails(user.uid, editOrderDialog.id, updates);
+			setOrders((prev) =>
+				prev.map((o) =>
+					o.id === editOrderDialog.id ? { ...o, ...updates } : o,
+				),
+			);
+			setEditOrderDialog(null);
+			showToast("Order updated successfully.", "success");
+		} catch {
+			showToast("Could not save changes. Please try again.", "error");
+		} finally {
+			setEditOrderSaving(false);
+		}
+	};
+
+	const serviceOrders = orders.filter(
+		(o) => o.type === "service" || o.type === "mixed",
+	);
 	const otherOrders = orders.filter((o) => o.type !== "service");
 	const reviewCount = Object.keys(ratedOrders).length;
 	const giftCardOrders = orders.filter((o) =>
@@ -342,27 +430,39 @@ export default function AccountPage() {
 
 	// Loyalty points — from Firestore (null while loading, falls back to order-computed)
 	const computedPoints = orders.reduce((total, o) => {
-		const earnedForService = o.type === 'service' && o.status === 'completed';
-		const earnedForOrder = o.type !== 'service' && o.status === 'received';
+		const earnedForService = o.type === "service" && o.status === "completed";
+		const earnedForOrder = o.type !== "service" && o.status === "received";
 		if (!earnedForService && !earnedForOrder) return total;
-		return total + (o.type === 'service' ? 20 : 15);
+		return total + (o.type === "service" ? 20 : 15);
 	}, 0);
-	console.log('[Loyalty Debug] orders:', orders.map(o => ({ id: o.id, type: o.type, status: o.status })));
-	console.log('[Loyalty Debug] computedPoints (from orders):', computedPoints, '| firestorePoints:', firestorePoints);
-	const loyaltyPoints = firestorePoints !== null ? firestorePoints : computedPoints;
-	const redeemableNaira = Math.floor(loyaltyPoints / REDEMPTION_UNIT) * REDEMPTION_VALUE;
+	console.log(
+		"[Loyalty Debug] orders:",
+		orders.map((o) => ({ id: o.id, type: o.type, status: o.status })),
+	);
+	console.log(
+		"[Loyalty Debug] computedPoints (from orders):",
+		computedPoints,
+		"| firestorePoints:",
+		firestorePoints,
+	);
+	const loyaltyPoints =
+		firestorePoints !== null ? firestorePoints : computedPoints;
+	const redeemableNaira =
+		Math.floor(loyaltyPoints / REDEMPTION_UNIT) * REDEMPTION_VALUE;
 	const maxRedeemableUnits = Math.floor(loyaltyPoints / REDEMPTION_UNIT);
 
 	// Referral code — unique per user
-	const referralCode = user?.uid ? `CHIZZYS-${user.uid.slice(0, 8).toUpperCase()}` : '';
+	const referralCode = user?.uid
+		? `CHIZZYS-${user.uid.slice(0, 8).toUpperCase()}`
+		: "";
 	const referralLink = `${window.location.origin}/?ref=${referralCode}`;
 
 	// Re-booking prompt logic
 	const hasCompletedAppt = serviceOrders.some(
-		(o) => o.status === 'completed' || o.status === 'received',
+		(o) => o.status === "completed" || o.status === "received",
 	);
 	const hasActiveAppt = serviceOrders.some((o) =>
-		['pending', 'confirmed', 'in progress'].includes(o.status),
+		["pending", "confirmed", "in progress"].includes(o.status),
 	);
 	const showRebookPrompt = hasCompletedAppt && !hasActiveAppt;
 
@@ -649,10 +749,7 @@ export default function AccountPage() {
 						<Box
 							sx={{ display: "flex", gap: 1.5, mb: 3, flexWrap: "wrap" }}
 						>
-							<Box
-								sx={statBtnSx}
-								onClick={() => navigate("/products")}
-							>
+							<Box sx={statBtnSx} onClick={() => navigate("/products")}>
 								<ShoppingBagIcon
 									sx={{ fontSize: 24, color: "#4A0E4E", mb: 0.5 }}
 								/>
@@ -673,10 +770,7 @@ export default function AccountPage() {
 									Orders
 								</Typography>
 							</Box>
-							<Box
-								sx={statBtnSx}
-								onClick={() => navigate("/services")}
-							>
+							<Box sx={statBtnSx} onClick={() => navigate("/services")}>
 								<CalendarTodayIcon
 									sx={{ fontSize: 24, color: "#E91E8C", mb: 0.5 }}
 								/>
@@ -774,143 +868,518 @@ export default function AccountPage() {
 							)}
 						</Box>
 
-					{/* Client Status */}
-					{reviewCount > 0 && (() => {
-						const tier = getClientTier(reviewCount);
-						const next = getNextTier(reviewCount);
-						return (
-							<Box
-								sx={{
-									mb: 3, p: 2.5, borderRadius: 3,
-									background: `linear-gradient(135deg, ${tier.bg} 0%, #fff 100%)`,
-									border: `1.5px solid ${tier.border}`,
-								}}
-							>
-								<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-									<Typography sx={{ fontSize: '2rem', lineHeight: 1 }}>{tier.emoji}</Typography>
-									<Box sx={{ flex: 1 }}>
-										<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1rem', color: tier.color }}>
-											{tier.label}
-										</Typography>
-										<Typography sx={{ fontSize: '0.78rem', color: '#666', mt: 0.2 }}>
-											{tier.desc}
-										</Typography>
-									</Box>
-									<Box sx={{ textAlign: 'right' }}>
-										<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1.3rem', color: tier.color, lineHeight: 1 }}>
-											{reviewCount}
-										</Typography>
-										<Typography sx={{ fontSize: '0.68rem', color: '#999' }}>
-											{reviewCount === 1 ? 'review' : 'reviews'}
-										</Typography>
-									</Box>
-								</Box>
-								{next && (
-									<Box sx={{ mt: 1.8 }}>
-										<Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-											<Typography sx={{ fontSize: '0.7rem', color: '#999' }}>
-												{next.min - reviewCount} more {next.min - reviewCount === 1 ? 'review' : 'reviews'} to reach
+						{/* Client Status */}
+						{(() => {
+							const tier = getClientTier(reviewCount);
+							const next = getNextTier(reviewCount);
+							return (
+									<Box
+										sx={{
+											mb: 3,
+											p: 2.5,
+											borderRadius: 3,
+											background: `linear-gradient(135deg, ${tier.bg} 0%, #fff 100%)`,
+											border: `1.5px solid ${tier.border}`,
+										}}
+									>
+										<Box
+											sx={{
+												display: "flex",
+												alignItems: "center",
+												gap: 1.5,
+											}}
+										>
+											<Typography
+												sx={{ fontSize: "2rem", lineHeight: 1 }}
+											>
+												{tier.emoji}
 											</Typography>
-											<Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: next.color }}>
-												{next.emoji} {next.label}
-											</Typography>
+											<Box sx={{ flex: 1 }}>
+												<Typography
+													sx={{
+														fontFamily: ff,
+														fontWeight: 700,
+														fontSize: "1rem",
+														color: tier.color,
+													}}
+												>
+													{tier.label}
+												</Typography>
+												<Typography
+													sx={{
+														fontSize: "0.78rem",
+														color: "#666",
+														mt: 0.2,
+													}}
+												>
+													{tier.desc}
+												</Typography>
+											</Box>
+											<Box sx={{ textAlign: "right" }}>
+												<Typography
+													sx={{
+														fontFamily: ff,
+														fontWeight: 700,
+														fontSize: "1.3rem",
+														color: tier.color,
+														lineHeight: 1,
+													}}
+												>
+													{reviewCount}
+												</Typography>
+												<Typography
+													sx={{
+														fontSize: "0.68rem",
+														color: "#999",
+													}}
+												>
+													{reviewCount === 1
+														? "review"
+														: "reviews"}
+												</Typography>
+											</Box>
 										</Box>
-										<Box sx={{ height: 5, borderRadius: 10, backgroundColor: '#eee', overflow: 'hidden' }}>
-											<Box
+										{next && (
+											<Box sx={{ mt: 1.8 }}>
+												<Box
+													sx={{
+														display: "flex",
+														justifyContent: "space-between",
+														mb: 0.5,
+													}}
+												>
+													<Typography
+														sx={{
+															fontSize: "0.7rem",
+															color: "#999",
+														}}
+													>
+														{next.min - reviewCount} more{" "}
+														{next.min - reviewCount === 1
+															? "review"
+															: "reviews"}{" "}
+														to reach
+													</Typography>
+													<Typography
+														sx={{
+															fontSize: "0.7rem",
+															fontWeight: 700,
+															color: next.color,
+														}}
+													>
+														{next.emoji} {next.label}
+													</Typography>
+												</Box>
+												<Box
+													sx={{
+														height: 5,
+														borderRadius: 10,
+														backgroundColor: "#eee",
+														overflow: "hidden",
+													}}
+												>
+													<Box
+														sx={{
+															height: "100%",
+															borderRadius: 10,
+															width: `${(reviewCount / next.min) * 100}%`,
+															background: `linear-gradient(90deg, ${tier.border}, ${tier.color})`,
+															transition: "width 0.6s ease",
+														}}
+													/>
+												</Box>
+											</Box>
+										)}
+										{!next && (
+											<Typography
 												sx={{
-													height: '100%', borderRadius: 10,
-													width: `${(reviewCount / next.min) * 100}%`,
-													background: `linear-gradient(90deg, ${tier.border}, ${tier.color})`,
-													transition: 'width 0.6s ease',
+													mt: 1.2,
+													fontSize: "0.75rem",
+													color: tier.color,
+													fontWeight: 600,
+													textAlign: "center",
 												}}
-											/>
-										</Box>
+											>
+												🎉 Maximum tier reached — you&apos;re a
+												Chizzys legend!
+											</Typography>
+										)}
 									</Box>
-								)}
-								{!next && (
-									<Typography sx={{ mt: 1.2, fontSize: '0.75rem', color: tier.color, fontWeight: 600, textAlign: 'center' }}>
-										🎉 Maximum tier reached — you&apos;re a Chizzys legend!
-									</Typography>
-								)}
-							</Box>
-						);
-					})()}
+								);
+						})()}
 
 						{/* Loyalty Points Card */}
-					<Box sx={{ mb: 3, p: 2.5, borderRadius: 3, background: 'linear-gradient(135deg, #FFF8E1 0%, #FFF0F5 100%)', border: '1.5px solid #FFD54F' }}>
-						<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-							<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-								<Typography sx={{ fontSize: '1.4rem', lineHeight: 1 }}>🏆</Typography>
-								<Box>
-									<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: '#4A0E4E' }}>Loyalty Points</Typography>
-									<Typography sx={{ fontSize: '0.72rem', color: '#777' }}>Earn points on every completed order & appointment</Typography>
-								</Box>
-							</Box>
-							<Box sx={{ textAlign: 'right' }}>
-								<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1.6rem', color: '#B8860B', lineHeight: 1 }}>{loyaltyPoints}</Typography>
-								<Typography sx={{ fontSize: '0.68rem', color: '#999' }}>points</Typography>
-							</Box>
-						</Box>
-						<Box sx={{ height: 6, borderRadius: 10, backgroundColor: '#FDE68A', overflow: 'hidden', mb: 1 }}>
-							<Box sx={{ height: '100%', borderRadius: 10, width: `${Math.min(100, (loyaltyPoints % 50) * 2)}%`, background: 'linear-gradient(90deg, #FFD54F, #B8860B)', transition: 'width 0.6s ease' }} />
-						</Box>
-						<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-							<Typography sx={{ fontSize: '0.72rem', color: '#777' }}>{loyaltyPoints % 50} / 50 pts to next ₦1,000 reward</Typography>
-							{redeemableNaira > 0 && (
-								<Box sx={{ backgroundColor: '#E91E8C', borderRadius: '14px', px: 1.5, py: 0.4 }}>
-									<Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#fff' }}>{formatNaira(redeemableNaira)} redeemable!</Typography>
-								</Box>
-							)}
-						</Box>
-						{redeemableNaira > 0 && (
-							<Button
-								fullWidth
-								onClick={() => { setRedeemAmount(REDEMPTION_UNIT); setRedeemSuccess(false); setRedeemDialogOpen(true); }}
-								sx={{ mt: 1.5, backgroundColor: '#B8860B', color: '#fff', borderRadius: '20px', py: 0.8, fontFamily: ff, fontWeight: 700, fontSize: '0.82rem', textTransform: 'none', '&:hover': { backgroundColor: '#996600' } }}
+						<Box
+							sx={{
+								mb: 3,
+								p: 2.5,
+								borderRadius: 3,
+								background:
+									"linear-gradient(135deg, #FFF8E1 0%, #FFF0F5 100%)",
+								border: "1.5px solid #FFD54F",
+							}}
+						>
+							<Box
+								sx={{
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "space-between",
+									mb: 1.5,
+								}}
 							>
-								🎁 Redeem {formatNaira(redeemableNaira)} in Rewards
-							</Button>
-						)}
-						<Box sx={{ mt: 1.5, pt: 1.5, borderTop: '1px solid #FDE68A' }}>
-							<Typography sx={{ fontSize: '0.7rem', color: '#999', lineHeight: 1.8 }}>💅 <strong>15 pts</strong> per press-on order · <strong>20 pts</strong> per appointment · <strong>50 pts = ₦1,000 off</strong></Typography>
-						</Box>
-					</Box>
-
-					{/* Referral Code Card */}
-					<Box sx={{ mb: 3, p: 2.5, borderRadius: 3, background: 'linear-gradient(135deg, #EDE7F6 0%, #FFF0F5 100%)', border: '1.5px solid #CE93D8' }}>
-						<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-							<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-								<Typography sx={{ fontSize: '1.4rem', lineHeight: 1 }}>🎀</Typography>
-								<Box>
-									<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: '#4A0E4E' }}>Refer a Friend</Typography>
-									<Typography sx={{ fontSize: '0.72rem', color: '#777' }}>Share your code — everyone you refer gets ₦1,000 off</Typography>
+								<Box
+									sx={{
+										display: "flex",
+										alignItems: "center",
+										gap: 1,
+									}}
+								>
+									<Typography
+										sx={{ fontSize: "1.4rem", lineHeight: 1 }}
+									>
+										🏆
+									</Typography>
+									<Box>
+										<Typography
+											sx={{
+												fontFamily: ff,
+												fontWeight: 700,
+												fontSize: "0.95rem",
+												color: "#4A0E4E",
+											}}
+										>
+											Loyalty Points
+										</Typography>
+										<Typography
+											sx={{ fontSize: "0.72rem", color: "#777" }}
+										>
+											Earn points on every completed order &
+											appointment
+										</Typography>
+									</Box>
 								</Box>
+								<Box sx={{ textAlign: "right" }}>
+									<Typography
+										sx={{
+											fontFamily: ff,
+											fontWeight: 700,
+											fontSize: "1.6rem",
+											color: "#B8860B",
+											lineHeight: 1,
+										}}
+									>
+										{loyaltyPoints}
+									</Typography>
+									<Typography
+										sx={{ fontSize: "0.68rem", color: "#999" }}
+									>
+										points
+									</Typography>
+								</Box>
+							</Box>
+							<Box
+								sx={{
+									height: 6,
+									borderRadius: 10,
+									backgroundColor: "#FDE68A",
+									overflow: "hidden",
+									mb: 1,
+								}}
+							>
+								<Box
+									sx={{
+										height: "100%",
+										borderRadius: 10,
+										width: `${Math.min(100, (loyaltyPoints % 50) * 2)}%`,
+										background:
+											"linear-gradient(90deg, #FFD54F, #B8860B)",
+										transition: "width 0.6s ease",
+									}}
+								/>
+							</Box>
+							<Box
+								sx={{
+									display: "flex",
+									justifyContent: "space-between",
+									alignItems: "center",
+								}}
+							>
+								<Typography sx={{ fontSize: "0.72rem", color: "#777" }}>
+									{loyaltyPoints % 50} / 50 pts to next ₦1,000 reward
+								</Typography>
+								{redeemableNaira > 0 && (
+									<Box
+										sx={{
+											backgroundColor: "#E91E8C",
+											borderRadius: "14px",
+											px: 1.5,
+											py: 0.4,
+										}}
+									>
+										<Typography
+											sx={{
+												fontSize: "0.72rem",
+												fontWeight: 700,
+												color: "#fff",
+											}}
+										>
+											{formatNaira(redeemableNaira)} redeemable!
+										</Typography>
+									</Box>
+								)}
+							</Box>
+							{redeemableNaira > 0 && (
+								<Button
+									fullWidth
+									onClick={() => {
+										setRedeemAmount(REDEMPTION_UNIT);
+										setRedeemSuccess(false);
+										setRedeemDialogOpen(true);
+									}}
+									sx={{
+										mt: 1.5,
+										backgroundColor: "#B8860B",
+										color: "#fff",
+										borderRadius: "20px",
+										py: 0.8,
+										fontFamily: ff,
+										fontWeight: 700,
+										fontSize: "0.82rem",
+										textTransform: "none",
+										"&:hover": { backgroundColor: "#996600" },
+									}}
+								>
+									🎁 Redeem {formatNaira(redeemableNaira)} in Rewards
+								</Button>
+							)}
+							<Box
+								sx={{
+									mt: 1.5,
+									pt: 1.5,
+									borderTop: "1px solid #FDE68A",
+								}}
+							>
+								<Typography
+									sx={{
+										fontSize: "0.7rem",
+										color: "#999",
+										lineHeight: 1.8,
+									}}
+								>
+									💅 <strong>15 pts</strong> per press-on order ·{" "}
+									<strong>20 pts</strong> per appointment ·{" "}
+									<strong>50 pts = ₦1,000 off</strong>
+								</Typography>
+							</Box>
+						</Box>
+
+						{/* Referral Code Card */}
+						<Box
+							sx={{
+								mb: 3,
+								p: 2.5,
+								borderRadius: 3,
+								background:
+									"linear-gradient(135deg, #EDE7F6 0%, #FFF0F5 100%)",
+								border: "1.5px solid #CE93D8",
+							}}
+						>
+							<Box
+								sx={{
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "space-between",
+									mb: 1.5,
+								}}
+							>
+								<Box
+									sx={{
+										display: "flex",
+										alignItems: "center",
+										gap: 1,
+									}}
+								>
+									<Typography
+										sx={{ fontSize: "1.4rem", lineHeight: 1 }}
+									>
+										🎀
+									</Typography>
+									<Box>
+										<Typography
+											sx={{
+												fontFamily: ff,
+												fontWeight: 700,
+												fontSize: "0.95rem",
+												color: "#4A0E4E",
+											}}
+										>
+											Refer a Friend
+										</Typography>
+										<Typography
+											sx={{ fontSize: "0.72rem", color: "#777" }}
+										>
+											Share your code — everyone you refer gets
+											₦1,000 off
+										</Typography>
+									</Box>
+								</Box>
+								{referralUses > 0 && (
+									<Box sx={{ textAlign: "right" }}>
+										<Typography
+											sx={{
+												fontFamily: ff,
+												fontWeight: 700,
+												fontSize: "0.88rem",
+												color: "#6A1B9A",
+											}}
+										>
+											{referralUses}× used
+										</Typography>
+										<Typography
+											sx={{ fontSize: "0.65rem", color: "#999" }}
+										>
+											{referralUses * POINTS_PER_REFERRAL} pts earned
+										</Typography>
+									</Box>
+								)}
 							</Box>
 							{referralUses > 0 && (
-								<Box sx={{ textAlign: 'right' }}>
-									<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.88rem', color: '#6A1B9A' }}>{referralUses}× used</Typography>
-									<Typography sx={{ fontSize: '0.65rem', color: '#999' }}>{referralUses * POINTS_PER_REFERRAL} pts earned</Typography>
+								<Box
+									sx={{
+										mb: 1.5,
+										p: 1.2,
+										borderRadius: 2,
+										background:
+											"linear-gradient(135deg, #EDE7F6, #F3E5F5)",
+										border: "1px solid #CE93D8",
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "space-between",
+									}}
+								>
+									<Box>
+										<Typography
+											sx={{
+												fontWeight: 700,
+												fontSize: "0.82rem",
+												color: "#6A1B9A",
+											}}
+										>
+											🏆 {referralUses * POINTS_PER_REFERRAL} pts
+											earned from referrals
+										</Typography>
+										<Typography
+											sx={{ fontSize: "0.7rem", color: "#888" }}
+										>
+											{referralUses} friend
+											{referralUses !== 1 ? "s" : ""} used your code
+											· added to loyalty balance
+										</Typography>
+									</Box>
+									<Typography
+										sx={{
+											fontFamily: ff,
+											fontWeight: 700,
+											fontSize: "0.82rem",
+											color: "#B8860B",
+										}}
+									>
+										≡{" "}
+										{formatNaira(
+											Math.floor(
+												(referralUses * POINTS_PER_REFERRAL) /
+													REDEMPTION_UNIT,
+											) * REDEMPTION_VALUE,
+										)}
+									</Typography>
 								</Box>
 							)}
-						</Box>
-						{referralUses > 0 && (
-							<Box sx={{ mb: 1.5, p: 1.2, borderRadius: 2, background: 'linear-gradient(135deg, #EDE7F6, #F3E5F5)', border: '1px solid #CE93D8', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-								<Box>
-									<Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#6A1B9A' }}>🏆 {referralUses * POINTS_PER_REFERRAL} pts earned from referrals</Typography>
-									<Typography sx={{ fontSize: '0.7rem', color: '#888' }}>{referralUses} friend{referralUses !== 1 ? 's' : ''} used your code · added to loyalty balance</Typography>
-								</Box>
-								<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.82rem', color: '#B8860B' }}>≡ {formatNaira(Math.floor((referralUses * POINTS_PER_REFERRAL) / REDEMPTION_UNIT) * REDEMPTION_VALUE)}</Typography>
+							<Box
+								sx={{
+									display: "flex",
+									alignItems: "center",
+									gap: 1,
+									p: 1.2,
+									borderRadius: 2,
+									backgroundColor: "#fff",
+									border: "1px solid #CE93D8",
+									mb: 1.5,
+								}}
+							>
+								<Typography
+									sx={{
+										fontFamily: ff,
+										fontWeight: 700,
+										fontSize: "0.95rem",
+										color: "#4A0E4E",
+										flex: 1,
+										letterSpacing: 1,
+									}}
+								>
+									{referralCode}
+								</Typography>
+								<Button
+									size="small"
+									onClick={() =>
+										navigator.clipboard
+											.writeText(referralCode)
+											.catch(() => {})
+									}
+									sx={{
+										color: "#6A1B9A",
+										fontFamily: ff,
+										fontWeight: 600,
+										fontSize: "0.72rem",
+										textTransform: "none",
+										px: 1.5,
+										py: 0.4,
+										border: "1px solid #CE93D8",
+										borderRadius: "14px",
+										"&:hover": { backgroundColor: "#EDE7F6" },
+									}}
+								>
+									Copy
+								</Button>
 							</Box>
-						)}
-						<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.2, borderRadius: 2, backgroundColor: '#fff', border: '1px solid #CE93D8', mb: 1.5 }}>
-							<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: '#4A0E4E', flex: 1, letterSpacing: 1 }}>{referralCode}</Typography>
-							<Button size="small" onClick={() => navigator.clipboard.writeText(referralCode).catch(() => {})} sx={{ color: '#6A1B9A', fontFamily: ff, fontWeight: 600, fontSize: '0.72rem', textTransform: 'none', px: 1.5, py: 0.4, border: '1px solid #CE93D8', borderRadius: '14px', '&:hover': { backgroundColor: '#EDE7F6' } }}>Copy</Button>
+							<Button
+								fullWidth
+								onClick={() => {
+									const msg = encodeURIComponent(
+										`💅 Hey! I use Chizzys Nails for my press-ons & appointments — they're amazing! Use my code *${referralCode}* to get ₦1,000 off your first order: ${referralLink}`,
+									);
+									window.open(
+										`https://api.whatsapp.com/send?text=${msg}`,
+										"_blank",
+									);
+								}}
+								sx={{
+									backgroundColor: "#25D366",
+									color: "#fff",
+									borderRadius: "20px",
+									py: 0.8,
+									fontFamily: ff,
+									fontWeight: 600,
+									fontSize: "0.82rem",
+									textTransform: "none",
+									"&:hover": { backgroundColor: "#1da851" },
+								}}
+							>
+								💬 Share via WhatsApp
+							</Button>
+							<Typography
+								sx={{
+									fontSize: "0.68rem",
+									color: "#999",
+									mt: 1,
+									textAlign: "center",
+								}}
+							>
+								Referral points go into your loyalty balance — redeem at
+								checkout on any order or appointment
+							</Typography>
 						</Box>
-						<Button fullWidth onClick={() => { const msg = encodeURIComponent(`💅 Hey! I use Chizzys Nails for my press-ons & appointments — they're amazing! Use my code *${referralCode}* to get ₦1,000 off your first order: ${referralLink}`); window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank'); }} sx={{ backgroundColor: '#25D366', color: '#fff', borderRadius: '20px', py: 0.8, fontFamily: ff, fontWeight: 600, fontSize: '0.82rem', textTransform: 'none', '&:hover': { backgroundColor: '#1da851' } }}>💬 Share via WhatsApp</Button>
-						<Typography sx={{ fontSize: '0.68rem', color: '#999', mt: 1, textAlign: 'center' }}>Referral points go into your loyalty balance — redeem at checkout on any order or appointment</Typography>
-					</Box>
 
-					{/* Quick Actions */}
+						{/* Quick Actions */}
 						<Box
 							sx={{ display: "flex", gap: 1.5, mb: 3, flexWrap: "wrap" }}
 						>
@@ -1264,35 +1733,51 @@ export default function AccountPage() {
 									mb: 3,
 									p: 2.5,
 									borderRadius: 3,
-									background: 'linear-gradient(135deg, #FCE4EC 0%, #F8BBD9 100%)',
-									border: '1.5px solid #F48FB1',
-									display: 'flex',
-									alignItems: 'center',
+									background:
+										"linear-gradient(135deg, #FCE4EC 0%, #F8BBD9 100%)",
+									border: "1.5px solid #F48FB1",
+									display: "flex",
+									alignItems: "center",
 									gap: 2,
-									flexWrap: 'wrap',
+									flexWrap: "wrap",
 								}}
 							>
 								<Box sx={{ flex: 1, minWidth: 200 }}>
-									<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1rem', color: '#C2185B', mb: 0.3 }}>
+									<Typography
+										sx={{
+											fontFamily: ff,
+											fontWeight: 700,
+											fontSize: "1rem",
+											color: "#C2185B",
+											mb: 0.3,
+										}}
+									>
 										💅 Ready for your next appointment?
 									</Typography>
-									<Typography sx={{ fontSize: '0.85rem', color: '#555', lineHeight: 1.5 }}>
-										You’ve completed a session — treat yourself again and keep your nails looking amazing!
+									<Typography
+										sx={{
+											fontSize: "0.85rem",
+											color: "#555",
+											lineHeight: 1.5,
+										}}
+									>
+										You’ve completed a session — treat yourself again
+										and keep your nails looking amazing!
 									</Typography>
 								</Box>
 								<Button
-									onClick={() => navigate('/book')}
+									onClick={() => navigate("/book")}
 									sx={{
-										backgroundColor: '#E91E8C',
-										color: '#fff',
-										borderRadius: '30px',
+										backgroundColor: "#E91E8C",
+										color: "#fff",
+										borderRadius: "30px",
 										px: 3,
 										py: 1,
 										fontFamily: ff,
 										fontWeight: 600,
-										fontSize: '0.88rem',
-										whiteSpace: 'nowrap',
-										'&:hover': { backgroundColor: '#C2185B' },
+										fontSize: "0.88rem",
+										whiteSpace: "nowrap",
+										"&:hover": { backgroundColor: "#C2185B" },
 									}}
 								>
 									Book Again
@@ -1343,8 +1828,13 @@ export default function AccountPage() {
 									order={order}
 									rated={!!ratedOrders[order.id]}
 									onRate={() => setRateDialog(order)}
-									onReschedule={() => navigate('/reschedule', { state: { orderId: order.id } })}
+									onReschedule={() =>
+										navigate("/reschedule", {
+											state: { orderId: order.id },
+										})
+									}
 									onCancel={() => setCancelDialog(order)}
+									onEdit={() => handleOpenEditOrder(order)}
 								/>
 							))
 						)}
@@ -1490,7 +1980,10 @@ export default function AccountPage() {
 													stock: item.stock ?? 999,
 													categoryId: item.categoryId,
 												});
-												showToast(`${item.name} added to cart`, 'success');
+												showToast(
+													`${item.name} added to cart`,
+													"success",
+												);
 											}}
 											sx={{
 												color: "#999",
@@ -1524,9 +2017,13 @@ export default function AccountPage() {
 					open={cancelError}
 					autoHideDuration={4000}
 					onClose={() => setCancelError(false)}
-					anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+					anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
 				>
-					<Alert severity="error" onClose={() => setCancelError(false)} sx={{ fontFamily: ff }}>
+					<Alert
+						severity="error"
+						onClose={() => setCancelError(false)}
+						sx={{ fontFamily: ff }}
+					>
 						Could not cancel — please try again.
 					</Alert>
 				</Snackbar>
@@ -1534,40 +2031,108 @@ export default function AccountPage() {
 				{/* ── Cancel Appointment Dialog ── */}
 				<Dialog
 					open={!!cancelDialog}
-					onClose={() => { setCancelDialog(null); setCancelReason(''); setCancelReasonOther(''); }}
+					onClose={() => {
+						setCancelDialog(null);
+						setCancelReason("");
+						setCancelReasonOther("");
+					}}
 					PaperProps={{ sx: { borderRadius: 4, p: 1, maxWidth: 420 } }}
 				>
 					<DialogTitle sx={{ pb: 0 }}>
-						<Typography variant="h6" sx={{ fontFamily: ff, fontWeight: 700, color: '#d32f2f' }}>
-							Cancel {cancelDialog?.type === 'service' ? 'Appointment' : 'Order'}?
+						<Typography
+							variant="h6"
+							sx={{ fontFamily: ff, fontWeight: 700, color: "#d32f2f" }}
+						>
+							Cancel{" "}
+							{cancelDialog?.type === "service"
+								? "Appointment"
+								: "Order"}
+							?
 						</Typography>
 					</DialogTitle>
 					<DialogContent>
-						<Typography sx={{ color: '#555', fontSize: '0.9rem', mt: 1, mb: 2.5 }}>
+						<Typography
+							sx={{ color: "#555", fontSize: "0.9rem", mt: 1, mb: 2.5 }}
+						>
 							You are cancelling{" "}
-							<strong>{cancelDialog?.items?.[0]?.serviceName || cancelDialog?.items?.[0]?.name || 'this item'}</strong>
-							{cancelDialog?.appointmentDate ? <> on <strong>{cancelDialog.appointmentDate}</strong></> : null}.
-							{" "}This action cannot be undone. Please tell us why:
+							<strong>
+								{cancelDialog?.items?.[0]?.serviceName ||
+									cancelDialog?.items?.[0]?.name ||
+									"this item"}
+							</strong>
+							{cancelDialog?.appointmentDate ? (
+								<>
+									{" "}
+									on <strong>{cancelDialog.appointmentDate}</strong>
+								</>
+							) : null}
+							. This action cannot be undone. Please tell us why:
 						</Typography>
-						<FormControl fullWidth size="small" sx={{ mb: cancelReason === 'Other' ? 2 : 0 }}>
-							<InputLabel sx={{ fontFamily: ff }}>Reason for cancelling</InputLabel>
+						<FormControl
+							fullWidth
+							size="small"
+							sx={{ mb: cancelReason === "Other" ? 2 : 0 }}
+						>
+							<InputLabel sx={{ fontFamily: ff }}>
+								Reason for cancelling
+							</InputLabel>
 							<Select
 								value={cancelReason}
 								label="Reason for cancelling"
-								onChange={(e) => { setCancelReason(e.target.value); setCancelReasonOther(''); }}
+								onChange={(e) => {
+									setCancelReason(e.target.value);
+									setCancelReasonOther("");
+								}}
 								sx={{ fontFamily: ff, borderRadius: 2 }}
 							>
-								<MenuItem value="Wrong order / appointment booked" sx={{ fontFamily: ff }}>Wrong order / appointment booked</MenuItem>
-								<MenuItem value="Price too high" sx={{ fontFamily: ff }}>Price too high</MenuItem>
-								<MenuItem value="Schedule conflict" sx={{ fontFamily: ff }}>Schedule conflict / can't make it</MenuItem>
-								<MenuItem value="Changed my mind" sx={{ fontFamily: ff }}>Changed my mind</MenuItem>
-								<MenuItem value="Booked by mistake" sx={{ fontFamily: ff }}>Booked by mistake</MenuItem>
-								<MenuItem value="Found a better option" sx={{ fontFamily: ff }}>Found a better option</MenuItem>
-								<MenuItem value="Personal emergency" sx={{ fontFamily: ff }}>Personal emergency</MenuItem>
-								<MenuItem value="Other" sx={{ fontFamily: ff }}>Other</MenuItem>
+								<MenuItem
+									value="Wrong order / appointment booked"
+									sx={{ fontFamily: ff }}
+								>
+									Wrong order / appointment booked
+								</MenuItem>
+								<MenuItem
+									value="Price too high"
+									sx={{ fontFamily: ff }}
+								>
+									Price too high
+								</MenuItem>
+								<MenuItem
+									value="Schedule conflict"
+									sx={{ fontFamily: ff }}
+								>
+									Schedule conflict / can't make it
+								</MenuItem>
+								<MenuItem
+									value="Changed my mind"
+									sx={{ fontFamily: ff }}
+								>
+									Changed my mind
+								</MenuItem>
+								<MenuItem
+									value="Booked by mistake"
+									sx={{ fontFamily: ff }}
+								>
+									Booked by mistake
+								</MenuItem>
+								<MenuItem
+									value="Found a better option"
+									sx={{ fontFamily: ff }}
+								>
+									Found a better option
+								</MenuItem>
+								<MenuItem
+									value="Personal emergency"
+									sx={{ fontFamily: ff }}
+								>
+									Personal emergency
+								</MenuItem>
+								<MenuItem value="Other" sx={{ fontFamily: ff }}>
+									Other
+								</MenuItem>
 							</Select>
 						</FormControl>
-						{cancelReason === 'Other' && (
+						{cancelReason === "Other" && (
 							<TextField
 								fullWidth
 								size="small"
@@ -1577,23 +2142,57 @@ export default function AccountPage() {
 								value={cancelReasonOther}
 								onChange={(e) => setCancelReasonOther(e.target.value)}
 								inputProps={{ maxLength: 500 }}
-								sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontFamily: ff } }}
+								sx={{
+									"& .MuiOutlinedInput-root": {
+										borderRadius: 2,
+										fontFamily: ff,
+									},
+								}}
 							/>
 						)}
 					</DialogContent>
 					<DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
 						<Button
-							onClick={() => { setCancelDialog(null); setCancelReason(''); setCancelReasonOther(''); }}
-							sx={{ color: '#777', fontFamily: ff, fontWeight: 600, textTransform: 'none' }}
+							onClick={() => {
+								setCancelDialog(null);
+								setCancelReason("");
+								setCancelReasonOther("");
+							}}
+							sx={{
+								color: "#777",
+								fontFamily: ff,
+								fontWeight: 600,
+								textTransform: "none",
+							}}
 						>
-							Keep {cancelDialog?.type === 'service' ? 'Appointment' : 'Order'}
+							Keep{" "}
+							{cancelDialog?.type === "service"
+								? "Appointment"
+								: "Order"}
 						</Button>
 						<Button
 							onClick={handleCancelAppointment}
-							disabled={cancelLoading || !cancelReason || (cancelReason === 'Other' && !cancelReasonOther.trim())}
-							sx={{ backgroundColor: '#d32f2f', color: '#fff', borderRadius: '20px', px: 3, fontFamily: ff, fontWeight: 600, textTransform: 'none', '&:hover': { backgroundColor: '#b71c1c' }, '&.Mui-disabled': { backgroundColor: '#ffcdd2', color: '#fff' } }}
+							disabled={
+								cancelLoading ||
+								!cancelReason ||
+								(cancelReason === "Other" && !cancelReasonOther.trim())
+							}
+							sx={{
+								backgroundColor: "#d32f2f",
+								color: "#fff",
+								borderRadius: "20px",
+								px: 3,
+								fontFamily: ff,
+								fontWeight: 600,
+								textTransform: "none",
+								"&:hover": { backgroundColor: "#b71c1c" },
+								"&.Mui-disabled": {
+									backgroundColor: "#ffcdd2",
+									color: "#fff",
+								},
+							}}
 						>
-							{cancelLoading ? 'Cancelling…' : 'Yes, Cancel'}
+							{cancelLoading ? "Cancelling…" : "Yes, Cancel"}
 						</Button>
 					</DialogActions>
 				</Dialog>
@@ -1608,82 +2207,288 @@ export default function AccountPage() {
 				>
 					<DialogTitle sx={{ fontFamily: ff, fontWeight: 700, pb: 0 }}>
 						Redeem Loyalty Points
-						<Typography sx={{ fontSize: '0.82rem', color: '#777', fontFamily: ff, fontWeight: 400, mt: 0.3 }}>
+						<Typography
+							sx={{
+								fontSize: "0.82rem",
+								color: "#777",
+								fontFamily: ff,
+								fontWeight: 400,
+								mt: 0.3,
+							}}
+						>
 							{redeemSuccess
-								? 'Redemption confirmed!'
-								: `Balance: ${loyaltyPoints} pts — ${maxRedeemableUnits} unit${maxRedeemableUnits !== 1 ? 's' : ''} redeemable`}
+								? "Redemption confirmed!"
+								: `Balance: ${loyaltyPoints} pts — ${maxRedeemableUnits} unit${maxRedeemableUnits !== 1 ? "s" : ""} redeemable`}
 						</Typography>
 					</DialogTitle>
-					<DialogContent sx={{ pt: '12px !important' }}>
+					<DialogContent sx={{ pt: "12px !important" }}>
 						{redeemSuccess ? (
-							<Box sx={{ textAlign: 'center', py: 2 }}>
-								<Typography sx={{ fontSize: '2.5rem', mb: 1 }}>🎉</Typography>
-								<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1rem', color: '#2e7d32', mb: 0.5 }}>
-									{formatNaira(Math.floor(redeemAmount / REDEMPTION_UNIT) * REDEMPTION_VALUE)} redeemed!
+							<Box sx={{ textAlign: "center", py: 2 }}>
+								<Typography sx={{ fontSize: "2.5rem", mb: 1 }}>
+									🎉
 								</Typography>
-								<Typography sx={{ fontSize: '0.82rem', color: '#555', mb: 2, lineHeight: 1.6 }}>
-									Your reward is saved and will be automatically applied at your next checkout — just proceed to any order page.
+								<Typography
+									sx={{
+										fontFamily: ff,
+										fontWeight: 700,
+										fontSize: "1rem",
+										color: "#2e7d32",
+										mb: 0.5,
+									}}
+								>
+									{formatNaira(
+										Math.floor(redeemAmount / REDEMPTION_UNIT) *
+											REDEMPTION_VALUE,
+									)}{" "}
+									redeemed!
 								</Typography>
-								<Box sx={{ p: 1.5, borderRadius: 2, backgroundColor: '#FFF8E1', border: '1px solid #FFD54F' }}>
-									<Typography sx={{ fontSize: '0.78rem', color: '#B8860B', fontWeight: 600 }}>
-										🎁 {formatNaira(Math.floor(redeemAmount / REDEMPTION_UNIT) * REDEMPTION_VALUE)} reward ready to use at checkout
+								<Typography
+									sx={{
+										fontSize: "0.82rem",
+										color: "#555",
+										mb: 2,
+										lineHeight: 1.6,
+									}}
+								>
+									Your reward is saved and will be automatically
+									applied at your next checkout — just proceed to any
+									order page.
+								</Typography>
+								<Box
+									sx={{
+										p: 1.5,
+										borderRadius: 2,
+										backgroundColor: "#FFF8E1",
+										border: "1px solid #FFD54F",
+									}}
+								>
+									<Typography
+										sx={{
+											fontSize: "0.78rem",
+											color: "#B8860B",
+											fontWeight: 600,
+										}}
+									>
+										🎁{" "}
+										{formatNaira(
+											Math.floor(redeemAmount / REDEMPTION_UNIT) *
+												REDEMPTION_VALUE,
+										)}{" "}
+										reward ready to use at checkout
 									</Typography>
 								</Box>
 							</Box>
 						) : (
 							<Box>
-								<Typography sx={{ fontSize: '0.82rem', color: '#555', mb: 2 }}>
-									Each unit = <strong>50 pts = ₦1,000 off</strong>. Select how many units to redeem:
+								<Typography
+									sx={{ fontSize: "0.82rem", color: "#555", mb: 2 }}
+								>
+									Each unit = <strong>50 pts = ₦1,000 off</strong>.
+									Select how many units to redeem:
 								</Typography>
-								<Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, border: '1.5px solid #FFD54F', backgroundColor: '#FFFDE7', mb: 1 }}>
+								<Box
+									sx={{
+										display: "flex",
+										alignItems: "center",
+										gap: 2,
+										p: 2,
+										borderRadius: 2,
+										border: "1.5px solid #FFD54F",
+										backgroundColor: "#FFFDE7",
+										mb: 1,
+									}}
+								>
 									<IconButton
 										size="small"
-										onClick={() => setRedeemAmount((a) => Math.max(REDEMPTION_UNIT, a - REDEMPTION_UNIT))}
+										onClick={() =>
+											setRedeemAmount((a) =>
+												Math.max(
+													REDEMPTION_UNIT,
+													a - REDEMPTION_UNIT,
+												),
+											)
+										}
 										disabled={redeemAmount <= REDEMPTION_UNIT}
-										sx={{ border: '1px solid #FFD54F', color: '#B8860B' }}
+										sx={{
+											border: "1px solid #FFD54F",
+											color: "#B8860B",
+										}}
 									>
 										<RemoveIcon fontSize="small" />
 									</IconButton>
-									<Box sx={{ flex: 1, textAlign: 'center' }}>
-										<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1.3rem', color: '#B8860B', lineHeight: 1 }}>
+									<Box sx={{ flex: 1, textAlign: "center" }}>
+										<Typography
+											sx={{
+												fontFamily: ff,
+												fontWeight: 700,
+												fontSize: "1.3rem",
+												color: "#B8860B",
+												lineHeight: 1,
+											}}
+										>
 											{redeemAmount} pts
 										</Typography>
-										<Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 0.3 }}>
-											= {formatNaira(Math.floor(redeemAmount / REDEMPTION_UNIT) * REDEMPTION_VALUE)} discount
+										<Typography
+											sx={{
+												fontSize: "0.72rem",
+												color: "#888",
+												mt: 0.3,
+											}}
+										>
+											={" "}
+											{formatNaira(
+												Math.floor(redeemAmount / REDEMPTION_UNIT) *
+													REDEMPTION_VALUE,
+											)}{" "}
+											discount
 										</Typography>
 									</Box>
 									<IconButton
 										size="small"
-										onClick={() => setRedeemAmount((a) => Math.min(maxRedeemableUnits * REDEMPTION_UNIT, a + REDEMPTION_UNIT))}
-										disabled={redeemAmount >= maxRedeemableUnits * REDEMPTION_UNIT}
-										sx={{ border: '1px solid #FFD54F', color: '#B8860B' }}
+										onClick={() =>
+											setRedeemAmount((a) =>
+												Math.min(
+													maxRedeemableUnits * REDEMPTION_UNIT,
+													a + REDEMPTION_UNIT,
+												),
+											)
+										}
+										disabled={
+											redeemAmount >=
+											maxRedeemableUnits * REDEMPTION_UNIT
+										}
+										sx={{
+											border: "1px solid #FFD54F",
+											color: "#B8860B",
+										}}
 									>
 										<AddIcon fontSize="small" />
 									</IconButton>
 								</Box>
-								<Typography sx={{ fontSize: '0.72rem', color: '#999', textAlign: 'center' }}>
-									Remaining after redemption: {loyaltyPoints - redeemAmount} pts
+								<Typography
+									sx={{
+										fontSize: "0.72rem",
+										color: "#999",
+										textAlign: "center",
+									}}
+								>
+									Remaining after redemption:{" "}
+									{loyaltyPoints - redeemAmount} pts
 								</Typography>
 							</Box>
 						)}
 					</DialogContent>
 					<DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-						<Button onClick={() => setRedeemDialogOpen(false)} sx={{ color: '#777', fontFamily: ff, textTransform: 'none' }}>
-							{redeemSuccess ? 'Close' : 'Cancel'}
+						<Button
+							onClick={() => setRedeemDialogOpen(false)}
+							sx={{
+								color: "#777",
+								fontFamily: ff,
+								textTransform: "none",
+							}}
+						>
+							{redeemSuccess ? "Close" : "Cancel"}
 						</Button>
 						{!redeemSuccess && (
 							<Button
 								onClick={handleRedeem}
 								disabled={false}
-								sx={{ backgroundColor: '#B8860B', color: '#fff', borderRadius: '20px', px: 3, fontFamily: ff, fontWeight: 700, textTransform: 'none', '&:hover': { backgroundColor: '#996600' }, '&.Mui-disabled': { backgroundColor: '#FDE68A', color: '#fff' } }}
+								sx={{
+									backgroundColor: "#B8860B",
+									color: "#fff",
+									borderRadius: "20px",
+									px: 3,
+									fontFamily: ff,
+									fontWeight: 700,
+									textTransform: "none",
+									"&:hover": { backgroundColor: "#996600" },
+									"&.Mui-disabled": {
+										backgroundColor: "#FDE68A",
+										color: "#fff",
+									},
+								}}
 							>
-								Redeem {formatNaira(Math.floor(redeemAmount / REDEMPTION_UNIT) * REDEMPTION_VALUE)}
+								Redeem{" "}
+								{formatNaira(
+									Math.floor(redeemAmount / REDEMPTION_UNIT) *
+										REDEMPTION_VALUE,
+								)}
 							</Button>
 						)}
 					</DialogActions>
 				</Dialog>
 
-				{/* ── Rate Dialog ── */}
+				{/* ── Edit Pending Order Dialog ── */}
+			<Dialog
+				open={!!editOrderDialog}
+				onClose={() => setEditOrderDialog(null)}
+				maxWidth="xs"
+				fullWidth
+				PaperProps={{ sx: { borderRadius: 4 } }}
+			>
+				<DialogTitle sx={{ fontFamily: ff, fontWeight: 700, pb: 0.5 }}>
+					Edit {editOrderDialog?.type === 'service' || editOrderDialog?.type === 'mixed' ? 'Appointment' : 'Order'} Details
+					<Typography sx={{ fontSize: '0.78rem', color: '#777', fontFamily: ff, fontWeight: 400, mt: 0.3 }}>
+						You can update these details while your order is still pending.
+					</Typography>
+				</DialogTitle>
+				<DialogContent sx={{ pt: '12px !important', display: 'flex', flexDirection: 'column', gap: 2 }}>
+					<TextField
+						fullWidth
+						label="Your Name"
+						size="small"
+						value={editOrderForm.customerName || ''}
+						onChange={(e) => setEditOrderForm((f) => ({ ...f, customerName: e.target.value }))}
+						sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontFamily: ff } }}
+					/>
+					<TextField
+						fullWidth
+						label="Phone Number"
+						size="small"
+						value={editOrderForm.phone || ''}
+						onChange={(e) => setEditOrderForm((f) => ({ ...f, phone: e.target.value }))}
+						sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontFamily: ff } }}
+					/>
+					<TextField
+						fullWidth
+						label="Notes / Special Requests"
+						size="small"
+						multiline
+						minRows={2}
+						value={editOrderForm.notes || ''}
+						onChange={(e) => setEditOrderForm((f) => ({ ...f, notes: e.target.value }))}
+						inputProps={{ maxLength: 500 }}
+						sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontFamily: ff } }}
+					/>
+				</DialogContent>
+				<DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+					<Button
+						onClick={() => setEditOrderDialog(null)}
+						sx={{ fontFamily: ff, color: '#777', textTransform: 'none' }}
+					>
+						Cancel
+					</Button>
+					<Button
+						onClick={handleEditOrderSave}
+						disabled={editOrderSaving}
+						sx={{
+							backgroundColor: '#E91E8C',
+							color: '#fff',
+							borderRadius: '20px',
+							px: 3,
+							fontFamily: ff,
+							fontWeight: 600,
+							textTransform: 'none',
+							'&:hover': { backgroundColor: '#C2185B' },
+							'&.Mui-disabled': { backgroundColor: '#F0C0D0', color: '#fff' },
+						}}
+					>
+						{editOrderSaving ? 'Saving…' : 'Save Changes'}
+					</Button>
+				</DialogActions>
+			</Dialog>
+
+			{/* ── Rate Dialog ── */}
 				<RateDialog
 					open={!!rateDialog}
 					order={rateDialog}
@@ -1692,7 +2497,10 @@ export default function AccountPage() {
 					onSubmitted={(orderId) => {
 						setRatedOrders((prev) => ({ ...prev, [orderId]: true }));
 						setRateDialog(null);
-						showToast('Thank you! Your review has been submitted.', 'success');
+						showToast(
+							"Thank you! Your review has been submitted.",
+							"success",
+						);
 					}}
 				/>
 
@@ -2109,7 +2917,7 @@ function OrderProgressTracker({ status }) {
 	);
 }
 
-function OrderCard({ order, rated, onRate, onReschedule, onCancel }) {
+function OrderCard({ order, rated, onRate, onReschedule, onCancel, onEdit }) {
 	const statusColor = {
 		pending: "#FF9800",
 		confirmed: "#2196F3",
@@ -2210,7 +3018,29 @@ function OrderCard({ order, rated, onRate, onReschedule, onCancel }) {
 					</Button>
 				</Box>
 			)}
-		{(order.type === 'service' || order.type === 'mixed') && (order.status === 'pending' || order.status === 'confirmed') && (
+		{order.status === 'pending' && onEdit && (
+		<Box sx={{ mt: 1.5 }}>
+			<Button
+				size="small"
+				startIcon={<EditIcon sx={{ fontSize: 14 }} />}
+				onClick={onEdit}
+				sx={{
+					border: '1.5px solid #E91E8C',
+					borderRadius: '20px',
+					color: '#E91E8C',
+					px: 2,
+					fontFamily: ff,
+					fontWeight: 600,
+					fontSize: '0.78rem',
+					textTransform: 'none',
+					'&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
+				}}
+			>
+				Edit Details
+			</Button>
+		</Box>
+	)}
+	{(order.type === 'service' || order.type === 'mixed') && (order.status === 'pending' || order.status === 'confirmed') && (
 			<Box sx={{ mt: 1.5, display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
 				{order.status === 'confirmed' && (
 					<Button

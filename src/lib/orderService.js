@@ -58,6 +58,13 @@ export async function updateOrderStatus(uid, orderId, status, extraFields = {}) 
   return updateDoc(ref, { status, ...extraFields });
 }
 
+export async function updateOrderDetails(uid, orderId, updates) {
+  requireString(uid, 'uid');
+  requireString(orderId, 'orderId');
+  const ref = doc(db, 'users', uid, 'orders', orderId);
+  return updateDoc(ref, updates);
+}
+
 export async function saveNailBedSizes(uid, sizes) {
   requireString(uid, 'uid');
   if (!sizes) return;

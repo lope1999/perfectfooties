@@ -33,6 +33,7 @@ import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import CloseIcon from '@mui/icons-material/Close';
 import StraightenIcon from '@mui/icons-material/Straighten';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import ScrollReveal from '../components/ScrollReveal';
 import PresetSizeGuide from "../components/PresetSizeGuide";
 import useProductCategories from '../hooks/useProductCategories';
@@ -56,147 +57,178 @@ function isOutOfStock(product) {
 }
 
 export default function ProductsMenuPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user, signInWithGoogle } = useAuth();
-  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-  const { showToast } = useNotifications();
-  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
-  const [signingIn, setSigningIn] = useState(false);
-  const { categories: productCategories, loading, error } = useProductCategories();
+	const navigate = useNavigate();
+	const location = useLocation();
+	const { user, signInWithGoogle } = useAuth();
+	const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+	const { showToast } = useNotifications();
+	const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+	const [signingIn, setSigningIn] = useState(false);
+	const {
+		categories: productCategories,
+		loading,
+		error,
+	} = useProductCategories();
 
-  // Filter state
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [sortBy, setSortBy] = useState('default');
-  const [shapeFilter, setShapeFilter] = useState('');
-  const [lengthFilter, setLengthFilter] = useState('');
-  const [priceRange, setPriceRange] = useState([0, 30000]);
-  const [inStockOnly, setInStockOnly] = useState(false);
+	// Filter state
+	const [filtersOpen, setFiltersOpen] = useState(false);
+	const [sortBy, setSortBy] = useState("default");
+	const [shapeFilter, setShapeFilter] = useState("");
+	const [lengthFilter, setLengthFilter] = useState("");
+	const [priceRange, setPriceRange] = useState([0, 30000]);
+	const [inStockOnly, setInStockOnly] = useState(false);
 
-  // Notify Me dialog state
-  const [notifyDialog, setNotifyDialog] = useState(null);
-  const [notifyEmail, setNotifyEmail] = useState('');
-  const [notifySubmitting, setNotifySubmitting] = useState(false);
-  const [notifySuccess, setNotifySuccess] = useState(false);
-  const [notifyError, setNotifyError] = useState('');
+	// Custom nail info dialog state
+	const [customInfoOpen, setCustomInfoOpen] = useState(false);
 
-  const hasActiveFilters = sortBy !== 'default' || shapeFilter || lengthFilter || priceRange[0] > 0 || priceRange[1] < 30000 || inStockOnly;
+	// Notify Me dialog state
+	const [notifyDialog, setNotifyDialog] = useState(null);
+	const [notifyEmail, setNotifyEmail] = useState("");
+	const [notifySubmitting, setNotifySubmitting] = useState(false);
+	const [notifySuccess, setNotifySuccess] = useState(false);
+	const [notifyError, setNotifyError] = useState("");
 
-  const clearFilters = () => {
-    setSortBy('default');
-    setShapeFilter('');
-    setLengthFilter('');
-    setPriceRange([0, 30000]);
-    setInStockOnly(false);
-  };
+	const hasActiveFilters =
+		sortBy !== "default" ||
+		shapeFilter ||
+		lengthFilter ||
+		priceRange[0] > 0 ||
+		priceRange[1] < 30000 ||
+		inStockOnly;
 
-  const applyFilters = (products) => {
-    let filtered = products.filter((p) => !p.hidden);
+	const clearFilters = () => {
+		setSortBy("default");
+		setShapeFilter("");
+		setLengthFilter("");
+		setPriceRange([0, 30000]);
+		setInStockOnly(false);
+	};
 
-    if (inStockOnly) {
-      filtered = filtered.filter((p) => p.stock === undefined || p.stock > 0);
-    }
-    if (shapeFilter) {
-      filtered = filtered.filter((p) => p.shape === shapeFilter);
-    }
-    if (lengthFilter) {
-      filtered = filtered.filter((p) => p.length === lengthFilter);
-    }
-    filtered = filtered.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
+	const applyFilters = (products) => {
+		let filtered = products.filter((p) => !p.hidden);
 
-    if (sortBy === 'price-asc') {
-      filtered.sort((a, b) => a.price - b.price);
-    } else if (sortBy === 'price-desc') {
-      filtered.sort((a, b) => b.price - a.price);
-    }
+		if (inStockOnly) {
+			filtered = filtered.filter(
+				(p) => p.stock === undefined || p.stock > 0,
+			);
+		}
+		if (shapeFilter) {
+			filtered = filtered.filter((p) => p.shape === shapeFilter);
+		}
+		if (lengthFilter) {
+			filtered = filtered.filter((p) => p.length === lengthFilter);
+		}
+		filtered = filtered.filter(
+			(p) => p.price >= priceRange[0] && p.price <= priceRange[1],
+		);
 
-    return filtered;
-  };
+		if (sortBy === "price-asc") {
+			filtered.sort((a, b) => a.price - b.price);
+		} else if (sortBy === "price-desc") {
+			filtered.sort((a, b) => b.price - a.price);
+		}
 
-  const filteredCategories = useMemo(() => {
-    return productCategories
-      .map((cat) => ({ ...cat, filteredProducts: applyFilters(cat.products) }))
-      .filter((cat) => cat.filteredProducts.length > 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productCategories, sortBy, shapeFilter, lengthFilter, priceRange, inStockOnly]);
+		return filtered;
+	};
 
-  const handleSignIn = async () => {
-    setSigningIn(true);
-    try {
-      await signInWithGoogle();
-    } catch {
-      // user closed popup
-    } finally {
-      setSigningIn(false);
-    }
-  };
+	const filteredCategories = useMemo(() => {
+		return productCategories
+			.map((cat) => ({
+				...cat,
+				filteredProducts: applyFilters(cat.products),
+			}))
+			.filter((cat) => cat.filteredProducts.length > 0);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [
+		productCategories,
+		sortBy,
+		shapeFilter,
+		lengthFilter,
+		priceRange,
+		inStockOnly,
+	]);
 
-  const handleContactClick = () => {
-    if (location.pathname !== '/') {
-      navigate('/');
-      setTimeout(() => {
-        document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' });
-      }, 300);
-    } else {
-      document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+	const handleSignIn = async () => {
+		setSigningIn(true);
+		try {
+			await signInWithGoogle();
+		} catch {
+			// user closed popup
+		} finally {
+			setSigningIn(false);
+		}
+	};
 
-  const handleCardClick = (product, category) => {
-    if (!isOutOfStock(product)) {
-      navigate(`/products/${category.id}/${product.id}`);
-    }
-  };
+	const handleContactClick = () => {
+		if (location.pathname !== "/") {
+			navigate("/");
+			setTimeout(() => {
+				document
+					.getElementById("contact-section")
+					?.scrollIntoView({ behavior: "smooth" });
+			}, 300);
+		} else {
+			document
+				.getElementById("contact-section")
+				?.scrollIntoView({ behavior: "smooth" });
+		}
+	};
 
-  const handleWishlistToggle = (e, product, category) => {
-    e.stopPropagation();
-    if (isInWishlist(product.id)) {
-      removeFromWishlist(product.id);
-      showToast(`${product.name} removed from wishlist`, 'info');
-    } else {
-      addToWishlist({
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        categoryId: category.id,
-        stock: product.stock,
-      });
-      showToast(`${product.name} added to wishlist`, 'success');
-    }
-  };
+	const handleCardClick = (product, category) => {
+		if (!isOutOfStock(product)) {
+			navigate(`/products/${category.id}/${product.id}`);
+		}
+	};
 
-  const handleNotifyOpen = (e, product) => {
-    e.stopPropagation();
-    setNotifyDialog(product);
-    setNotifyEmail(user?.email || '');
-    setNotifySuccess(false);
-    setNotifyError('');
-  };
+	const handleWishlistToggle = (e, product, category) => {
+		e.stopPropagation();
+		if (isInWishlist(product.id)) {
+			removeFromWishlist(product.id);
+			showToast(`${product.name} removed from wishlist`, "info");
+		} else {
+			addToWishlist({
+				productId: product.id,
+				name: product.name,
+				price: product.price,
+				image: product.image,
+				categoryId: category.id,
+				stock: product.stock,
+			});
+			showToast(`${product.name} added to wishlist`, "success");
+		}
+	};
 
-  const handleNotifySubmit = async () => {
-    if (!notifyEmail.trim() || !notifyDialog) return;
-    setNotifySubmitting(true);
-    setNotifyError('');
-    try {
-      await saveStockNotification({
-        email: notifyEmail.trim(),
-        productId: notifyDialog.id,
-        productName: notifyDialog.name,
-      });
-      setNotifySuccess(true);
-    } catch (err) {
-      if (err.code === 'ALREADY_SUBSCRIBED') {
-        setNotifyError(err.message);
-      } else {
-        setNotifyError('Something went wrong. Please try again.');
-      }
-    } finally {
-      setNotifySubmitting(false);
-    }
-  };
+	const handleNotifyOpen = (e, product) => {
+		e.stopPropagation();
+		setNotifyDialog(product);
+		setNotifyEmail(user?.email || "");
+		setNotifySuccess(false);
+		setNotifyError("");
+	};
 
-  return (
+	const handleNotifySubmit = async () => {
+		if (!notifyEmail.trim() || !notifyDialog) return;
+		setNotifySubmitting(true);
+		setNotifyError("");
+		try {
+			await saveStockNotification({
+				email: notifyEmail.trim(),
+				productId: notifyDialog.id,
+				productName: notifyDialog.name,
+			});
+			setNotifySuccess(true);
+		} catch (err) {
+			if (err.code === "ALREADY_SUBSCRIBED") {
+				setNotifyError(err.message);
+			} else {
+				setNotifyError("Something went wrong. Please try again.");
+			}
+		} finally {
+			setNotifySubmitting(false);
+		}
+	};
+
+	return (
 		<Box sx={{ pt: 12, pb: { xs: 12, md: 6 } }}>
 			{/* Page Header */}
 			<Box sx={{ textAlign: "center", py: 6, backgroundColor: "#fff" }}>
@@ -204,7 +236,7 @@ export default function ProductsMenuPage() {
 					<Typography
 						variant="h3"
 						sx={{
-							fontFamily: '"Georgia", serif',
+							fontFamily: 'Georgia", serif',
 							fontWeight: 700,
 							color: "#000",
 							mb: 2,
@@ -255,6 +287,64 @@ export default function ProductsMenuPage() {
 						</Typography>
 					</Box>
 				</ScrollReveal>
+
+				{/* Images are visual guides note */}
+				<ScrollReveal direction="up" delay={0.28}>
+					<Box
+						onClick={() => setCustomInfoOpen(true)}
+						sx={{
+							mx: "auto",
+							maxWidth: 600,
+							mt: 2.5,
+							px: 2,
+							cursor: "pointer",
+						}}
+					>
+						<Box
+							sx={{
+								display: "flex",
+								alignItems: "flex-start",
+								gap: 1.5,
+								p: 2,
+								backgroundColor: "#FFFBF0",
+								border: "1px solid #FFE082",
+								borderRadius: 3,
+								transition: "border-color 0.2s ease",
+								"&:hover": { borderColor: "#FFB300" },
+							}}
+						>
+							<InfoOutlinedIcon
+								sx={{
+									color: "#B8860B",
+									fontSize: 18,
+									mt: 0.15,
+									flexShrink: 0,
+								}}
+							/>
+							<Typography
+								sx={{
+									color: "#7A5800",
+									fontSize: "0.85rem",
+									lineHeight: 1.6,
+								}}
+							>
+								<strong>Note:</strong> The images shown except the{" "}
+								<b>Available Press-ons</b> are visual guides only — not
+								the actual products. They represent the style and vibe
+								you&rsquo;re going for.{" "}
+								<span
+									style={{
+										textDecoration: "underline",
+										textUnderlineOffset: 2,
+									}}
+								>
+									Tap to learn how to share your inspiration.
+								</span>
+							</Typography>
+						</Box>
+					</Box>
+				</ScrollReveal>
+
 				{!user && (
 					<ScrollReveal direction="up" delay={0.3}>
 						<Box
@@ -971,18 +1061,60 @@ export default function ProductsMenuPage() {
 															flexDirection: "column",
 														}}
 													>
-														<Typography
-															variant="h6"
+														<Box
 															sx={{
-																fontFamily: '"Georgia", serif',
-																fontWeight: 700,
-																color: "#000",
-																fontSize: "1rem",
+																display: "flex",
+																alignItems: "flex-start",
+																justifyContent: "space-between",
 																mb: 0.5,
+																gap: 0.5,
 															}}
 														>
-															{product.name}
-														</Typography>
+															<Typography
+																variant="h6"
+																sx={{
+																	fontFamily:
+																		'"Georgia", serif',
+																	fontWeight: 700,
+																	color: "#000",
+																	fontSize: "1rem",
+																	flex: 1,
+																}}
+															>
+																{product.name}
+															</Typography>
+															{!category.readyMade && (
+																<Tooltip
+																	title="About these images"
+																	arrow
+																	placement="top"
+																>
+																	<IconButton
+																		size="small"
+																		onClick={(e) => {
+																			e.stopPropagation();
+																			setCustomInfoOpen(
+																				true,
+																			);
+																		}}
+																		sx={{
+																			color: "#B8860B",
+																			p: 0.3,
+																			mt: 0.1,
+																			flexShrink: 0,
+																			"&:hover": {
+																				backgroundColor:
+																					"#FFF8E1",
+																			},
+																		}}
+																	>
+																		<InfoOutlinedIcon
+																			sx={{ fontSize: 15 }}
+																		/>
+																	</IconButton>
+																</Tooltip>
+															)}
+														</Box>
 														{product.shape && product.length && (
 															<Typography
 																sx={{
@@ -1127,7 +1259,11 @@ export default function ProductsMenuPage() {
 
 														<Button
 															size="small"
-															startIcon={<PlayCircleOutlineIcon sx={{ fontSize: 16 }} />}
+															startIcon={
+																<PlayCircleOutlineIcon
+																	sx={{ fontSize: 16 }}
+																/>
+															}
 															onClick={(e) => {
 																e.stopPropagation();
 																window.open(
@@ -1137,18 +1273,18 @@ export default function ProductsMenuPage() {
 															}}
 															sx={{
 																mt: 1,
-																border: '1.5px solid #4A0E4E',
-																borderRadius: '20px',
-																color: '#4A0E4E',
+																border: "1.5px solid #4A0E4E",
+																borderRadius: "20px",
+																color: "#4A0E4E",
 																fontFamily: '"Georgia", serif',
 																fontWeight: 600,
-																fontSize: '0.75rem',
-																textTransform: 'none',
+																fontSize: "0.75rem",
+																textTransform: "none",
 																px: 2,
 																py: 0.5,
-																'&:hover': {
-																	backgroundColor: '#4A0E4E',
-																	color: '#fff',
+																"&:hover": {
+																	backgroundColor: "#4A0E4E",
+																	color: "#fff",
 																},
 															}}
 														>
@@ -1184,18 +1320,121 @@ export default function ProductsMenuPage() {
 									);
 								})}
 							</Grid>
-
 						</Container>
 					</Box>
 				</Box>
 			))}
+
+			{/* Custom Nail Info Dialog */}
+			<Dialog
+				open={customInfoOpen}
+				onClose={() => setCustomInfoOpen(false)}
+				maxWidth="xs"
+				fullWidth
+				PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+			>
+				<DialogTitle
+					sx={{
+						background:
+							"linear-gradient(135deg, #FFF8E1 0%, #FFF3CD 100%)",
+						borderBottom: "1px solid #FFE082",
+						display: "flex",
+						alignItems: "center",
+						gap: 1,
+						pb: 1.5,
+					}}
+				>
+					<InfoOutlinedIcon sx={{ color: "#B8860B", fontSize: 22 }} />
+					<Typography
+						sx={{
+							fontFamily: '"Georgia", serif',
+							fontWeight: 700,
+							fontSize: "1rem",
+							color: "#7A5800",
+						}}
+					>
+						About These Images
+					</Typography>
+				</DialogTitle>
+				<DialogContent sx={{ pt: 2.5, pb: 1 }}>
+					<Typography
+						sx={{
+							color: "#555",
+							fontSize: "0.92rem",
+							lineHeight: 1.7,
+							mb: 1.5,
+						}}
+					>
+						The images shown except the "Available Press-ons" are{" "}
+						<strong>visual guides only — not the actual products.</strong>{" "}
+						They&rsquo;re here to help you communicate the soft glam style
+						and vibe you&rsquo;re envisioning.
+					</Typography>
+					<Typography
+						sx={{
+							color: "#4A0E4E",
+							fontSize: "0.9rem",
+							fontWeight: 700,
+							mb: 0.8,
+							fontFamily: '"Georgia", serif',
+						}}
+					>
+						For your custom order, send us your inspiration:
+					</Typography>
+					<Box
+						component="ul"
+						sx={{
+							m: 0,
+							pl: 2.5,
+							color: "#555",
+							fontSize: "0.88rem",
+							lineHeight: 2,
+						}}
+					>
+						<li>Mood boards or nail inspiration pictures</li>
+						<li>Images from nature, favourite colours or textures</li>
+						<li>Food, films, cartoons, or any subject you love</li>
+						<li>
+							Screenshots, Pinterest boards, or anything that inspires
+							you
+						</li>
+					</Box>
+					<Typography
+						sx={{
+							mt: 1.5,
+							color: "#888",
+							fontSize: "0.82rem",
+							fontStyle: "italic",
+						}}
+					>
+						Your nails will be handcrafted to match your unique soft glam
+						vision!
+					</Typography>
+				</DialogContent>
+				<DialogActions sx={{ justifyContent: "center", pb: 3 }}>
+					<Button
+						onClick={() => setCustomInfoOpen(false)}
+						sx={{
+							backgroundColor: "#E91E8C",
+							color: "#fff",
+							borderRadius: "30px",
+							px: 4,
+							py: 1,
+							fontFamily: '"Georgia", serif',
+							fontWeight: 600,
+							"&:hover": { backgroundColor: "#C2185B" },
+						}}
+					>
+						Got it!
+					</Button>
+				</DialogActions>
+			</Dialog>
 
 			{/* Preset Size Guide Modal */}
 			<PresetSizeGuide
 				open={sizeGuideOpen}
 				onClose={() => setSizeGuideOpen(false)}
 			/>
-
 
 			{/* Notify Me Dialog — disabled until EmailJS plan upgrade
       <Dialog
@@ -1301,5 +1540,5 @@ export default function ProductsMenuPage() {
       </Dialog>
       */}
 		</Box>
-  );
+	);
 }

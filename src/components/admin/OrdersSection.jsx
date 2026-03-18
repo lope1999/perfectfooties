@@ -28,13 +28,14 @@ import {
   Toolbar,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import EditIcon from '@mui/icons-material/Edit';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import AddIcon from '@mui/icons-material/Add';
-import { updateOrderStatus, deleteOrder, addOrderNote, createAdminOrder } from '../../lib/adminService';
+import { updateOrderStatus, deleteOrder, addOrderNote, createAdminOrder, updateOrder } from '../../lib/adminService';
 import { exportOrdersToCSV } from '../../lib/csvExport';
 import { sendConfirmationEmail } from '../../lib/emailService';
 
@@ -68,6 +69,8 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   const [emailFeedback, setEmailFeedback] = useState(null);
   const [sendingEmailId, setSendingEmailId] = useState(null);
   const [addDialog, setAddDialog] = useState(false);
+  const [editDialog, setEditDialog] = useState(null);
+  const [editForm, setEditForm] = useState({});
   const [selectedOrders, setSelectedOrders] = useState(new Set());
   const [bulkStatus, setBulkStatus] = useState('');
   const [bulkBusy, setBulkBusy] = useState(false);
@@ -241,6 +244,40 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
       console.error('Bulk update error:', err);
     } finally {
       setBulkBusy(false);
+    }
+  };
+
+  const handleEditOpen = (order) => {
+    setEditForm({
+      customerName: order.customerName || order.name || '',
+      email: order.email || '',
+      phone: order.phone || '',
+      notes: order.notes || '',
+      total: order.total ?? '',
+      appointmentDate: order.appointmentDate || '',
+    });
+    setEditDialog(order);
+  };
+
+  const handleEditSave = async () => {
+    if (!editDialog) return;
+    setBusy(true);
+    try {
+      const updates = {
+        customerName: editForm.customerName.trim(),
+        email: editForm.email.trim(),
+        phone: editForm.phone.trim(),
+        notes: editForm.notes,
+        total: parseFloat(editForm.total) || editDialog.total,
+      };
+      if (editForm.appointmentDate) updates.appointmentDate = editForm.appointmentDate;
+      await updateOrder(editDialog.uid, editDialog.id, updates);
+      setEditDialog(null);
+      await onRefresh();
+    } catch (err) {
+      console.error('Edit order error:', err);
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -470,6 +507,9 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                         <MailOutlineIcon fontSize="small" sx={{ color: o.email ? '#4A0E4E' : '#ccc' }} />
                       )}
                     </IconButton>
+                    <IconButton size="small" onClick={() => handleEditOpen(o)} title="Edit order details">
+                      <EditIcon fontSize="small" sx={{ color: '#1565C0' }} />
+                    </IconButton>
                     <IconButton size="small" onClick={() => { setNoteDialog(o); setNoteText(''); }} title="Add note">
                       <NoteAddIcon fontSize="small" sx={{ color: '#4A0E4E' }} />
                     </IconButton>
@@ -617,6 +657,83 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Edit Order Dialog */}
+      <Dialog open={!!editDialog} onClose={() => setEditDialog(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <DialogTitle sx={{ fontFamily, fontWeight: 700 }}>
+          Edit {editDialog?.type === 'service' ? 'Appointment' : 'Order'} Details
+          <Typography sx={{ fontSize: '0.8rem', color: '#777', fontFamily, fontWeight: 400, mt: 0.3 }}>
+            ID: {editDialog?.id?.slice(0, 12)}… — {editDialog?.customerName || editDialog?.name || ''}
+          </Typography>
+        </DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
+          <TextField
+            label="Customer Name"
+            size="small"
+            fullWidth
+            value={editForm.customerName || ''}
+            onChange={(e) => setEditForm((f) => ({ ...f, customerName: e.target.value }))}
+            sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+          />
+          <TextField
+            label="Email"
+            size="small"
+            fullWidth
+            value={editForm.email || ''}
+            onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+            sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+          />
+          <TextField
+            label="Phone"
+            size="small"
+            fullWidth
+            value={editForm.phone || ''}
+            onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
+            sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+          />
+          {(editDialog?.type === 'service' || editDialog?.type === 'mixed') && (
+            <TextField
+              label="Appointment Date"
+              size="small"
+              fullWidth
+              value={editForm.appointmentDate || ''}
+              onChange={(e) => setEditForm((f) => ({ ...f, appointmentDate: e.target.value }))}
+              placeholder="e.g. Monday, 20 March 2026 at 2:00 PM"
+              sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+            />
+          )}
+          <TextField
+            label="Total (₦)"
+            size="small"
+            fullWidth
+            type="number"
+            value={editForm.total ?? ''}
+            onChange={(e) => setEditForm((f) => ({ ...f, total: e.target.value }))}
+            sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+          />
+          <TextField
+            label="Notes"
+            size="small"
+            fullWidth
+            multiline
+            minRows={2}
+            value={editForm.notes || ''}
+            onChange={(e) => setEditForm((f) => ({ ...f, notes: e.target.value }))}
+            sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialog(null)} sx={{ fontFamily }}>Cancel</Button>
+          <Button
+            onClick={handleEditSave}
+            variant="contained"
+            disabled={busy}
+            sx={{ fontFamily, backgroundColor: '#1565C0', '&:hover': { backgroundColor: '#0d47a1' } }}
+          >
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Add Note Dialog */}
       <Dialog open={!!noteDialog} onClose={() => setNoteDialog(null)} maxWidth="sm" fullWidth>

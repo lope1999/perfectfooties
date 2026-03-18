@@ -13,6 +13,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import AddIcon from '@mui/icons-material/Add';
@@ -401,12 +402,53 @@ export default function PressOnDetailPage() {
 							color: "#555",
 							fontSize: "0.95rem",
 							lineHeight: 1.7,
-							mb: 3,
+							mb: 2,
 						}}
 					>
 						{product.description}
 					</Typography>
 				)}
+
+				{/* Image guide note */}
+				<Box
+					sx={{
+						display: "flex",
+						alignItems: "flex-start",
+						gap: 1.5,
+						p: 2,
+						mb: 3,
+						backgroundColor: "#FFFBF0",
+						border: "1px solid #FFE082",
+						borderRadius: 3,
+					}}
+				>
+					<InfoOutlinedIcon
+						sx={{ color: "#B8860B", fontSize: 20, mt: 0.1, flexShrink: 0 }}
+					/>
+					<Box>
+						<Typography
+							sx={{
+								fontFamily: '"Georgia", serif',
+								fontWeight: 700,
+								color: "#7A5800",
+								fontSize: "0.9rem",
+								mb: 0.5,
+							}}
+						>
+							About this image
+						</Typography>
+						<Typography
+							sx={{ color: "#7A5800", fontSize: "0.85rem", lineHeight: 1.65 }}
+						>
+							The photo shown is a <strong>visual guide only</strong> — not
+							the actual product. It&rsquo;s here to inspire your style. For
+							your custom order, feel free to send us your{" "}
+							<strong>mood board</strong>, install pictures, or any inspiration
+							images — from nature, your favourite colours, food, films,
+							cartoons, or any subject you love!
+						</Typography>
+					</Box>
+				</Box>
 
 				<Box sx={{ borderTop: "1px solid #F0C0D0", pt: 3 }}>
 					{/* Customer Name */}
