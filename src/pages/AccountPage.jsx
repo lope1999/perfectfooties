@@ -65,7 +65,6 @@ import {
 import {
 	getLoyaltyData,
 	ensureReferralCode,
-	getReferralStats,
 	savePendingLoyaltyReward,
 	POINTS_PER_REFERRAL,
 	REDEMPTION_UNIT, REDEMPTION_VALUE,
@@ -210,6 +209,7 @@ export default function AccountPage() {
 	// Loyalty & referral state (from Firestore)
 	const [firestorePoints, setFirestorePoints] = useState(null); // null = loading
 	const [referralUses, setReferralUses] = useState(0);
+	const [myReferralCode, setMyReferralCode] = useState('');
 	const [redeemDialogOpen, setRedeemDialogOpen] = useState(false);
 	const [redeemAmount, setRedeemAmount] = useState(REDEMPTION_UNIT);
 	const [redeemLoading, setRedeemLoading] = useState(false);
@@ -262,10 +262,9 @@ export default function AccountPage() {
 		if (!user) return;
 		Promise.all([
 			getLoyaltyData(user.uid),
-			ensureReferralCode(user.uid),
-			getReferralStats(user.uid),
+			ensureReferralCode(user.uid, user.displayName || ''),
 		])
-			.then(([loyalty, , refStats]) => {
+			.then(([loyalty, refData]) => {
 				console.log(
 					"[Loyalty Debug] Firestore user doc loyalty fields:",
 					loyalty,
@@ -275,7 +274,8 @@ export default function AccountPage() {
 					loyalty.loyaltyPoints,
 				);
 				setFirestorePoints(loyalty.loyaltyPoints);
-				setReferralUses(refStats.totalUses);
+				setMyReferralCode(refData.code);
+				setReferralUses(refData.totalUses);
 			})
 			.catch((err) => {
 				console.error("[Loyalty Debug] Error loading loyalty data:", err);
@@ -471,10 +471,7 @@ export default function AccountPage() {
 		Math.floor(loyaltyPoints / REDEMPTION_UNIT) * REDEMPTION_VALUE;
 	const maxRedeemableUnits = Math.floor(loyaltyPoints / REDEMPTION_UNIT);
 
-	// Referral code — unique per user
-	const referralCode = user?.uid
-		? `CHIZZYS-${user.uid.slice(0, 8).toUpperCase()}`
-		: "";
+	const referralCode = myReferralCode || (user?.uid ? `CHIZZYS-${user.uid.slice(0, 8).toUpperCase()}` : '');
 	const referralLink = `${window.location.origin}/?ref=${referralCode}`;
 
 	// Re-booking prompt logic

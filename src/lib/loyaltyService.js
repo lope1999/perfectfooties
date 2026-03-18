@@ -123,20 +123,45 @@ export async function fetchAllLoyaltyProfiles() {
 
 // ── Referral Codes ───────────────────────────────────────────
 
-export function buildReferralCode(uid) {
-  return `CHIZZYS-${uid.slice(0, 8).toUpperCase()}`;
+export function buildReferralCode(uid, displayName) {
+  const name = (displayName || '')
+    .split(/\s+/)[0]          // first word only
+    .replace(/[^a-zA-Z]/g, '') // letters only
+    .slice(0, 8)
+    .toUpperCase() || 'USER';
+  const suffix = uid.slice(0, 5).toUpperCase();
+  return `${name}-${suffix}`;
 }
 
-// Ensure user has a referral code registered in Firestore
-export async function ensureReferralCode(uid) {
-  const code = buildReferralCode(uid);
-  const ref = doc(db, 'referralCodes', code);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) {
-    await setDoc(ref, { uid, code, totalUses: 0, createdAt: serverTimestamp() });
-    return { uid, code, totalUses: 0 };
+// Ensure user has a referral code registered in Firestore.
+// Checks loyalty doc for an already-assigned code first (backward compat).
+export async function ensureReferralCode(uid, displayName) {
+  const loyaltyRef = doc(db, 'users', uid);
+  const loyaltySnap = await getDoc(loyaltyRef);
+  const stored = loyaltySnap.exists() ? loyaltySnap.data().referralCode : null;
+
+  if (stored) {
+    // Code already assigned — make sure the referralCodes doc still exists
+    const codeRef = doc(db, 'referralCodes', stored);
+    const codeSnap = await getDoc(codeRef);
+    if (!codeSnap.exists()) {
+      await setDoc(codeRef, { uid, code: stored, totalUses: 0, createdAt: serverTimestamp() });
+    }
+    return { uid, code: stored, totalUses: codeSnap.exists() ? codeSnap.data().totalUses || 0 : 0 };
   }
-  return { uid, code, totalUses: snap.data().totalUses || 0 };
+
+  // No stored code yet — generate a new name-based one
+  const code = buildReferralCode(uid, displayName);
+  const codeRef = doc(db, 'referralCodes', code);
+  const codeSnap = await getDoc(codeRef);
+  if (!codeSnap.exists()) {
+    await setDoc(codeRef, { uid, code, totalUses: 0, createdAt: serverTimestamp() });
+  }
+  // Save to loyalty doc so it persists
+  await updateDoc(loyaltyRef, { referralCode: code }).catch(() =>
+    setDoc(loyaltyRef, { referralCode: code }, { merge: true })
+  );
+  return { uid, code, totalUses: codeSnap.exists() ? codeSnap.data().totalUses || 0 : 0 };
 }
 
 // Validate a referral code → returns referrer uid or null
@@ -176,11 +201,11 @@ export async function applyReferral(referralCode, referredUid) {
 }
 
 // Get referral code stats for a specific user
-export async function getReferralStats(uid) {
-  const code = buildReferralCode(uid);
-  const snap = await getDoc(doc(db, 'referralCodes', code));
+export async function getReferralStats(uid, code) {
+  const resolvedCode = code || buildReferralCode(uid);
+  const snap = await getDoc(doc(db, 'referralCodes', resolvedCode));
   return {
-    code,
+    code: resolvedCode,
     totalUses: snap.exists() ? snap.data().totalUses || 0 : 0,
   };
 }
