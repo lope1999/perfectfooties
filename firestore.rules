@@ -22,10 +22,16 @@ service cloud.firestore {
                       && request.resource.data.total is number
                       && request.resource.data.customerName is string
                       && request.resource.data.customerName.size() <= 200;
-        // Users can cancel their own orders; admin can do anything
+        // Users can cancel their own orders OR edit details of pending orders; admin can do anything
         allow update: if isAdmin()
                       || (request.auth != null && request.auth.uid == uid
-                          && request.resource.data.status == 'cancelled');
+                          && (
+                            request.resource.data.status == 'cancelled'
+                            || (
+                              resource.data.status == 'pending'
+                              && request.resource.data.status == resource.data.status
+                            )
+                          ));
         allow delete: if isAdmin();
       }
     }
