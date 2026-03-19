@@ -17,7 +17,7 @@ export const POINTS_PER_REFERRAL = 50;   // referrer bonus when their code is us
 export const REFERRAL_DISCOUNT = 1000;   // ₦1,000 off for the person using a referral code
 export const REDEMPTION_UNIT = 50;       // every 50 pts = ₦1,000 redeemable
 export const REDEMPTION_VALUE = 1000;    // ₦ value per REDEMPTION_UNIT points
-export const PRESSONS_TIER_MIN = 2;      // min reviews to unlock 5% press-on discount (Glam Client)
+export const PRESSONS_TIER_MIN = 4;      // min reviews to unlock 5% press-on discount (Star Client)
 export const PRESSONS_TIER_DISCOUNT = 0.05; // 5% off press-ons for Glam Client+
 
 // ── Pending Loyalty Reward (saved from AccountPage, applied at checkout) ──────

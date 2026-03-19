@@ -146,11 +146,11 @@ function normalizePresetSize(str) {
 
 // Client loyalty tiers — 1 review per level, brand-aligned
 const CLIENT_TIERS = [
-	{ min: 5, label: 'Diamond Diva',  emoji: '💎', color: 'var(--text-purple)', bg: '#F3E5F5', border: '#CE93D8', desc: 'The absolute elite — top of the nail game!',        perk: 'Free custom nail design consultation' },
-	{ min: 4, label: 'Star Client',   emoji: '⭐', color: '#B8860B', bg: '#FFFDE7', border: '#FFD54F', desc: 'Proven loyal — a true Chizzys star!',                perk: 'Priority booking + exclusive member deals' },
+	{ min: 5, label: 'Diamond Diva',  emoji: '💎', color: 'var(--text-purple)', bg: '#F3E5F5', border: '#CE93D8', desc: 'The absolute elite — top of the nail game!',        perk: 'Free delivery on all orders' },
+	{ min: 4, label: 'Star Client',   emoji: '⭐', color: '#B8860B', bg: '#FFFDE7', border: '#FFD54F', desc: 'Proven loyal — a true Chizzys star!',                perk: '5% off all press-on orders' },
 	{ min: 3, label: 'Nail Lover',    emoji: '💅', color: '#C2185B', bg: '#FCE4EC', border: '#F48FB1', desc: 'Three visits strong — dedicated to the craft!',       perk: 'Early access to new collections' },
-	{ min: 2, label: 'Glam Client',   emoji: '✨', color: '#6A1B9A', bg: '#EDE7F6', border: '#B39DDB', desc: "You came back — we love your loyalty!",               perk: '5% off all press-on orders' },
-	{ min: 1, label: 'Fresh Darling', emoji: '🌸', color: '#2E7D32', bg: '#F1F8E9', border: '#A5D6A7', desc: 'Brand new — welcome to Chizzys Nails!',               perk: 'Free delivery on all orders' },
+	{ min: 2, label: 'Glam Client',   emoji: '✨', color: '#6A1B9A', bg: '#EDE7F6', border: '#B39DDB', desc: "You came back — we love your loyalty!",               perk: 'Priority booking + exclusive member deals' },
+	{ min: 1, label: 'Fresh Darling', emoji: '🌸', color: '#2E7D32', bg: '#F1F8E9', border: '#A5D6A7', desc: 'Brand new — welcome to Chizzys Nails!',               perk: 'Free custom nail design consultation' },
 	{ min: 0, label: 'New Member',    emoji: '🌟', color: '#E91E8C', bg: '#FFF0F5', border: '#F0C0D0', desc: 'Welcome! Leave your first review to start your loyalty journey.', perk: null },
 ];
 

@@ -227,7 +227,7 @@ export default function CheckoutPage() {
       totalLine += `\nLoyalty Points Applied: ${loyaltyUnits * REDEMPTION_UNIT} pts \u2014 Discount: ${formatNaira(loyaltyDiscount)}`;
     }
     if (tierPerkDiscount > 0) {
-      totalLine += `\nGlam Client Perk (5% off press-ons): -${formatNaira(tierPerkDiscount)}`;
+      totalLine += `\nStar Client Perk (5% off press-ons): -${formatNaira(tierPerkDiscount)}`;
     }
     if (giftCardDiscount > 0 || referralDiscount > 0 || loyaltyDiscount > 0 || tierPerkDiscount > 0) {
       totalLine += `\nAmount Due: ${formatNaira(finalTotal)}`;
@@ -719,11 +719,11 @@ export default function CheckoutPage() {
               )}
 
               {tierPerkDiscount > 0 && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, p: 1, borderRadius: 2, backgroundColor: '#EDE7F6', border: '1px solid #B39DDB' }}>
-                  <Typography sx={{ color: '#6A1B9A', fontSize: '0.82rem', fontWeight: 600 }}>
-                    ✨ Glam Client — 5% off press-ons
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, p: 1, borderRadius: 2, backgroundColor: '#FFFDE7', border: '1px solid #FFD54F' }}>
+                  <Typography sx={{ color: '#B8860B', fontSize: '0.82rem', fontWeight: 600 }}>
+                    ⭐ Star Client — 5% off press-ons
                   </Typography>
-                  <Typography sx={{ color: '#6A1B9A', fontWeight: 700, fontSize: '0.82rem' }}>
+                  <Typography sx={{ color: '#B8860B', fontWeight: 700, fontSize: '0.82rem' }}>
                     -{formatNaira(tierPerkDiscount)}
                   </Typography>
                 </Box>
