@@ -33,6 +33,14 @@ const PURPLE = 'var(--text-purple)';
 const GROUP_DISCOUNT_PCT = 0.10;
 const GROUP_DISCOUNT_MIN = 3;
 
+const LENGTH_SURCHARGE = {
+  'XS (Extra Short)': 0,
+  'S (Short)':        500,
+  'M (Medium)':       1000,
+  'L (Long)':         1500,
+  'XL (Extra Long)':  2000,
+};
+
 const OCCASIONS = [
   { id: 'bridal',    label: 'Bridal Party',   emoji: '💍', sub: 'Celebrate before the big day' },
   { id: 'birthday',  label: 'Birthday Girls',  emoji: '🎂', sub: 'Treat yourself & your crew' },
@@ -106,7 +114,8 @@ function StepBar({ step }) {
 // ── Person card in group builder ────────────────────────────────
 function PersonCard({ person, index, isLead, allServices, discounts, onChangeName, onChangeService, onChangeNailShape, onChangeNailLength, onRemove }) {
   const service = allServices.find(s => s.id === person.serviceId);
-  const price = service ? getServiceEffectivePrice(service, discounts) : 0;
+  const surcharge = LENGTH_SURCHARGE[person.nailLength] ?? 0;
+  const price = service ? getServiceEffectivePrice(service, discounts) + surcharge : 0;
   const initials = (person.name || (isLead ? 'You' : '?')).slice(0, 2).toUpperCase();
   const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
 
@@ -171,16 +180,23 @@ function PersonCard({ person, index, isLead, allServices, discounts, onChangeNam
                 <Typography sx={{ fontFamily: ff, fontSize: '0.75rem', fontWeight: 700, color: PURPLE, mb: 0.6, mt: 1.5 }}>
                   Nail Length
                 </Typography>
-                <NailLengthSelector value={person.nailLength} onChange={onChangeNailLength} />
+                <NailLengthSelector value={person.nailLength} onChange={onChangeNailLength} surcharges={LENGTH_SURCHARGE} />
               </Box>
             )}
           </Box>
 
           <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
             {price > 0 && (
-              <Typography sx={{ fontFamily: ff, fontWeight: 700, color: PINK, fontSize: '0.95rem', mt: 0.5 }}>
-                {formatNaira(price)}
-              </Typography>
+              <Box sx={{ mt: 0.5 }}>
+                <Typography sx={{ fontFamily: ff, fontWeight: 700, color: PINK, fontSize: '0.95rem' }}>
+                  {formatNaira(price)}
+                </Typography>
+                {surcharge > 0 && (
+                  <Typography sx={{ fontFamily: ff, fontSize: '0.68rem', color: '#7b1fa2', lineHeight: 1.2 }}>
+                    +{formatNaira(surcharge)} length
+                  </Typography>
+                )}
+              </Box>
             )}
             {!isLead && (
               <IconButton size="small" onClick={onRemove} sx={{ color: '#ccc', '&:hover': { color: '#d32f2f' }, p: 0.5, mt: 0.3 }}>
@@ -251,7 +267,7 @@ export default function GroupBookingPage() {
 
   const subtotal = allPeople.reduce((sum, p) => {
     const svc = allServices.find(s => s.id === p.serviceId);
-    return sum + (svc ? getServiceEffectivePrice(svc, discounts) : 0);
+    return sum + (svc ? getServiceEffectivePrice(svc, discounts) : 0) + (LENGTH_SURCHARGE[p.nailLength] ?? 0);
   }, 0);
 
   const discountApplies = groupSize >= GROUP_DISCOUNT_MIN;
@@ -281,7 +297,9 @@ export default function GroupBookingPage() {
 
     const groupLines = allPeople.map((p, i) => {
       const svc = allServices.find(s => s.id === p.serviceId);
-      return `${i + 1}. ${p.name} — ${svc?.name || ''} (${formatNaira(getServiceEffectivePrice(svc || { price: 0 }, discounts))}) · Shape: ${p.nailShape}, Length: ${p.nailLength}`;
+      const surcharge = LENGTH_SURCHARGE[p.nailLength] ?? 0;
+      const personPrice = (svc ? getServiceEffectivePrice(svc, discounts) : 0) + surcharge;
+      return `${i + 1}. ${p.name} — ${svc?.name || ''} (${formatNaira(personPrice)}${surcharge > 0 ? ` incl. +${formatNaira(surcharge)} length` : ''}) · Shape: ${p.nailShape}, Length: ${p.nailLength}`;
     }).join('\n');
 
     const message = `Hi! I'd like to book a GROUP appointment.
@@ -302,7 +320,8 @@ Please confirm availability. Thank you!`;
     try {
       const orderItems = allPeople.map(p => {
         const svc = allServices.find(s => s.id === p.serviceId);
-        return { kind: 'service', serviceName: svc?.name || '', price: svc ? getServiceEffectivePrice(svc, discounts) : 0, guestName: p.name, date: fullDate, nailShape: p.nailShape, nailLength: p.nailLength };
+        const surcharge = LENGTH_SURCHARGE[p.nailLength] ?? 0;
+        return { kind: 'service', serviceName: svc?.name || '', price: (svc ? getServiceEffectivePrice(svc, discounts) : 0) + surcharge, guestName: p.name, date: fullDate, nailShape: p.nailShape, nailLength: p.nailLength };
       });
 
       const orderRef = await saveOrder(user.uid, {
@@ -333,7 +352,8 @@ Please confirm availability. Thank you!`;
         groupSize,
         items: allPeople.map(p => {
           const svc = allServices.find(s => s.id === p.serviceId);
-          return { kind: 'service', serviceName: svc?.name || '', price: svc ? getServiceEffectivePrice(svc, discounts) : 0, guestName: p.name, date: fullDate, nailShape: p.nailShape, nailLength: p.nailLength };
+          const surcharge = LENGTH_SURCHARGE[p.nailLength] ?? 0;
+          return { kind: 'service', serviceName: svc?.name || '', price: (svc ? getServiceEffectivePrice(svc, discounts) : 0) + surcharge, guestName: p.name, date: fullDate, nailShape: p.nailShape, nailLength: p.nailLength };
         }),
       },
     });
@@ -581,7 +601,8 @@ Please confirm availability. Thank you!`;
             </Typography>
             {allPeople.map((p, i) => {
               const svc = allServices.find(s => s.id === p.serviceId);
-              const price = svc ? getServiceEffectivePrice(svc, discounts) : 0;
+              const surcharge = LENGTH_SURCHARGE[p.nailLength] ?? 0;
+              const price = svc ? getServiceEffectivePrice(svc, discounts) + surcharge : 0;
               const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
               return (
                 <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 1, p: 1.5, borderRadius: 2, backgroundColor: '#fff', border: '1px solid #F0C0D0' }}>
