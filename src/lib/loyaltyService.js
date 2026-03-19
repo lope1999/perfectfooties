@@ -17,6 +17,8 @@ export const POINTS_PER_REFERRAL = 50;   // referrer bonus when their code is us
 export const REFERRAL_DISCOUNT = 1000;   // ₦1,000 off for the person using a referral code
 export const REDEMPTION_UNIT = 50;       // every 50 pts = ₦1,000 redeemable
 export const REDEMPTION_VALUE = 1000;    // ₦ value per REDEMPTION_UNIT points
+export const PRESSONS_TIER_MIN = 2;      // min reviews to unlock 5% press-on discount (Glam Client)
+export const PRESSONS_TIER_DISCOUNT = 0.05; // 5% off press-ons for Glam Client+
 
 // ── Pending Loyalty Reward (saved from AccountPage, applied at checkout) ──────
 const LOYALTY_REWARD_KEY = 'pendingLoyaltyReward';
@@ -46,13 +48,22 @@ export function clearPendingLoyaltyReward() {
 
 export async function getLoyaltyData(uid) {
   const snap = await getDoc(doc(db, 'users', uid));
-  if (!snap.exists()) return { loyaltyPoints: 0, loyaltyPointsEarned: 0, loyaltyPointsRedeemed: 0 };
+  if (!snap.exists()) return { loyaltyPoints: 0, loyaltyPointsEarned: 0, loyaltyPointsRedeemed: 0, reviewCount: 0 };
   const d = snap.data();
   return {
     loyaltyPoints: d.loyaltyPoints || 0,
     loyaltyPointsEarned: d.loyaltyPointsEarned || 0,
     loyaltyPointsRedeemed: d.loyaltyPointsRedeemed || 0,
+    reviewCount: d.reviewCount || 0,
   };
+}
+
+export async function incrementUserReviewCount(uid) {
+  if (!uid) return;
+  const userRef = doc(db, 'users', uid);
+  await updateDoc(userRef, { reviewCount: increment(1) }).catch(() =>
+    setDoc(userRef, { reviewCount: 1 }, { merge: true })
+  );
 }
 
 // Called by adminService when order status → 'received'

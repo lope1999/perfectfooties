@@ -30,7 +30,7 @@ import { saveOrder } from '../lib/orderService';
 import { decrementStockBatch } from '../lib/stockService';
 import { redeemGiftCard } from '../lib/giftCardService';
 import { saveShippingDetails, fetchShippingDetails } from '../lib/shippingService';
-import { validateReferralCode, applyReferral, getLoyaltyData, redeemLoyaltyPoints, REFERRAL_DISCOUNT, REDEMPTION_UNIT, REDEMPTION_VALUE, getPendingLoyaltyReward, clearPendingLoyaltyReward } from '../lib/loyaltyService';
+import { validateReferralCode, applyReferral, getLoyaltyData, redeemLoyaltyPoints, REFERRAL_DISCOUNT, REDEMPTION_UNIT, REDEMPTION_VALUE, PRESSONS_TIER_MIN, PRESSONS_TIER_DISCOUNT, getPendingLoyaltyReward, clearPendingLoyaltyReward } from '../lib/loyaltyService';
 import { nigerianStates } from '../data/nigerianStates';
 import SignInPrompt from '../components/SignInPrompt';
 
@@ -71,12 +71,18 @@ export default function CheckoutPage() {
 
   // Loyalty points redemption
   const [loyaltyBalance, setLoyaltyBalance] = useState(0);
+  const [userReviewCount, setUserReviewCount] = useState(0);
   const [loyaltyUnits, setLoyaltyUnits] = useState(location.state?.presetLoyaltyUnits || 0);
   const [pendingReward] = useState(() => getPendingLoyaltyReward());
   const maxLoyaltyUnits = Math.floor(loyaltyBalance / REDEMPTION_UNIT);
   const loyaltyDiscount = Math.min(loyaltyUnits * REDEMPTION_VALUE, subtotal);
 
-  const finalTotal = Math.max(0, subtotal - giftCardDiscount - referralDiscount - loyaltyDiscount);
+  // Tier perk: Glam Client (2+ reviews) gets 5% off press-ons
+  const pressOnTotal = pressOns.reduce((sum, p) => sum + p.price * (p.quantity || 1), 0);
+  const tierPerkActive = !!user && userReviewCount >= PRESSONS_TIER_MIN && pressOnTotal > 0;
+  const tierPerkDiscount = tierPerkActive ? Math.round(pressOnTotal * PRESSONS_TIER_DISCOUNT) : 0;
+
+  const finalTotal = Math.max(0, subtotal - giftCardDiscount - referralDiscount - loyaltyDiscount - tierPerkDiscount);
 
   const hasDeliverables = products.length > 0 || pressOns.length > 0;
 
@@ -89,10 +95,10 @@ export default function CheckoutPage() {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [pendingShipping, setPendingShipping] = useState(null);
 
-  // Fetch loyalty balance for logged-in user
+  // Fetch loyalty balance and review count for logged-in user
   useEffect(() => {
     if (!user) return;
-    getLoyaltyData(user.uid).then((d) => { const pts = d.loyaltyPoints || 0; setLoyaltyBalance(pts); if (!location.state?.presetLoyaltyUnits) { const pr = getPendingLoyaltyReward(); if (pr && pr.units > 0) setLoyaltyUnits(Math.min(pr.units, Math.floor(pts / REDEMPTION_UNIT))); } }).catch(() => {});
+    getLoyaltyData(user.uid).then((d) => { const pts = d.loyaltyPoints || 0; setLoyaltyBalance(pts); setUserReviewCount(d.reviewCount || 0); if (!location.state?.presetLoyaltyUnits) { const pr = getPendingLoyaltyReward(); if (pr && pr.units > 0) setLoyaltyUnits(Math.min(pr.units, Math.floor(pts / REDEMPTION_UNIT))); } }).catch(() => {});
   }, [user]);
 
   // Validate referral code on mount
@@ -220,7 +226,10 @@ export default function CheckoutPage() {
     if (loyaltyUnits > 0 && loyaltyDiscount > 0) {
       totalLine += `\nLoyalty Points Applied: ${loyaltyUnits * REDEMPTION_UNIT} pts \u2014 Discount: ${formatNaira(loyaltyDiscount)}`;
     }
-    if (giftCardDiscount > 0 || referralDiscount > 0 || loyaltyDiscount > 0) {
+    if (tierPerkDiscount > 0) {
+      totalLine += `\nGlam Client Perk (5% off press-ons): -${formatNaira(tierPerkDiscount)}`;
+    }
+    if (giftCardDiscount > 0 || referralDiscount > 0 || loyaltyDiscount > 0 || tierPerkDiscount > 0) {
       totalLine += `\nAmount Due: ${formatNaira(finalTotal)}`;
     }
 
@@ -705,6 +714,17 @@ export default function CheckoutPage() {
                   </Typography>
                   <Typography sx={{ color: '#B8860B', fontWeight: 600, fontSize: '0.9rem' }}>
                     -{formatNaira(loyaltyDiscount)}
+                  </Typography>
+                </Box>
+              )}
+
+              {tierPerkDiscount > 0 && (
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, p: 1, borderRadius: 2, backgroundColor: '#EDE7F6', border: '1px solid #B39DDB' }}>
+                  <Typography sx={{ color: '#6A1B9A', fontSize: '0.82rem', fontWeight: 600 }}>
+                    ✨ Glam Client — 5% off press-ons
+                  </Typography>
+                  <Typography sx={{ color: '#6A1B9A', fontWeight: 700, fontSize: '0.82rem' }}>
+                    -{formatNaira(tierPerkDiscount)}
                   </Typography>
                 </Box>
               )}

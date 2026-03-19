@@ -48,6 +48,8 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ReplayIcon from "@mui/icons-material/Replay";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
@@ -66,6 +68,7 @@ import {
 	getLoyaltyData,
 	ensureReferralCode,
 	savePendingLoyaltyReward,
+	incrementUserReviewCount,
 	POINTS_PER_REFERRAL,
 	REDEMPTION_UNIT, REDEMPTION_VALUE,
 } from "../lib/loyaltyService";
@@ -143,12 +146,12 @@ function normalizePresetSize(str) {
 
 // Client loyalty tiers — 1 review per level, brand-aligned
 const CLIENT_TIERS = [
-	{ min: 5, label: 'Diamond Diva',  emoji: '💎', color: 'var(--text-purple)', bg: '#F3E5F5', border: '#CE93D8', desc: 'The absolute elite — top of the nail game!' },
-	{ min: 4, label: 'Star Client',   emoji: '⭐', color: '#B8860B', bg: '#FFFDE7', border: '#FFD54F', desc: 'Proven loyal — a true Chizzys star!' },
-	{ min: 3, label: 'Nail Lover',    emoji: '💅', color: '#C2185B', bg: '#FCE4EC', border: '#F48FB1', desc: 'Three visits strong — dedicated to the craft!' },
-	{ min: 2, label: 'Glam Client',   emoji: '✨', color: '#6A1B9A', bg: '#EDE7F6', border: '#B39DDB', desc: "You came back — we love your loyalty!" },
-	{ min: 1, label: 'Fresh Darling', emoji: '🌸', color: '#2E7D32', bg: '#F1F8E9', border: '#A5D6A7', desc: 'Brand new — welcome to Chizzys Nails!' },
-	{ min: 0, label: 'New Member',    emoji: '🌟', color: '#E91E8C', bg: '#FFF0F5', border: '#F0C0D0', desc: 'Welcome! Leave your first review to start your loyalty journey.' },
+	{ min: 5, label: 'Diamond Diva',  emoji: '💎', color: 'var(--text-purple)', bg: '#F3E5F5', border: '#CE93D8', desc: 'The absolute elite — top of the nail game!',        perk: 'Free custom nail design consultation' },
+	{ min: 4, label: 'Star Client',   emoji: '⭐', color: '#B8860B', bg: '#FFFDE7', border: '#FFD54F', desc: 'Proven loyal — a true Chizzys star!',                perk: 'Priority booking + exclusive member deals' },
+	{ min: 3, label: 'Nail Lover',    emoji: '💅', color: '#C2185B', bg: '#FCE4EC', border: '#F48FB1', desc: 'Three visits strong — dedicated to the craft!',       perk: 'Early access to new collections' },
+	{ min: 2, label: 'Glam Client',   emoji: '✨', color: '#6A1B9A', bg: '#EDE7F6', border: '#B39DDB', desc: "You came back — we love your loyalty!",               perk: '5% off all press-on orders' },
+	{ min: 1, label: 'Fresh Darling', emoji: '🌸', color: '#2E7D32', bg: '#F1F8E9', border: '#A5D6A7', desc: 'Brand new — welcome to Chizzys Nails!',               perk: 'Free delivery on all orders' },
+	{ min: 0, label: 'New Member',    emoji: '🌟', color: '#E91E8C', bg: '#FFF0F5', border: '#F0C0D0', desc: 'Welcome! Leave your first review to start your loyalty journey.', perk: null },
 ];
 
 function getClientTier(reviewCount) {
@@ -932,6 +935,11 @@ export default function AccountPage() {
 												>
 													{tier.desc}
 												</Typography>
+												{tier.perk && (
+													<Box sx={{ mt: 0.8, display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.3, borderRadius: '20px', backgroundColor: tier.bg, border: `1px solid ${tier.border}` }}>
+														<Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: tier.color }}>🎁 {tier.perk}</Typography>
+													</Box>
+												)}
 											</Box>
 											<Box sx={{ textAlign: "right" }}>
 												<Typography
@@ -1025,6 +1033,31 @@ export default function AccountPage() {
 									</Box>
 								);
 							})()}
+
+						{/* Tier Perks Ladder */}
+						<Box sx={{ mb: 3, borderRadius: 3, border: '1.5px solid #F0C0D0', overflow: 'hidden' }}>
+							<Box sx={{ px: 2, py: 1.2, backgroundColor: '#FFF0F5', borderBottom: '1px solid #F0C0D0' }}>
+								<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.85rem', color: '#E91E8C' }}>
+									🎁 Loyalty Tier Perks
+								</Typography>
+							</Box>
+							{[...CLIENT_TIERS].filter(t => t.min > 0).reverse().map((t) => {
+								const unlocked = reviewCount >= t.min;
+								return (
+									<Box key={t.min} sx={{ px: 2, py: 1.2, display: 'flex', alignItems: 'center', gap: 1.5, borderTop: '1px solid #F9E4EF', backgroundColor: unlocked ? t.bg : 'transparent', opacity: unlocked ? 1 : 0.55 }}>
+										<Typography sx={{ fontSize: '1.3rem', lineHeight: 1, flexShrink: 0 }}>{unlocked ? t.emoji : '🔒'}</Typography>
+										<Box sx={{ flex: 1, minWidth: 0 }}>
+											<Typography sx={{ fontFamily: ff, fontSize: '0.78rem', fontWeight: 700, color: unlocked ? t.color : '#bbb' }}>{t.label}</Typography>
+											<Typography sx={{ fontFamily: ff, fontSize: '0.72rem', color: unlocked ? 'var(--text-muted)' : '#ccc', lineHeight: 1.3 }}>{t.perk}</Typography>
+										</Box>
+										{unlocked
+											? <CheckCircleOutlineIcon sx={{ fontSize: '1rem', color: t.color, flexShrink: 0 }} />
+											: <LockOutlinedIcon sx={{ fontSize: '0.9rem', color: '#ddd', flexShrink: 0 }} />
+										}
+									</Box>
+								);
+							})}
+						</Box>
 
 						{/* Loyalty Points Card */}
 						<Box
@@ -2574,6 +2607,7 @@ export default function AccountPage() {
 					onSubmitted={(orderId) => {
 						setRatedOrders((prev) => ({ ...prev, [orderId]: true }));
 						setRateDialog(null);
+						if (user?.uid) incrementUserReviewCount(user.uid).catch(() => {});
 						showToast(
 							"Thank you! Your review has been submitted.",
 							"success",
