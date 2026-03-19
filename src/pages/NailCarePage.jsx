@@ -10,88 +10,96 @@ import ScrollReveal from '../components/ScrollReveal';
 const fontFamily = '"Georgia", serif';
 
 const tips = [
-  {
-    icon: <PaletteOutlinedIcon sx={{ fontSize: '2rem', color: '#E91E8C' }} />,
-    title: 'Applying Your Press-Ons',
-    color: '#FFF0F8',
-    border: '#F0C0D0',
-    steps: [
-      'Clean your natural nails with alcohol or nail prep wipe to remove oils.',
-      'Push back your cuticles gently — do not cut them.',
-      'Select the correct size for each finger (snug fit, not too tight).',
-      'Apply a thin layer of nail glue to the press-on, not your natural nail.',
-      'Press firmly from the base down for 10–15 seconds per nail.',
-      'Avoid water for at least 1–2 hours after application.',
-    ],
-  },
-  {
-    icon: <AutoFixHighOutlinedIcon sx={{ fontSize: '2rem', color: '#9C27B0' }} />,
-    title: 'Making Them Last Longer',
-    color: '#F9F0FF',
-    border: '#D9B3FF',
-    steps: [
-      'Avoid prolonged soaking in water (dishwashing, long baths).',
-      'Wear rubber gloves when washing dishes or cleaning.',
-      'Use the side of your fingers rather than nails to open things.',
-      'Avoid picking or pulling at the edges if they start to lift.',
-      'Apply a drop of glue under any lifting edge immediately.',
-      'They typically last 1–3 weeks with good care.',
-    ],
-  },
-  {
-    icon: <WaterDropOutlinedIcon sx={{ fontSize: '2rem', color: '#2196F3' }} />,
-    title: 'Daily Nail Care',
-    color: '#EFF6FF',
-    border: '#BFDBFE',
-    steps: [
-      'Moisturise your cuticles daily with cuticle oil or hand cream.',
-      'Keep hands hydrated — dry skin causes lifting.',
-      'Avoid acetone-based products around the press-ons.',
-      'Do not apply lotion or oil directly to the nail surface.',
-      'Pat nails dry after washing; do not rub vigorously.',
-    ],
-  },
-  {
-    icon: <CleanHandsOutlinedIcon sx={{ fontSize: '2rem', color: '#E91E8C' }} />,
-    title: 'Safe Removal',
-    color: '#FFF0F8',
-    border: '#F0C0D0',
-    steps: [
-      'Never force or rip off press-ons — this damages your natural nail.',
-      'Soak fingers in warm soapy water for 10–15 minutes to loosen glue.',
-      'Alternatively, soak a cotton pad in acetone and hold over nail for 5 mins.',
-      'Gently wiggle from the side using an orange stick or cuticle pusher.',
-      'If resistance is felt, soak longer — do not force.',
-      'Work slowly and patiently for a damage-free removal.',
-    ],
-  },
-  {
-    icon: <ContentCutOutlinedIcon sx={{ fontSize: '2rem', color: '#FF9800' }} />,
-    title: 'After Removal Care',
-    color: '#FFFBEF',
-    border: '#FFE082',
-    steps: [
-      'Buff away any remaining glue gently with a soft nail file.',
-      'Wash hands thoroughly after using acetone.',
-      'Apply cuticle oil generously to rehydrate nails and cuticles.',
-      'Give your natural nails a 1–2 day break if they feel thin or sensitive.',
-      'Apply a nail strengthener if your nails feel weak.',
-    ],
-  },
-  {
-    icon: <SpaOutlinedIcon sx={{ fontSize: '2rem', color: '#4CAF50' }} />,
-    title: 'Nail Health Tips',
-    color: '#F0FFF4',
-    border: '#A7F3D0',
-    steps: [
-      'Keep natural nails trimmed and filed to avoid breakage under press-ons.',
-      'A biotin supplement can help strengthen brittle nails over time.',
-      'Stay hydrated — dehydration affects nail health.',
-      'Never use press-ons over damaged, peeling, or infected nails.',
-      'If you experience pain or unusual lifting, remove the nail gently.',
-      'Allow nails to breathe naturally between sets.',
-    ],
-  },
+	{
+		icon: <PaletteOutlinedIcon sx={{ fontSize: "2rem", color: "#E91E8C" }} />,
+		title: "Applying Your Press-Ons",
+		color: "#FFF0F8",
+		border: "#F0C0D0",
+		steps: [
+			"Clean your natural nails with alcohol or nail prep wipe to remove oils.",
+			"Push back your cuticles gently.",
+			"Select the correct size for each finger (snug fit, not too tight).",
+			"Apply a thin layer of nail glue to the press-on, and your natural nail.",
+			"Press firmly from the base down for 10–15 seconds per nail.",
+			"Avoid water for at least 1–2 hours after application.",
+		],
+	},
+	{
+		icon: (
+			<AutoFixHighOutlinedIcon sx={{ fontSize: "2rem", color: "#9C27B0" }} />
+		),
+		title: "Making Them Last Longer",
+		color: "#F9F0FF",
+		border: "#D9B3FF",
+		steps: [
+			"Avoid prolonged soaking in water (dishwashing, long baths).",
+			"Wear rubber gloves when washing dishes or cleaning.",
+			"Use the side of your fingers rather than nails to open things.",
+			"Avoid picking or pulling at the edges if they start to lift.",
+			"Apply a drop of glue under any lifting edge immediately.",
+			"They typically last 1–3 weeks with good care.",
+		],
+	},
+	{
+		icon: (
+			<WaterDropOutlinedIcon sx={{ fontSize: "2rem", color: "#2196F3" }} />
+		),
+		title: "Daily Nail Care",
+		color: "#EFF6FF",
+		border: "#BFDBFE",
+		steps: [
+			"Moisturise your cuticles daily with cuticle oil or hand cream.",
+			"Keep hands hydrated — dry skin causes lifting.",
+			"Avoid acetone-based products around the press-ons.",
+			"Do not apply lotion or oil directly to the nail surface.",
+			"Pat nails dry after washing; do not rub vigorously.",
+		],
+	},
+	{
+		icon: (
+			<CleanHandsOutlinedIcon sx={{ fontSize: "2rem", color: "#E91E8C" }} />
+		),
+		title: "Safe Removal",
+		color: "#FFF0F8",
+		border: "#F0C0D0",
+		steps: [
+			"Never force or rip off press-ons — this damages your natural nail.",
+			"Soak fingers in warm soapy water & any type of essential oils for 10–15 minutes to loosen glue.",
+			"Alternatively, soak a cotton pad in acetone and hold over nail for 5 mins.",
+			"Gently wiggle from the side using an orange stick or cuticle pusher.",
+			"If resistance is felt, soak longer — do not force.",
+			"Work slowly and patiently for a damage-free removal.",
+		],
+	},
+	{
+		icon: (
+			<ContentCutOutlinedIcon sx={{ fontSize: "2rem", color: "#FF9800" }} />
+		),
+		title: "After Removal Care",
+		color: "#FFFBEF",
+		border: "#FFE082",
+		steps: [
+			"Buff away any remaining glue gently with a soft nail file.",
+			"Wash hands thoroughly after using acetone.",
+			"Apply cuticle oil generously to rehydrate nails and cuticles.",
+			"Give your natural nails a 1–2 day break if they feel thin or sensitive.",
+			"Apply a nail strengthener if your nails feel weak.",
+		],
+	},
+	{
+		icon: <SpaOutlinedIcon sx={{ fontSize: "2rem", color: "#4CAF50" }} />,
+		title: "Nail Health Tips",
+		color: "#F0FFF4",
+		border: "#A7F3D0",
+		steps: [
+			"Keep natural nails trimmed and filed to avoid breakage under press-ons.",
+			"A biotin supplement can help strengthen brittle nails over time.",
+			"Stay hydrated — dehydration affects nail health.",
+			"Never use press-ons over damaged, peeling, or infected nails.",
+			"If you experience pain or unusual lifting, remove the nail gently.",
+			"Allow nails to breathe naturally between sets.",
+		],
+	},
 ];
 
 export default function NailCarePage() {

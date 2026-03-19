@@ -85,6 +85,45 @@ export default function ServiceMenuPage() {
       {/* Service Sections */}
       {serviceCategories.map((category, index) => (
         <Box key={category.id}>
+          {category.id === 'pedicure' && (
+            <Box sx={{ backgroundColor: '#4A0E4E', py: { xs: 6, md: 8 } }}>
+              <Container maxWidth="md">
+                <ScrollReveal direction="up">
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Box sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 64, height: 64, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)', mb: 2 }}>
+                      <GroupsIcon sx={{ fontSize: '2rem', color: '#fff' }} />
+                    </Box>
+                    <Typography variant="h4" sx={{ fontFamily: ff, fontWeight: 700, color: '#fff', mb: 1.5, fontSize: { xs: '1.4rem', md: '1.8rem' } }}>
+                      Group / Bridal Booking
+                    </Typography>
+                    <Typography sx={{ fontFamily: ff, color: 'rgba(255,255,255,0.8)', fontSize: { xs: '0.95rem', md: '1.05rem' }, maxWidth: 520, mx: 'auto', mb: 1, lineHeight: 1.7 }}>
+                      Planning a bridal party, birthday, or girls' day out? Book for multiple people at once. Groups of 3 or more get <strong style={{ color: '#F9A8D4' }}>10% off the total</strong>.
+                    </Typography>
+                    <Typography sx={{ fontFamily: ff, color: 'rgba(255,255,255,0.55)', fontSize: '0.85rem', mb: 3 }}>
+                      Each person picks their own service · One date &amp; time for everyone · Single deposit payment
+                    </Typography>
+                    <Button
+                      onClick={() => navigate('/book', { state: { isGroupBooking: true } })}
+                      sx={{
+                        fontFamily: ff,
+                        fontWeight: 700,
+                        fontSize: '1rem',
+                        px: 5,
+                        py: 1.5,
+                        borderRadius: '30px',
+                        backgroundColor: '#E91E8C',
+                        color: '#fff',
+                        boxShadow: '0 4px 20px rgba(233,30,140,0.4)',
+                        '&:hover': { backgroundColor: '#C2185B', boxShadow: '0 6px 24px rgba(233,30,140,0.5)' },
+                      }}
+                    >
+                      Book for a Group
+                    </Button>
+                  </Box>
+                </ScrollReveal>
+              </Container>
+            </Box>
+          )}
           <Box sx={{ backgroundColor: sectionColors[index % sectionColors.length], py: 8, ...(category.comingSoon && { position: 'relative' }) }}>
             {category.comingSoon && (
               <Box sx={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(255,255,255,0.55)', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
@@ -181,44 +220,6 @@ export default function ServiceMenuPage() {
         </Box>
       ))}
 
-      {/* Group / Bridal Booking Banner */}
-      <Box sx={{ backgroundColor: '#4A0E4E', py: { xs: 6, md: 8 } }}>
-        <Container maxWidth="md">
-          <ScrollReveal direction="up">
-            <Box sx={{ textAlign: 'center' }}>
-              <Box sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 64, height: 64, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)', mb: 2 }}>
-                <GroupsIcon sx={{ fontSize: '2rem', color: '#fff' }} />
-              </Box>
-              <Typography variant="h4" sx={{ fontFamily: ff, fontWeight: 700, color: '#fff', mb: 1.5, fontSize: { xs: '1.4rem', md: '1.8rem' } }}>
-                Group / Bridal Booking
-              </Typography>
-              <Typography sx={{ fontFamily: ff, color: 'rgba(255,255,255,0.8)', fontSize: { xs: '0.95rem', md: '1.05rem' }, maxWidth: 520, mx: 'auto', mb: 1, lineHeight: 1.7 }}>
-                Planning a bridal party, birthday, or girls' day out? Book for multiple people at once. Groups of 3 or more get <strong style={{ color: '#F9A8D4' }}>10% off the total</strong>.
-              </Typography>
-              <Typography sx={{ fontFamily: ff, color: 'rgba(255,255,255,0.55)', fontSize: '0.85rem', mb: 3 }}>
-                Each person picks their own service · One date &amp; time for everyone · Single deposit payment
-              </Typography>
-              <Button
-                onClick={() => navigate('/book', { state: { isGroupBooking: true } })}
-                sx={{
-                  fontFamily: ff,
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                  px: 5,
-                  py: 1.5,
-                  borderRadius: '30px',
-                  backgroundColor: '#E91E8C',
-                  color: '#fff',
-                  boxShadow: '0 4px 20px rgba(233,30,140,0.4)',
-                  '&:hover': { backgroundColor: '#C2185B', boxShadow: '0 6px 24px rgba(233,30,140,0.5)' },
-                }}
-              >
-                Book for a Group
-              </Button>
-            </Box>
-          </ScrollReveal>
-        </Container>
-      </Box>
     </Box>
   );
 }

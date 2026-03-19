@@ -147,10 +147,13 @@ export default function Footer() {
 							<MuiLink sx={linkSx} onClick={() => navigate("/gallery")}>
 								Gallery
 							</MuiLink>
-							<MuiLink sx={linkSx} onClick={() => navigate("/nail-care")}>
+							<MuiLink
+								sx={linkSx}
+								onClick={() => navigate("/nail-care")}
+							>
 								Nail Care Guide
 							</MuiLink>
-							<MuiLink sx={linkSx} onClick={handleContactClick}>>
+							<MuiLink sx={linkSx} onClick={handleContactClick}>
 								Contact
 							</MuiLink>
 						</Grid>
