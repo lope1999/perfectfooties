@@ -440,7 +440,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
           <TableHead>
             <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 40 }} />
-              {['#', 'ID', 'Customer', 'Location', 'Status', 'Price', 'Appointment Date', 'Time', 'Booked On', 'Actions'].map((h) => (
+              {['#', 'ID', 'Customer', 'Service / Group', 'Location', 'Status', 'Price', 'Appointment Date', 'Time', 'Booked On', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>{h}</TableCell>
               ))}
             </TableRow>
@@ -463,6 +463,48 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                     <TableCell sx={{ fontFamily, fontSize: '0.78rem', color: '#999', width: 32 }}>{idx + 1}</TableCell>
                     <TableCell sx={{ fontFamily, fontSize: '0.8rem' }}>{o.id.slice(0, 8)}…</TableCell>
                     <TableCell sx={{ fontFamily }}>{o.customerName || o.name || '—'}</TableCell>
+                    <TableCell sx={{ fontFamily, fontSize: '0.78rem', maxWidth: 200 }}>
+                      {o.isGroup && o.items?.length > 0 ? (
+                        <Tooltip
+                          title={
+                            <Box sx={{ p: 0.5 }}>
+                              {o.items.map((item, i) => (
+                                <Box key={i} sx={{ mb: i < o.items.length - 1 ? 0.8 : 0 }}>
+                                  <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff' }}>
+                                    {item.guestName || `Person ${i + 1}`}
+                                  </Typography>
+                                  <Typography sx={{ fontSize: '0.72rem', color: '#ddd' }}>
+                                    {item.serviceName || '—'}
+                                    {item.nailShape ? ` · ${item.nailShape}` : ''}
+                                    {item.nailLength ? ` · ${item.nailLength}` : ''}
+                                  </Typography>
+                                </Box>
+                              ))}
+                            </Box>
+                          }
+                          placement="right"
+                          arrow
+                        >
+                          <Box sx={{ cursor: 'default' }}>
+                            <Chip
+                              label={`👥 Group (${o.items.length})`}
+                              size="small"
+                              sx={{ backgroundColor: '#EDE7F6', color: '#4A0E4E', fontWeight: 700, fontSize: '0.72rem', mb: 0.5 }}
+                            />
+                            {o.items.map((item, i) => (
+                              <Typography key={i} sx={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                <strong style={{ color: 'var(--text-purple)' }}>{item.guestName || `P${i + 1}`}</strong>
+                                {' → '}{item.serviceName || '—'}
+                              </Typography>
+                            ))}
+                          </Box>
+                        </Tooltip>
+                      ) : (
+                        <Typography sx={{ fontFamily, fontSize: '0.82rem' }}>
+                          {o.items?.[0]?.serviceName || o.serviceName || o.items?.[0]?.name || '—'}
+                        </Typography>
+                      )}
+                    </TableCell>
                     <TableCell>
                       {isHome ? (
                         <Chip
@@ -553,7 +595,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
 
                   {/* Expanded Detail Row */}
                   <TableRow key={`${o.id}-detail`}>
-                    <TableCell colSpan={11} sx={{ p: 0, border: 0 }}>
+                    <TableCell colSpan={12} sx={{ p: 0, border: 0 }}>
                       <Collapse in={expandedId === o.id}>
                         <Box sx={{ p: 2.5, backgroundColor: '#fafafa', display: 'flex', gap: 3, flexWrap: 'wrap' }}>
 
@@ -713,7 +755,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
             })}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={11} sx={{ textAlign: 'center', fontFamily, py: 6, color: '#777' }}>
+                <TableCell colSpan={12} sx={{ textAlign: 'center', fontFamily, py: 6, color: '#777' }}>
                   No appointments found
                 </TableCell>
               </TableRow>
