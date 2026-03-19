@@ -181,7 +181,7 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
                   />
                 }
                 label={
-                  <Typography sx={{ fontFamily, fontSize: '0.9rem', fontWeight: 600, color: '#4A0E4E' }}>
+                  <Typography sx={{ fontFamily, fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-purple)' }}>
                     Hidden from storefront
                   </Typography>
                 }

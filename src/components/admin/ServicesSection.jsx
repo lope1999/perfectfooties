@@ -48,7 +48,7 @@ function ServiceFormDialog({ open, onClose, onSave, service, discountData, busy 
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-      <DialogTitle sx={{ fontFamily: ff, fontWeight: 700, color: '#4A0E4E' }}>
+      <DialogTitle sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-purple)' }}>
         {service ? 'Edit Service' : 'Add Service'}
       </DialogTitle>
       <DialogContent>
@@ -137,7 +137,7 @@ function CategoryFormDialog({ open, onClose, onSave, category, busy }) {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-      <DialogTitle sx={{ fontFamily: ff, fontWeight: 700, color: '#4A0E4E' }}>
+      <DialogTitle sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-purple)' }}>
         {category ? 'Edit Category' : 'Add Category'}
       </DialogTitle>
       <DialogContent>
@@ -390,7 +390,7 @@ export default function ServicesSection({ serviceCategories, serviceDiscounts, l
                 <TableHead>
                   <TableRow sx={{ backgroundColor: '#FFF0F5' }}>
                     {['', 'Service Name', 'Base Price', 'Discount', 'Actions'].map((h) => (
-                      <TableCell key={h} sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.78rem', color: '#4A0E4E', py: 1.2, borderBottom: '1.5px solid #F0C0D0' }}>{h}</TableCell>
+                      <TableCell key={h} sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.78rem', color: 'var(--text-purple)', py: 1.2, borderBottom: '1.5px solid #F0C0D0' }}>{h}</TableCell>
                     ))}
                   </TableRow>
                 </TableHead>
@@ -417,7 +417,7 @@ export default function ServicesSection({ serviceCategories, serviceDiscounts, l
                             </Typography>
                           )}
                         </TableCell>
-                        <TableCell sx={{ fontFamily: ff, fontSize: '0.85rem', whiteSpace: 'nowrap', color: '#4A0E4E', fontWeight: 600 }}>
+                        <TableCell sx={{ fontFamily: ff, fontSize: '0.85rem', whiteSpace: 'nowrap', color: 'var(--text-purple)', fontWeight: 600 }}>
                           {fmtNaira(svc.price)}
                         </TableCell>
                         <TableCell>
@@ -429,7 +429,7 @@ export default function ServicesSection({ serviceCategories, serviceDiscounts, l
                                 sx={{ backgroundColor: '#e8f5e9', color: '#2e7d32', fontWeight: 700, fontSize: '0.72rem', mb: 0.3 }}
                               />
                               {disc.discountLabel && (
-                                <Typography sx={{ fontSize: '0.68rem', color: '#555' }}>{disc.discountLabel}</Typography>
+                                <Typography sx={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{disc.discountLabel}</Typography>
                               )}
                             </Box>
                           ) : (
@@ -439,7 +439,7 @@ export default function ServicesSection({ serviceCategories, serviceDiscounts, l
                         <TableCell sx={{ whiteSpace: 'nowrap' }}>
                           <Tooltip title="Edit service">
                             <IconButton size="small" onClick={() => setSvcDialog({ mode: 'edit', catId: cat.id, service: svc })}>
-                              <EditIcon fontSize="small" sx={{ color: '#4A0E4E' }} />
+                              <EditIcon fontSize="small" sx={{ color: 'var(--text-purple)' }} />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Delete service">
@@ -466,7 +466,7 @@ export default function ServicesSection({ serviceCategories, serviceDiscounts, l
               size="small"
               startIcon={<AddIcon />}
               onClick={() => setSvcDialog({ mode: 'add', catId: cat.id })}
-              sx={{ fontFamily: ff, fontSize: '0.82rem', color: '#4A0E4E', border: '1.5px dashed #CE93D8', borderRadius: '20px', px: 2, textTransform: 'none', '&:hover': { backgroundColor: '#F3E5F5' } }}
+              sx={{ fontFamily: ff, fontSize: '0.82rem', color: 'var(--text-purple)', border: '1.5px dashed #CE93D8', borderRadius: '20px', px: 2, textTransform: 'none', '&:hover': { backgroundColor: '#F3E5F5' } }}
             >
               Add Service to {cat.title}
             </Button>

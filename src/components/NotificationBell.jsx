@@ -36,7 +36,7 @@ export default function NotificationBell() {
       <Tooltip title="Notifications" arrow>
         <IconButton
           onClick={(e) => setAnchorEl(e.currentTarget)}
-          sx={{ color: '#E91E8C', '&:hover': { color: '#4A0E4E' } }}
+          sx={{ color: '#E91E8C', '&:hover': { color: 'var(--text-purple)' } }}
         >
           <Badge
             badgeContent={undismissedCount || 0}
@@ -149,7 +149,7 @@ export default function NotificationBell() {
                       secondaryTypographyProps={{
                         fontFamily,
                         fontSize: '0.78rem',
-                        color: '#666',
+                        color: 'var(--text-muted)',
                       }}
                     />
                   </ListItemButton>

@@ -187,7 +187,7 @@ export default function ServiceDetailPage() {
   if (!service || !category) {
     return (
       <Box sx={{ pt: 12, textAlign: 'center', py: 8 }}>
-        <Typography sx={{ fontFamily: ff, fontSize: '1.2rem', color: '#555' }}>Service not found.</Typography>
+        <Typography sx={{ fontFamily: ff, fontSize: '1.2rem', color: 'var(--text-muted)' }}>Service not found.</Typography>
         <Button onClick={() => navigate('/services')} sx={{ mt: 2, color: '#E91E8C' }}>← Back to Services</Button>
       </Box>
     );
@@ -389,7 +389,7 @@ export default function ServiceDetailPage() {
               {discounted && (
                 <Chip label={getServiceDiscountLabel(service.id, discounts)} sx={{ mb: 2, backgroundColor: '#2e7d32', color: '#fff', fontWeight: 700 }} />
               )}
-              <Typography variant="h4" sx={{ fontFamily: ff, fontWeight: 700, color: '#000', mb: 1, fontSize: { xs: '1.5rem', md: '2rem' } }}>
+              <Typography variant="h4" sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-main)', mb: 1, fontSize: { xs: '1.5rem', md: '2rem' } }}>
                 {service.name}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
@@ -402,15 +402,15 @@ export default function ServiceDetailPage() {
                   <Typography sx={{ fontFamily: ff, fontWeight: 700, color: '#E91E8C', fontSize: '1.5rem' }}>{formatNaira(service.price)}</Typography>
                 )}
               </Box>
-              <Typography sx={{ color: '#555', fontSize: '1rem', lineHeight: 1.75, mb: 3 }}>{service.description}</Typography>
+              <Typography sx={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1.75, mb: 3 }}>{service.description}</Typography>
 
               <Box sx={{ p: 2, borderRadius: 2, backgroundColor: '#FCE4EC', border: '1px solid #F0C0D0', mb: 2 }}>
-                <Typography sx={{ fontSize: '0.85rem', color: '#4A0E4E', fontWeight: 600, lineHeight: 1.6 }}>
+                <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-purple)', fontWeight: 600, lineHeight: 1.6 }}>
                   A 50% deposit is required to confirm your booking. The remaining balance is due on the day of your appointment.
                 </Typography>
               </Box>
               <Box sx={{ p: 2, borderRadius: 2, backgroundColor: '#F3E5F5', border: '1px solid #CE93D8', mb: 2 }}>
-                <Typography sx={{ fontSize: '0.82rem', color: '#4A0E4E', lineHeight: 1.6 }}>
+                <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-purple)', lineHeight: 1.6 }}>
                   💡 Prices are base estimates — final price may vary depending on design complexity and nail length.
                 </Typography>
               </Box>
@@ -426,7 +426,7 @@ export default function ServiceDetailPage() {
           {/* Right: Booking form */}
           <Grid item xs={12} md={7}>
             <Box sx={{ backgroundColor: '#fff', borderRadius: 3, border: '1px solid #F0C0D0', p: { xs: 3, md: 4 } }}>
-              <Typography variant="h5" sx={{ fontFamily: ff, fontWeight: 700, color: '#4A0E4E', mb: 3, fontSize: '1.25rem' }}>
+              <Typography variant="h5" sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-purple)', mb: 3, fontSize: '1.25rem' }}>
                 Book This Service
               </Typography>
 
@@ -467,7 +467,7 @@ export default function ServiceDetailPage() {
               </Box>
 
               {nailLength && lengthSurcharge > 0 && (
-                <Typography sx={{ fontSize: '0.78rem', color: '#4A0E4E', fontWeight: 600, mt: -2, mb: 3 }}>
+                <Typography sx={{ fontSize: '0.78rem', color: 'var(--text-purple)', fontWeight: 600, mt: -2, mb: 3 }}>
                   + {formatNaira(lengthSurcharge)} length surcharge · Subtotal: {formatNaira(priceWithLength)}
                 </Typography>
               )}
@@ -580,7 +580,7 @@ export default function ServiceDetailPage() {
                       <IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))} disabled={loyaltyUnits >= maxLoyaltyUnits} sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 28, height: 28 }}>
                         <AddIcon sx={{ fontSize: 14 }} />
                       </IconButton>
-                      <Typography sx={{ fontSize: '0.82rem', color: '#555' }}>
+                      <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
                         units × ₦1,000 = <strong style={{ color: '#B8860B' }}>{formatNaira(loyaltyDiscount)} off</strong>
                       </Typography>
                     </Box>
@@ -591,13 +591,13 @@ export default function ServiceDetailPage() {
                 {(referralDiscount > 0 || loyaltyDiscount > 0 || lengthSurcharge > 0) && (
                   <Box sx={{ mt: 2, p: 1.5, borderRadius: 2, backgroundColor: '#F1F8E9', border: '1px solid #C5E1A5' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography sx={{ fontSize: '0.82rem', color: '#555' }}>Base price</Typography>
-                      <Typography sx={{ fontSize: '0.82rem', color: '#555', textDecoration: 'line-through' }}>{formatNaira(effectivePrice)}</Typography>
+                      <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Base price</Typography>
+                      <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)', textDecoration: 'line-through' }}>{formatNaira(effectivePrice)}</Typography>
                     </Box>
                     {lengthSurcharge > 0 && (
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography sx={{ fontSize: '0.82rem', color: '#4A0E4E' }}>Length add-on ({nailLength.split(' ')[0]})</Typography>
-                        <Typography sx={{ fontSize: '0.82rem', color: '#4A0E4E', fontWeight: 700 }}>+{formatNaira(lengthSurcharge)}</Typography>
+                        <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-purple)' }}>Length add-on ({nailLength.split(' ')[0]})</Typography>
+                        <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-purple)', fontWeight: 700 }}>+{formatNaira(lengthSurcharge)}</Typography>
                       </Box>
                     )}
                     {referralDiscount > 0 && (
@@ -616,7 +616,7 @@ export default function ServiceDetailPage() {
                       <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.9rem' }}>You pay</Typography>
                       <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.9rem', color: '#E91E8C' }}>{formatNaira(finalPrice)}</Typography>
                     </Box>
-                    <Typography sx={{ fontSize: '0.75rem', color: '#555', mt: 0.3 }}>50% deposit: {formatNaira(depositAmount)}</Typography>
+                    <Typography sx={{ fontSize: '0.75rem', color: 'var(--text-muted)', mt: 0.3 }}>50% deposit: {formatNaira(depositAmount)}</Typography>
                   </Box>
                 )}
               </Box>
@@ -637,7 +637,7 @@ export default function ServiceDetailPage() {
                   onClick={handleAddToCart}
                   disabled={!isFormValid}
                   fullWidth
-                  sx={{ border: '2px solid #4A0E4E', color: '#4A0E4E', borderRadius: '30px', py: 1.3, fontFamily: ff, fontWeight: 600, fontSize: '0.95rem', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' }, '&.Mui-disabled': { borderColor: '#ddd', color: '#bbb' } }}
+                  sx={{ border: '2px solid #4A0E4E', color: 'var(--text-purple)', borderRadius: '30px', py: 1.3, fontFamily: ff, fontWeight: 600, fontSize: '0.95rem', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' }, '&.Mui-disabled': { borderColor: '#ddd', color: '#bbb' } }}
                 >
                   Add to Cart
                 </Button>
@@ -654,7 +654,7 @@ export default function ServiceDetailPage() {
       <Dialog open={calendarOpen} onClose={() => setCalendarOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogTitle sx={{ fontFamily: ff, fontWeight: 700, pb: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           Select Date &amp; Time
-          <Box onClick={() => setCalendarOpen(false)} sx={{ cursor: 'pointer', color: '#aaa', fontSize: '1.3rem', lineHeight: 1, '&:hover': { color: '#555' } }}>✕</Box>
+          <Box onClick={() => setCalendarOpen(false)} sx={{ cursor: 'pointer', color: '#aaa', fontSize: '1.3rem', lineHeight: 1, '&:hover': { color: 'var(--text-muted)' } }}>✕</Box>
         </DialogTitle>
         <DialogContent sx={{ pt: '12px !important' }}>
           <CalendarWidget
@@ -674,14 +674,14 @@ export default function ServiceDetailPage() {
 
       {/* Payment Modal */}
       <Dialog open={paymentModalOpen} onClose={() => setPaymentModalOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-        <DialogTitle sx={{ fontFamily: ff, fontWeight: 700, color: '#4A0E4E' }}>Confirm Booking</DialogTitle>
+        <DialogTitle sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-purple)' }}>Confirm Booking</DialogTitle>
         <DialogContent>
           <Box sx={{ p: 1.5, backgroundColor: '#FFF0F5', borderRadius: 2, border: '1px solid #F0C0D0', mb: 2 }}>
-            <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: '#4A0E4E', mb: 0.5 }}>{service.name}</Typography>
-            <Typography sx={{ fontSize: '0.85rem', color: '#555' }}>{formatDate(appointmentDate)} at {appointmentTime}</Typography>
-            <Typography sx={{ fontSize: '0.85rem', color: '#555' }}>Shape: {nailShape} · Length: {nailLength}</Typography>
+            <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-purple)', mb: 0.5 }}>{service.name}</Typography>
+            <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{formatDate(appointmentDate)} at {appointmentTime}</Typography>
+            <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Shape: {nailShape} · Length: {nailLength}</Typography>
             {hasExtensions !== null && (
-              <Typography sx={{ fontSize: '0.85rem', color: '#555' }}>
+              <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                 Existing extensions: {hasExtensions ? `Yes — ${extensionType || 'type not specified'}` : 'No'}
               </Typography>
             )}
@@ -710,7 +710,7 @@ export default function ServiceDetailPage() {
 
       {/* Waitlist Dialog */}
       <Dialog open={waitlistDialog} onClose={() => setWaitlistDialog(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-        <DialogTitle sx={{ fontFamily: ff, fontWeight: 700, color: '#4A0E4E' }}>Join Waitlist</DialogTitle>
+        <DialogTitle sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-purple)' }}>Join Waitlist</DialogTitle>
         <DialogContent>
           {waitlistSuccess ? (
             <Typography sx={{ color: '#2e7d32', fontWeight: 600, py: 2, textAlign: 'center' }}>
@@ -718,7 +718,7 @@ export default function ServiceDetailPage() {
             </Typography>
           ) : (
             <Box>
-              <Typography sx={{ fontSize: '0.85rem', color: '#555', mb: 2 }}>All slots for this date are taken. Leave your details and we'll notify you if a spot opens.</Typography>
+              <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', mb: 2 }}>All slots for this date are taken. Leave your details and we'll notify you if a spot opens.</Typography>
               <TextField fullWidth size="small" label="Your name" value={waitlistName} onChange={(e) => setWaitlistName(e.target.value)} sx={{ mb: 2, ...textFieldSx }} />
               <TextField fullWidth size="small" label="Phone / WhatsApp" value={waitlistPhone} onChange={(e) => setWaitlistPhone(e.target.value)} sx={{ mb: 1, ...textFieldSx }} />
             </Box>

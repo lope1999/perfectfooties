@@ -211,15 +211,15 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Paper sx={{ px: 3, py: 2, borderRadius: 2, flex: '1 1 140px', minWidth: 140 }}>
           <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>Total Images</Typography>
-          <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: '#4A0E4E' }}>{stats.total}</Typography>
+          <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-purple)' }}>{stats.total}</Typography>
         </Paper>
         <Paper sx={{ px: 3, py: 2, borderRadius: 2, flex: '1 1 140px', minWidth: 140 }}>
           <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>Nails</Typography>
-          <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: '#4A0E4E' }}>{stats.nails}</Typography>
+          <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-purple)' }}>{stats.nails}</Typography>
         </Paper>
         <Paper sx={{ px: 3, py: 2, borderRadius: 2, flex: '1 1 140px', minWidth: 140 }}>
           <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>Press-On Nails</Typography>
-          <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: '#4A0E4E' }}>{stats.pressOn}</Typography>
+          <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-purple)' }}>{stats.pressOn}</Typography>
         </Paper>
       </Box>
 
@@ -272,7 +272,7 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
                 </TableCell>
                 <TableCell>
                   <IconButton size="small" onClick={() => openEditDialog(img)} title="Edit">
-                    <EditIcon fontSize="small" sx={{ color: '#4A0E4E' }} />
+                    <EditIcon fontSize="small" sx={{ color: 'var(--text-purple)' }} />
                   </IconButton>
                   <IconButton size="small" onClick={() => setDeleteDialog(img)} title="Delete">
                     <DeleteOutlineIcon fontSize="small" sx={{ color: '#d32f2f' }} />

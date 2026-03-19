@@ -79,7 +79,7 @@ export default function GiftCardRedeemInput({ onApplied, onRemoved, appliedCard 
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.85rem', color: '#555' }}>
+            <Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
               Balance: {formatNaira(appliedCard.balance)}
             </Typography>
             <Button

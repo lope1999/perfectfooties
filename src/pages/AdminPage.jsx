@@ -191,7 +191,7 @@ export default function AdminPage() {
           }}
         >
           {isMobile && (
-            <IconButton onClick={() => setMobileOpen(true)} sx={{ mb: 1, color: '#4A0E4E' }}>
+            <IconButton onClick={() => setMobileOpen(true)} sx={{ mb: 1, color: 'var(--text-purple)' }}>
               <MenuIcon />
             </IconButton>
           )}

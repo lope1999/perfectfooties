@@ -23,7 +23,7 @@ function formatNaira(n) {
 function SummaryRow({ label, value, highlight, strike }) {
   return (
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.6 }}>
-      <Typography sx={{ fontSize: '0.82rem', color: '#666' }}>{label}</Typography>
+      <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{label}</Typography>
       <Typography
         sx={{
           fontSize: '0.84rem',
@@ -191,7 +191,7 @@ export default function ThankYouPage() {
                   <Box key={idx} sx={{ mb: idx < items.length - 1 ? 1.5 : 0 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <Box sx={{ flex: 1, pr: 1 }}>
-                        <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222' }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-main)' }}>
                           {item.serviceName || item.name || 'Item'}
                         </Typography>
                         {item.nailShape && (
@@ -213,7 +213,7 @@ export default function ThankYouPage() {
                           </Typography>
                         )}
                       </Box>
-                      <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#333', whiteSpace: 'nowrap' }}>
+                      <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
                         {formatNaira(item.price)}
                       </Typography>
                     </Box>
@@ -224,8 +224,8 @@ export default function ThankYouPage() {
             ) : serviceName ? (
               <Box sx={{ mb: 1.5 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#222' }}>{serviceName}</Typography>
-                  <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: '#333' }}>{formatNaira(total)}</Typography>
+                  <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-main)' }}>{serviceName}</Typography>
+                  <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-main)' }}>{formatNaira(total)}</Typography>
                 </Box>
                 {appointmentDate && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.4 }}>
@@ -402,7 +402,7 @@ export default function ThankYouPage() {
               >
                 {step.icon}
               </Box>
-              <Typography sx={{ fontSize: '0.8rem', color: '#555', lineHeight: 1.5, pt: 0.5 }}>
+              <Typography sx={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5, pt: 0.5 }}>
                 {step.text}
               </Typography>
             </Box>
@@ -460,7 +460,7 @@ export default function ThankYouPage() {
               <Typography sx={{ fontSize: '0.8rem', color: '#2e7d32', fontWeight: 600, mb: 0.3 }}>
                 📲 One more step — send your booking to our stylist!
               </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#555' }}>
+              <Typography sx={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
                 Tap below to open WhatsApp with your appointment details pre-filled.
               </Typography>
             </Box>

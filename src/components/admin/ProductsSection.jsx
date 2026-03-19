@@ -185,7 +185,7 @@ export default function ProductsSection({ collectionName, categories, loading, o
                   setEditCategoryId(cat.id);
                   setProductDialogOpen(true);
                 }}
-                sx={{ fontFamily, color: '#4A0E4E' }}
+                sx={{ fontFamily, color: 'var(--text-purple)' }}
               >
                 Add Product
               </Button>
@@ -268,7 +268,7 @@ export default function ProductsSection({ collectionName, categories, loading, o
                           {isHidden ? (
                             <VisibilityOffIcon fontSize="small" sx={{ color: '#999' }} />
                           ) : (
-                            <VisibilityIcon fontSize="small" sx={{ color: '#4A0E4E' }} />
+                            <VisibilityIcon fontSize="small" sx={{ color: 'var(--text-purple)' }} />
                           )}
                         </IconButton>
                         <IconButton

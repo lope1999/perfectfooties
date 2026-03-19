@@ -204,12 +204,12 @@ export default function BlogPostsSection({ blogPosts, loading, onRefresh }) {
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Paper sx={{ px: 3, py: 2, borderRadius: 2, flex: '1 1 140px', minWidth: 140 }}>
           <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>Total Posts</Typography>
-          <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: '#4A0E4E' }}>{stats.total}</Typography>
+          <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-purple)' }}>{stats.total}</Typography>
         </Paper>
         {Object.entries(stats.byCategory).map(([cat, count]) => (
           <Paper key={cat} sx={{ px: 3, py: 2, borderRadius: 2, flex: '1 1 140px', minWidth: 140 }}>
             <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>{cat}</Typography>
-            <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: '#4A0E4E' }}>{count}</Typography>
+            <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-purple)' }}>{count}</Typography>
           </Paper>
         ))}
       </Box>
@@ -267,7 +267,7 @@ export default function BlogPostsSection({ blogPosts, loading, onRefresh }) {
                   <TableCell sx={{ fontFamily, fontSize: '0.8rem' }}>{post.readTime}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <IconButton size="small" onClick={() => openEditDialog(post)} title="Edit">
-                      <EditIcon fontSize="small" sx={{ color: '#4A0E4E' }} />
+                      <EditIcon fontSize="small" sx={{ color: 'var(--text-purple)' }} />
                     </IconButton>
                     <IconButton size="small" onClick={() => setDeleteDialog(post)} title="Delete">
                       <DeleteOutlineIcon fontSize="small" sx={{ color: '#d32f2f' }} />
@@ -279,7 +279,7 @@ export default function BlogPostsSection({ blogPosts, loading, onRefresh }) {
                     <Collapse in={expandedId === post.id}>
                       <Box sx={{ p: 2, backgroundColor: '#fafafa' }}>
                         <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, mb: 0.5 }}>Excerpt:</Typography>
-                        <Typography sx={{ fontFamily, fontSize: '0.82rem', color: '#555', mb: 1 }}>{post.excerpt}</Typography>
+                        <Typography sx={{ fontFamily, fontSize: '0.82rem', color: 'var(--text-muted)', mb: 1 }}>{post.excerpt}</Typography>
                         {post.image && (
                           <Typography sx={{ fontFamily, fontSize: '0.8rem', color: '#777' }}>
                             Image: {post.image}
@@ -398,7 +398,7 @@ export default function BlogPostsSection({ blogPosts, loading, onRefresh }) {
                   </IconButton>
                 </Box>
               ))}
-              <Button size="small" startIcon={<AddIcon />} onClick={() => addListItem('body')} sx={{ fontFamily, color: '#4A0E4E' }}>
+              <Button size="small" startIcon={<AddIcon />} onClick={() => addListItem('body')} sx={{ fontFamily, color: 'var(--text-purple)' }}>
                 Add Paragraph
               </Button>
             </Box>
@@ -421,7 +421,7 @@ export default function BlogPostsSection({ blogPosts, loading, onRefresh }) {
                   </IconButton>
                 </Box>
               ))}
-              <Button size="small" startIcon={<AddIcon />} onClick={() => addListItem('sources')} sx={{ fontFamily, color: '#4A0E4E' }}>
+              <Button size="small" startIcon={<AddIcon />} onClick={() => addListItem('sources')} sx={{ fontFamily, color: 'var(--text-purple)' }}>
                 Add Source
               </Button>
             </Box>

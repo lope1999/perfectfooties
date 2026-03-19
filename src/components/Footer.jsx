@@ -8,7 +8,7 @@ import TermsModal from './TermsModal';
 import PricingTable from './PricingTable';
 
 const linkSx = {
-  color: '#4A0E4E',
+  color: 'var(--text-purple)',
   fontSize: '0.9rem',
   cursor: 'pointer',
   transition: 'color 0.2s ease',
@@ -232,7 +232,7 @@ export default function Footer() {
 								href="https://www.instagram.com/chizzys_styles?igsh=YTJ6bzU3ZW82cDFo&utm_source=qr"
 								target="_blank"
 								sx={{
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									"&:hover": { color: "#E91E8C" },
 								}}
 							>
@@ -242,7 +242,7 @@ export default function Footer() {
 								href="https://tiktok.com/@chizzysstyles"
 								target="_blank"
 								sx={{
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									"&:hover": { color: "#E91E8C" },
 								}}
 							>
@@ -252,7 +252,7 @@ export default function Footer() {
 								href="https://youtube.com/@chizzysstyles1505?si=pWaiuGVL8D93bQ_i"
 								target="_blank"
 								sx={{
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									"&:hover": { color: "#E91E8C" },
 								}}
 							>

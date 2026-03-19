@@ -13,20 +13,24 @@ import {
   ListItemButton,
   ListItemText,
   Divider,
+  Tooltip,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { NailLogo } from "../data/svg.jsx";
 import CartIcon from "./CartIcon";
 import WishlistIcon from "./WishlistIcon";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
 import { useAuth } from "../context/AuthContext";
+import { useThemeMode } from "../context/ThemeContext";
 
 const navButtonSx = {
-  color: '#000',
+  color: 'var(--text-main)',
   border: '1px solid #E91E8C',
   borderRadius: '25px',
   px: 2.5,
@@ -55,8 +59,10 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signInWithGoogle, signOut, isAdmin } = useAuth();
+  const { mode, toggleMode } = useThemeMode();
   const [hovered, setHovered] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const isDark = mode === 'dark';
 
   const trigger = useScrollTrigger({
     disableHysteresis: true,
@@ -92,7 +98,9 @@ export default function Navbar() {
 				onMouseEnter={() => setHovered(true)}
 				onMouseLeave={() => setHovered(false)}
 				sx={{
-					backgroundColor: hovered || trigger ? "#FFC0CB" : "transparent",
+					backgroundColor: hovered || trigger
+						? (isDark ? '#2d0a3e' : '#FFC0CB')
+						: 'transparent',
 					transition: "background-color 0.4s ease",
 					zIndex: 1200,
 				}}
@@ -115,7 +123,7 @@ export default function Navbar() {
 								fontFamily:
 									'"Dancing Script", "Pacifico", "Great Vibes", cursive',
 								fontWeight: 700,
-								color: "#000",
+								color: "var(--text-main)",
 								letterSpacing: 1,
 								fontSize: { xs: "1.2rem", md: "1.5rem" },
 								fontStyle: "italic",
@@ -147,7 +155,7 @@ export default function Navbar() {
 								sx={{
 									...navButtonSx,
 									borderColor: "#4A0E4E",
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									"&:hover": {
 										backgroundColor: "#4A0E4E",
 										color: "#fff",
@@ -163,6 +171,11 @@ export default function Navbar() {
 
 					{/* Right — Cart + User + Social Icons (desktop) + Hamburger (mobile) */}
 					<Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+						<Tooltip title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
+							<IconButton onClick={toggleMode} sx={{ color: isDark ? '#f5e6f5' : '#4A0E4E' }}>
+								{isDark ? <Brightness7Icon sx={{ fontSize: 22 }} /> : <Brightness4Icon sx={{ fontSize: 22 }} />}
+							</IconButton>
+						</Tooltip>
 						<UserMenu />
 						<WishlistIcon />
 						<CartIcon />
@@ -190,7 +203,7 @@ export default function Navbar() {
 				PaperProps={{
 					sx: {
 						width: 280,
-						backgroundColor: "#FFF0F5",
+						backgroundColor: isDark ? '#1c0530' : '#FFF0F5',
 						pt: 2,
 					},
 				}}
@@ -208,7 +221,7 @@ export default function Navbar() {
 						sx={{
 							fontFamily: '"Georgia", serif',
 							fontWeight: 700,
-							color: "#000",
+							color: "var(--text-main)",
 							fontSize: "1.1rem",
 						}}
 					>
@@ -251,7 +264,7 @@ export default function Navbar() {
 											fontFamily: '"Georgia", serif',
 											fontWeight: 700,
 											fontSize: "0.9rem",
-											color: "#000",
+											color: "var(--text-main)",
 										}}
 									>
 										{user.displayName}
@@ -324,7 +337,7 @@ export default function Navbar() {
 								primaryTypographyProps={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 600,
-									color: "#000",
+									color: "var(--text-main)",
 								}}
 							/>
 						</ListItemButton>
@@ -347,7 +360,7 @@ export default function Navbar() {
 								primaryTypographyProps={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 600,
-									color: "#000",
+									color: "var(--text-main)",
 								}}
 							/>
 						</ListItemButton>
@@ -367,7 +380,7 @@ export default function Navbar() {
 							primaryTypographyProps={{
 								fontFamily: '"Georgia", serif',
 								fontWeight: 600,
-								color: "#000",
+								color: "var(--text-main)",
 							}}
 						/>
 					</ListItemButton>
@@ -386,7 +399,7 @@ export default function Navbar() {
 							primaryTypographyProps={{
 								fontFamily: '"Georgia", serif',
 								fontWeight: 600,
-								color: "#000",
+								color: "var(--text-main)",
 							}}
 						/>
 					</ListItemButton>
@@ -406,7 +419,7 @@ export default function Navbar() {
 								primaryTypographyProps={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 600,
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 								}}
 							/>
 						</ListItemButton>

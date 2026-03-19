@@ -266,17 +266,17 @@ export default function ProductQuickView({ open, onClose, product, category, onA
 
           <Box sx={{ p: 3 }}>
             {/* Description */}
-            <Typography sx={{ color: '#555', fontSize: '0.9rem', lineHeight: 1.7, mb: 2 }}>
+            <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.7, mb: 2 }}>
               {product.description}
             </Typography>
 
             {/* Info chips */}
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
               {product.shape && (
-                <Chip label={product.shape} size="small" sx={{ backgroundColor: '#F3E5F6', color: '#4A0E4E', fontWeight: 600 }} />
+                <Chip label={product.shape} size="small" sx={{ backgroundColor: '#F3E5F6', color: 'var(--text-purple)', fontWeight: 600 }} />
               )}
               {product.length && (
-                <Chip label={product.length} size="small" sx={{ backgroundColor: '#F3E5F6', color: '#4A0E4E', fontWeight: 600 }} />
+                <Chip label={product.length} size="small" sx={{ backgroundColor: '#F3E5F6', color: 'var(--text-purple)', fontWeight: 600 }} />
               )}
               {product.type && (
                 <Chip label={product.type} size="small" sx={{ backgroundColor: '#4A0E4E', color: '#fff', fontWeight: 600 }} />
@@ -401,7 +401,7 @@ export default function ProductQuickView({ open, onClose, product, category, onA
             {/* Discounts & Rewards */}
             {isFormValid && (
               <Box sx={{ mt: 3, p: 2.5, borderRadius: 3, backgroundColor: '#FFF0F5', border: '1px solid #F0C0D0' }}>
-                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1.5, fontSize: '0.9rem' }}>
+                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 1.5, fontSize: '0.9rem' }}>
                   Discounts &amp; Rewards
                 </Typography>
 
@@ -462,7 +462,7 @@ export default function ProductQuickView({ open, onClose, product, category, onA
                       <IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))} disabled={loyaltyUnits >= maxLoyaltyUnits} sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 26, height: 26 }}>
                         <AddIcon sx={{ fontSize: 13 }} />
                       </IconButton>
-                      <Typography sx={{ fontSize: '0.78rem', color: '#555' }}>
+                      <Typography sx={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                         units &times; &#8358;1,000 = <strong style={{ color: '#B8860B' }}>-&#8358;{(loyaltyUnits * REDEMPTION_VALUE).toLocaleString()} off</strong>
                       </Typography>
                     </Box>
@@ -514,7 +514,7 @@ export default function ProductQuickView({ open, onClose, product, category, onA
             sx={{
               border: '2px solid #4A0E4E',
               borderRadius: '30px',
-              color: '#4A0E4E',
+              color: 'var(--text-purple)',
               px: 3,
               py: 1,
               fontFamily: '"Georgia", serif',

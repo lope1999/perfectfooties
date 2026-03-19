@@ -132,7 +132,7 @@ export default function CancellationsSection() {
                     '&:hover': { backgroundColor: '#fff5f8' },
                   }}
                 >
-                  <TableCell sx={{ fontFamily: ff, fontSize: '0.8rem', whiteSpace: 'nowrap', color: '#666' }}>
+                  <TableCell sx={{ fontFamily: ff, fontSize: '0.8rem', whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>
                     {formatDate(r.createdAt)}
                   </TableCell>
                   <TableCell sx={{ fontFamily: ff, fontSize: '0.85rem' }}>
@@ -161,7 +161,7 @@ export default function CancellationsSection() {
                   <TableCell sx={{ fontFamily: ff, fontSize: '0.85rem', maxWidth: 160 }}>
                     {r.serviceName || '—'}
                   </TableCell>
-                  <TableCell sx={{ fontFamily: ff, fontSize: '0.8rem', whiteSpace: 'nowrap', color: '#666' }}>
+                  <TableCell sx={{ fontFamily: ff, fontSize: '0.8rem', whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>
                     {r.appointmentDate || '—'}
                   </TableCell>
                   <TableCell sx={{ fontFamily: ff, fontSize: '0.85rem', maxWidth: 220 }}>

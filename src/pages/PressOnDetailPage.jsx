@@ -11,6 +11,10 @@ import {
   IconButton,
   Collapse,
   CircularProgress,
+  Menu,
+  ListItemIcon,
+  ListItemText,
+  Tooltip,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -20,6 +24,9 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import StarIcon from '@mui/icons-material/Star';
+import ShareIcon from '@mui/icons-material/Share';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { pressOnQuantities } from '../data/products';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -85,6 +92,7 @@ export default function PressOnDetailPage() {
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
+  const [shareAnchor, setShareAnchor] = useState(null);
 
   // Referral / loyalty
   const [showRefField, setShowRefField] = useState(false);
@@ -229,6 +237,21 @@ export default function PressOnDetailPage() {
     });
   };
 
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      showToast('Link copied to clipboard!', 'success');
+    }).catch(() => {
+      showToast('Could not copy link', 'error');
+    });
+    setShareAnchor(null);
+  };
+
+  const handleShareWhatsApp = () => {
+    const text = `Check out this nail set from Chizzysstyles:\n${product?.name}\n${window.location.href}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    setShareAnchor(null);
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', pt: 12 }}>
@@ -240,7 +263,7 @@ export default function PressOnDetailPage() {
   if (!product || !category) {
     return (
       <Box sx={{ pt: 12, textAlign: 'center', py: 10 }}>
-        <Typography sx={{ color: '#555', fontSize: '1.1rem' }}>Product not found.</Typography>
+        <Typography sx={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Product not found.</Typography>
         <Button onClick={() => navigate('/products')} sx={{ mt: 2, color: '#E91E8C', fontFamily: '"Georgia", serif' }}>
           Back to Products
         </Button>
@@ -302,7 +325,7 @@ export default function PressOnDetailPage() {
 							)
 						}
 						sx={{
-							color: "#4A0E4E",
+							color: "var(--text-purple)",
 							fontFamily: '"Georgia", serif',
 							fontWeight: 600,
 							fontSize: "0.82rem",
@@ -321,19 +344,46 @@ export default function PressOnDetailPage() {
 			</Box>
 
 			<Container maxWidth="sm" sx={{ py: 3 }}>
-				{/* Product title */}
-				<Typography
-					variant="h4"
-					sx={{
-						fontFamily: '"Georgia", serif',
-						fontWeight: 700,
-						color: "#000",
-						mb: 1,
-						fontSize: { xs: "1.6rem", md: "2rem" },
-					}}
+				{/* Product title + share button */}
+				<Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+					<Typography
+						variant="h4"
+						sx={{
+							fontFamily: '"Georgia", serif',
+							fontWeight: 700,
+							color: "var(--text-main)",
+							fontSize: { xs: "1.6rem", md: "2rem" },
+							flex: 1,
+						}}
+					>
+						{product.name}
+					</Typography>
+					<Tooltip title="Share this product">
+						<IconButton
+							onClick={e => setShareAnchor(e.currentTarget)}
+							size="small"
+							sx={{ mt: 0.5, ml: 1, color: '#E91E8C', border: '1px solid #F0C0D0', borderRadius: 2, p: 0.8 }}
+						>
+							<ShareIcon sx={{ fontSize: 20 }} />
+						</IconButton>
+					</Tooltip>
+				</Box>
+
+				<Menu
+					anchorEl={shareAnchor}
+					open={Boolean(shareAnchor)}
+					onClose={() => setShareAnchor(null)}
+					PaperProps={{ sx: { borderRadius: 2, minWidth: 180, boxShadow: '0 4px 20px rgba(0,0,0,0.12)' } }}
 				>
-					{product.name}
-				</Typography>
+					<MenuItem onClick={handleCopyLink} sx={{ py: 1.2 }}>
+						<ListItemIcon><ContentCopyIcon sx={{ fontSize: 18, color: 'var(--text-purple)' }} /></ListItemIcon>
+						<ListItemText primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontSize: '0.88rem' }}>Copy link</ListItemText>
+					</MenuItem>
+					<MenuItem onClick={handleShareWhatsApp} sx={{ py: 1.2 }}>
+						<ListItemIcon><WhatsAppIcon sx={{ fontSize: 18, color: '#25D366' }} /></ListItemIcon>
+						<ListItemText primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontSize: '0.88rem' }}>Share on WhatsApp</ListItemText>
+					</MenuItem>
+				</Menu>
 
 				{/* Info chips */}
 				<Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
@@ -343,7 +393,7 @@ export default function PressOnDetailPage() {
 							size="small"
 							sx={{
 								backgroundColor: "#F3E5F6",
-								color: "#4A0E4E",
+								color: "var(--text-purple)",
 								fontWeight: 600,
 							}}
 						/>
@@ -354,7 +404,7 @@ export default function PressOnDetailPage() {
 							size="small"
 							sx={{
 								backgroundColor: "#F3E5F6",
-								color: "#4A0E4E",
+								color: "var(--text-purple)",
 								fontWeight: 600,
 							}}
 						/>
@@ -439,7 +489,7 @@ export default function PressOnDetailPage() {
 				{product.description && (
 					<Typography
 						sx={{
-							color: "#555",
+							color: "var(--text-muted)",
 							fontSize: "0.95rem",
 							lineHeight: 1.7,
 							mb: 2,
@@ -498,7 +548,7 @@ export default function PressOnDetailPage() {
 						sx={{
 							fontFamily: '"Georgia", serif',
 							fontWeight: 700,
-							color: "#4A0E4E",
+							color: "var(--text-purple)",
 							mb: 1,
 							fontSize: "1rem",
 						}}
@@ -532,7 +582,7 @@ export default function PressOnDetailPage() {
 								sx={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 700,
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									mb: 1,
 									fontSize: "1rem",
 								}}
@@ -626,7 +676,7 @@ export default function PressOnDetailPage() {
 											sx={{
 												fontFamily: '"Georgia", serif',
 												fontWeight: 700,
-												color: "#4A0E4E",
+												color: "var(--text-purple)",
 												fontSize: "0.88rem",
 												mb: 1.5,
 											}}
@@ -674,7 +724,7 @@ export default function PressOnDetailPage() {
 								sx={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 700,
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									mb: 1,
 									fontSize: "1rem",
 								}}
@@ -721,7 +771,7 @@ export default function PressOnDetailPage() {
 								sx={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 700,
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									mb: 1,
 									fontSize: "1rem",
 								}}
@@ -742,7 +792,7 @@ export default function PressOnDetailPage() {
 								sx={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 700,
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									mb: 1,
 									fontSize: "1rem",
 								}}
@@ -771,7 +821,7 @@ export default function PressOnDetailPage() {
 								sx={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 700,
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									mb: 1,
 									fontSize: "1rem",
 								}}
@@ -824,7 +874,7 @@ export default function PressOnDetailPage() {
 								sx={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 700,
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									mb: 1.5,
 									fontSize: "0.95rem",
 								}}
@@ -1077,7 +1127,7 @@ export default function PressOnDetailPage() {
 											<AddIcon sx={{ fontSize: 14 }} />
 										</IconButton>
 										<Typography
-											sx={{ fontSize: "0.78rem", color: "#555" }}
+											sx={{ fontSize: "0.78rem", color: "var(--text-muted)" }}
 										>
 											units × ₦1,000 ={" "}
 											<strong style={{ color: "#B8860B" }}>
@@ -1120,7 +1170,7 @@ export default function PressOnDetailPage() {
 			{/* Recently Viewed */}
 		{recentlyViewed.length > 0 && (
 			<Container maxWidth="sm" sx={{ mt: 4, mb: 2 }}>
-				<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1.5, fontSize: '1rem' }}>
+				<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 1.5, fontSize: '1rem' }}>
 					Recently Viewed
 				</Typography>
 				<Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { height: 4 }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#F0C0D0', borderRadius: 2 } }}>
@@ -1138,7 +1188,7 @@ export default function PressOnDetailPage() {
 								</Box>
 							)}
 							<Box sx={{ p: 0.8 }}>
-								<Typography sx={{ fontSize: '0.7rem', fontWeight: 600, color: '#333', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+								<Typography sx={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
 									{item.name}
 								</Typography>
 								<Typography sx={{ fontSize: '0.72rem', color: '#E91E8C', fontWeight: 700, mt: 0.3 }}>
@@ -1188,7 +1238,7 @@ export default function PressOnDetailPage() {
 					sx={{
 						border: "2px solid #4A0E4E",
 						borderRadius: "30px",
-						color: "#4A0E4E",
+						color: "var(--text-purple)",
 						px: 3,
 						py: 1,
 						fontFamily: '"Georgia", serif',
@@ -1203,7 +1253,7 @@ export default function PressOnDetailPage() {
 						"&.Mui-disabled": {
 							opacity: 0.5,
 							border: "2px solid #4A0E4E",
-							color: "#4A0E4E",
+							color: "var(--text-purple)",
 						},
 					}}
 				>

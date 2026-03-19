@@ -51,7 +51,7 @@ const viewServicesBtnSx = {
 	...ctaButtonBase,
 	border: "1px solid #E91E8C",
 	backgroundColor: "#fff",
-	color: "#000",
+	color: "var(--text-main)",
 	"&:hover": {
 		backgroundColor: "transparent",
 	},
@@ -61,7 +61,7 @@ const signInBtnSx = {
 	...ctaButtonBase,
 	border: "2px solid #4A0E4E",
 	backgroundColor: "transparent",
-	color: "#4A0E4E",
+	color: "var(--text-purple)",
 	"&:hover": {
 		backgroundColor: "#4A0E4E",
 		color: "#fff",
@@ -212,7 +212,7 @@ export default function HomePage() {
 											fontFamily: '"Georgia", serif',
 											fontWeight: 700,
 											mb: 2,
-											color: "#4A0E4E",
+											color: "var(--text-purple)",
 										}}
 									>
 										Contact Info
@@ -260,7 +260,7 @@ export default function HomePage() {
 											fontFamily: '"Georgia", serif',
 											fontWeight: 700,
 											mb: 2,
-											color: "#4A0E4E",
+											color: "var(--text-purple)",
 										}}
 									>
 										Service Hours
@@ -287,7 +287,7 @@ export default function HomePage() {
 											fontFamily: '"Georgia", serif',
 											fontWeight: 700,
 											mb: 2,
-											color: "#4A0E4E",
+											color: "var(--text-purple)",
 										}}
 									>
 										Location
@@ -312,7 +312,7 @@ export default function HomePage() {
 								sx={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 700,
-									color: "#000",
+									color: "var(--text-main)",
 									mb: 2,
 									fontSize: { xs: "1.6rem", sm: "2.2rem", md: "3rem" },
 								}}
@@ -321,7 +321,7 @@ export default function HomePage() {
 							</Typography>
 							<Typography
 								sx={{
-									color: "#555",
+									color: "var(--text-muted)",
 									fontSize: "1.05rem",
 									lineHeight: 1.7,
 									maxWidth: 560,
@@ -373,7 +373,7 @@ export default function HomePage() {
 											fontFamily: '"Georgia", serif',
 											fontWeight: 600,
 											fontSize: "1.05rem",
-											color: "#000",
+											color: "var(--text-main)",
 											flex: 1,
 											pr: 2,
 										}}
@@ -419,7 +419,7 @@ export default function HomePage() {
 									>
 										<Typography
 											sx={{
-												color: "#444",
+												color: "var(--text-muted)",
 												fontSize: "0.95rem",
 												lineHeight: 1.8,
 											}}
@@ -433,7 +433,7 @@ export default function HomePage() {
 													mt: 2,
 													border: "2px solid #E91E8C",
 													borderRadius: "30px",
-													color: "#000",
+													color: "var(--text-main)",
 													backgroundColor: "transparent",
 													px: 3,
 													py: 1,
@@ -459,7 +459,7 @@ export default function HomePage() {
 													mt: 2,
 													border: "2px solid #E91E8C",
 													borderRadius: "30px",
-													color: "#000",
+													color: "var(--text-main)",
 													backgroundColor: "transparent",
 													px: 3,
 													py: 1,

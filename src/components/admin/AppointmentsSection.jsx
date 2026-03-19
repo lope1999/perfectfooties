@@ -379,7 +379,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                 disabled={refreshing || loading}
                 sx={{ border: '1px solid #E0E0E0', borderRadius: 2, '&:hover': { backgroundColor: '#F3E5F5' } }}
               >
-                <RefreshIcon sx={{ fontSize: 20, color: '#4A0E4E', transition: 'transform 0.4s', transform: refreshing ? 'rotate(360deg)' : 'rotate(0deg)' }} />
+                <RefreshIcon sx={{ fontSize: 20, color: 'var(--text-purple)', transition: 'transform 0.4s', transform: refreshing ? 'rotate(360deg)' : 'rotate(0deg)' }} />
               </IconButton>
             </span>
           </Tooltip>
@@ -395,7 +395,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
             variant="outlined"
             startIcon={<FileDownloadIcon />}
             onClick={() => exportOrdersToCSV(filtered, 'appointments-export.csv')}
-            sx={{ fontFamily, borderColor: '#4A0E4E', color: '#4A0E4E', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' } }}
+            sx={{ fontFamily, borderColor: '#4A0E4E', color: 'var(--text-purple)', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' } }}
           >
             Export CSV
           </Button>
@@ -528,7 +528,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                             disabled={!o.email || !!sendingEmailId}
                           >
                             {sendingEmailId === o.id
-                              ? <CircularProgress size={18} sx={{ color: '#4A0E4E' }} />
+                              ? <CircularProgress size={18} sx={{ color: 'var(--text-purple)' }} />
                               : <MailOutlineIcon fontSize="small" sx={{ color: o.email ? '#4A0E4E' : '#ccc' }} />}
                           </IconButton>
                         </span>
@@ -540,7 +540,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                       </Tooltip>
                       <Tooltip title="Add admin note">
                         <IconButton size="small" onClick={() => { setNoteDialog(o); setNoteText(''); }}>
-                          <NoteAddIcon fontSize="small" sx={{ color: '#4A0E4E' }} />
+                          <NoteAddIcon fontSize="small" sx={{ color: 'var(--text-purple)' }} />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Delete appointment">
@@ -559,7 +559,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
 
                           {/* Left: Appointment Info */}
                           <Box sx={{ flex: 1, minWidth: 220 }}>
-                            <Typography sx={{ fontFamily, fontSize: '0.8rem', fontWeight: 700, color: '#4A0E4E', mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                            <Typography sx={{ fontFamily, fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-purple)', mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                               Appointment Info
                             </Typography>
                             {o.appointmentDate && (
@@ -579,11 +579,11 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                             )}
                             {o.items?.map((item, i) => (
                               <Box key={i} sx={{ mt: 1, pl: 1.5, borderLeft: '3px solid #E91E8C' }}>
-                                <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, color: '#4A0E4E' }}>
+                                <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-purple)' }}>
                                   {item.serviceName || item.name || 'Service'}
                                 </Typography>
                                 {item.nailShape && (
-                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#555' }}>
+                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                                     Shape: {item.nailShape}{item.nailLength ? ` · Length: ${item.nailLength}` : ''}
                                   </Typography>
                                 )}
@@ -596,7 +596,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
 
                           {/* Middle: Location Details */}
                           <Box sx={{ flex: 1, minWidth: 220 }}>
-                            <Typography sx={{ fontFamily, fontSize: '0.8rem', fontWeight: 700, color: '#4A0E4E', mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                            <Typography sx={{ fontFamily, fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-purple)', mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                               Service Location
                             </Typography>
                             {(() => {
@@ -611,7 +611,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                                   </Box>
                                   {homeAddress && (
                                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5, mb: 0.5 }}>
-                                      <Typography sx={{ fontFamily, fontSize: '0.82rem', color: '#333', flex: 1 }}>
+                                      <Typography sx={{ fontFamily, fontSize: '0.82rem', color: 'var(--text-main)', flex: 1 }}>
                                         <strong>Address:</strong> {homeAddress}
                                       </Typography>
                                       <Tooltip title={copiedId === homeAddress ? 'Copied!' : 'Copy address'}>
@@ -622,7 +622,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                                     </Box>
                                   )}
                                   {hasTableArea && (
-                                    <Typography sx={{ fontFamily, fontSize: '0.82rem', color: '#333', mb: 0.5 }}>
+                                    <Typography sx={{ fontFamily, fontSize: '0.82rem', color: 'var(--text-main)', mb: 0.5 }}>
                                       <strong>Table / Work Area:</strong> {hasTableArea}
                                     </Typography>
                                   )}
@@ -640,7 +640,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                                       Salon Visit
                                     </Typography>
                                   </Box>
-                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#555', mt: 0.5 }}>
+                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: 'var(--text-muted)', mt: 0.5 }}>
                                     Client comes to the studio
                                   </Typography>
                                 </Box>
@@ -681,11 +681,11 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
 
                           {/* Right: Notes */}
                           <Box sx={{ flex: 1, minWidth: 180 }}>
-                            <Typography sx={{ fontFamily, fontSize: '0.8rem', fontWeight: 700, color: '#4A0E4E', mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                            <Typography sx={{ fontFamily, fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-purple)', mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                               Notes
                             </Typography>
                             {o.notes ? (
-                              <Typography sx={{ fontFamily, fontSize: '0.82rem', color: '#555', mb: 1 }}>
+                              <Typography sx={{ fontFamily, fontSize: '0.82rem', color: 'var(--text-muted)', mb: 1 }}>
                                 {o.notes}
                               </Typography>
                             ) : (
@@ -693,11 +693,11 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                             )}
                             {o.adminNotes?.length > 0 && (
                               <Box>
-                                <Typography sx={{ fontFamily, fontSize: '0.78rem', fontWeight: 700, color: '#4A0E4E', mb: 0.5 }}>
+                                <Typography sx={{ fontFamily, fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-purple)', mb: 0.5 }}>
                                   Admin Notes:
                                 </Typography>
                                 {o.adminNotes.map((n, i) => (
-                                  <Typography key={i} sx={{ fontFamily, fontSize: '0.78rem', color: '#4A0E4E', pl: 1, borderLeft: '2px solid #E91E8C', mb: 0.5 }}>
+                                  <Typography key={i} sx={{ fontFamily, fontSize: '0.78rem', color: 'var(--text-purple)', pl: 1, borderLeft: '2px solid #E91E8C', mb: 0.5 }}>
                                     [{n.timestamp}] {n.text}
                                   </Typography>
                                 ))}
@@ -851,7 +851,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
 
           {/* Service Type */}
           <Box>
-            <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 600, color: '#4A0E4E', mb: 0.8 }}>
+            <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-purple)', mb: 0.8 }}>
               Service Type
             </Typography>
             <Box sx={{ display: 'flex', gap: 1.5 }}>

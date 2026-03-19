@@ -107,7 +107,7 @@ export default function PresetSizeGuide({ open, onClose }) {
 			<DialogContent sx={{ p: { xs: 2, sm: 3 }, pt: { xs: 3, sm: 3 } }}>
 				<Typography
 					sx={{
-						color: "#555",
+						color: "var(--text-muted)",
 						fontSize: "0.88rem",
 						lineHeight: 1.7,
 						mb: 2,
@@ -212,7 +212,7 @@ export default function PresetSizeGuide({ open, onClose }) {
 											<Typography
 												sx={{
 													fontWeight: 600,
-													color: "#000",
+													color: "var(--text-main)",
 													fontSize: "0.95rem",
 												}}
 											>
@@ -241,7 +241,7 @@ export default function PresetSizeGuide({ open, onClose }) {
 					}}
 				>
 					<Typography
-						sx={{ fontSize: "0.82rem", color: "#555", lineHeight: 1.7 }}
+						sx={{ fontSize: "0.82rem", color: "var(--text-muted)", lineHeight: 1.7 }}
 					>
 						<strong>How to measure:</strong> To find your nail bed size,
 						measure the widest part of each nail bed in millimetres using

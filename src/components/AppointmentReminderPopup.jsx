@@ -66,7 +66,7 @@ export default function AppointmentReminderPopup() {
           Appointment Reminder
         </Typography>
 
-        <Typography sx={{ fontFamily, fontSize: '0.9rem', color: '#555', mb: 2 }}>
+        <Typography sx={{ fontFamily, fontSize: '0.9rem', color: 'var(--text-muted)', mb: 2 }}>
           You have {urgentNotifications.length === 1 ? 'an appointment' : `${urgentNotifications.length} appointments`} coming up soon!
         </Typography>
 
@@ -82,7 +82,7 @@ export default function AppointmentReminderPopup() {
               textAlign: 'left',
             }}
           >
-            <Typography sx={{ fontFamily, fontWeight: 600, fontSize: '0.88rem', color: '#333' }}>
+            <Typography sx={{ fontFamily, fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-main)' }}>
               {n.serviceName}
             </Typography>
             <Typography sx={{ fontFamily, fontSize: '0.8rem', color: '#777' }}>

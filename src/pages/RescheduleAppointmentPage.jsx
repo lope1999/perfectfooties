@@ -32,7 +32,7 @@ const ff = '"Georgia", serif';
 const confirmButtonSx = {
 	border: "2px solid #E91E8C",
 	borderRadius: "30px",
-	color: "#000",
+	color: "var(--text-main)",
 	backgroundColor: "transparent",
 	px: 5,
 	py: 1.5,
@@ -254,7 +254,7 @@ export default function RescheduleAppointmentPage() {
 								sx={{
 									fontFamily: ff,
 									fontWeight: 700,
-									color: "#000",
+									color: "var(--text-main)",
 									mb: 2,
 									fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" },
 								}}
@@ -263,7 +263,7 @@ export default function RescheduleAppointmentPage() {
 							</Typography>
 							<Typography
 								sx={{
-									color: "#555",
+									color: "var(--text-muted)",
 									fontSize: "1.05rem",
 									maxWidth: 500,
 									mx: "auto",
@@ -287,7 +287,7 @@ export default function RescheduleAppointmentPage() {
 								<Typography
 									sx={{
 										fontSize: "0.85rem",
-										color: "#4A0E4E",
+										color: "var(--text-purple)",
 										fontWeight: 600,
 										lineHeight: 1.6,
 									}}
@@ -310,7 +310,7 @@ export default function RescheduleAppointmentPage() {
 									sx={{
 										fontFamily: ff,
 										fontWeight: 700,
-										color: "#4A0E4E",
+										color: "var(--text-purple)",
 										mb: 1,
 										fontSize: "1.05rem",
 									}}
@@ -332,7 +332,7 @@ export default function RescheduleAppointmentPage() {
 											sx={{ color: "#E91E8C" }}
 										/>
 										<Typography
-											sx={{ fontSize: "0.9rem", color: "#555" }}
+											sx={{ fontSize: "0.9rem", color: "var(--text-muted)" }}
 										>
 											Loading your appointments…
 										</Typography>
@@ -396,7 +396,7 @@ export default function RescheduleAppointmentPage() {
 														sx={{
 															fontFamily: ff,
 															fontWeight: 700,
-															color: "#4A0E4E",
+															color: "var(--text-purple)",
 															fontSize: "0.95rem",
 														}}
 													>
@@ -430,7 +430,7 @@ export default function RescheduleAppointmentPage() {
 													<Typography
 														sx={{
 															fontSize: "0.85rem",
-															color: "#555",
+															color: "var(--text-muted)",
 														}}
 													>
 														<strong>Original date:</strong>{" "}
@@ -510,7 +510,7 @@ export default function RescheduleAppointmentPage() {
 							sx={{
 								fontFamily: ff,
 								fontWeight: 700,
-								color: "#4A0E4E",
+								color: "var(--text-purple)",
 								mb: 1,
 								fontSize: "1.05rem",
 							}}
@@ -534,7 +534,7 @@ export default function RescheduleAppointmentPage() {
 								sx={{
 									fontFamily: ff,
 									fontWeight: 700,
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									mb: 1,
 									fontSize: "1.05rem",
 								}}
@@ -553,7 +553,7 @@ export default function RescheduleAppointmentPage() {
 										<MenuItem
 											key={`header-${cat.id}`}
 											disabled
-											sx={{ fontWeight: 700, color: "#4A0E4E" }}
+											sx={{ fontWeight: 700, color: "var(--text-purple)" }}
 										>
 											{cat.title}
 										</MenuItem>,
@@ -579,7 +579,7 @@ export default function RescheduleAppointmentPage() {
 								sx={{
 									fontFamily: ff,
 									fontWeight: 700,
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									mb: 1,
 									fontSize: "1.05rem",
 								}}
@@ -606,7 +606,7 @@ export default function RescheduleAppointmentPage() {
 								sx={{
 									fontFamily: ff,
 									fontWeight: 700,
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									mb: 1,
 									fontSize: "1.05rem",
 								}}
@@ -746,7 +746,7 @@ export default function RescheduleAppointmentPage() {
 							color: "#aaa",
 							fontSize: "1.3rem",
 							lineHeight: 1,
-							"&:hover": { color: "#555" },
+							"&:hover": { color: "var(--text-muted)" },
 						}}
 					>
 						✕
@@ -831,7 +831,7 @@ export default function RescheduleAppointmentPage() {
 						<Typography
 							sx={{
 								fontSize: "0.85rem",
-								color: "#4A0E4E",
+								color: "var(--text-purple)",
 								fontWeight: 600,
 								mb: 0.5,
 							}}
@@ -839,7 +839,7 @@ export default function RescheduleAppointmentPage() {
 							{allServices.find((s) => s.id === selectedService)?.name ||
 								""}
 						</Typography>
-						<Typography sx={{ fontSize: "0.82rem", color: "#555" }}>
+						<Typography sx={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
 							New date:{" "}
 							{preferredDate && preferredTime
 								? `${formatDate(preferredDate)} at ${preferredTime}`
@@ -855,7 +855,7 @@ export default function RescheduleAppointmentPage() {
 					</Box>
 					<Typography
 						sx={{
-							color: "#555",
+							color: "var(--text-muted)",
 							mt: 2,
 							lineHeight: 1.7,
 							fontSize: "0.9rem",

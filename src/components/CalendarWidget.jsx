@@ -45,7 +45,7 @@ export default function CalendarWidget({ selectedDate, onDateChange, selectedTim
       {/* Month nav */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
         <Box onClick={() => canPrev() && prevMonth()} sx={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: canPrev() ? 'pointer' : 'default', color: canPrev() ? '#E91E8C' : '#ccc', fontSize: '1.3rem', fontWeight: 700, userSelect: 'none', '&:hover': canPrev() ? { backgroundColor: '#FFF0F5' } : {} }}>‹</Box>
-        <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', fontSize: '1rem' }}>{CALENDAR_MONTHS[viewMonth]} {viewYear}</Typography>
+        <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', fontSize: '1rem' }}>{CALENDAR_MONTHS[viewMonth]} {viewYear}</Typography>
         <Box onClick={nextMonth} sx={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer', color: '#E91E8C', fontSize: '1.3rem', fontWeight: 700, userSelect: 'none', '&:hover': { backgroundColor: '#FFF0F5' } }}>›</Box>
       </Box>
 
@@ -78,7 +78,7 @@ export default function CalendarWidget({ selectedDate, onDateChange, selectedTim
           <Box sx={{ mt: 2.5, pt: 2, borderTop: '1px solid #F0C0D0' }}>
             {slotsLoading ? (
               <>
-                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1.5, fontSize: '0.95rem' }}>Checking availability…</Typography>
+                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 1.5, fontSize: '0.95rem' }}>Checking availability…</Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {TIME_SLOTS_LIST.map((s) => <Box key={s} sx={{ width: 90, height: 36, borderRadius: '18px', backgroundColor: '#f0f0f0' }} />)}
                 </Box>
@@ -93,7 +93,7 @@ export default function CalendarWidget({ selectedDate, onDateChange, selectedTim
               </Box>
             ) : (
               <>
-                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1.5, fontSize: '0.95rem' }}>Select a Time</Typography>
+                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 1.5, fontSize: '0.95rem' }}>Select a Time</Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {TIME_SLOTS_LIST.map((slot) => {
                     const booked = bookedSlots.includes(slot);

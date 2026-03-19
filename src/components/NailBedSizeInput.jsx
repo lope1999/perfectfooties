@@ -69,7 +69,7 @@ export default function NailBedSizeInput({ value, onChange, required }) {
           fontFamily: '"Georgia", serif',
           fontWeight: 700,
           fontSize: '0.8rem',
-          color: '#4A0E4E',
+          color: 'var(--text-purple)',
           mb: 1,
           textTransform: 'uppercase',
           letterSpacing: 0.5,
@@ -171,7 +171,7 @@ export default function NailBedSizeInput({ value, onChange, required }) {
 					<Typography
 						sx={{
 							fontSize: "0.75rem",
-							color: "#666",
+							color: "var(--text-muted)",
 							fontFamily: '"Georgia", serif',
 						}}
 					>

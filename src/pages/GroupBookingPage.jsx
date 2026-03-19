@@ -29,7 +29,7 @@ import SignInPrompt from '../components/SignInPrompt';
 
 const ff = '"Georgia", serif';
 const PINK = '#E91E8C';
-const PURPLE = '#4A0E4E';
+const PURPLE = 'var(--text-purple)';
 const GROUP_DISCOUNT_PCT = 0.10;
 const GROUP_DISCOUNT_MIN = 3;
 
@@ -64,6 +64,14 @@ function formatDate(ds) {
   return new Date(ds).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+const selectSx = {
+  fontFamily: ff,
+  fontSize: '0.8rem',
+  '& fieldset': { borderColor: '#F0C0D0' },
+  '&:hover fieldset': { borderColor: PINK },
+  '&.Mui-focused fieldset': { borderColor: PINK },
+};
+
 // ── Step indicator ──────────────────────────────────────────────
 function StepBar({ step }) {
   return (
@@ -96,7 +104,7 @@ function StepBar({ step }) {
 }
 
 // ── Person card in group builder ────────────────────────────────
-function PersonCard({ person, index, isLead, allServices, discounts, onChangeName, onChangeService, onRemove }) {
+function PersonCard({ person, index, isLead, allServices, discounts, onChangeName, onChangeService, onChangeNailShape, onChangeNailLength, onRemove }) {
   const service = allServices.find(s => s.id === person.serviceId);
   const price = service ? getServiceEffectivePrice(service, discounts) : 0;
   const initials = (person.name || (isLead ? 'You' : '?')).slice(0, 2).toUpperCase();
@@ -104,13 +112,14 @@ function PersonCard({ person, index, isLead, allServices, discounts, onChangeNam
 
   return (
     <Card elevation={0} sx={{
-      borderRadius: 3, border: `1.5px solid ${person.serviceId ? PINK : '#F0C0D0'}`,
+      borderRadius: 3,
+      border: `1.5px solid ${person.serviceId && person.nailShape && person.nailLength ? PINK : '#F0C0D0'}`,
       backgroundColor: person.serviceId ? '#FFF8FC' : '#fafafa',
       mb: 1.5, transition: 'all 0.2s',
     }}>
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Avatar sx={{ backgroundColor: color, width: 40, height: 40, fontSize: '0.85rem', fontWeight: 700, flexShrink: 0 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+          <Avatar sx={{ backgroundColor: color, width: 40, height: 40, fontSize: '0.85rem', fontWeight: 700, flexShrink: 0, mt: 0.5 }}>
             {initials}
           </Avatar>
           <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -132,12 +141,14 @@ function PersonCard({ person, index, isLead, allServices, discounts, onChangeNam
                 InputProps={{ sx: { fontFamily: ff, fontSize: '0.85rem' } }}
               />
             )}
+
+            {/* Service picker */}
             <FormControl size="small" fullWidth>
               <Select
                 value={person.serviceId}
                 onChange={e => onChangeService(e.target.value)}
                 displayEmpty
-                sx={{ fontFamily: ff, fontSize: '0.82rem', '& fieldset': { borderColor: '#F0C0D0' }, '&:hover fieldset': { borderColor: PINK }, '&.Mui-focused fieldset': { borderColor: PINK } }}
+                sx={selectSx}
               >
                 <MenuItem value="" disabled sx={{ fontFamily: ff, fontSize: '0.82rem', color: '#aaa' }}>
                   Select service…
@@ -149,10 +160,25 @@ function PersonCard({ person, index, isLead, allServices, discounts, onChangeNam
                 ))}
               </Select>
             </FormControl>
+
+            {/* Per-person nail shape + length — visual selectors, shown once a service is selected */}
+            {person.serviceId && (
+              <Box sx={{ mt: 1.5 }}>
+                <Typography sx={{ fontFamily: ff, fontSize: '0.75rem', fontWeight: 700, color: PURPLE, mb: 0.6 }}>
+                  Nail Shape
+                </Typography>
+                <NailShapeSelector value={person.nailShape} onChange={onChangeNailShape} />
+                <Typography sx={{ fontFamily: ff, fontSize: '0.75rem', fontWeight: 700, color: PURPLE, mb: 0.6, mt: 1.5 }}>
+                  Nail Length
+                </Typography>
+                <NailLengthSelector value={person.nailLength} onChange={onChangeNailLength} />
+              </Box>
+            )}
           </Box>
+
           <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
             {price > 0 && (
-              <Typography sx={{ fontFamily: ff, fontWeight: 700, color: PINK, fontSize: '0.95rem' }}>
+              <Typography sx={{ fontFamily: ff, fontWeight: 700, color: PINK, fontSize: '0.95rem', mt: 0.5 }}>
                 {formatNaira(price)}
               </Typography>
             )}
@@ -191,14 +217,13 @@ export default function GroupBookingPage() {
   const [bookedSlots, setBookedSlots] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
 
-  // Step 2
+  // Step 2 — lead + members each carry their own nail prefs
   const [leadName, setLeadName] = useState('');
   const [leadServiceId, setLeadServiceId] = useState('');
-  const [members, setMembers] = useState([{ name: '', serviceId: '' }]);
+  const [leadNailShape, setLeadNailShape] = useState('');
+  const [leadNailLength, setLeadNailLength] = useState('');
+  const [members, setMembers] = useState([{ name: '', serviceId: '', nailShape: '', nailLength: '' }]);
 
-  // Step 3
-  const [nailShape, setNailShape] = useState('');
-  const [nailLength, setNailLength] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
 
@@ -218,7 +243,10 @@ export default function GroupBookingPage() {
   }, [appointmentDate]);
 
   // ── Derived values ──
-  const allPeople = [{ name: leadName, serviceId: leadServiceId }, ...members];
+  const allPeople = [
+    { name: leadName, serviceId: leadServiceId, nailShape: leadNailShape, nailLength: leadNailLength },
+    ...members,
+  ];
   const groupSize = allPeople.length;
 
   const subtotal = allPeople.reduce((sum, p) => {
@@ -234,11 +262,12 @@ export default function GroupBookingPage() {
 
   // ── Validation ──
   const step1Valid = occasion && appointmentDate && isWeekend(appointmentDate) && appointmentTime;
-  const step2Valid = leadName.trim() && leadServiceId && members.every(m => m.name.trim() && m.serviceId);
-  const step3Valid = nailShape && nailLength;
+  const step2Valid =
+    leadName.trim() && leadServiceId && leadNailShape && leadNailLength &&
+    members.every(m => m.name.trim() && m.serviceId && m.nailShape && m.nailLength);
 
   // ── Member helpers ──
-  const addMember = () => setMembers(p => [...p, { name: '', serviceId: '' }]);
+  const addMember = () => setMembers(p => [...p, { name: '', serviceId: '', nailShape: '', nailLength: '' }]);
   const removeMember = i => setMembers(p => p.filter((_, idx) => idx !== i));
   const updateMember = (i, field, val) => setMembers(p => p.map((m, idx) => idx === i ? { ...m, [field]: val } : m));
 
@@ -252,7 +281,7 @@ export default function GroupBookingPage() {
 
     const groupLines = allPeople.map((p, i) => {
       const svc = allServices.find(s => s.id === p.serviceId);
-      return `${i + 1}. ${p.name} — ${svc?.name || ''} (${formatNaira(getServiceEffectivePrice(svc || { price: 0 }, discounts))})`;
+      return `${i + 1}. ${p.name} — ${svc?.name || ''} (${formatNaira(getServiceEffectivePrice(svc || { price: 0 }, discounts))}) · Shape: ${p.nailShape}, Length: ${p.nailLength}`;
     }).join('\n');
 
     const message = `Hi! I'd like to book a GROUP appointment.
@@ -264,10 +293,6 @@ Date: ${fullDate}
 👥 GROUP (${groupSize} people):
 ${groupLines}${discountApplies ? `\n\n10% Group Discount: -${formatNaira(discountAmount)}\nGroup Total: ${formatNaira(total)}` : `\n\nSubtotal: ${formatNaira(subtotal)}`}
 
-Nail Preferences (all):
-- Shape: ${nailShape}
-- Length: ${nailLength}
-
 50% Deposit Required: ${formatNaira(deposit)}
 
 Please confirm availability. Thank you!`;
@@ -277,7 +302,7 @@ Please confirm availability. Thank you!`;
     try {
       const orderItems = allPeople.map(p => {
         const svc = allServices.find(s => s.id === p.serviceId);
-        return { kind: 'service', serviceName: svc?.name || '', price: svc ? getServiceEffectivePrice(svc, discounts) : 0, guestName: p.name, date: fullDate, nailShape, nailLength };
+        return { kind: 'service', serviceName: svc?.name || '', price: svc ? getServiceEffectivePrice(svc, discounts) : 0, guestName: p.name, date: fullDate, nailShape: p.nailShape, nailLength: p.nailLength };
       });
 
       const orderRef = await saveOrder(user.uid, {
@@ -308,7 +333,7 @@ Please confirm availability. Thank you!`;
         groupSize,
         items: allPeople.map(p => {
           const svc = allServices.find(s => s.id === p.serviceId);
-          return { kind: 'service', serviceName: svc?.name || '', price: svc ? getServiceEffectivePrice(svc, discounts) : 0, guestName: p.name, date: fullDate, nailShape, nailLength };
+          return { kind: 'service', serviceName: svc?.name || '', price: svc ? getServiceEffectivePrice(svc, discounts) : 0, guestName: p.name, date: fullDate, nailShape: p.nailShape, nailLength: p.nailLength };
         }),
       },
     });
@@ -415,7 +440,7 @@ Please confirm availability. Thank you!`;
               Build your group
             </Typography>
             <Typography sx={{ fontFamily: ff, fontSize: '0.85rem', color: '#888', mb: 2 }}>
-              Each person picks their own service. You're automatically the lead.
+              Each person picks their own service, nail shape, and length.
             </Typography>
 
             {/* Lead name field */}
@@ -432,13 +457,15 @@ Please confirm availability. Thank you!`;
 
             {/* Person cards */}
             <PersonCard
-              person={{ name: leadName, serviceId: leadServiceId }}
+              person={{ name: leadName, serviceId: leadServiceId, nailShape: leadNailShape, nailLength: leadNailLength }}
               index={0}
               isLead
               allServices={allServices}
               discounts={discounts}
               onChangeName={() => {}}
               onChangeService={v => setLeadServiceId(v)}
+              onChangeNailShape={v => setLeadNailShape(v)}
+              onChangeNailLength={v => setLeadNailLength(v)}
               onRemove={() => {}}
             />
             {members.map((m, i) => (
@@ -451,6 +478,8 @@ Please confirm availability. Thank you!`;
                 discounts={discounts}
                 onChangeName={v => updateMember(i, 'name', v)}
                 onChangeService={v => updateMember(i, 'serviceId', v)}
+                onChangeNailShape={v => updateMember(i, 'nailShape', v)}
+                onChangeNailLength={v => updateMember(i, 'nailLength', v)}
                 onRemove={() => removeMember(i)}
               />
             ))}
@@ -479,7 +508,7 @@ Please confirm availability. Thank you!`;
               ) : (
                 <>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
-                    <Typography sx={{ fontFamily: ff, fontSize: '0.82rem', color: '#666' }}>
+                    <Typography sx={{ fontFamily: ff, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
                       {toDiscount === 0 ? 'Almost there!' : `Add ${toDiscount} more ${toDiscount === 1 ? 'person' : 'people'} to unlock 10% off`}
                     </Typography>
                     <Typography sx={{ fontFamily: ff, fontSize: '0.82rem', color: PINK, fontWeight: 700 }}>
@@ -496,8 +525,8 @@ Please confirm availability. Thank you!`;
               {subtotal > 0 && (
                 <Box sx={{ mt: 1.5, pt: 1.5, borderTop: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography sx={{ fontFamily: ff, fontSize: '0.82rem', color: '#666' }}>Subtotal ({groupSize} people)</Typography>
-                    <Typography sx={{ fontFamily: ff, fontSize: '0.82rem', color: '#333', fontWeight: 600 }}>{formatNaira(subtotal)}</Typography>
+                    <Typography sx={{ fontFamily: ff, fontSize: '0.82rem', color: 'var(--text-muted)' }}>Subtotal ({groupSize} people)</Typography>
+                    <Typography sx={{ fontFamily: ff, fontSize: '0.82rem', color: 'var(--text-main)', fontWeight: 600 }}>{formatNaira(subtotal)}</Typography>
                   </Box>
                   {discountApplies && (
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -522,7 +551,7 @@ Please confirm availability. Thank you!`;
               Review your booking
             </Typography>
             <Typography sx={{ fontFamily: ff, fontSize: '0.85rem', color: '#888', mb: 2 }}>
-              Check everything below, then set nail preferences and confirm.
+              Check everything looks right, then send your booking request.
             </Typography>
 
             {/* Occasion + Date summary */}
@@ -555,15 +584,20 @@ Please confirm availability. Thank you!`;
               const price = svc ? getServiceEffectivePrice(svc, discounts) : 0;
               const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
               return (
-                <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, p: 1.5, borderRadius: 2, backgroundColor: '#fff', border: '1px solid #F0C0D0' }}>
-                  <Avatar sx={{ backgroundColor: color, width: 36, height: 36, fontSize: '0.8rem', fontWeight: 700, flexShrink: 0 }}>
+                <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 1, p: 1.5, borderRadius: 2, backgroundColor: '#fff', border: '1px solid #F0C0D0' }}>
+                  <Avatar sx={{ backgroundColor: color, width: 36, height: 36, fontSize: '0.8rem', fontWeight: 700, flexShrink: 0, mt: 0.25 }}>
                     {(p.name || '?').slice(0, 2).toUpperCase()}
                   </Avatar>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.85rem', color: '#222' }}>
+                    <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-main)' }}>
                       {p.name} {i === 0 && <Chip label="Lead" size="small" sx={{ backgroundColor: PINK, color: '#fff', fontSize: '0.6rem', height: 16, ml: 0.5 }} />}
                     </Typography>
-                    <Typography sx={{ fontFamily: ff, fontSize: '0.78rem', color: '#666' }}>{svc?.name || '—'}</Typography>
+                    <Typography sx={{ fontFamily: ff, fontSize: '0.78rem', color: 'var(--text-muted)' }}>{svc?.name || '—'}</Typography>
+                    {p.nailShape && p.nailLength && (
+                      <Typography sx={{ fontFamily: ff, fontSize: '0.72rem', color: '#999', mt: 0.2 }}>
+                        {p.nailShape} · {p.nailLength}
+                      </Typography>
+                    )}
                   </Box>
                   <Typography sx={{ fontFamily: ff, fontWeight: 700, color: PINK, fontSize: '0.9rem', flexShrink: 0 }}>
                     {formatNaira(price)}
@@ -576,8 +610,8 @@ Please confirm availability. Thank you!`;
             <Card elevation={0} sx={{ borderRadius: 3, border: `1.5px solid ${discountApplies ? '#a5d6a7' : '#F0C0D0'}`, backgroundColor: discountApplies ? '#f0fdf4' : '#fff', mt: 1.5, mb: 3 }}>
               <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.6 }}>
-                  <Typography sx={{ fontFamily: ff, fontSize: '0.85rem', color: '#666' }}>Subtotal</Typography>
-                  <Typography sx={{ fontFamily: ff, fontSize: '0.85rem', color: '#333' }}>{formatNaira(subtotal)}</Typography>
+                  <Typography sx={{ fontFamily: ff, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Subtotal</Typography>
+                  <Typography sx={{ fontFamily: ff, fontSize: '0.85rem', color: 'var(--text-main)' }}>{formatNaira(subtotal)}</Typography>
                 </Box>
                 {discountApplies && (
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.6 }}>
@@ -596,19 +630,7 @@ Please confirm availability. Thank you!`;
               </CardContent>
             </Card>
 
-            {/* Nail preferences */}
-            <Typography sx={{ fontFamily: ff, fontWeight: 700, color: PURPLE, fontSize: '0.95rem', mb: 0.5 }}>
-              Nail Preferences
-            </Typography>
-            <Typography sx={{ fontFamily: ff, fontSize: '0.8rem', color: '#999', mb: 1.5 }}>
-              These apply to everyone in the group. You can discuss individual preferences on WhatsApp.
-            </Typography>
-            <Typography sx={{ fontFamily: ff, fontWeight: 700, color: PURPLE, fontSize: '0.85rem', mb: 1 }}>Nail Shape</Typography>
-            <NailShapeSelector value={nailShape} onChange={setNailShape} />
-            <Typography sx={{ fontFamily: ff, fontWeight: 700, color: PURPLE, fontSize: '0.85rem', mb: 1, mt: 2 }}>Nail Length</Typography>
-            <NailLengthSelector value={nailLength} onChange={setNailLength} />
-
-            <Box sx={{ mt: 3, p: 2, borderRadius: 2, backgroundColor: '#FFF8E1', border: '1px solid #FFD54F' }}>
+            <Box sx={{ p: 2, borderRadius: 2, backgroundColor: '#FFF8E1', border: '1px solid #FFD54F' }}>
               <Typography sx={{ fontFamily: ff, fontSize: '0.8rem', color: '#5D4037', lineHeight: 1.6 }}>
                 Tapping "Send Booking Request" will open WhatsApp with your full group details. Our stylist will confirm availability and arrange the 50% deposit.
               </Typography>
@@ -646,7 +668,7 @@ Please confirm availability. Thank you!`;
           ) : (
             <Button
               onClick={handleBook}
-              disabled={!step3Valid || submitting}
+              disabled={submitting}
               sx={{
                 fontFamily: ff, fontWeight: 700, flex: 2, py: 1.4, borderRadius: '30px',
                 background: `linear-gradient(135deg, #25D366, #128C7E)`,
@@ -666,7 +688,7 @@ Please confirm availability. Thank you!`;
       <Dialog open={calendarOpen} onClose={() => setCalendarOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogTitle sx={{ fontFamily: ff, fontWeight: 700, pb: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           Select Date &amp; Time
-          <Box onClick={() => setCalendarOpen(false)} sx={{ cursor: 'pointer', color: '#aaa', fontSize: '1.3rem', lineHeight: 1, '&:hover': { color: '#555' } }}>✕</Box>
+          <Box onClick={() => setCalendarOpen(false)} sx={{ cursor: 'pointer', color: '#aaa', fontSize: '1.3rem', lineHeight: 1, '&:hover': { color: 'var(--text-muted)' } }}>✕</Box>
         </DialogTitle>
         <DialogContent sx={{ pt: '12px !important' }}>
           <CalendarWidget

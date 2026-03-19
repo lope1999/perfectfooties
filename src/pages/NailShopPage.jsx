@@ -41,7 +41,7 @@ function formatNaira(amount) {
 const confirmButtonSx = {
   border: '2px solid #E91E8C',
   borderRadius: '30px',
-  color: '#000',
+  color: 'var(--text-main)',
   backgroundColor: 'transparent',
   px: 5,
   py: 1.5,
@@ -166,7 +166,7 @@ export default function NailShopPage() {
             sx={{
               fontFamily: '"Georgia", serif',
               fontWeight: 700,
-              color: '#000',
+              color: 'var(--text-main)',
               mb: 2,
               fontSize: { xs: '1.8rem', sm: '2.4rem', md: '3rem' },
             }}
@@ -179,7 +179,7 @@ export default function NailShopPage() {
             sx={{
               maxWidth: 620,
               mx: 'auto',
-              color: '#555',
+              color: 'var(--text-muted)',
               fontSize: '1.1rem',
               lineHeight: 1.7,
               px: 2,
@@ -198,7 +198,7 @@ export default function NailShopPage() {
               sx={{
                 fontFamily: '"Georgia", serif',
                 fontWeight: 700,
-                color: '#4A0E4E',
+                color: 'var(--text-purple)',
                 mb: 1,
                 fontSize: '1.05rem',
                 textAlign: 'left',
@@ -249,7 +249,7 @@ export default function NailShopPage() {
                 sx={{
                   fontFamily: '"Georgia", serif',
                   fontWeight: 700,
-                  color: '#000',
+                  color: 'var(--text-main)',
                   mb: 1,
                   textAlign: 'center',
                   fontSize: { xs: '1.3rem', sm: '1.7rem', md: '2.1rem' },
@@ -263,7 +263,7 @@ export default function NailShopPage() {
               <Typography
                 sx={{
                   textAlign: 'center',
-                  color: '#555',
+                  color: 'var(--text-muted)',
                   mb: 4,
                   maxWidth: 580,
                   mx: 'auto',
@@ -376,7 +376,7 @@ export default function NailShopPage() {
                             sx={{
                               fontFamily: '"Georgia", serif',
                               fontWeight: 700,
-                              color: '#000',
+                              color: 'var(--text-main)',
                               fontSize: '0.95rem',
                               mb: 0.5,
                             }}
@@ -385,7 +385,7 @@ export default function NailShopPage() {
                           </Typography>
                           <Typography
                             sx={{
-                              color: '#666',
+                              color: 'var(--text-muted)',
                               fontSize: '0.82rem',
                               lineHeight: 1.5,
                               mb: 1.5,
@@ -607,7 +607,7 @@ export default function NailShopPage() {
             sx={{
               ...confirmButtonSx,
               borderColor: '#4A0E4E',
-              color: '#4A0E4E',
+              color: 'var(--text-purple)',
               opacity: cartItems.length > 0 ? 1 : 0.5,
               '&:hover': {
                 backgroundColor: '#4A0E4E',
@@ -647,7 +647,7 @@ export default function NailShopPage() {
           </Typography>
         </DialogTitle>
         <DialogContent>
-          <Typography sx={{ color: '#555', mt: 1, lineHeight: 1.7 }}>
+          <Typography sx={{ color: 'var(--text-muted)', mt: 1, lineHeight: 1.7 }}>
             Next, you'll enter your shipping details to complete your order.
             We deliver within Nigeria only.
           </Typography>
@@ -656,7 +656,7 @@ export default function NailShopPage() {
               <Typography
                 sx={{
                   fontWeight: 600,
-                  color: '#4A0E4E',
+                  color: 'var(--text-purple)',
                   fontSize: '0.95rem',
                   mb: 0.5,
                 }}
@@ -668,7 +668,7 @@ export default function NailShopPage() {
                 return (
                   <Typography
                     key={id}
-                    sx={{ color: '#555', fontSize: '0.9rem', pl: 1 }}
+                    sx={{ color: 'var(--text-muted)', fontSize: '0.9rem', pl: 1 }}
                   >
                     • {product?.name || 'Product'} x{qty} —{' '}
                     {formatNaira((product?.price || 0) * qty)}

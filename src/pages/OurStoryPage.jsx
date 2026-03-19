@@ -18,7 +18,7 @@ export default function OurStoryPage() {
 								sx={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 700,
-									color: "#000",
+									color: "var(--text-main)",
 									mb: 3,
 									fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" },
 								}}
@@ -54,7 +54,7 @@ export default function OurStoryPage() {
 
 							<Typography
 								sx={{
-									color: "#444",
+									color: "var(--text-muted)",
 									fontSize: "1.05rem",
 									lineHeight: 1.9,
 									mb: 3,
@@ -72,7 +72,7 @@ export default function OurStoryPage() {
 
 							<Typography
 								sx={{
-									color: "#444",
+									color: "var(--text-muted)",
 									fontSize: "1.05rem",
 									lineHeight: 1.9,
 									mb: 3,
@@ -88,7 +88,7 @@ export default function OurStoryPage() {
 
 							<Typography
 								sx={{
-									color: "#444",
+									color: "var(--text-muted)",
 									fontSize: "1.05rem",
 									lineHeight: 1.9,
 									mb: 3,

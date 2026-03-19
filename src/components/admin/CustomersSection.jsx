@@ -275,7 +275,7 @@ export default function CustomersSection({ users, loading }) {
                         sx={{
                           width: 36,
                           height: 36,
-                          bgcolor: '#4A0E4E',
+                          bgcolor: 'var(--text-purple)',
                           fontSize: '0.75rem',
                           fontFamily,
                           fontWeight: 700,

@@ -328,7 +328,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             variant="outlined"
             startIcon={<FileDownloadIcon />}
             onClick={() => exportOrdersToCSV(filtered, `${title.toLowerCase()}-export.csv`)}
-            sx={{ fontFamily, borderColor: '#4A0E4E', color: '#4A0E4E', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' } }}
+            sx={{ fontFamily, borderColor: '#4A0E4E', color: 'var(--text-purple)', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' } }}
           >
             Export CSV
           </Button>
@@ -383,7 +383,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             px: 2,
           }}
         >
-          <Typography sx={{ fontFamily, fontWeight: 600, fontSize: '0.9rem', color: '#4A0E4E', flex: 1 }}>
+          <Typography sx={{ fontFamily, fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-purple)', flex: 1 }}>
             {selectedOrders.size} selected
           </Typography>
           <Select
@@ -447,7 +447,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                       size="small"
                       checked={selectedOrders.has(o.id)}
                       onChange={() => toggleSelect(o.id)}
-                      sx={{ color: '#CE93D8', '&.Mui-checked': { color: '#4A0E4E' }, p: 0.5 }}
+                      sx={{ color: '#CE93D8', '&.Mui-checked': { color: 'var(--text-purple)' }, p: 0.5 }}
                     />
                   </TableCell>
                   <TableCell>
@@ -502,7 +502,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                       title={o.email ? 'Send confirmation email' : 'No email available'}
                     >
                       {sendingEmailId === o.id ? (
-                        <CircularProgress size={18} sx={{ color: '#4A0E4E' }} />
+                        <CircularProgress size={18} sx={{ color: 'var(--text-purple)' }} />
                       ) : (
                         <MailOutlineIcon fontSize="small" sx={{ color: o.email ? '#4A0E4E' : '#ccc' }} />
                       )}
@@ -511,7 +511,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                       <EditIcon fontSize="small" sx={{ color: '#1565C0' }} />
                     </IconButton>
                     <IconButton size="small" onClick={() => { setNoteDialog(o); setNoteText(''); }} title="Add note">
-                      <NoteAddIcon fontSize="small" sx={{ color: '#4A0E4E' }} />
+                      <NoteAddIcon fontSize="small" sx={{ color: 'var(--text-purple)' }} />
                     </IconButton>
                     <IconButton size="small" onClick={() => setDeleteDialog(o)} title="Delete">
                       <DeleteOutlineIcon fontSize="small" sx={{ color: '#d32f2f' }} />
@@ -542,10 +542,10 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                             <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700 }}>Items:</Typography>
                             {o.items.map((item, i) => (
                               <Box key={i} sx={{ pl: 2, mb: 1, borderLeft: '2px solid #F0C0D0', ml: 1 }}>
-                                <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, color: '#4A0E4E' }}>
+                                <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-purple)' }}>
                                   {item.serviceName || item.name || item.title || 'Item'}
                                 </Typography>
-                                <Typography sx={{ fontFamily, fontSize: '0.8rem', color: '#555' }}>
+                                <Typography sx={{ fontFamily, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                                   {item.kind === 'service' ? 'Service Appointment' : item.kind === 'retail' ? 'Retail Product' : item.kind === 'pressOn' ? 'Press-On Nails' : item.kind || '—'}
                                   {' • '}Qty: {item.quantity || 1}
                                   {' • '}₦{(item.price || 0).toLocaleString()}
@@ -577,10 +577,10 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                                 )}
                                 {item.otherPeople?.length > 0 && (
                                   <Box sx={{ mt: 0.5, pl: 1, borderLeft: '2px solid #E0B0C0', ml: 0.5 }}>
-                                    <Typography sx={{ fontFamily, fontSize: '0.75rem', fontWeight: 700, color: '#4A0E4E' }}>Also ordering for:</Typography>
+                                    <Typography sx={{ fontFamily, fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-purple)' }}>Also ordering for:</Typography>
                                     {item.otherPeople.map((person, pi) => (
                                       <Box key={pi} sx={{ mt: 0.25 }}>
-                                        <Typography sx={{ fontFamily, fontSize: '0.75rem', color: '#555' }}>
+                                        <Typography sx={{ fontFamily, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                                           {person.name || `Person ${pi + 1}`}
                                           {person.nailShape ? ` • Shape: ${person.nailShape}` : ''}
                                         </Typography>
@@ -611,7 +611,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                               </Typography>
                             )}
                             {o.giftCardCode && (
-                              <Typography sx={{ fontFamily, fontSize: '0.82rem', color: '#555' }}>
+                              <Typography sx={{ fontFamily, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
                                 Gift Card: <strong>{o.giftCardCode}</strong> — -₦{(o.giftCardDiscount || 0).toLocaleString()}
                               </Typography>
                             )}
@@ -626,7 +626,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                           <Box sx={{ mt: 1 }}>
                             <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700 }}>Admin Notes:</Typography>
                             {o.adminNotes.map((n, i) => (
-                              <Typography key={i} sx={{ fontFamily, fontSize: '0.8rem', pl: 2, color: '#4A0E4E' }}>
+                              <Typography key={i} sx={{ fontFamily, fontSize: '0.8rem', pl: 2, color: 'var(--text-purple)' }}>
                                 [{n.timestamp}] {n.text}
                               </Typography>
                             ))}
@@ -634,7 +634,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                         )}
                         {o.shipping && o.type !== 'service' && (
                           <Box sx={{ mt: 1.5, p: 1.5, backgroundColor: '#FFF0F5', borderRadius: 2, border: '1px solid #F0C0D0' }}>
-                            <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, color: '#4A0E4E', mb: 0.5 }}>
+                            <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-purple)', mb: 0.5 }}>
                               Shipping Details
                             </Typography>
                             {o.shipping.name && (

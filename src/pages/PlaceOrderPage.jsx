@@ -56,7 +56,7 @@ function formatNaira(amount) {
 const confirmButtonSx = {
   border: '2px solid #E91E8C',
   borderRadius: '30px',
-  color: '#000',
+  color: 'var(--text-main)',
   backgroundColor: 'transparent',
   px: 5,
   py: 1.5,
@@ -364,7 +364,7 @@ export default function PlaceOrderPage() {
 								sx={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 700,
-									color: "#000",
+									color: "var(--text-main)",
 									mb: 2,
 									fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" },
 								}}
@@ -373,7 +373,7 @@ export default function PlaceOrderPage() {
 							</Typography>
 							<Typography
 								sx={{
-									color: "#555",
+									color: "var(--text-muted)",
 									fontSize: "1.05rem",
 									maxWidth: 520,
 									mx: "auto",
@@ -397,7 +397,7 @@ export default function PlaceOrderPage() {
 								<Typography
 									sx={{
 										fontSize: "0.85rem",
-										color: "#4A0E4E",
+										color: "var(--text-purple)",
 										fontWeight: 600,
 										lineHeight: 1.6,
 									}}
@@ -424,7 +424,7 @@ export default function PlaceOrderPage() {
 							sx={{
 								fontFamily: '"Georgia", serif',
 								fontWeight: 700,
-								color: "#4A0E4E",
+								color: "var(--text-purple)",
 								mb: 1,
 								fontSize: "1.05rem",
 							}}
@@ -469,7 +469,7 @@ export default function PlaceOrderPage() {
 									sx={{
 										fontFamily: '"Georgia", serif',
 										fontWeight: 700,
-										color: "#4A0E4E",
+										color: "var(--text-purple)",
 										mb: 2,
 									}}
 								>
@@ -488,7 +488,7 @@ export default function PlaceOrderPage() {
 									>
 										<Typography
 											sx={{
-												color: "#4A0E4E",
+												color: "var(--text-purple)",
 												fontSize: "0.85rem",
 												fontWeight: 600,
 											}}
@@ -969,7 +969,7 @@ export default function PlaceOrderPage() {
 																		<Typography
 																			sx={{
 																				fontSize: "0.88rem",
-																				color: "#4A0E4E",
+																				color: "var(--text-purple)",
 																				fontWeight: 600,
 																			}}
 																		>
@@ -1017,7 +1017,7 @@ export default function PlaceOrderPage() {
 																									fontSize:
 																										"0.85rem",
 																									fontWeight: 700,
-																									color: "#4A0E4E",
+																									color: "var(--text-purple)",
 																									fontFamily:
 																										'"Georgia", serif',
 																								}}
@@ -1189,7 +1189,7 @@ export default function PlaceOrderPage() {
 					{/* Discounts & Rewards */}
 					{isFormValid && (
 						<Box sx={{ mt: 4, p: 3, borderRadius: 3, backgroundColor: '#fff', border: '1px solid #F0C0D0' }}>
-							<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 2, fontSize: '0.95rem' }}>
+							<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 2, fontSize: '0.95rem' }}>
 								Discounts &amp; Rewards
 							</Typography>
 
@@ -1234,7 +1234,7 @@ export default function PlaceOrderPage() {
 										<IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.max(0, u - 1))} disabled={loyaltyUnits === 0} sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 28, height: 28 }}><RemoveIcon sx={{ fontSize: 14 }} /></IconButton>
 										<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, minWidth: 20, textAlign: 'center' }}>{loyaltyUnits}</Typography>
 										<IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))} disabled={loyaltyUnits >= maxLoyaltyUnits} sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 28, height: 28 }}><AddIcon sx={{ fontSize: 14 }} /></IconButton>
-										<Typography sx={{ fontSize: '0.82rem', color: '#555' }}>units × ₦1,000 = <strong style={{ color: '#B8860B' }}>-₦{(loyaltyUnits * REDEMPTION_VALUE).toLocaleString()} off</strong></Typography>
+										<Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>units × ₦1,000 = <strong style={{ color: '#B8860B' }}>-₦{(loyaltyUnits * REDEMPTION_VALUE).toLocaleString()} off</strong></Typography>
 									</Box>
 								</Box>
 							)}
@@ -1304,7 +1304,7 @@ export default function PlaceOrderPage() {
 						sx={{
 							...confirmButtonSx,
 							borderColor: "#4A0E4E",
-							color: "#4A0E4E",
+							color: "var(--text-purple)",
 							opacity: isFormValid ? 1 : 0.5,
 							"&:hover": {
 								backgroundColor: "#4A0E4E",
@@ -1346,7 +1346,7 @@ export default function PlaceOrderPage() {
 					</Typography>
 				</DialogTitle>
 				<DialogContent>
-					<Typography sx={{ color: "#555", mt: 1, lineHeight: 1.7 }}>
+					<Typography sx={{ color: "var(--text-muted)", mt: 1, lineHeight: 1.7 }}>
 						Next, you'll enter your shipping details to complete your order.
 						We deliver within Nigeria only.
 					</Typography>
@@ -1355,7 +1355,7 @@ export default function PlaceOrderPage() {
 							<Typography
 								sx={{
 									fontWeight: 600,
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									fontSize: "0.95rem",
 									mb: 0.5,
 								}}
@@ -1367,7 +1367,7 @@ export default function PlaceOrderPage() {
 								return (
 									<Typography
 										key={id}
-										sx={{ color: "#555", fontSize: "0.9rem", pl: 1 }}
+										sx={{ color: "var(--text-muted)", fontSize: "0.9rem", pl: 1 }}
 									>
 										• {product?.name || "Product"} —{" "}
 										{product ? formatNaira(getEffectivePrice(product)) : ""}

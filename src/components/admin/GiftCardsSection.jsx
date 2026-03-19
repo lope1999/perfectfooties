@@ -198,7 +198,7 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
             }}
           >
             <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>{s.label}</Typography>
-            <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: '#4A0E4E' }}>{s.value}</Typography>
+            <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-purple)' }}>{s.value}</Typography>
           </Paper>
         ))}
       </Box>
@@ -342,7 +342,7 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
                               Transaction History:
                             </Typography>
                             {gc.transactions.map((tx, i) => (
-                              <Typography key={i} sx={{ fontFamily, fontSize: '0.8rem', pl: 2, color: '#4A0E4E' }}>
+                              <Typography key={i} sx={{ fontFamily, fontSize: '0.8rem', pl: 2, color: 'var(--text-purple)' }}>
                                 [{new Date(tx.date).toLocaleDateString()}] Redeemed {formatNaira(tx.amount)}
                                 {tx.orderId && ` — Order: ${tx.orderId}`}
                               </Typography>

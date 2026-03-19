@@ -55,7 +55,7 @@ function formatNaira(amount) {
 const confirmButtonSx = {
   border: '2px solid #E91E8C',
   borderRadius: '30px',
-  color: '#000',
+  color: 'var(--text-main)',
   backgroundColor: 'transparent',
   px: 5,
   py: 1.5,
@@ -596,7 +596,7 @@ Please confirm availability for this request. Thank you!`;
 								sx={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 700,
-									color: "#000",
+									color: "var(--text-main)",
 									mb: 2,
 									fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" },
 								}}
@@ -605,7 +605,7 @@ Please confirm availability for this request. Thank you!`;
 							</Typography>
 							<Typography
 								sx={{
-									color: "#555",
+									color: "var(--text-muted)",
 									fontSize: "1.05rem",
 									maxWidth: 500,
 									mx: "auto",
@@ -636,7 +636,7 @@ Please confirm availability for this request. Thank you!`;
 								<Typography
 									sx={{
 										fontSize: "0.85rem",
-										color: "#4A0E4E",
+										color: "var(--text-purple)",
 										fontWeight: 600,
 										lineHeight: 1.6,
 									}}
@@ -680,7 +680,7 @@ Please confirm availability for this request. Thank you!`;
 								sx={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 700,
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									mb: 1,
 									fontSize: "1.05rem",
 								}}
@@ -763,7 +763,7 @@ Please confirm availability for this request. Thank you!`;
 							sx={{
 								fontFamily: '"Georgia", serif',
 								fontWeight: 700,
-								color: "#4A0E4E",
+								color: "var(--text-purple)",
 								mb: 1,
 								fontSize: "1.05rem",
 							}}
@@ -783,7 +783,7 @@ Please confirm availability for this request. Thank you!`;
 
 					{/* Calendar Date + Time Selection — compact field */}
 					<Box sx={{ mb: 3 }}>
-						<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1, fontSize: '1.05rem' }}>
+						<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 1, fontSize: '1.05rem' }}>
 							Preferred Date &amp; Time
 						</Typography>
 						<Box
@@ -826,7 +826,7 @@ Please confirm availability for this request. Thank you!`;
 					<Dialog open={calendarModalOpen} onClose={() => setCalendarModalOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
 						<DialogTitle sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, pb: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 							Select Date &amp; Time
-							<Box onClick={() => setCalendarModalOpen(false)} sx={{ cursor: 'pointer', color: '#aaa', fontSize: '1.3rem', lineHeight: 1, '&:hover': { color: '#555' } }}>✕</Box>
+							<Box onClick={() => setCalendarModalOpen(false)} sx={{ cursor: 'pointer', color: '#aaa', fontSize: '1.3rem', lineHeight: 1, '&:hover': { color: 'var(--text-muted)' } }}>✕</Box>
 						</DialogTitle>
 						<DialogContent sx={{ pt: '12px !important' }}>
 							<CalendarWidget
@@ -914,7 +914,7 @@ Please confirm availability for this request. Thank you!`;
 											sx={{
 												fontFamily: '"Georgia", serif',
 												fontWeight: 700,
-												color: "#4A0E4E",
+												color: "var(--text-purple)",
 											}}
 										>
 											{category.title}
@@ -1073,7 +1073,7 @@ Please confirm availability for this request. Thank you!`;
 													>
 														<Grid container spacing={2}>
 															<Grid item xs={12}>
-																<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1.5, fontSize: '0.9rem' }}>
+																<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 1.5, fontSize: '0.9rem' }}>
 																	Nail Shape
 																</Typography>
 																<NailShapeSelector
@@ -1084,7 +1084,7 @@ Please confirm availability for this request. Thank you!`;
 																/>
 															</Grid>
 															<Grid item xs={12}>
-																<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1.5, fontSize: '0.9rem' }}>
+																<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 1.5, fontSize: '0.9rem' }}>
 																	Nail Length
 																</Typography>
 																<NailLengthSelector
@@ -1109,7 +1109,7 @@ Please confirm availability for this request. Thank you!`;
 							<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 								<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
 									<GroupsIcon sx={{ color: '#E91E8C', fontSize: '1.3rem' }} />
-									<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', fontSize: '0.95rem' }}>
+									<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', fontSize: '0.95rem' }}>
 										Group / Bridal Booking
 									</Typography>
 								</Box>
@@ -1131,18 +1131,18 @@ Please confirm availability for this request. Thank you!`;
 							</Box>
 							{isGroupBooking && (
 								<Box sx={{ mt: 2 }}>
-									<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', color: '#666', mb: 2 }}>
+									<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', color: 'var(--text-muted)', mb: 2 }}>
 										Add each person's name and their service. Groups of 3+ get 10% off the total.
 									</Typography>
 									<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, p: 1.5, borderRadius: 2, backgroundColor: '#fff', border: '1px solid #F0C0D0' }}>
-										<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', color: '#4A0E4E', fontWeight: 700, minWidth: 24 }}>1.</Typography>
-										<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', flex: 1, color: '#333' }}>
+										<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', color: 'var(--text-purple)', fontWeight: 700, minWidth: 24 }}>1.</Typography>
+										<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', flex: 1, color: 'var(--text-main)' }}>
 											{customerName || 'You (lead)'} — {allServices.find((s) => s.id === selectedService)?.name || 'Selected service'}
 										</Typography>
 									</Box>
 									{groupPeople.map((person, idx) => (
 										<Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-											<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', color: '#4A0E4E', fontWeight: 700, minWidth: 24 }}>
+											<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', color: 'var(--text-purple)', fontWeight: 700, minWidth: 24 }}>
 												{idx + 2}.
 											</Typography>
 											<TextField
@@ -1184,8 +1184,8 @@ Please confirm availability for this request. Thank you!`;
 									{allGroupPeople.length >= 2 && (
 										<Box sx={{ mt: 2, p: 1.5, borderRadius: 2, backgroundColor: groupDiscountApplies ? '#e8f5e9' : '#f5f5f5', border: '1px solid ' + (groupDiscountApplies ? '#a5d6a7' : '#eee') }}>
 											<Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-												<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', color: '#555' }}>Subtotal ({allGroupPeople.length} people)</Typography>
-												<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', fontWeight: 600, color: '#333' }}>₦{groupTotal.toLocaleString()}</Typography>
+												<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', color: 'var(--text-muted)' }}>Subtotal ({allGroupPeople.length} people)</Typography>
+												<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-main)' }}>₦{groupTotal.toLocaleString()}</Typography>
 											</Box>
 											{groupDiscountApplies && (
 												<Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
@@ -1199,8 +1199,8 @@ Please confirm availability for this request. Thank you!`;
 												</Typography>
 											)}
 											<Box sx={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #ddd', pt: 0.5, mt: 0.5 }}>
-												<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.9rem', fontWeight: 700, color: '#4A0E4E' }}>Total</Typography>
-												<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.9rem', fontWeight: 700, color: '#4A0E4E' }}>₦{groupFinalTotal.toLocaleString()}</Typography>
+												<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-purple)' }}>Total</Typography>
+												<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-purple)' }}>₦{groupFinalTotal.toLocaleString()}</Typography>
 											</Box>
 											<Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.75rem', color: '#888', mt: 0.5 }}>
 												50% deposit: ₦{groupDeposit.toLocaleString()}
@@ -1216,7 +1216,7 @@ Please confirm availability for this request. Thank you!`;
 					{/* Discounts & Rewards */}
 					{isFormValid && (
 						<Box sx={{ mt: 4, p: 3, borderRadius: 3, backgroundColor: '#fff', border: '1px solid #F0C0D0' }}>
-							<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 2, fontSize: '0.95rem' }}>
+							<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 2, fontSize: '0.95rem' }}>
 								Discounts &amp; Rewards
 							</Typography>
 
@@ -1261,7 +1261,7 @@ Please confirm availability for this request. Thank you!`;
 										<IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.max(0, u - 1))} disabled={loyaltyUnits === 0} sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 28, height: 28 }}><RemoveIcon sx={{ fontSize: 14 }} /></IconButton>
 										<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, minWidth: 20, textAlign: 'center' }}>{loyaltyUnits}</Typography>
 										<IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))} disabled={loyaltyUnits >= maxLoyaltyUnits} sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 28, height: 28 }}><AddIcon sx={{ fontSize: 14 }} /></IconButton>
-										<Typography sx={{ fontSize: '0.82rem', color: '#555' }}>units × ₦1,000 = <strong style={{ color: '#B8860B' }}>{formatNaira(loyaltyDiscount)} off</strong></Typography>
+										<Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>units × ₦1,000 = <strong style={{ color: '#B8860B' }}>{formatNaira(loyaltyDiscount)} off</strong></Typography>
 									</Box>
 								</Box>
 							)}
@@ -1323,7 +1323,7 @@ Please confirm availability for this request. Thank you!`;
 						sx={{
 							...confirmButtonSx,
 							borderColor: "#4A0E4E",
-							color: "#4A0E4E",
+							color: "var(--text-purple)",
 							opacity: isFormValid ? 1 : 0.5,
 							"&:hover": {
 								backgroundColor: "#4A0E4E",
@@ -1349,14 +1349,14 @@ Please confirm availability for this request. Thank you!`;
 					<Typography variant="h5" sx={{ fontFamily: '"Georgia", serif', fontWeight: 700 }}>
 						Secure Your Appointment
 					</Typography>
-					<Typography sx={{ color: '#555', fontSize: '0.88rem', mt: 0.5 }}>
+					<Typography sx={{ color: 'var(--text-muted)', fontSize: '0.88rem', mt: 0.5 }}>
 						A 50% deposit secures your slot. Balance due on appointment day.
 					</Typography>
 				</DialogTitle>
 				<DialogContent>
 					{selectedServiceObj && (
 						<Box sx={{ my: 2, p: 2, borderRadius: 2, backgroundColor: '#FFF0F5', border: '1px solid #F0C0D0', textAlign: 'left' }}>
-							<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1rem', color: '#4A0E4E' }}>
+							<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1rem', color: 'var(--text-purple)' }}>
 								{selectedServiceObj.name}
 							</Typography>
 							<Typography sx={{ color: '#777', fontSize: '0.82rem', mt: 0.3 }}>
@@ -1364,7 +1364,7 @@ Please confirm availability for this request. Thank you!`;
 							</Typography>
 							<Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5 }}>
 								<Typography sx={{ color: '#777', fontSize: '0.85rem' }}>Full price:</Typography>
-								<Typography sx={{ color: '#333', fontWeight: 600, fontSize: '0.85rem' }}>{formatNaira(fullPrice)}</Typography>
+								<Typography sx={{ color: 'var(--text-main)', fontWeight: 600, fontSize: '0.85rem' }}>{formatNaira(fullPrice)}</Typography>
 							</Box>
 							<Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5, pt: 0.5, borderTop: '1px solid #F0C0D0' }}>
 								<Typography sx={{ color: '#E91E8C', fontWeight: 700, fontSize: '0.95rem' }}>Deposit (50%):</Typography>
@@ -1382,7 +1382,7 @@ Please confirm availability for this request. Thank you!`;
 					</Button>
 					<Button
 						onClick={() => handleCompleteOrder('')}
-						sx={{ color: '#999', fontSize: '0.82rem', textTransform: 'none', fontFamily: '"Georgia", serif', '&:hover': { color: '#555' } }}
+						sx={{ color: '#999', fontSize: '0.82rem', textTransform: 'none', fontFamily: '"Georgia", serif', '&:hover': { color: 'var(--text-muted)' } }}
 					>
 						Continue on WhatsApp (pay later)
 					</Button>
@@ -1403,7 +1403,7 @@ Please confirm availability for this request. Thank you!`;
 						sx={{
 							fontFamily: '"Georgia", serif',
 							fontWeight: 700,
-							color: "#4A0E4E",
+							color: "var(--text-purple)",
 						}}
 					>
 						Home Service Details
@@ -1416,7 +1416,7 @@ Please confirm availability for this request. Thank you!`;
 					<Typography
 						sx={{
 							fontSize: "0.88rem",
-							color: "#555",
+							color: "var(--text-muted)",
 							fontWeight: 600,
 							mb: 0.5,
 						}}
@@ -1436,7 +1436,7 @@ Please confirm availability for this request. Thank you!`;
 					<Typography
 						sx={{
 							fontSize: "0.88rem",
-							color: "#555",
+							color: "var(--text-muted)",
 							fontWeight: 600,
 							mb: 0.8,
 						}}
@@ -1479,7 +1479,7 @@ Please confirm availability for this request. Thank you!`;
 					<Typography
 						sx={{
 							fontSize: "0.88rem",
-							color: "#555",
+							color: "var(--text-muted)",
 							fontWeight: 600,
 							mb: 0.8,
 						}}
@@ -1599,7 +1599,7 @@ Please confirm availability for this request. Thank you!`;
 				<DialogTitle sx={{ pb: 0 }}>
 					<Typography variant="h6" sx={{ fontFamily: '"Georgia", serif', fontWeight: 700 }}>Join Waitlist</Typography>
 					{waitlistDate && (
-						<Typography sx={{ fontSize: '0.85rem', color: '#555', mt: 0.5 }}>
+						<Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', mt: 0.5 }}>
 							{new Date(waitlistDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
 						</Typography>
 					)}
@@ -1609,11 +1609,11 @@ Please confirm availability for this request. Thank you!`;
 						<Box sx={{ textAlign: 'center', py: 2 }}>
 							<Typography sx={{ fontSize: '2rem', mb: 1 }}>🎉</Typography>
 							<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.1rem', mb: 1 }}>You're on the waitlist!</Typography>
-							<Typography sx={{ fontSize: '0.88rem', color: '#555', lineHeight: 1.6 }}>We'll reach out as soon as a slot opens up on this date. Keep an eye on your phone!</Typography>
+							<Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>We'll reach out as soon as a slot opens up on this date. Keep an eye on your phone!</Typography>
 						</Box>
 					) : (
 						<Box sx={{ pt: 1 }}>
-							<Typography sx={{ fontSize: '0.85rem', color: '#555', mb: 2, lineHeight: 1.6 }}>Enter your details below. We'll contact you if a slot becomes available.</Typography>
+							<Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', mb: 2, lineHeight: 1.6 }}>Enter your details below. We'll contact you if a slot becomes available.</Typography>
 							<TextField
 								fullWidth
 								label="Your Name"

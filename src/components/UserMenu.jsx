@@ -104,7 +104,7 @@ export default function UserMenu() {
         </MenuItem>
         {isAdmin && (
           <MenuItem onClick={() => goTo('/admin')}>
-            <ListItemIcon><AdminPanelSettingsIcon sx={{ color: '#4A0E4E' }} /></ListItemIcon>
+            <ListItemIcon><AdminPanelSettingsIcon sx={{ color: 'var(--text-purple)' }} /></ListItemIcon>
             <ListItemText primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontSize: '0.9rem' }}>
               Admin Dashboard
             </ListItemText>

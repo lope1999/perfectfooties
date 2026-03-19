@@ -156,7 +156,7 @@ export default function NailCarePage() {
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
                       {tip.icon}
-                      <Typography sx={{ fontFamily, fontWeight: 700, color: '#4A0E4E', fontSize: '1.05rem' }}>
+                      <Typography sx={{ fontFamily, fontWeight: 700, color: 'var(--text-purple)', fontSize: '1.05rem' }}>
                         {tip.title}
                       </Typography>
                     </Box>
@@ -164,7 +164,7 @@ export default function NailCarePage() {
                     <Box component="ol" sx={{ pl: 2.5, m: 0 }}>
                       {tip.steps.map((step, j) => (
                         <Box component="li" key={j} sx={{ mb: 1 }}>
-                          <Typography sx={{ fontFamily, fontSize: '0.88rem', color: '#333', lineHeight: 1.6 }}>
+                          <Typography sx={{ fontFamily, fontSize: '0.88rem', color: 'var(--text-main)', lineHeight: 1.6 }}>
                             {step}
                           </Typography>
                         </Box>

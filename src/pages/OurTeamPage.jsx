@@ -22,7 +22,7 @@ export default function OurTeamPage() {
 						sx={{
 							fontFamily: '"Georgia", serif',
 							fontWeight: 700,
-							color: "#000",
+							color: "var(--text-main)",
 							mb: 1,
 						}}
 					>
@@ -91,7 +91,7 @@ export default function OurTeamPage() {
 								sx={{
 									fontFamily: '"Georgia", serif',
 									fontWeight: 700,
-									color: "#000",
+									color: "var(--text-main)",
 									mb: 0.5,
 									fontSize: { xs: "1.5rem", md: "2rem" },
 								}}
@@ -111,7 +111,7 @@ export default function OurTeamPage() {
 							</Typography>
 							<Typography
 								sx={{
-									color: "#555",
+									color: "var(--text-muted)",
 									fontSize: "1.05rem",
 									lineHeight: 1.8,
 								}}
@@ -190,7 +190,7 @@ export default function OurTeamPage() {
 											sx={{
 												fontFamily: '"Georgia", serif',
 												fontWeight: 700,
-												color: "#000",
+												color: "var(--text-main)",
 												fontSize: "1.15rem",
 												mb: 0.3,
 											}}
@@ -210,7 +210,7 @@ export default function OurTeamPage() {
 										</Typography>
 										<Typography
 											sx={{
-												color: "#666",
+												color: "var(--text-muted)",
 												fontSize: "0.9rem",
 												lineHeight: 1.7,
 												flex: 1,

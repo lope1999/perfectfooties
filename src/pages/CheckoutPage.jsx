@@ -402,7 +402,7 @@ export default function CheckoutPage() {
           sx={{
             fontFamily: '"Georgia", serif',
             fontWeight: 700,
-            color: '#000',
+            color: 'var(--text-main)',
             mb: 5,
             textAlign: 'center',
             fontSize: { xs: '1.8rem', sm: '2.4rem', md: '3rem' },
@@ -427,8 +427,8 @@ export default function CheckoutPage() {
                 gap: 1.5,
               }}
             >
-              <LocalShippingOutlinedIcon sx={{ color: '#4A0E4E', fontSize: 22, flexShrink: 0 }} />
-              <Typography sx={{ color: '#4A0E4E', fontWeight: 600, fontSize: '0.9rem', lineHeight: 1.5 }}>
+              <LocalShippingOutlinedIcon sx={{ color: 'var(--text-purple)', fontSize: 22, flexShrink: 0 }} />
+              <Typography sx={{ color: 'var(--text-purple)', fontWeight: 600, fontSize: '0.9rem', lineHeight: 1.5 }}>
                 We currently deliver within Nigeria only. Please provide a valid Nigerian delivery address.
               </Typography>
             </Box>
@@ -437,7 +437,7 @@ export default function CheckoutPage() {
               sx={{
                 fontFamily: '"Georgia", serif',
                 fontWeight: 700,
-                color: '#4A0E4E',
+                color: 'var(--text-purple)',
                 mb: 2.5,
                 fontSize: '1.15rem',
               }}
@@ -526,7 +526,7 @@ export default function CheckoutPage() {
                 sx={{
                   fontFamily: '"Georgia", serif',
                   fontWeight: 700,
-                  color: '#4A0E4E',
+                  color: 'var(--text-purple)',
                   fontSize: '1.1rem',
                   mb: 2,
                 }}
@@ -541,7 +541,7 @@ export default function CheckoutPage() {
                   </Typography>
                   {services.map((s) => (
                     <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography sx={{ fontSize: '0.88rem', color: '#444', flex: 1, mr: 1 }}>{s.name}</Typography>
+                      <Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)', flex: 1, mr: 1 }}>{s.name}</Typography>
                       <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#E91E8C', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
                     </Box>
                   ))}
@@ -555,7 +555,7 @@ export default function CheckoutPage() {
                   </Typography>
                   {products.map((p) => (
                     <Box key={p.productId} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography sx={{ fontSize: '0.88rem', color: '#444', flex: 1, mr: 1 }}>{p.name} ×{p.quantity}</Typography>
+                      <Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)', flex: 1, mr: 1 }}>{p.name} ×{p.quantity}</Typography>
                       <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#E91E8C', whiteSpace: 'nowrap' }}>{formatNaira(p.price * p.quantity)}</Typography>
                     </Box>
                   ))}
@@ -569,7 +569,7 @@ export default function CheckoutPage() {
                   </Typography>
                   {pressOns.map((p) => (
                     <Box key={p.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography sx={{ fontSize: '0.88rem', color: '#444', flex: 1, mr: 1 }}>
+                      <Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)', flex: 1, mr: 1 }}>
                         {p.name}{p.quantity > 1 ? ` ×${p.quantity}` : ''}
                       </Typography>
                       <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#E91E8C', whiteSpace: 'nowrap' }}>{formatNaira(p.price)}</Typography>
@@ -581,19 +581,19 @@ export default function CheckoutPage() {
               {/* Appointment Deposit Info */}
               {services.length > 0 && (
                 <Box sx={{ mb: 2, p: 2, borderRadius: 2, backgroundColor: '#FFF0F8', border: '1.5px solid #E91E8C' }}>
-                  <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', fontSize: '0.82rem', mb: 1 }}>
+                  <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', fontSize: '0.82rem', mb: 1 }}>
                     Appointment Deposit
                   </Typography>
                   {services.map((s) => (
                     <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.4 }}>
-                      <Typography sx={{ fontSize: '0.82rem', color: '#555', flex: 1, mr: 1 }}>{s.name}</Typography>
-                      <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
+                      <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)', flex: 1, mr: 1 }}>{s.name}</Typography>
+                      <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
                     </Box>
                   ))}
                   <Divider sx={{ borderColor: '#F0C0D0', my: 1 }} />
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.4 }}>
-                    <Typography sx={{ fontSize: '0.82rem', color: '#555' }}>Appointment subtotal</Typography>
-                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#555' }}>{formatNaira(serviceSubtotal)}</Typography>
+                    <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Appointment subtotal</Typography>
+                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)' }}>{formatNaira(serviceSubtotal)}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.4 }}>
                     <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#E91E8C' }}>50% deposit due now</Typography>
@@ -632,7 +632,7 @@ export default function CheckoutPage() {
               </Box>
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography sx={{ color: '#666', fontSize: '0.9rem' }}>Subtotal</Typography>
+                <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Subtotal</Typography>
                 <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{formatNaira(subtotal)}</Typography>
               </Box>
 
@@ -754,7 +754,7 @@ export default function CheckoutPage() {
         fullWidth
         PaperProps={{ sx: { borderRadius: 3 } }}
       >
-        <DialogTitle sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', pb: 1 }}>
+        <DialogTitle sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', pb: 1 }}>
           Confirm &amp; Pay Appointment Deposit
         </DialogTitle>
         <DialogContent>
@@ -763,7 +763,7 @@ export default function CheckoutPage() {
             {services.map((s) => (
               <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
                 <Box sx={{ flex: 1, mr: 1 }}>
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#333' }}>{s.name}</Typography>
+                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-main)' }}>{s.name}</Typography>
                   <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>{s.date}</Typography>
                 </Box>
                 <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#E91E8C', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
@@ -774,8 +774,8 @@ export default function CheckoutPage() {
           <Divider sx={{ borderColor: '#F0C0D0', mb: 2 }} />
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-            <Typography sx={{ fontSize: '0.9rem', color: '#555' }}>Appointment total</Typography>
-            <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>{formatNaira(serviceSubtotal)}</Typography>
+            <Typography sx={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Appointment total</Typography>
+            <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-muted)' }}>{formatNaira(serviceSubtotal)}</Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
             <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#E91E8C' }}>Deposit (50%)</Typography>
@@ -791,7 +791,7 @@ export default function CheckoutPage() {
             </Typography>
           )}
 
-          <Typography sx={{ fontSize: '0.85rem', color: '#555', lineHeight: 1.6 }}>
+          <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
             Pay the 50% deposit via Paystack to confirm your booking, or skip to arrange payment manually via WhatsApp.
           </Typography>
         </DialogContent>

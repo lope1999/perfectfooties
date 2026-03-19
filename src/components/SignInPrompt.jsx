@@ -50,7 +50,7 @@ export default function SignInPrompt({ open, onClose }) {
         </Typography>
       </DialogTitle>
       <DialogContent>
-        <Typography sx={{ color: '#555', mt: 1, lineHeight: 1.7, fontSize: '0.95rem' }}>
+        <Typography sx={{ color: 'var(--text-muted)', mt: 1, lineHeight: 1.7, fontSize: '0.95rem' }}>
           Please sign in to continue with your order. This helps us track your appointments, save your preferences, and provide a better experience.
         </Typography>
       </DialogContent>

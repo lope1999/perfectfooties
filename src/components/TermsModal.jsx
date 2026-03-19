@@ -25,7 +25,7 @@ export default function TermsModal({ open, onClose }) {
 					sx={{
 						fontFamily: '"Georgia", serif',
 						fontWeight: 700,
-						color: "#000",
+						color: "var(--text-main)",
 					}}
 				>
 					Terms & Conditions
@@ -42,12 +42,12 @@ export default function TermsModal({ open, onClose }) {
 						sx={{
 							fontFamily: '"Georgia", serif',
 							fontWeight: 700,
-							color: "#4A0E4E",
+							color: "var(--text-purple)",
 						}}
 					>
 						1. Appointment Policy
 					</Typography>
-					<Typography sx={{ color: "#444", lineHeight: 1.8 }}>
+					<Typography sx={{ color: "var(--text-muted)", lineHeight: 1.8 }}>
 						All appointments must be booked in advance through our website
 						or WhatsApp. A confirmation message will be sent via WhatsApp
 						once your appointment is confirmed. Please arrive on time —
@@ -60,12 +60,12 @@ export default function TermsModal({ open, onClose }) {
 						sx={{
 							fontFamily: '"Georgia", serif',
 							fontWeight: 700,
-							color: "#4A0E4E",
+							color: "var(--text-purple)",
 						}}
 					>
 						2. Cancellation & Rescheduling
 					</Typography>
-					<Typography sx={{ color: "#444", lineHeight: 1.8 }}>
+					<Typography sx={{ color: "var(--text-muted)", lineHeight: 1.8 }}>
 						Cancellations must be made at least 12 hours before your
 						scheduled appointment. Late cancellations or no-shows may
 						incur a fee of up to 50% of the service cost. Rescheduling is
@@ -77,12 +77,12 @@ export default function TermsModal({ open, onClose }) {
 						sx={{
 							fontFamily: '"Georgia", serif',
 							fontWeight: 700,
-							color: "#4A0E4E",
+							color: "var(--text-purple)",
 						}}
 					>
 						3. Pricing & Payment
 					</Typography>
-					<Typography sx={{ color: "#444", lineHeight: 1.8 }}>
+					<Typography sx={{ color: "var(--text-muted)", lineHeight: 1.8 }}>
 						All prices listed on the service menu are in Nigerian Naira
 						(₦). Prices are subject to change without prior notice.
 						Payment is due at the time of service and can be made via bank
@@ -95,12 +95,12 @@ export default function TermsModal({ open, onClose }) {
 						sx={{
 							fontFamily: '"Georgia", serif',
 							fontWeight: 700,
-							color: "#4A0E4E",
+							color: "var(--text-purple)",
 						}}
 					>
 						4. Custom Press-On Orders
 					</Typography>
-					<Typography sx={{ color: "#444", lineHeight: 1.8 }}>
+					<Typography sx={{ color: "var(--text-muted)", lineHeight: 1.8 }}>
 						Custom press-on nail orders require accurate nail bed
 						measurements provided by the client. Chizzystyles is not
 						responsible for sizing issues caused by incorrect
@@ -114,12 +114,12 @@ export default function TermsModal({ open, onClose }) {
 						sx={{
 							fontFamily: '"Georgia", serif',
 							fontWeight: 700,
-							color: "#4A0E4E",
+							color: "var(--text-purple)",
 						}}
 					>
 						5. Health & Safety
 					</Typography>
-					<Typography sx={{ color: "#444", lineHeight: 1.8 }}>
+					<Typography sx={{ color: "var(--text-muted)", lineHeight: 1.8 }}>
 						All tools and equipment are sanitised between clients. If you
 						have any nail conditions, allergies, or sensitivities, please
 						inform your technician before the service begins. Chizzystyles
@@ -132,12 +132,12 @@ export default function TermsModal({ open, onClose }) {
 						sx={{
 							fontFamily: '"Georgia", serif',
 							fontWeight: 700,
-							color: "#4A0E4E",
+							color: "var(--text-purple)",
 						}}
 					>
 						6. Liability
 					</Typography>
-					<Typography sx={{ color: "#444", lineHeight: 1.8 }}>
+					<Typography sx={{ color: "var(--text-muted)", lineHeight: 1.8 }}>
 						Chizzystyles is not liable for any damage to natural nails
 						resulting from improper removal of extensions at home. We
 						strongly recommend professional removal. Any concerns about
@@ -150,12 +150,12 @@ export default function TermsModal({ open, onClose }) {
 						sx={{
 							fontFamily: '"Georgia", serif',
 							fontWeight: 700,
-							color: "#4A0E4E",
+							color: "var(--text-purple)",
 						}}
 					>
 						7. Intellectual Property
 					</Typography>
-					<Typography sx={{ color: "#444", lineHeight: 1.8 }}>
+					<Typography sx={{ color: "var(--text-muted)", lineHeight: 1.8 }}>
 						All content on the Chizzystyles website — including images,
 						text, and designs — is the property of Chizzystyles and may
 						not be reproduced without written permission. Photos of your

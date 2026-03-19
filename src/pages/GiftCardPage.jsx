@@ -61,7 +61,7 @@ const giftCardTypes = [
 const buttonSx = {
   border: '2px solid #E91E8C',
   borderRadius: '30px',
-  color: '#000',
+  color: 'var(--text-main)',
   backgroundColor: 'transparent',
   px: 4,
   py: 1.2,
@@ -187,7 +187,7 @@ export default function GiftCardPage() {
 						sx={{
 							fontFamily: '"Georgia", serif',
 							fontWeight: 700,
-							color: "#000",
+							color: "var(--text-main)",
 							mb: 2,
 							fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" },
 						}}
@@ -200,7 +200,7 @@ export default function GiftCardPage() {
 						sx={{
 							maxWidth: 600,
 							mx: "auto",
-							color: "#555",
+							color: "var(--text-muted)",
 							fontSize: "1.1rem",
 							lineHeight: 1.7,
 							px: 2,
@@ -222,7 +222,7 @@ export default function GiftCardPage() {
 							sx={{
 								fontFamily: '"Georgia", serif',
 								fontWeight: 700,
-								color: "#000",
+								color: "var(--text-main)",
 								textAlign: "center",
 								mb: 1,
 							}}
@@ -299,7 +299,7 @@ export default function GiftCardPage() {
 										fontFamily: '"Georgia", serif',
 										fontWeight: 700,
 										fontSize: "1rem",
-										color: "#333",
+										color: "var(--text-main)",
 										mb: 1,
 									}}
 								>
@@ -368,7 +368,7 @@ export default function GiftCardPage() {
 							sx={{
 								fontFamily: '"Georgia", serif',
 								fontWeight: 700,
-								color: "#000",
+								color: "var(--text-main)",
 								textAlign: "center",
 								mb: 4,
 							}}
@@ -418,7 +418,7 @@ export default function GiftCardPage() {
 												fontFamily: '"Georgia", serif',
 												fontWeight: 700,
 												fontSize: "0.95rem",
-												color: "#000",
+												color: "var(--text-main)",
 												mb: 0.5,
 											}}
 										>
@@ -450,7 +450,7 @@ export default function GiftCardPage() {
 							sx={{
 								fontFamily: '"Georgia", serif',
 								fontWeight: 700,
-								color: "#000",
+								color: "var(--text-main)",
 								textAlign: "center",
 								mb: 1,
 							}}
@@ -566,7 +566,7 @@ export default function GiftCardPage() {
 														sx={{
 															fontFamily: '"Georgia", serif',
 															fontWeight: 700,
-															color: "#000",
+															color: "var(--text-main)",
 															fontSize: "1.3rem",
 														}}
 													>
@@ -586,7 +586,7 @@ export default function GiftCardPage() {
 
 											<Typography
 												sx={{
-													color: "#555",
+													color: "var(--text-muted)",
 													lineHeight: 1.7,
 													mb: 3,
 													flex: 1,
@@ -622,7 +622,7 @@ export default function GiftCardPage() {
 														/>
 														<Typography
 															sx={{
-																color: "#666",
+																color: "var(--text-muted)",
 																fontSize: "0.88rem",
 															}}
 														>
@@ -657,7 +657,7 @@ export default function GiftCardPage() {
 							sx={{
 								fontFamily: '"Georgia", serif',
 								fontWeight: 700,
-								color: "#000",
+								color: "var(--text-main)",
 								textAlign: "center",
 								mb: 3,
 							}}
@@ -692,7 +692,7 @@ export default function GiftCardPage() {
 										/>
 										<Typography
 											sx={{
-												color: "#333",
+												color: "var(--text-main)",
 												fontWeight: 500,
 												fontSize: "0.95rem",
 											}}
@@ -771,7 +771,7 @@ export default function GiftCardPage() {
 										fontFamily: '"Georgia", serif',
 										fontWeight: 600,
 										fontSize: "0.9rem",
-										color: "#333",
+										color: "var(--text-main)",
 										mb: 1,
 									}}
 								>
@@ -798,7 +798,7 @@ export default function GiftCardPage() {
 										fontFamily: '"Georgia", serif',
 										fontWeight: 600,
 										fontSize: "0.9rem",
-										color: "#333",
+										color: "var(--text-main)",
 										mb: 1,
 									}}
 								>
@@ -825,7 +825,7 @@ export default function GiftCardPage() {
 										fontFamily: '"Georgia", serif',
 										fontWeight: 600,
 										fontSize: "0.9rem",
-										color: "#333",
+										color: "var(--text-main)",
 										mb: 1,
 									}}
 								>
@@ -851,7 +851,7 @@ export default function GiftCardPage() {
 										fontFamily: '"Georgia", serif',
 										fontWeight: 600,
 										fontSize: "0.9rem",
-										color: "#333",
+										color: "var(--text-main)",
 										mb: 1,
 									}}
 								>
@@ -879,7 +879,7 @@ export default function GiftCardPage() {
 											fontFamily: '"Georgia", serif',
 											fontWeight: 600,
 											fontSize: "0.9rem",
-											color: "#333",
+											color: "var(--text-main)",
 											mb: 1,
 										}}
 									>
@@ -993,7 +993,7 @@ export default function GiftCardPage() {
 							</Typography>
 						</Box>
 					)}
-					<Typography sx={{ color: "#555", mt: 1, lineHeight: 1.7 }}>
+					<Typography sx={{ color: "var(--text-muted)", mt: 1, lineHeight: 1.7 }}>
 						We will navigate you to WhatsApp to confirm your gift card
 						order, payment, and delivery details.
 					</Typography>

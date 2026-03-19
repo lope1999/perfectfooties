@@ -14,7 +14,7 @@ export default function WishlistIcon() {
         onClick={() => navigate('/account#wishlist')}
         sx={{
           color: '#E91E8C',
-          '&:hover': { color: '#4A0E4E' },
+          '&:hover': { color: 'var(--text-purple)' },
         }}
       >
         <Badge

@@ -126,7 +126,8 @@
       "Bash(node_modules/.bin/eslint src/pages/ProductsMenuPage.jsx src/pages/PressOnDetailPage.jsx --max-warnings=0)",
       "Bash(grep -E \"^[a-z].*\\\\.\\(json|rules|config\\)$\")",
       "Bash(npm run:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(python3 -:*)"
     ]
   }
 }

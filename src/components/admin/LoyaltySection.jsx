@@ -214,7 +214,7 @@ export default function LoyaltySection({ loading: pageLoading }) {
     <Box>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1.6rem', color: '#4A0E4E' }}>
+        <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1.6rem', color: 'var(--text-purple)' }}>
           Loyalty & Referrals
         </Typography>
         <Typography sx={{ fontFamily: ff, fontSize: '0.88rem', color: '#777', mt: 0.3 }}>
@@ -323,7 +323,7 @@ export default function LoyaltySection({ loading: pageLoading }) {
                       <TableCell sx={{ fontFamily: ff, fontSize: '0.78rem', color: '#999', width: 32 }}>{idx + 1}</TableCell>
                       <TableCell sx={{ fontFamily: ff }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                          <Avatar sx={{ width: 34, height: 34, bgcolor: '#4A0E4E', fontSize: '0.78rem', fontFamily: ff, fontWeight: 700 }}>
+                          <Avatar sx={{ width: 34, height: 34, bgcolor: 'var(--text-purple)', fontSize: '0.78rem', fontFamily: ff, fontWeight: 700 }}>
                             {initials}
                           </Avatar>
                           <Box>
@@ -350,8 +350,8 @@ export default function LoyaltySection({ loading: pageLoading }) {
                           )}
                         </Box>
                       </TableCell>
-                      <TableCell sx={{ fontFamily: ff, color: '#555' }}>{p.loyaltyPointsEarned}</TableCell>
-                      <TableCell sx={{ fontFamily: ff, color: '#555' }}>{p.loyaltyPointsRedeemed}</TableCell>
+                      <TableCell sx={{ fontFamily: ff, color: 'var(--text-muted)' }}>{p.loyaltyPointsEarned}</TableCell>
+                      <TableCell sx={{ fontFamily: ff, color: 'var(--text-muted)' }}>{p.loyaltyPointsRedeemed}</TableCell>
                       <TableCell>
                         <Button
                           size="small"
@@ -361,10 +361,10 @@ export default function LoyaltySection({ loading: pageLoading }) {
                             textTransform: 'none',
                             fontSize: '0.78rem',
                             border: '1.5px solid #4A0E4E',
-                            color: '#4A0E4E',
+                            color: 'var(--text-purple)',
                             borderRadius: 2,
                             px: 1.5,
-                            '&:hover': { bgcolor: '#4A0E4E', color: '#fff' },
+                            '&:hover': { bgcolor: 'var(--text-purple)', color: '#fff' },
                           }}
                         >
                           Adjust
@@ -417,7 +417,7 @@ export default function LoyaltySection({ loading: pageLoading }) {
                     <Chip
                       label={r.totalUses}
                       size="small"
-                      sx={{ bgcolor: '#EDE7F6', color: '#4A0E4E', fontFamily: ff, fontWeight: 700 }}
+                      sx={{ bgcolor: '#EDE7F6', color: 'var(--text-purple)', fontFamily: ff, fontWeight: 700 }}
                     />
                   </TableCell>
                   <TableCell sx={{ fontFamily: ff, color: '#2e7d32', fontWeight: 600 }}>
@@ -433,11 +433,11 @@ export default function LoyaltySection({ loading: pageLoading }) {
       {/* Earn Rules */}
       {tab === 'rules' && (
         <Paper sx={{ p: 3, borderRadius: 3 }}>
-          <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1rem', mb: 2, color: '#4A0E4E' }}>
+          <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1rem', mb: 2, color: 'var(--text-purple)' }}>
             Current Earn & Redeem Rules
           </Typography>
           {[
-            { label: 'Press-on order completed', value: `+${POINTS_PER_ORDER} pts`, color: '#4A0E4E' },
+            { label: 'Press-on order completed', value: `+${POINTS_PER_ORDER} pts`, color: 'var(--text-purple)' },
             { label: 'Appointment completed', value: `+${POINTS_PER_APPOINTMENT} pts`, color: '#E91E8C' },
             { label: 'Referral code used by a friend', value: `+${POINTS_PER_REFERRAL} pts (referrer)`, color: '#2e7d32' },
             { label: 'Referred friend discount', value: `₦${REFERRAL_DISCOUNT} off their first order`, color: '#e65100' },
@@ -453,7 +453,7 @@ export default function LoyaltySection({ loading: pageLoading }) {
                 borderBottom: '1px solid #F5F5F5',
               }}
             >
-              <Typography sx={{ fontFamily: ff, fontSize: '0.88rem', color: '#333' }}>{r.label}</Typography>
+              <Typography sx={{ fontFamily: ff, fontSize: '0.88rem', color: 'var(--text-main)' }}>{r.label}</Typography>
               <Chip
                 label={r.value}
                 size="small"

@@ -43,19 +43,19 @@ export default function ServiceMenuPage() {
       {/* Page Header */}
       <Box sx={{ textAlign: 'center', py: 6, backgroundColor: '#fff' }}>
         <ScrollReveal direction="up">
-          <Typography variant="h3" sx={{ fontFamily: ff, fontWeight: 700, color: '#000', mb: 2, fontSize: { xs: '1.8rem', sm: '2.4rem', md: '3rem' } }}>
+          <Typography variant="h3" sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-main)', mb: 2, fontSize: { xs: '1.8rem', sm: '2.4rem', md: '3rem' } }}>
             Nail Services Menu
           </Typography>
         </ScrollReveal>
         <ScrollReveal direction="up" delay={0.15}>
-          <Typography sx={{ maxWidth: 600, mx: 'auto', color: '#555', fontSize: '1.1rem', lineHeight: 1.7, px: 2 }}>
+          <Typography sx={{ maxWidth: 600, mx: 'auto', color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.7, px: 2 }}>
             Explore our range of nail services. Click any service card to view details and book your appointment.
           </Typography>
         </ScrollReveal>
         {!user && (
           <ScrollReveal direction="up" delay={0.25}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mt: 3, py: 1.5, px: 3, mx: 'auto', maxWidth: 480, backgroundColor: '#FFF0F5', borderRadius: 3, border: '1px solid #F0C0D0' }}>
-              <Typography sx={{ fontFamily: ff, fontSize: '0.9rem', color: '#555' }}>Sign in to track your appointments</Typography>
+              <Typography sx={{ fontFamily: ff, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Sign in to track your appointments</Typography>
               <Button
                 size="small"
                 startIcon={signingIn ? <CircularProgress size={16} sx={{ color: 'inherit' }} /> : <LoginIcon sx={{ fontSize: 18 }} />}
@@ -71,8 +71,8 @@ export default function ServiceMenuPage() {
         <ScrollReveal direction="up" delay={0.3}>
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 3, flexWrap: 'wrap' }}>
             <Box sx={{ border: '2px solid #E91E8C', borderRadius: 3, px: 3, py: 1.5, backgroundColor: '#FFF0F5', textAlign: 'center', minWidth: 160 }}>
-              <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: '#4A0E4E' }}>Salon Service</Typography>
-              <Typography sx={{ fontSize: '0.78rem', color: '#555' }}>Visit us at our studio</Typography>
+              <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-purple)' }}>Salon Service</Typography>
+              <Typography sx={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Visit us at our studio</Typography>
             </Box>
             <Box sx={{ border: '2px dashed #ccc', borderRadius: 3, px: 3, py: 1.5, backgroundColor: '#fafafa', textAlign: 'center', opacity: 0.55, minWidth: 160 }}>
               <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: '#999' }}>Home Service</Typography>
@@ -127,19 +127,19 @@ export default function ServiceMenuPage() {
           <Box sx={{ backgroundColor: sectionColors[index % sectionColors.length], py: 8, ...(category.comingSoon && { position: 'relative' }) }}>
             {category.comingSoon && (
               <Box sx={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(255,255,255,0.55)', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: { xs: '1.4rem', md: '1.8rem' }, color: '#4A0E4E', backgroundColor: 'rgba(255,240,245,0.9)', px: 4, py: 1.5, borderRadius: 3, border: '2px solid #E91E8C' }}>
+                <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: { xs: '1.4rem', md: '1.8rem' }, color: 'var(--text-purple)', backgroundColor: 'rgba(255,240,245,0.9)', px: 4, py: 1.5, borderRadius: 3, border: '2px solid #E91E8C' }}>
                   Coming Soon
                 </Typography>
               </Box>
             )}
             <Container maxWidth="lg" sx={category.comingSoon ? { opacity: 0.45 } : undefined}>
               <ScrollReveal direction="up">
-                <Typography variant="h4" sx={{ fontFamily: ff, fontWeight: 700, color: '#000', mb: 1, textAlign: 'center', fontSize: { xs: '1.4rem', sm: '1.8rem', md: '2.1rem' }, px: 1 }}>
+                <Typography variant="h4" sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-main)', mb: 1, textAlign: 'center', fontSize: { xs: '1.4rem', sm: '1.8rem', md: '2.1rem' }, px: 1 }}>
                   {category.title}
                 </Typography>
               </ScrollReveal>
               <ScrollReveal direction="up" delay={0.1}>
-                <Typography sx={{ textAlign: 'center', color: '#555', mb: 5, maxWidth: 550, mx: 'auto', lineHeight: 1.6 }}>
+                <Typography sx={{ textAlign: 'center', color: 'var(--text-muted)', mb: 5, maxWidth: 550, mx: 'auto', lineHeight: 1.6 }}>
                   {category.description}
                 </Typography>
               </ScrollReveal>
@@ -193,7 +193,7 @@ export default function ServiceMenuPage() {
                           </Box>
                           <CardContent sx={{ flex: 1, p: 3, display: 'flex', flexDirection: 'column' }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
-                              <Typography variant="h6" sx={{ fontFamily: ff, fontWeight: 700, color: '#000', fontSize: '1rem', flex: 1 }}>
+                              <Typography variant="h6" sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-main)', fontSize: '1rem', flex: 1 }}>
                                 {service.name}
                               </Typography>
                               {discounted ? (
@@ -205,7 +205,7 @@ export default function ServiceMenuPage() {
                                 <Typography sx={{ fontFamily: ff, fontWeight: 700, color: '#E91E8C', fontSize: '1rem', whiteSpace: 'nowrap', ml: 2 }}>{formatNaira(service.price)}</Typography>
                               )}
                             </Box>
-                            <Typography sx={{ color: '#666', fontSize: '0.9rem', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                               {service.description}
                             </Typography>
                           </CardContent>

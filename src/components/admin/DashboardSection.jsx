@@ -122,7 +122,7 @@ function SectionHeader({ title, icon, onViewAll }) {
           size="small"
           endIcon={<ArrowForwardIcon />}
           onClick={onViewAll}
-          sx={{ fontFamily, textTransform: 'none', color: '#4A0E4E' }}
+          sx={{ fontFamily, textTransform: 'none', color: 'var(--text-purple)' }}
         >
           View All
         </Button>
@@ -280,7 +280,7 @@ function MiniBarChart({ title, data, color, prefix = '' }) {
 
 function QuickActionsPanel({ onNavigate }) {
   const actions = [
-    { label: 'New Order', icon: <AddCircleOutlineIcon />, section: 'orders', color: '#4A0E4E' },
+    { label: 'New Order', icon: <AddCircleOutlineIcon />, section: 'orders', color: 'var(--text-purple)' },
     { label: 'Appointments', icon: <EventNoteIcon />, section: 'appointments', color: '#E91E8C' },
     { label: 'Products', icon: <InventoryIcon />, section: 'pressons', color: '#2e7d32' },
     { label: 'Gift Cards', icon: <CardGiftcardIcon />, section: 'giftcards', color: '#e65100' },
@@ -340,7 +340,7 @@ function LowStockAlertBanner({ items, onNavigate }) {
         <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '0.92rem', color: '#e65100', mb: 0.5 }}>
           Low Stock Alert — {items.length} product{items.length !== 1 ? 's' : ''} running low
         </Typography>
-        <Typography sx={{ fontFamily, fontSize: '0.8rem', color: '#555' }}>
+        <Typography sx={{ fontFamily, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
           {items.slice(0, 3).map((p) => `${p.name} (${p.stock} left)`).join(' · ')}
           {items.length > 3 ? ` · +${items.length - 3} more` : ''}
         </Typography>
@@ -584,7 +584,7 @@ export default function DashboardSection({
 
           <SectionHeader
             title="Recent Orders"
-            icon={<ShoppingCartIcon sx={{ color: '#4A0E4E' }} />}
+            icon={<ShoppingCartIcon sx={{ color: 'var(--text-purple)' }} />}
             onViewAll={onNavigate ? () => onNavigate('orders') : undefined}
           />
           <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
@@ -619,7 +619,7 @@ export default function DashboardSection({
                             sx={{
                               width: 32,
                               height: 32,
-                              bgcolor: '#4A0E4E',
+                              bgcolor: 'var(--text-purple)',
                               fontSize: '0.75rem',
                               fontFamily,
                               fontWeight: 700,

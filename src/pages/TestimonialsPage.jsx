@@ -19,6 +19,7 @@ import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import ScrollReveal from '../components/ScrollReveal';
+import ScrollToTopFab from '../components/ScrollToTopFab';
 import { testimonials as staticTestimonials } from '../data/testimonials';
 import { fetchTestimonials } from '../lib/testimonialService';
 
@@ -31,7 +32,7 @@ function getClientTier(reviewCount) {
 		return {
 			label: "Diamond Diva",
 			emoji: "💎",
-			color: "#4A0E4E",
+			color: "var(--text-purple)",
 			bg: "#F3E5F5",
 			border: "#CE93D8",
 		};
@@ -157,7 +158,7 @@ export default function TestimonialsPage() {
 						sx={{
 							fontFamily: '"Georgia", serif',
 							fontWeight: 700,
-							color: "#000",
+							color: "var(--text-main)",
 							mb: 1,
 						}}
 					>
@@ -219,7 +220,7 @@ export default function TestimonialsPage() {
 											<Avatar sx={{ width: 80, height: 80, backgroundColor: '#E91E8C', fontSize: '2rem', fontFamily: ff, fontWeight: 700, mb: 2 }}>
 												{featured.avatar}
 											</Avatar>
-											<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1.3rem', color: '#000' }}>
+											<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1.3rem', color: 'var(--text-main)' }}>
 												{featured.name}
 											</Typography>
 											<Typography sx={{ color: '#888', fontSize: '0.9rem', mb: 1 }}>
@@ -251,10 +252,10 @@ export default function TestimonialsPage() {
 											<Box sx={{ flex: 1 }}>
 												{featured.reviews.length === 1 ? (
 													<Box sx={{ p: { xs: 3, md: 5 } }}>
-														<Typography sx={{ fontFamily: ff, fontWeight: 700, color: '#4A0E4E', fontSize: '1rem', mb: 2 }}>
+														<Typography sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-purple)', fontSize: '1rem', mb: 2 }}>
 															{featured.reviews[0].service}
 														</Typography>
-														<Typography sx={{ color: '#444', fontSize: '1.1rem', lineHeight: 1.9, fontStyle: 'italic' }}>
+														<Typography sx={{ color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.9, fontStyle: 'italic' }}>
 															"{featured.reviews[0].review}"
 														</Typography>
 													</Box>
@@ -268,10 +269,10 @@ export default function TestimonialsPage() {
 														{featured.reviews.map((rev, i) => (
 															<SwiperSlide key={i}>
 																<Box sx={{ p: { xs: 3, md: 5 } }}>
-																	<Typography sx={{ fontFamily: ff, fontWeight: 700, color: '#4A0E4E', fontSize: '1rem', mb: 2 }}>
+																	<Typography sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-purple)', fontSize: '1rem', mb: 2 }}>
 																		{rev.service}
 																	</Typography>
-																	<Typography sx={{ color: '#444', fontSize: '1.1rem', lineHeight: 1.9, fontStyle: 'italic' }}>
+																	<Typography sx={{ color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.9, fontStyle: 'italic' }}>
 																		"{rev.review}"
 																	</Typography>
 																	<Box sx={{ mt: 2 }}><StarRating rating={rev.rating} /></Box>
@@ -372,7 +373,7 @@ export default function TestimonialsPage() {
 															fontFamily: ff,
 															fontWeight: 700,
 															fontSize: "1rem",
-															color: "#000",
+															color: "var(--text-main)",
 														}}
 													>
 														{group.name}
@@ -458,7 +459,7 @@ export default function TestimonialsPage() {
 												sx={{
 													fontFamily: '"Georgia", serif',
 													fontWeight: 700,
-													color: "#4A0E4E",
+													color: "var(--text-purple)",
 													fontSize: "0.85rem",
 													mb: 1.5,
 												}}
@@ -467,7 +468,7 @@ export default function TestimonialsPage() {
 											</Typography>
 											<Typography
 												sx={{
-													color: "#555",
+													color: "var(--text-muted)",
 													fontSize: "0.9rem",
 													lineHeight: 1.7,
 													fontStyle: "italic",
@@ -505,7 +506,7 @@ export default function TestimonialsPage() {
 																	fontFamily:
 																		'"Georgia", serif',
 																	fontWeight: 700,
-																	color: "#4A0E4E",
+																	color: "var(--text-purple)",
 																	fontSize: "0.85rem",
 																	mb: 1.5,
 																}}
@@ -514,7 +515,7 @@ export default function TestimonialsPage() {
 															</Typography>
 															<Typography
 																sx={{
-																	color: "#555",
+																	color: "var(--text-muted)",
 																	fontSize: "0.9rem",
 																	lineHeight: 1.7,
 																	fontStyle: "italic",
@@ -568,6 +569,7 @@ export default function TestimonialsPage() {
 				group={selectedGroup}
 				onClose={() => setSelectedGroup(null)}
 			/>
+			<ScrollToTopFab />
 		</Box>
 	);
 }
@@ -630,7 +632,7 @@ function ReviewDetailModal({ group, onClose }) {
 									fontFamily: ff,
 									fontWeight: 700,
 									fontSize: "1.1rem",
-									color: "#000",
+									color: "var(--text-main)",
 								}}
 							>
 								{group.name}
@@ -730,7 +732,7 @@ function ReviewDetailModal({ group, onClose }) {
 							sx={{
 								fontFamily: ff,
 								fontWeight: 700,
-								color: "#4A0E4E",
+								color: "var(--text-purple)",
 								fontSize: "0.9rem",
 								mb: 1,
 							}}
@@ -740,7 +742,7 @@ function ReviewDetailModal({ group, onClose }) {
 						<StarRating rating={rev.rating} />
 						<Typography
 							sx={{
-								color: "#444",
+								color: "var(--text-muted)",
 								fontSize: "0.95rem",
 								lineHeight: 1.85,
 								fontStyle: "italic",

@@ -5,6 +5,7 @@ import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import ScrollReveal from '../components/ScrollReveal';
+import ScrollToTopFab from '../components/ScrollToTopFab';
 import { fetchGalleryImages } from '../lib/galleryService';
 
 const fontFamily = '"Georgia", serif';
@@ -135,7 +136,7 @@ export default function GalleryPage() {
             sx={{
               fontFamily,
               fontWeight: 700,
-              color: '#4A0E4E',
+              color: 'var(--text-purple)',
               fontSize: { xs: '1.8rem', sm: '2.4rem', md: '3rem' },
               mb: 1,
             }}
@@ -145,7 +146,7 @@ export default function GalleryPage() {
           <Typography
             sx={{
               fontFamily,
-              color: '#555',
+              color: 'var(--text-muted)',
               fontSize: { xs: '0.9rem', sm: '1.05rem' },
               maxWidth: 520,
               mx: 'auto',
@@ -166,7 +167,7 @@ export default function GalleryPage() {
                 fontFamily,
                 fontWeight: 700,
                 textAlign: 'center',
-                color: '#4A0E4E',
+                color: 'var(--text-purple)',
                 mb: 4,
                 fontSize: { xs: '1.4rem', sm: '1.8rem' },
               }}
@@ -190,7 +191,7 @@ export default function GalleryPage() {
                 fontFamily,
                 fontWeight: 700,
                 textAlign: 'center',
-                color: '#4A0E4E',
+                color: 'var(--text-purple)',
                 mb: 4,
                 fontSize: { xs: '1.4rem', sm: '1.8rem' },
               }}
@@ -203,6 +204,7 @@ export default function GalleryPage() {
           </ScrollReveal>
         </Container>
       </Box>
+      <ScrollToTopFab />
     </Box>
   );
 }

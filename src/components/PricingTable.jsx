@@ -28,7 +28,7 @@ function getCategoryPricing(items) {
 const sectionHeadingSx = {
   fontFamily: '"Georgia", serif',
   fontWeight: 700,
-  color: '#4A0E4E',
+  color: 'var(--text-purple)',
   fontSize: '1.1rem',
   mt: 3,
   mb: 1.5,
@@ -50,7 +50,7 @@ const nameSx = {
   fontFamily: '"Georgia", serif',
   fontWeight: 600,
   fontSize: '0.9rem',
-  color: '#000',
+  color: 'var(--text-main)',
   flex: 1,
   pr: 2,
 };
@@ -107,7 +107,7 @@ export default function PricingTable({ open, onClose }) {
           sx={{
             fontFamily: '"Georgia", serif',
             fontWeight: 700,
-            color: '#000',
+            color: 'var(--text-main)',
             fontSize: { xs: '1.3rem', sm: '1.6rem' },
           }}
         >
@@ -141,7 +141,7 @@ export default function PricingTable({ open, onClose }) {
                   fontFamily: '"Georgia", serif',
                   fontWeight: 700,
                   fontSize: '0.95rem',
-                  color: '#4A0E4E',
+                  color: 'var(--text-purple)',
                   mt: 2,
                   mb: 0.5,
                   px: 1.5,
@@ -187,7 +187,7 @@ export default function PricingTable({ open, onClose }) {
                     fontFamily: '"Georgia", serif',
                     fontWeight: 700,
                     fontSize: '0.95rem',
-                    color: '#4A0E4E',
+                    color: 'var(--text-purple)',
                     mt: 2,
                     mb: 0.5,
                     px: 1.5,
@@ -231,7 +231,7 @@ export default function PricingTable({ open, onClose }) {
                     fontFamily: '"Georgia", serif',
                     fontWeight: 700,
                     fontSize: '0.95rem',
-                    color: '#4A0E4E',
+                    color: 'var(--text-purple)',
                     mt: 2,
                     mb: 0.5,
                     px: 1.5,

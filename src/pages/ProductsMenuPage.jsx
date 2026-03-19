@@ -239,7 +239,7 @@ export default function ProductsMenuPage() {
 						sx={{
 							fontFamily: 'Georgia", serif',
 							fontWeight: 700,
-							color: "#000",
+							color: "var(--text-main)",
 							mb: 2,
 							fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" },
 						}}
@@ -252,7 +252,7 @@ export default function ProductsMenuPage() {
 						sx={{
 							maxWidth: 620,
 							mx: "auto",
-							color: "#555",
+							color: "var(--text-muted)",
 							fontSize: "1.1rem",
 							lineHeight: 1.7,
 							px: 2,
@@ -368,7 +368,7 @@ export default function ProductsMenuPage() {
 								sx={{
 									fontFamily: '"Georgia", serif',
 									fontSize: "0.9rem",
-									color: "#555",
+									color: "var(--text-muted)",
 								}}
 							>
 								Sign in to track your orders
@@ -544,7 +544,7 @@ export default function ProductsMenuPage() {
 								<Typography
 									sx={{
 										fontSize: "0.8rem",
-										color: "#555",
+										color: "var(--text-muted)",
 										mb: 0.5,
 										fontFamily: '"Georgia", serif',
 									}}
@@ -698,7 +698,7 @@ export default function ProductsMenuPage() {
 									sx={{
 										fontFamily: '"Georgia", serif',
 										fontWeight: 700,
-										color: "#000",
+										color: "var(--text-main)",
 										mb: 1,
 										textAlign: "center",
 										fontSize: {
@@ -716,7 +716,7 @@ export default function ProductsMenuPage() {
 								<Typography
 									sx={{
 										textAlign: "center",
-										color: "#555",
+										color: "var(--text-muted)",
 										mb: 1,
 										maxWidth: 580,
 										mx: "auto",
@@ -741,7 +741,7 @@ export default function ProductsMenuPage() {
 									>
 										<Typography
 											sx={{
-												color: "#4A0E4E",
+												color: "var(--text-purple)",
 												fontSize: "0.9rem",
 												fontWeight: 600,
 											}}
@@ -1071,7 +1071,7 @@ export default function ProductsMenuPage() {
 																	fontFamily:
 																		'"Georgia", serif',
 																	fontWeight: 700,
-																	color: "#000",
+																	color: "var(--text-main)",
 																	fontSize: "1rem",
 																	flex: 1,
 																}}
@@ -1124,7 +1124,7 @@ export default function ProductsMenuPage() {
 														)}
 														<Typography
 															sx={{
-																color: "#666",
+																color: "var(--text-muted)",
 																fontSize: "0.85rem",
 																lineHeight: 1.5,
 																mb: 2,
@@ -1270,7 +1270,7 @@ export default function ProductsMenuPage() {
 																mt: 1,
 																border: "1.5px solid #4A0E4E",
 																borderRadius: "20px",
-																color: "#4A0E4E",
+																color: "var(--text-purple)",
 																fontFamily: '"Georgia", serif',
 																fontWeight: 600,
 																fontSize: "0.75rem",
@@ -1354,7 +1354,7 @@ export default function ProductsMenuPage() {
 				<DialogContent sx={{ pt: 2.5, pb: 1 }}>
 					<Typography
 						sx={{
-							color: "#555",
+							color: "var(--text-muted)",
 							fontSize: "0.92rem",
 							lineHeight: 1.7,
 							mb: 1.5,
@@ -1367,7 +1367,7 @@ export default function ProductsMenuPage() {
 					</Typography>
 					<Typography
 						sx={{
-							color: "#4A0E4E",
+							color: "var(--text-purple)",
 							fontSize: "0.9rem",
 							fontWeight: 700,
 							mb: 0.8,
@@ -1381,7 +1381,7 @@ export default function ProductsMenuPage() {
 						sx={{
 							m: 0,
 							pl: 2.5,
-							color: "#555",
+							color: "var(--text-muted)",
 							fontSize: "0.88rem",
 							lineHeight: 2,
 						}}
@@ -1464,7 +1464,7 @@ export default function ProductsMenuPage() {
           {notifySuccess ? (
             <Box sx={{ textAlign: 'center', py: 2 }}>
               <NotificationsActiveIcon sx={{ fontSize: 40, color: '#4CAF50', mb: 1 }} />
-              <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, color: '#333' }}>
+              <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, color: 'var(--text-main)' }}>
                 You're on the list!
               </Typography>
               <Typography sx={{ color: '#777', fontSize: '0.85rem', mt: 0.5 }}>

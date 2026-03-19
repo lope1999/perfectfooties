@@ -17,6 +17,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import ScrollReveal from '../components/ScrollReveal';
 import useBlogPosts from '../hooks/useBlogPosts';
+import ScrollToTopFab from '../components/ScrollToTopFab';
 
 const categoryColors = {
 	"Nail Care": "#E91E8C",
@@ -60,7 +61,7 @@ export default function BlogPage() {
             sx={{
               fontFamily: '"Georgia", serif',
               fontWeight: 700,
-              color: '#000',
+              color: 'var(--text-main)',
               mb: 1,
             }}
           >
@@ -141,14 +142,14 @@ export default function BlogPage() {
                 sx={{
                   fontFamily: '"Georgia", serif',
                   fontWeight: 700,
-                  color: '#000',
+                  color: 'var(--text-main)',
                   mb: 2,
                   lineHeight: 1.3,
                 }}
               >
                 {blogPosts[0].title}
               </Typography>
-              <Typography sx={{ color: '#555', lineHeight: 1.7, mb: 2 }}>
+              <Typography sx={{ color: 'var(--text-muted)', lineHeight: 1.7, mb: 2 }}>
                 {blogPosts[0].excerpt}
               </Typography>
               <Typography sx={{ color: '#aaa', fontSize: '0.85rem' }}>
@@ -225,7 +226,7 @@ export default function BlogPage() {
                       sx={{
                         fontFamily: '"Georgia", serif',
                         fontWeight: 700,
-                        color: '#000',
+                        color: 'var(--text-main)',
                         mb: 1.5,
                         lineHeight: 1.3,
                         fontSize: '1.05rem',
@@ -235,7 +236,7 @@ export default function BlogPage() {
                     </Typography>
                     <Typography
                       sx={{
-                        color: '#666',
+                        color: 'var(--text-muted)',
                         fontSize: '0.9rem',
                         lineHeight: 1.6,
                         flex: 1,
@@ -343,7 +344,7 @@ export default function BlogPage() {
                 sx={{
                   fontFamily: '"Georgia", serif',
                   fontWeight: 700,
-                  color: '#000',
+                  color: 'var(--text-main)',
                   mb: 3,
                   lineHeight: 1.3,
                   fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.2rem' },
@@ -371,7 +372,7 @@ export default function BlogPage() {
                     <Typography sx={{ fontSize: '0.7rem', color: '#999', lineHeight: 1 }}>
                       Written by
                     </Typography>
-                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#333' }}>
+                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)' }}>
                       {selectedPost.author}
                     </Typography>
                   </Box>
@@ -382,7 +383,7 @@ export default function BlogPage() {
                     <Typography sx={{ fontSize: '0.7rem', color: '#999', lineHeight: 1 }}>
                       Published
                     </Typography>
-                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#333' }}>
+                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)' }}>
                       {selectedPost.date}
                     </Typography>
                   </Box>
@@ -393,7 +394,7 @@ export default function BlogPage() {
                     <Typography sx={{ fontSize: '0.7rem', color: '#999', lineHeight: 1 }}>
                       Read time
                     </Typography>
-                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#333' }}>
+                    <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)' }}>
                       {selectedPost.readTime}
                     </Typography>
                   </Box>
@@ -405,7 +406,7 @@ export default function BlogPage() {
                 <Typography
                   key={i}
                   sx={{
-                    color: '#444',
+                    color: 'var(--text-muted)',
                     fontSize: '1rem',
                     lineHeight: 1.85,
                     mb: 2.5,
@@ -427,7 +428,7 @@ export default function BlogPage() {
                           fontFamily: '"Georgia", serif',
                           fontWeight: 700,
                           fontSize: '1.1rem',
-                          color: '#000',
+                          color: 'var(--text-main)',
                         }}
                       >
                         Sources & References
@@ -455,6 +456,7 @@ export default function BlogPage() {
           </>
         )}
       </Dialog>
+      <ScrollToTopFab />
     </Box>
   );
 }

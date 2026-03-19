@@ -38,7 +38,7 @@ function formatNaira(amount) {
 const sectionTitleSx = {
   fontFamily: '"Georgia", serif',
   fontWeight: 700,
-  color: '#4A0E4E',
+  color: 'var(--text-purple)',
   fontSize: '1.2rem',
   mb: 2,
 };
@@ -319,7 +319,7 @@ export default function CartPage() {
             sx={{
               fontFamily: '"Georgia", serif',
               fontWeight: 700,
-              color: '#000',
+              color: 'var(--text-main)',
               fontSize: { xs: '1.8rem', sm: '2.4rem', md: '3rem' },
             }}
           >
@@ -339,7 +339,7 @@ export default function CartPage() {
                 sx={{
                   border: '2px solid #E91E8C',
                   borderRadius: '30px',
-                  color: '#000',
+                  color: 'var(--text-main)',
                   px: 3,
                   py: 1,
                   fontFamily: '"Georgia", serif',
@@ -354,7 +354,7 @@ export default function CartPage() {
                 sx={{
                   border: '2px solid #E91E8C',
                   borderRadius: '30px',
-                  color: '#000',
+                  color: 'var(--text-main)',
                   px: 3,
                   py: 1,
                   fontFamily: '"Georgia", serif',
@@ -369,7 +369,7 @@ export default function CartPage() {
                 sx={{
                   border: '2px solid #E91E8C',
                   borderRadius: '30px',
-                  color: '#000',
+                  color: 'var(--text-main)',
                   px: 3,
                   py: 1,
                   fontFamily: '"Georgia", serif',
@@ -412,7 +412,7 @@ export default function CartPage() {
                         {s.name}
                       </Typography>
                       {s.customerName && (
-                        <Typography sx={{ color: '#4A0E4E', fontSize: '0.82rem', fontWeight: 600 }}>
+                        <Typography sx={{ color: 'var(--text-purple)', fontSize: '0.82rem', fontWeight: 600 }}>
                           {s.customerName}
                         </Typography>
                       )}
@@ -509,7 +509,7 @@ export default function CartPage() {
                         {p.name}
                       </Typography>
                       {p.customerName && (
-                        <Typography sx={{ color: '#4A0E4E', fontSize: '0.78rem', fontWeight: 600 }}>
+                        <Typography sx={{ color: 'var(--text-purple)', fontSize: '0.78rem', fontWeight: 600 }}>
                           {p.customerName}
                         </Typography>
                       )}
@@ -620,7 +620,7 @@ export default function CartPage() {
                         {p.name}
                       </Typography>
                       {p.customerName && (
-                        <Typography sx={{ color: '#4A0E4E', fontSize: '0.78rem', fontWeight: 600 }}>
+                        <Typography sx={{ color: 'var(--text-purple)', fontSize: '0.78rem', fontWeight: 600 }}>
                           {p.customerName}
                         </Typography>
                       )}
@@ -680,12 +680,12 @@ export default function CartPage() {
             {/* Appointment Deposit Info */}
             {services.length > 0 && (
               <Box sx={{ mb: 3, p: 2.5, borderRadius: 3, border: '1.5px solid #E91E8C', backgroundColor: '#FFF0F8' }}>
-                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', fontSize: '0.95rem', mb: 1.5 }}>
+                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', fontSize: '0.95rem', mb: 1.5 }}>
                   Appointment Deposit Required
                 </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                  <Typography sx={{ fontSize: '0.88rem', color: '#555' }}>Appointment subtotal</Typography>
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#555' }}>{formatNaira(serviceSubtotal)}</Typography>
+                  <Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Appointment subtotal</Typography>
+                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-muted)' }}>{formatNaira(serviceSubtotal)}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
                   <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#E91E8C' }}>50% deposit to secure slot</Typography>
@@ -699,7 +699,7 @@ export default function CartPage() {
 
             {/* Discounts & Rewards */}
             <Box sx={{ mt: 2, mb: 3, p: 3, borderRadius: 3, backgroundColor: '#fff', border: '1px solid #F0C0D0' }}>
-              <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 2, fontSize: '0.95rem' }}>
+              <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 2, fontSize: '0.95rem' }}>
                 Discounts &amp; Rewards
               </Typography>
 
@@ -752,7 +752,7 @@ export default function CartPage() {
                     <IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))} disabled={loyaltyUnits >= maxLoyaltyUnits} sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 28, height: 28 }}>
                       <AddIcon sx={{ fontSize: 14 }} />
                     </IconButton>
-                    <Typography sx={{ fontSize: '0.82rem', color: '#555' }}>units &times; &#8358;1,000 = <strong style={{ color: '#B8860B' }}>{formatNaira(loyaltyDiscount)} off</strong></Typography>
+                    <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>units &times; &#8358;1,000 = <strong style={{ color: '#B8860B' }}>{formatNaira(loyaltyDiscount)} off</strong></Typography>
                   </Box>
                 </Box>
               )}
@@ -778,7 +778,7 @@ export default function CartPage() {
         {/* Recently Viewed */}
         {recentlyViewed.length > 0 && (
           <Box sx={{ mt: 4 }}>
-            <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', mb: 1.5, fontSize: '1.1rem' }}>
+            <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 1.5, fontSize: '1.1rem' }}>
               Recently Viewed
             </Typography>
             <Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { height: 4 }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#F0C0D0', borderRadius: 2 } }}>
@@ -796,7 +796,7 @@ export default function CartPage() {
                     </Box>
                   )}
                   <Box sx={{ p: 1 }}>
-                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#333', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                       {item.name}
                     </Typography>
                     <Typography sx={{ fontSize: '0.75rem', color: '#E91E8C', fontWeight: 700, mt: 0.3 }}>
@@ -846,12 +846,12 @@ export default function CartPage() {
                   {giftCardDiscount > 0 && <Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.75rem', color: '#2e7d32' }}>Gift card: -{formatNaira(giftCardDiscount)}</Typography>}
                   {referralDiscount > 0 && <Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.75rem', color: '#2e7d32' }}>Referral: -{formatNaira(referralDiscount)}</Typography>}
                   {loyaltyDiscount > 0 && <Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.75rem', color: '#B8860B' }}>Loyalty: -{formatNaira(loyaltyDiscount)}</Typography>}
-                  <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.15rem', color: '#000' }}>
+                  <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.15rem', color: 'var(--text-main)' }}>
                     Total: <span style={{ color: '#E91E8C' }}>{formatNaira(finalTotal)}</span>
                   </Typography>
                 </>
               ) : (
-                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.15rem', color: '#000' }}>
+                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.15rem', color: 'var(--text-main)' }}>
                   Total: <span style={{ color: '#E91E8C' }}>{formatNaira(total)}</span>
                 </Typography>
               )}
@@ -887,7 +887,7 @@ export default function CartPage() {
         fullWidth
         PaperProps={{ sx: { borderRadius: 3 } }}
       >
-        <DialogTitle sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#4A0E4E', pb: 1 }}>
+        <DialogTitle sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', pb: 1 }}>
           Secure Your Appointment{services.length > 1 ? 's' : ''}
         </DialogTitle>
         <DialogContent>
@@ -896,7 +896,7 @@ export default function CartPage() {
             {services.map((s) => (
               <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
                 <Box sx={{ flex: 1, mr: 1 }}>
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#333' }}>{s.name}</Typography>
+                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-main)' }}>{s.name}</Typography>
                   <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>{s.date}</Typography>
                 </Box>
                 <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#E91E8C', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
@@ -907,8 +907,8 @@ export default function CartPage() {
           <Divider sx={{ borderColor: '#F0C0D0', mb: 2 }} />
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-            <Typography sx={{ fontSize: '0.9rem', color: '#555' }}>Appointment total</Typography>
-            <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>{formatNaira(serviceSubtotal)}</Typography>
+            <Typography sx={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Appointment total</Typography>
+            <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-muted)' }}>{formatNaira(serviceSubtotal)}</Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
             <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#E91E8C' }}>Deposit (50%)</Typography>
@@ -918,7 +918,7 @@ export default function CartPage() {
             Balance {formatNaira(serviceSubtotal - depositAmount)} due on appointment day
           </Typography>
 
-          <Typography sx={{ fontSize: '0.85rem', color: '#555', lineHeight: 1.6 }}>
+          <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
             Pay the 50% deposit via Paystack to confirm your booking, or proceed to WhatsApp to arrange payment manually.
           </Typography>
         </DialogContent>

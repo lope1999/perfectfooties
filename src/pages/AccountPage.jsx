@@ -143,7 +143,7 @@ function normalizePresetSize(str) {
 
 // Client loyalty tiers — 1 review per level, brand-aligned
 const CLIENT_TIERS = [
-	{ min: 5, label: 'Diamond Diva',  emoji: '💎', color: '#4A0E4E', bg: '#F3E5F5', border: '#CE93D8', desc: 'The absolute elite — top of the nail game!' },
+	{ min: 5, label: 'Diamond Diva',  emoji: '💎', color: 'var(--text-purple)', bg: '#F3E5F5', border: '#CE93D8', desc: 'The absolute elite — top of the nail game!' },
 	{ min: 4, label: 'Star Client',   emoji: '⭐', color: '#B8860B', bg: '#FFFDE7', border: '#FFD54F', desc: 'Proven loyal — a true Chizzys star!' },
 	{ min: 3, label: 'Nail Lover',    emoji: '💅', color: '#C2185B', bg: '#FCE4EC', border: '#F48FB1', desc: 'Three visits strong — dedicated to the craft!' },
 	{ min: 2, label: 'Glam Client',   emoji: '✨', color: '#6A1B9A', bg: '#EDE7F6', border: '#B39DDB', desc: "You came back — we love your loyalty!" },
@@ -617,7 +617,7 @@ export default function AccountPage() {
 					>
 						Sign in to your account
 					</Typography>
-					<Typography sx={{ color: "#555", mb: 4, lineHeight: 1.7 }}>
+					<Typography sx={{ color: "var(--text-muted)", mb: 4, lineHeight: 1.7 }}>
 						Sign in with Google to view your order history, track
 						appointments, and manage your profile.
 					</Typography>
@@ -657,7 +657,7 @@ export default function AccountPage() {
 					sx={{
 						fontFamily: ff,
 						fontWeight: 700,
-						color: "#000",
+						color: "var(--text-main)",
 						mb: 3,
 						textAlign: "center",
 						fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" },
@@ -768,14 +768,14 @@ export default function AccountPage() {
 						>
 							<Box sx={statBtnSx} onClick={() => navigate("/products")}>
 								<ShoppingBagIcon
-									sx={{ fontSize: 24, color: "#4A0E4E", mb: 0.5 }}
+									sx={{ fontSize: 24, color: "var(--text-purple)", mb: 0.5 }}
 								/>
 								<Typography
 									sx={{
 										fontFamily: ff,
 										fontWeight: 700,
 										fontSize: "1.4rem",
-										color: "#4A0E4E",
+										color: "var(--text-purple)",
 										lineHeight: 1,
 									}}
 								>
@@ -926,7 +926,7 @@ export default function AccountPage() {
 												<Typography
 													sx={{
 														fontSize: "0.78rem",
-														color: "#666",
+														color: "var(--text-muted)",
 														mt: 0.2,
 													}}
 												>
@@ -1063,7 +1063,7 @@ export default function AccountPage() {
 												fontFamily: ff,
 												fontWeight: 700,
 												fontSize: "0.95rem",
-												color: "#4A0E4E",
+												color: "var(--text-purple)",
 											}}
 										>
 											Loyalty Points
@@ -1228,7 +1228,7 @@ export default function AccountPage() {
 												fontFamily: ff,
 												fontWeight: 700,
 												fontSize: "0.95rem",
-												color: "#4A0E4E",
+												color: "var(--text-purple)",
 											}}
 										>
 											Refer a Friend
@@ -1329,7 +1329,7 @@ export default function AccountPage() {
 										fontFamily: ff,
 										fontWeight: 700,
 										fontSize: "0.95rem",
-										color: "#4A0E4E",
+										color: "var(--text-purple)",
 										flex: 1,
 										letterSpacing: 1,
 									}}
@@ -1431,7 +1431,7 @@ export default function AccountPage() {
 									minWidth: 140,
 									border: "1.5px solid #4A0E4E",
 									borderRadius: "20px",
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									py: 1,
 									fontFamily: ff,
 									fontWeight: 600,
@@ -1453,7 +1453,7 @@ export default function AccountPage() {
 									minWidth: 140,
 									border: "1.5px solid #4A0E4E",
 									borderRadius: "20px",
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									py: 1,
 									fontFamily: ff,
 									fontWeight: 600,
@@ -1493,7 +1493,7 @@ export default function AccountPage() {
 											fontFamily: ff,
 											fontWeight: 700,
 											fontSize: "0.85rem",
-											color: "#4A0E4E",
+											color: "var(--text-purple)",
 											textTransform: "uppercase",
 											letterSpacing: 0.5,
 										}}
@@ -1526,7 +1526,7 @@ export default function AccountPage() {
 											sx={{
 												fontFamily: ff,
 												fontSize: "0.88rem",
-												color: "#333",
+												color: "var(--text-main)",
 											}}
 										>
 											{displayPhone}
@@ -1552,7 +1552,7 @@ export default function AccountPage() {
 											sx={{
 												fontFamily: ff,
 												fontSize: "0.88rem",
-												color: "#333",
+												color: "var(--text-main)",
 											}}
 										>
 											{displayAddress}
@@ -1601,7 +1601,7 @@ export default function AccountPage() {
 												fontFamily: ff,
 												fontWeight: 700,
 												fontSize: "0.85rem",
-												color: "#4A0E4E",
+												color: "var(--text-purple)",
 												textTransform: "uppercase",
 												letterSpacing: 0.5,
 											}}
@@ -1625,7 +1625,7 @@ export default function AccountPage() {
 											size="small"
 											sx={{
 												backgroundColor: "#FFF0F5",
-												color: "#4A0E4E",
+												color: "var(--text-purple)",
 												fontWeight: 600,
 												fontSize: "0.78rem",
 											}}
@@ -1638,7 +1638,7 @@ export default function AccountPage() {
 												size="small"
 												sx={{
 													backgroundColor: "#FFF0F5",
-													color: "#4A0E4E",
+													color: "var(--text-purple)",
 													fontWeight: 600,
 													fontSize: "0.78rem",
 												}}
@@ -1776,7 +1776,7 @@ export default function AccountPage() {
 									<Typography
 										sx={{
 											fontSize: "0.85rem",
-											color: "#555",
+											color: "var(--text-muted)",
 											lineHeight: 1.5,
 										}}
 									>
@@ -1982,7 +1982,7 @@ export default function AccountPage() {
 											}
 											sx={{
 												color: "#999",
-												"&:hover": { color: "#4A0E4E" },
+												"&:hover": { color: "var(--text-purple)" },
 											}}
 										>
 											<VisibilityOutlinedIcon />
@@ -2071,7 +2071,7 @@ export default function AccountPage() {
 					</DialogTitle>
 					<DialogContent>
 						<Typography
-							sx={{ color: "#555", fontSize: "0.9rem", mt: 1, mb: 2.5 }}
+							sx={{ color: "var(--text-muted)", fontSize: "0.9rem", mt: 1, mb: 2.5 }}
 						>
 							You are cancelling{" "}
 							<strong>
@@ -2264,7 +2264,7 @@ export default function AccountPage() {
 								<Typography
 									sx={{
 										fontSize: "0.82rem",
-										color: "#555",
+										color: "var(--text-muted)",
 										mb: 2,
 										lineHeight: 1.6,
 									}}
@@ -2300,7 +2300,7 @@ export default function AccountPage() {
 						) : (
 							<Box>
 								<Typography
-									sx={{ fontSize: "0.82rem", color: "#555", mb: 2 }}
+									sx={{ fontSize: "0.82rem", color: "var(--text-muted)", mb: 2 }}
 								>
 									Each unit = <strong>50 pts = ₦1,000 off</strong>.
 									Select how many units to redeem:
@@ -2701,7 +2701,7 @@ export default function AccountPage() {
 									fontFamily: ff,
 									fontWeight: 700,
 									fontSize: "0.85rem",
-									color: "#4A0E4E",
+									color: "var(--text-purple)",
 									mb: 1,
 								}}
 							>
@@ -3085,7 +3085,7 @@ function OrderCard({ order, rated, onRate, onReschedule, onCancel, onEdit, onReo
 					{order.items.map((item, i) => (
 						<Typography
 							key={i}
-							sx={{ color: "#555", fontSize: "0.82rem" }}
+							sx={{ color: "var(--text-muted)", fontSize: "0.82rem" }}
 						>
 							{item.name || item.serviceName || "Item"}
 							{item.quantity > 1 ? ` x${item.quantity}` : ""}
@@ -3169,7 +3169,7 @@ function OrderCard({ order, rated, onRate, onReschedule, onCancel, onEdit, onReo
 					<Button
 						size="small"
 						onClick={onReschedule}
-						sx={{ border: '1.5px solid #4A0E4E', borderRadius: '20px', color: '#4A0E4E', px: 2, fontFamily: ff, fontWeight: 600, fontSize: '0.78rem', textTransform: 'none', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' } }}
+						sx={{ border: '1.5px solid #4A0E4E', borderRadius: '20px', color: 'var(--text-purple)', px: 2, fontFamily: ff, fontWeight: 600, fontSize: '0.78rem', textTransform: 'none', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' } }}
 					>
 						Reschedule
 					</Button>
@@ -3197,7 +3197,7 @@ function OrderCard({ order, rated, onRate, onReschedule, onCancel, onEdit, onReo
 					</Typography>
 				)}
 				{order.rescheduleReason && (
-					<Typography sx={{ fontSize: '0.75rem', color: '#555', mt: 0.3 }}>
+					<Typography sx={{ fontSize: '0.75rem', color: 'var(--text-muted)', mt: 0.3 }}>
 						Reason: {order.rescheduleReason}
 					</Typography>
 				)}
