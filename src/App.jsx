@@ -29,6 +29,7 @@ import GalleryPage from './pages/GalleryPage';
 import ThankYouPage from './pages/ThankYouPage';
 import PressOnDetailPage from './pages/PressOnDetailPage';
 import NailCarePage from './pages/NailCarePage';
+import GroupBookingPage from './pages/GroupBookingPage';
 
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 
@@ -76,6 +77,7 @@ function App() {
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/thank-you" element={<ThankYouPage />} />
           <Route path="/nail-care" element={<NailCarePage />} />
+          <Route path="/group-booking" element={<GroupBookingPage />} />
           <Route
             path="/admin"
             element={

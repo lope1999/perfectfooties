@@ -1115,19 +1115,18 @@ Please confirm availability for this request. Thank you!`;
 								</Box>
 								<Button
 									size="small"
-									variant={isGroupBooking ? 'contained' : 'outlined'}
-									onClick={() => setIsGroupBooking((v) => !v)}
+									variant="outlined"
+									onClick={() => navigate('/group-booking')}
 									sx={{
 										fontFamily: '"Georgia", serif',
 										fontSize: '0.75rem',
 										borderRadius: '20px',
 										borderColor: '#E91E8C',
-										color: isGroupBooking ? '#fff' : '#E91E8C',
-										backgroundColor: isGroupBooking ? '#E91E8C' : 'transparent',
+										color: '#E91E8C',
 										'&:hover': { backgroundColor: '#E91E8C', color: '#fff', borderColor: '#E91E8C' },
 									}}
 								>
-									{isGroupBooking ? 'Cancel Group' : 'Book for a Group'}
+									Book for a Group
 								</Button>
 							</Box>
 							{isGroupBooking && (

@@ -103,7 +103,7 @@ export default function ServiceMenuPage() {
                       Each person picks their own service · One date &amp; time for everyone · Single deposit payment
                     </Typography>
                     <Button
-                      onClick={() => navigate('/book', { state: { isGroupBooking: true } })}
+                      onClick={() => navigate('/group-booking')}
                       sx={{
                         fontFamily: ff,
                         fontWeight: 700,
