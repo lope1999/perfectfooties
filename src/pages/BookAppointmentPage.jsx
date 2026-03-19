@@ -141,9 +141,9 @@ export default function BookAppointmentPage() {
 	const [waitlistSuccess, setWaitlistSuccess] = useState(false);
 	const [calendarModalOpen, setCalendarModalOpen] = useState(false);
 
-	// Group booking
+	// Group booking -- auto-enable when navigated from ServiceMenuPage with group intent
 	const GROUP_DISCOUNT_PCT = 0.10;
-	const [isGroupBooking, setIsGroupBooking] = useState(false);
+	const [isGroupBooking, setIsGroupBooking] = useState(() => !!location.state?.isGroupBooking);
 	const [groupPeople, setGroupPeople] = useState([{ name: '', serviceId: '' }]);
 
 	const addGroupPerson = () => setGroupPeople((p) => [...p, { name: '', serviceId: '' }]);
@@ -1212,6 +1212,7 @@ Please confirm availability for this request. Thank you!`;
 							)}
 						</Box>
 					)}
+
 
 					{/* Discounts & Rewards */}
 					{isFormValid && (
