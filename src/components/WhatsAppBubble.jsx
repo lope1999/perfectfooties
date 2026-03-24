@@ -20,16 +20,16 @@ export default function WhatsAppBubble() {
           width: 52,
           height: 52,
           borderRadius: '50%',
-          backgroundColor: '#E91E8C',
+          backgroundColor: '#25D366',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 4px 20px rgba(233,30,140,0.45)',
+          boxShadow: '0 4px 20px rgba(37,211,102,0.45)',
           transition: 'transform 0.2s ease, box-shadow 0.2s ease',
           textDecoration: 'none',
           '&:hover': {
             transform: 'scale(1.1)',
-            boxShadow: '0 6px 24px rgba(233,30,140,0.65)',
+            boxShadow: '0 6px 24px rgba(37,211,102,0.65)',
           },
         }}
       >

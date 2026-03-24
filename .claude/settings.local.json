@@ -127,7 +127,8 @@
       "Bash(grep -E \"^[a-z].*\\\\.\\(json|rules|config\\)$\")",
       "Bash(npm run:*)",
       "Bash(ls:*)",
-      "Bash(python3 -:*)"
+      "Bash(python3 -:*)",
+      "Bash(python3:*)"
     ]
   }
 }
