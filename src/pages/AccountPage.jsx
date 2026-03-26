@@ -672,7 +672,9 @@ export default function AccountPage() {
 				<Tabs
 					value={tabIndex}
 					onChange={handleTabChange}
-					centered
+					variant="scrollable"
+					scrollButtons="auto"
+					allowScrollButtonsMobile
 					sx={{
 						mb: 4,
 						"& .MuiTab-root": {
@@ -683,6 +685,7 @@ export default function AccountPage() {
 						},
 						"& .Mui-selected": { color: "#E91E8C" },
 						"& .MuiTabs-indicator": { backgroundColor: "#E91E8C" },
+						"& .MuiTabs-scrollButtons": { color: "#E91E8C" },
 					}}
 				>
 					<Tab label="Profile" />
@@ -769,9 +772,13 @@ export default function AccountPage() {
 						<Box
 							sx={{ display: "flex", gap: 1.5, mb: 3, flexWrap: "wrap" }}
 						>
-							<Box sx={statBtnSx} onClick={() => navigate("/products")}>
+							<Box sx={statBtnSx}>
 								<ShoppingBagIcon
-									sx={{ fontSize: 24, color: "var(--text-purple)", mb: 0.5 }}
+									sx={{
+										fontSize: 24,
+										color: "var(--text-purple)",
+										mb: 0.5,
+									}}
 								/>
 								<Typography
 									sx={{
@@ -790,7 +797,10 @@ export default function AccountPage() {
 									Orders
 								</Typography>
 							</Box>
-							<Box sx={statBtnSx} onClick={() => navigate("/services")}>
+							<Box
+								sx={statBtnSx}
+								//onClick={() => navigate("/services")}
+							>
 								<CalendarTodayIcon
 									sx={{ fontSize: 24, color: "#E91E8C", mb: 0.5 }}
 								/>
@@ -936,8 +946,28 @@ export default function AccountPage() {
 													{tier.desc}
 												</Typography>
 												{tier.perk && (
-													<Box sx={{ mt: 0.8, display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.3, borderRadius: '20px', backgroundColor: tier.bg, border: `1px solid ${tier.border}` }}>
-														<Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: tier.color }}>🎁 {tier.perk}</Typography>
+													<Box
+														sx={{
+															mt: 0.8,
+															display: "inline-flex",
+															alignItems: "center",
+															gap: 0.5,
+															px: 1,
+															py: 0.3,
+															borderRadius: "20px",
+															backgroundColor: tier.bg,
+															border: `1px solid ${tier.border}`,
+														}}
+													>
+														<Typography
+															sx={{
+																fontSize: "0.7rem",
+																fontWeight: 700,
+																color: tier.color,
+															}}
+														>
+															🎁 {tier.perk}
+														</Typography>
 													</Box>
 												)}
 											</Box>
@@ -1035,28 +1065,107 @@ export default function AccountPage() {
 							})()}
 
 						{/* Tier Perks Ladder */}
-						<Box sx={{ mb: 3, borderRadius: 3, border: '1.5px solid #F0C0D0', overflow: 'hidden' }}>
-							<Box sx={{ px: 2, py: 1.2, backgroundColor: '#FFF0F5', borderBottom: '1px solid #F0C0D0' }}>
-								<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.85rem', color: '#E91E8C' }}>
+						<Box
+							sx={{
+								mb: 3,
+								borderRadius: 3,
+								border: "1.5px solid #F0C0D0",
+								overflow: "hidden",
+							}}
+						>
+							<Box
+								sx={{
+									px: 2,
+									py: 1.2,
+									backgroundColor: "#FFF0F5",
+									borderBottom: "1px solid #F0C0D0",
+								}}
+							>
+								<Typography
+									sx={{
+										fontFamily: ff,
+										fontWeight: 700,
+										fontSize: "0.85rem",
+										color: "#E91E8C",
+									}}
+								>
 									🎁 Loyalty Tier Perks
 								</Typography>
 							</Box>
-							{[...CLIENT_TIERS].filter(t => t.min > 0).reverse().map((t) => {
-								const unlocked = reviewCount >= t.min;
-								return (
-									<Box key={t.min} sx={{ px: 2, py: 1.2, display: 'flex', alignItems: 'center', gap: 1.5, borderTop: '1px solid #F9E4EF', backgroundColor: unlocked ? t.bg : 'transparent', opacity: unlocked ? 1 : 0.55 }}>
-										<Typography sx={{ fontSize: '1.3rem', lineHeight: 1, flexShrink: 0 }}>{unlocked ? t.emoji : '🔒'}</Typography>
-										<Box sx={{ flex: 1, minWidth: 0 }}>
-											<Typography sx={{ fontFamily: ff, fontSize: '0.78rem', fontWeight: 700, color: unlocked ? t.color : '#bbb' }}>{t.label}</Typography>
-											<Typography sx={{ fontFamily: ff, fontSize: '0.72rem', color: unlocked ? 'var(--text-muted)' : '#ccc', lineHeight: 1.3 }}>{t.perk}</Typography>
+							{[...CLIENT_TIERS]
+								.filter((t) => t.min > 0)
+								.reverse()
+								.map((t) => {
+									const unlocked = reviewCount >= t.min;
+									return (
+										<Box
+											key={t.min}
+											sx={{
+												px: 2,
+												py: 1.2,
+												display: "flex",
+												alignItems: "center",
+												gap: 1.5,
+												borderTop: "1px solid #F9E4EF",
+												backgroundColor: unlocked
+													? t.bg
+													: "transparent",
+												opacity: unlocked ? 1 : 0.55,
+											}}
+										>
+											<Typography
+												sx={{
+													fontSize: "1.3rem",
+													lineHeight: 1,
+													flexShrink: 0,
+												}}
+											>
+												{unlocked ? t.emoji : "🔒"}
+											</Typography>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<Typography
+													sx={{
+														fontFamily: ff,
+														fontSize: "0.78rem",
+														fontWeight: 700,
+														color: unlocked ? t.color : "#bbb",
+													}}
+												>
+													{t.label}
+												</Typography>
+												<Typography
+													sx={{
+														fontFamily: ff,
+														fontSize: "0.72rem",
+														color: unlocked
+															? "var(--text-muted)"
+															: "#ccc",
+														lineHeight: 1.3,
+													}}
+												>
+													{t.perk}
+												</Typography>
+											</Box>
+											{unlocked ? (
+												<CheckCircleOutlineIcon
+													sx={{
+														fontSize: "1rem",
+														color: t.color,
+														flexShrink: 0,
+													}}
+												/>
+											) : (
+												<LockOutlinedIcon
+													sx={{
+														fontSize: "0.9rem",
+														color: "#ddd",
+														flexShrink: 0,
+													}}
+												/>
+											)}
 										</Box>
-										{unlocked
-											? <CheckCircleOutlineIcon sx={{ fontSize: '1rem', color: t.color, flexShrink: 0 }} />
-											: <LockOutlinedIcon sx={{ fontSize: '0.9rem', color: '#ddd', flexShrink: 0 }} />
-										}
-									</Box>
-								);
-							})}
+									);
+								})}
 						</Box>
 
 						{/* Loyalty Points Card */}
@@ -2104,7 +2213,12 @@ export default function AccountPage() {
 					</DialogTitle>
 					<DialogContent>
 						<Typography
-							sx={{ color: "var(--text-muted)", fontSize: "0.9rem", mt: 1, mb: 2.5 }}
+							sx={{
+								color: "var(--text-muted)",
+								fontSize: "0.9rem",
+								mt: 1,
+								mb: 2.5,
+							}}
 						>
 							You are cancelling{" "}
 							<strong>
@@ -2333,7 +2447,11 @@ export default function AccountPage() {
 						) : (
 							<Box>
 								<Typography
-									sx={{ fontSize: "0.82rem", color: "var(--text-muted)", mb: 2 }}
+									sx={{
+										fontSize: "0.82rem",
+										color: "var(--text-muted)",
+										mb: 2,
+									}}
 								>
 									Each unit = <strong>50 pts = ₦1,000 off</strong>.
 									Select how many units to redeem:
@@ -2607,7 +2725,8 @@ export default function AccountPage() {
 					onSubmitted={(orderId) => {
 						setRatedOrders((prev) => ({ ...prev, [orderId]: true }));
 						setRateDialog(null);
-						if (user?.uid) incrementUserReviewCount(user.uid).catch(() => {});
+						if (user?.uid)
+							incrementUserReviewCount(user.uid).catch(() => {});
 						showToast(
 							"Thank you! Your review has been submitted.",
 							"success",

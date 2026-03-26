@@ -199,6 +199,37 @@ export default function ThankYouPage() {
                             {item.nailShape}{item.nailLength ? ` · ${item.nailLength}` : ''}
                           </Typography>
                         )}
+                        {item.selectedLength && (
+                          <Typography sx={{ fontSize: '0.75rem', color: '#888', mt: 0.2 }}>
+                            Length: {item.selectedLength}
+                          </Typography>
+                        )}
+                        {item.setIncludes?.length > 0 && (
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.4, mt: 0.5 }}>
+                            {item.setIncludes.map((tag) => (
+                              <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.65rem', height: 18, backgroundColor: '#FCE4EC', color: '#C2185B', fontWeight: 600 }} />
+                            ))}
+                          </Box>
+                        )}
+                        {item.inspirationTags?.length > 0 && (
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.4, mt: 0.4 }}>
+                            {item.inspirationTags.map((tag) => (
+                              <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.65rem', height: 18, backgroundColor: '#EDE7F6', color: '#5E35B1', fontWeight: 600 }} />
+                            ))}
+                          </Box>
+                        )}
+                        {item.nailNotes && (
+                          <Typography sx={{ fontSize: '0.73rem', color: '#888', mt: 0.4, fontStyle: 'italic' }}>
+                            &ldquo;{item.nailNotes}&rdquo;
+                          </Typography>
+                        )}
+                        {item.specialRequest && (
+                          <Chip
+                            label="Made to Order — 4–7 days"
+                            size="small"
+                            sx={{ mt: 0.5, fontSize: '0.65rem', height: 18, backgroundColor: '#FFF8E1', color: '#B8860B', fontWeight: 700, border: '1px solid #FFD54F' }}
+                          />
+                        )}
                         {item.date && (
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.3 }}>
                             <AccessTimeIcon sx={{ fontSize: 13, color: '#E91E8C' }} />

@@ -39,7 +39,7 @@ import { saveOrder } from '../lib/orderService';
 import { fetchBookedSlots, saveBookedSlot, addToWaitlist } from '../lib/bookedSlotsService';
 import SignInPrompt from '../components/SignInPrompt';
 import CalendarWidget from '../components/CalendarWidget';
-import { verifyPaystackDeposit } from '../lib/paymentService';
+import { verifyPaystackDeposit, confirmOrderDirectly } from '../lib/paymentService';
 import { validateReferralCode, applyReferral, REFERRAL_DISCOUNT, getLoyaltyData, redeemLoyaltyPoints, REDEMPTION_UNIT, REDEMPTION_VALUE, getPendingLoyaltyReward, clearPendingLoyaltyReward } from '../lib/loyaltyService';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -304,6 +304,7 @@ export default function BookAppointmentPage() {
 	};
 
 	const handleCompleteOrder = (paymentReference = '') => {
+		if (!paymentReference) { setPaymentModalOpen(false); return; }
 		setPaymentModalOpen(false);
 		const selected = allServices.find((s) => s.id === selectedService);
 		const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
@@ -421,33 +422,50 @@ Please confirm availability for this request. Thank you!`;
 				}),
 				items: orderItems,
 			})
-				.then((orderRef) => {
+				.then(async (orderRef) => {
 					saveBookedSlot({
 						date: formatDate(appointmentDate),
 						time: appointmentTime,
 						orderId: orderRef.id,
 						uid: user.uid,
 					}).catch(() => {});
-					if (paymentReference) {
-						verifyPaystackDeposit({ reference: paymentReference, orderId: orderRef.id, uid: user.uid }).catch(() => {});
-					}
 					if (referralValid && refCodeInput) {
 						applyReferral(refCodeInput.trim(), user.uid).catch(() => {});
 						sessionStorage.removeItem('pendingReferralCode');
 					}
 					if (loyaltyUnits > 0) {
 						redeemLoyaltyPoints(user.uid, loyaltyUnits * REDEMPTION_UNIT).catch(() => {});
-			clearPendingLoyaltyReward();
+						clearPendingLoyaltyReward();
+					}
+					if (paymentReference) {
+						// Primary: confirm directly in Firestore (triggers email via onAppointmentConfirmed)
+						await confirmOrderDirectly(user.uid, orderRef.id);
+						// Background: verify payment with Paystack API (non-blocking)
+						verifyPaystackDeposit({ reference: paymentReference, orderId: orderRef.id, uid: user.uid }).catch(() => {});
 					}
 				})
-				.catch(() => {});
+				.catch((err) => console.error('[Booking] Order confirmation error:', err))
+				.finally(() => setPaidReference(paymentReference));
+		} else {
+			setPaidReference(paymentReference);
 		}
+	};
 
-		navigate("/thank-you", {
+	const paidRefData = paidReference ? (() => {
+		const selected = allServices.find((s) => s.id === selectedService);
+		const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
+		const effectivePrice = selected ? getServiceEffectivePrice(selected, discounts) : 0;
+		return { selected, fullDate, effectivePrice };
+	})() : null;
+
+	useEffect(() => {
+		if (!paidReference || !paidRefData) return;
+		const { selected, fullDate, effectivePrice } = paidRefData;
+		navigate('/thank-you', {
 			state: {
-				type: "service",
+				type: 'service',
 				customerName,
-				serviceName: isGroupBooking ? `Group Booking (${allGroupPeople.length} people)` : (selected?.name || ""),
+				serviceName: isGroupBooking ? `Group Booking (${allGroupPeople.length} people)` : (selected?.name || ''),
 				appointmentDate: fullDate,
 				total: isGroupBooking ? groupFinalTotal : effectivePrice,
 				finalTotal: isGroupBooking ? groupFinalTotal : finalBookingPrice,
@@ -459,24 +477,18 @@ Please confirm availability for this request. Thank you!`;
 				items: isGroupBooking
 					? allGroupPeople.map((p) => {
 							const svc = allServices.find((s) => s.id === p.serviceId);
-							return { kind: "service", serviceName: svc?.name || "", price: svc ? getServiceEffectivePrice(svc, discounts) : 0, guestName: p.name, date: fullDate, nailShape: formData.nailShape, nailLength: formData.nailLength };
+							return { kind: 'service', serviceName: svc?.name || '', price: svc ? getServiceEffectivePrice(svc, discounts) : 0, guestName: p.name, date: fullDate, nailShape: formData.nailShape, nailLength: formData.nailLength };
 						})
-					: [{
-						kind: "service",
-						serviceName: selected?.name || "",
-						price: finalBookingPrice,
-						date: fullDate,
-						nailShape: formData.nailShape,
-						nailLength: formData.nailLength,
-					}],
+					: [{ kind: 'service', serviceName: selected?.name || '', price: finalBookingPrice, date: fullDate, nailShape: formData.nailShape, nailLength: formData.nailLength }],
 			},
 		});
-	};
+	}, [paidReference]);
+
 
 	const payWithPaystack = () => {
 		const pk = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY) || '';
 		if (!pk || !window.PaystackPop) {
-			handleCompleteOrder('');
+			alert('Payment is required to confirm your booking. Please refresh the page and try again.');
 			return;
 		}
 		const handler = window.PaystackPop.setup({
@@ -1380,12 +1392,7 @@ Please confirm availability for this request. Thank you!`;
 					>
 						Pay {formatNaira(depositAmount)} Deposit
 					</Button>
-					<Button
-						onClick={() => handleCompleteOrder('')}
-						sx={{ color: '#999', fontSize: '0.82rem', textTransform: 'none', fontFamily: '"Georgia", serif', '&:hover': { color: 'var(--text-muted)' } }}
-					>
-						Continue on WhatsApp (pay later)
-					</Button>
+
 				</DialogActions>
 			</Dialog>
 

@@ -15,6 +15,8 @@ import {
   ListItemIcon,
   ListItemText,
   Tooltip,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -80,7 +82,6 @@ export default function PressOnDetailPage() {
   const product = category?.products?.find((p) => p.id === productId) || null;
 
   const isReadyMade = !!category?.readyMade;
-  const maxQty = isReadyMade ? (product?.stock || 1) : 5;
 
   // Form state
   const [customerName, setCustomerName] = useState('');
@@ -88,6 +89,11 @@ export default function PressOnDetailPage() {
   const [nailShape, setNailShape] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [nailBedSize, setNailBedSize] = useState('');
+  const [orderMore, setOrderMore] = useState(false);
+
+  const maxQty = isReadyMade
+    ? (orderMore ? 10 : (product?.stock || 1))
+    : 5;
   const [error, setError] = useState('');
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
@@ -130,6 +136,13 @@ export default function PressOnDetailPage() {
       }
     }
   }, [user]);
+
+  // Reset quantity to stock cap when orderMore is turned off
+  useEffect(() => {
+    if (!orderMore && isReadyMade && product?.stock !== undefined) {
+      setQuantity((q) => Math.min(q, product.stock || 1));
+    }
+  }, [orderMore]);
 
   useEffect(() => {
     if (!product || !category) return;
@@ -209,6 +222,7 @@ export default function PressOnDetailPage() {
     categoryId: category.id,
     readyMade: isReadyMade,
     stock: product.stock,
+    specialRequest: isReadyMade && orderMore,
   });
 
   const handleAddToCart = () => {
@@ -345,7 +359,14 @@ export default function PressOnDetailPage() {
 
 			<Container maxWidth="sm" sx={{ py: 3 }}>
 				{/* Product title + share button */}
-				<Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+				<Box
+					sx={{
+						display: "flex",
+						alignItems: "flex-start",
+						justifyContent: "space-between",
+						mb: 1,
+					}}
+				>
 					<Typography
 						variant="h4"
 						sx={{
@@ -360,9 +381,16 @@ export default function PressOnDetailPage() {
 					</Typography>
 					<Tooltip title="Share this product">
 						<IconButton
-							onClick={e => setShareAnchor(e.currentTarget)}
+							onClick={(e) => setShareAnchor(e.currentTarget)}
 							size="small"
-							sx={{ mt: 0.5, ml: 1, color: '#E91E8C', border: '1px solid #F0C0D0', borderRadius: 2, p: 0.8 }}
+							sx={{
+								mt: 0.5,
+								ml: 1,
+								color: "#E91E8C",
+								border: "1px solid #F0C0D0",
+								borderRadius: 2,
+								p: 0.8,
+							}}
 						>
 							<ShareIcon sx={{ fontSize: 20 }} />
 						</IconButton>
@@ -373,15 +401,41 @@ export default function PressOnDetailPage() {
 					anchorEl={shareAnchor}
 					open={Boolean(shareAnchor)}
 					onClose={() => setShareAnchor(null)}
-					PaperProps={{ sx: { borderRadius: 2, minWidth: 180, boxShadow: '0 4px 20px rgba(0,0,0,0.12)' } }}
+					PaperProps={{
+						sx: {
+							borderRadius: 2,
+							minWidth: 180,
+							boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+						},
+					}}
 				>
 					<MenuItem onClick={handleCopyLink} sx={{ py: 1.2 }}>
-						<ListItemIcon><ContentCopyIcon sx={{ fontSize: 18, color: 'var(--text-purple)' }} /></ListItemIcon>
-						<ListItemText primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontSize: '0.88rem' }}>Copy link</ListItemText>
+						<ListItemIcon>
+							<ContentCopyIcon
+								sx={{ fontSize: 18, color: "var(--text-purple)" }}
+							/>
+						</ListItemIcon>
+						<ListItemText
+							primaryTypographyProps={{
+								fontFamily: '"Georgia", serif',
+								fontSize: "0.88rem",
+							}}
+						>
+							Copy link
+						</ListItemText>
 					</MenuItem>
 					<MenuItem onClick={handleShareWhatsApp} sx={{ py: 1.2 }}>
-						<ListItemIcon><WhatsAppIcon sx={{ fontSize: 18, color: '#25D366' }} /></ListItemIcon>
-						<ListItemText primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontSize: '0.88rem' }}>Share on WhatsApp</ListItemText>
+						<ListItemIcon>
+							<WhatsAppIcon sx={{ fontSize: 18, color: "#25D366" }} />
+						</ListItemIcon>
+						<ListItemText
+							primaryTypographyProps={{
+								fontFamily: '"Georgia", serif',
+								fontSize: "0.88rem",
+							}}
+						>
+							Share on WhatsApp
+						</ListItemText>
 					</MenuItem>
 				</Menu>
 
@@ -482,7 +536,9 @@ export default function PressOnDetailPage() {
 
 				{/* Flash sale countdown */}
 				{getSaleEndsAt(product) && (
-					<Box sx={{ mt: 0.5 }}><FlashSaleCountdown endsAt={getSaleEndsAt(product)} /></Box>
+					<Box sx={{ mt: 0.5 }}>
+						<FlashSaleCountdown endsAt={getSaleEndsAt(product)} />
+					</Box>
 				)}
 
 				{/* Description */}
@@ -501,45 +557,54 @@ export default function PressOnDetailPage() {
 
 				{/* Image guide note — only for custom press-ons */}
 				{!isReadyMade && (
-				<Box
-					sx={{
-						display: "flex",
-						alignItems: "flex-start",
-						gap: 1.5,
-						p: 2,
-						mb: 3,
-						backgroundColor: "#FFFBF0",
-						border: "1px solid #FFE082",
-						borderRadius: 3,
-					}}
-				>
-					<InfoOutlinedIcon
-						sx={{ color: "#B8860B", fontSize: 20, mt: 0.1, flexShrink: 0 }}
-					/>
-					<Box>
-						<Typography
+					<Box
+						sx={{
+							display: "flex",
+							alignItems: "flex-start",
+							gap: 1.5,
+							p: 2,
+							mb: 3,
+							backgroundColor: "#FFFBF0",
+							border: "1px solid #FFE082",
+							borderRadius: 3,
+						}}
+					>
+						<InfoOutlinedIcon
 							sx={{
-								fontFamily: '"Georgia", serif',
-								fontWeight: 700,
-								color: "#7A5800",
-								fontSize: "0.9rem",
-								mb: 0.5,
+								color: "#B8860B",
+								fontSize: 20,
+								mt: 0.1,
+								flexShrink: 0,
 							}}
-						>
-							About this image
-						</Typography>
-						<Typography
-							sx={{ color: "#7A5800", fontSize: "0.85rem", lineHeight: 1.65 }}
-						>
-							The photo shown is a <strong>visual guide only</strong> — not
-							the actual product. It&rsquo;s here to inspire your style. For
-							your custom order, feel free to send us your{" "}
-							<strong>mood board</strong>, install pictures, or any inspiration
-							images — from nature, your favourite colours, food, films,
-							cartoons, or any subject you love!
-						</Typography>
+						/>
+						<Box>
+							<Typography
+								sx={{
+									fontFamily: '"Georgia", serif',
+									fontWeight: 700,
+									color: "#7A5800",
+									fontSize: "0.9rem",
+									mb: 0.5,
+								}}
+							>
+								About this image
+							</Typography>
+							<Typography
+								sx={{
+									color: "#7A5800",
+									fontSize: "0.85rem",
+									lineHeight: 1.65,
+								}}
+							>
+								The photo shown is a <strong>visual guide only</strong>{" "}
+								— not the actual product. It&rsquo;s here to inspire
+								your style. For your custom order, feel free to send us
+								your <strong>mood board</strong>, inspiration pictures,
+								or any images — from nature, your favourite colours,
+								food, films, cartoons, or any subject you love!
+							</Typography>
+						</Box>
 					</Box>
-				</Box>
 				)}
 
 				<Box sx={{ borderTop: "1px solid #F0C0D0", pt: 3 }}>
@@ -589,6 +654,11 @@ export default function PressOnDetailPage() {
 							>
 								Select Preset Size
 							</Typography>
+							{orderMore && (
+								<Typography sx={{ fontSize: "0.78rem", color: "#B8860B", fontStyle: "italic", mb: 1 }}>
+									All sizes available via production — not limited to current stock.
+								</Typography>
+							)}
 							<Box
 								sx={{
 									display: "flex",
@@ -653,72 +723,100 @@ export default function PressOnDetailPage() {
 							</Box>
 
 							{/* Selected preset size breakdown */}
-							{presetSize && (() => {
-								const row = presetSizeData.find((s) => s.label === presetSize);
-								const fingers = [
-									{ label: 'Thumb', key: 'thumb' },
-									{ label: 'Index', key: 'index' },
-									{ label: 'Middle', key: 'middle' },
-									{ label: 'Ring', key: 'ring' },
-									{ label: 'Pinky', key: 'pinky' },
-								];
-								return (
-									<Box
-										sx={{
-											mb: 3,
-											p: 2,
-											backgroundColor: "#FFF0F5",
-											border: "1px solid #F0C0D0",
-											borderRadius: 3,
-										}}
-									>
-										<Typography
-											sx={{
-												fontFamily: '"Georgia", serif',
-												fontWeight: 700,
-												color: "var(--text-purple)",
-												fontSize: "0.88rem",
-												mb: 1.5,
-											}}
-										>
-											Size {presetSize} &mdash; nail tip numbers &amp; approximate widths
-										</Typography>
+							{presetSize &&
+								(() => {
+									const row = presetSizeData.find(
+										(s) => s.label === presetSize,
+									);
+									const fingers = [
+										{ label: "Thumb", key: "thumb" },
+										{ label: "Index", key: "index" },
+										{ label: "Middle", key: "middle" },
+										{ label: "Ring", key: "ring" },
+										{ label: "Pinky", key: "pinky" },
+									];
+									return (
 										<Box
 											sx={{
-												display: "grid",
-												gridTemplateColumns: "repeat(5, 1fr)",
-												gap: 0.8,
+												mb: 3,
+												p: 2,
+												backgroundColor: "#FFF0F5",
+												border: "1px solid #F0C0D0",
+												borderRadius: 3,
 											}}
 										>
-											{fingers.map(({ label, key }) => {
-												const tip = row ? row[key] : null;
-												return (
-													<Box
-														key={key}
-														sx={{
-															textAlign: "center",
-															p: 1,
-															backgroundColor: "#fff",
-															borderRadius: 2,
-															border: "1px solid #F0C0D0",
-														}}
-													>
-														<Typography sx={{ fontSize: "0.65rem", color: "#999", mb: 0.3, lineHeight: 1.2 }}>
-															{label}
-														</Typography>
-														<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: "1rem", color: "#E91E8C", lineHeight: 1.2 }}>
-															{tip}
-														</Typography>
-														<Typography sx={{ fontSize: "0.62rem", color: "#888", mt: 0.2 }}>
-															{tip !== null ? tipApprox[tip] : ""}
-														</Typography>
-													</Box>
-												);
-											})}
+											<Typography
+												sx={{
+													fontFamily: '"Georgia", serif',
+													fontWeight: 700,
+													color: "var(--text-purple)",
+													fontSize: "0.88rem",
+													mb: 1.5,
+												}}
+											>
+												Size {presetSize} &mdash; nail tip numbers
+												&amp; approximate widths
+											</Typography>
+											<Box
+												sx={{
+													display: "grid",
+													gridTemplateColumns: "repeat(5, 1fr)",
+													gap: 0.8,
+												}}
+											>
+												{fingers.map(({ label, key }) => {
+													const tip = row ? row[key] : null;
+													return (
+														<Box
+															key={key}
+															sx={{
+																textAlign: "center",
+																p: 1,
+																backgroundColor: "#fff",
+																borderRadius: 2,
+																border: "1px solid #F0C0D0",
+															}}
+														>
+															<Typography
+																sx={{
+																	fontSize: "0.65rem",
+																	color: "#999",
+																	mb: 0.3,
+																	lineHeight: 1.2,
+																}}
+															>
+																{label}
+															</Typography>
+															<Typography
+																sx={{
+																	fontFamily:
+																		'"Georgia", serif',
+																	fontWeight: 700,
+																	fontSize: "1rem",
+																	color: "#E91E8C",
+																	lineHeight: 1.2,
+																}}
+															>
+																{tip}
+															</Typography>
+															<Typography
+																sx={{
+																	fontSize: "0.62rem",
+																	color: "#888",
+																	mt: 0.2,
+																}}
+															>
+																{tip !== null
+																	? tipApprox[tip]
+																	: ""}
+															</Typography>
+														</Box>
+													);
+												})}
+											</Box>
 										</Box>
-									</Box>
-								);
-							})()}
+									);
+								})()}
 
 							<Typography
 								sx={{
@@ -739,7 +837,15 @@ export default function PressOnDetailPage() {
 								sx={{
 									width: 110,
 									mb: 3,
-									"& .MuiOutlinedInput-root": { borderRadius: 2 },
+									"& .MuiOutlinedInput-root": {
+										borderRadius: 2,
+										...(orderMore && {
+											backgroundColor: '#FFFDE7',
+											'& fieldset': { borderColor: '#FFB300' },
+											'&:hover fieldset': { borderColor: '#F9A825' },
+											'&.Mui-focused fieldset': { borderColor: '#F9A825' },
+										}),
+									},
 								}}
 							>
 								{Array.from({ length: maxQty }, (_, i) => i + 1).map(
@@ -757,12 +863,64 @@ export default function PressOnDetailPage() {
 										color: product.stock <= 2 ? "#E91E8C" : "#999",
 										fontSize: "0.8rem",
 										fontStyle: "italic",
-										mb: 3,
+										mb: 1.5,
 										mt: -2,
 									}}
 								>
 									{product.stock} in stock
 								</Typography>
+							)}
+
+							{/* Order More Toggle */}
+							{product.stock !== undefined && (
+								<Box
+									sx={{
+										mb: 3,
+										p: 2,
+										borderRadius: 3,
+										border: orderMore ? "1.5px solid #FFB300" : "1.5px solid #F0C0D0",
+										backgroundColor: orderMore ? '#FFFDE7' : '#FAFAFA',
+										transition: 'all 0.25s ease',
+									}}
+								>
+									<FormControlLabel
+										control={
+											<Switch
+												checked={orderMore}
+												onChange={(e) => setOrderMore(e.target.checked)}
+												size="small"
+												sx={{
+													'& .MuiSwitch-switchBase.Mui-checked': { color: '#FFB300' },
+													'& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#FFB300' },
+												}}
+											/>
+										}
+										label={
+											<Typography
+												sx={{
+													fontFamily: '"Georgia", serif',
+													fontWeight: 600,
+													fontSize: '0.9rem',
+													color: orderMore ? '#B8860B' : 'var(--text-main)',
+												}}
+											>
+												Order more of this set
+											</Typography>
+										}
+									/>
+									{orderMore && (
+										<Box sx={{ mt: 1, display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+											<InfoOutlinedIcon sx={{ color: '#B8860B', fontSize: 17, mt: 0.15, flexShrink: 0 }} />
+											<Typography sx={{ color: '#7A5800', fontSize: '0.82rem', lineHeight: 1.65 }}>
+												We&rsquo;ll produce this set fresh for you at the{' '}
+												<strong>same price</strong>.{' '}
+												<strong>Production time: 4–7 days</strong> is factored
+												in for this request. All sizes available — you&rsquo;re
+												not limited to current stock.
+											</Typography>
+										</Box>
+									)}
+								</Box>
 							)}
 						</>
 					) : (
@@ -1127,7 +1285,10 @@ export default function PressOnDetailPage() {
 											<AddIcon sx={{ fontSize: 14 }} />
 										</IconButton>
 										<Typography
-											sx={{ fontSize: "0.78rem", color: "var(--text-muted)" }}
+											sx={{
+												fontSize: "0.78rem",
+												color: "var(--text-muted)",
+											}}
 										>
 											units × ₦1,000 ={" "}
 											<strong style={{ color: "#B8860B" }}>
@@ -1168,51 +1329,133 @@ export default function PressOnDetailPage() {
 			</Container>
 
 			{/* Recently Viewed */}
-		{recentlyViewed.length > 0 && (
-			<Container maxWidth="sm" sx={{ mt: 4, mb: 2 }}>
-				<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 1.5, fontSize: '1rem' }}>
-					Recently Viewed
-				</Typography>
-				<Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { height: 4 }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#F0C0D0', borderRadius: 2 } }}>
-					{recentlyViewed.map((item) => (
-						<Box
-							key={`${item.categoryId}-${item.id}`}
-							onClick={() => navigate(`/products/${item.categoryId}/${item.id}`)}
-							sx={{ minWidth: 120, maxWidth: 120, borderRadius: 2, border: '1px solid #F0C0D0', overflow: 'hidden', cursor: 'pointer', flexShrink: 0, transition: 'all 0.2s', '&:hover': { borderColor: '#E91E8C', boxShadow: '0 2px 8px rgba(233,30,140,0.15)' } }}
-						>
-							{item.image ? (
-								<Box component="img" src={item.image} alt={item.name} sx={{ width: '100%', height: 90, objectFit: 'cover', display: 'block' }} />
-							) : (
-								<Box sx={{ width: '100%', height: 90, backgroundColor: '#FFF0F8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-									<Typography sx={{ fontSize: '1.5rem' }}>💅</Typography>
+			{recentlyViewed.length > 0 && (
+				<Container maxWidth="sm" sx={{ mt: 4, mb: 2 }}>
+					<Typography
+						sx={{
+							fontFamily: '"Georgia", serif',
+							fontWeight: 700,
+							color: "var(--text-purple)",
+							mb: 1.5,
+							fontSize: "1rem",
+						}}
+					>
+						Recently Viewed
+					</Typography>
+					<Box
+						sx={{
+							display: "flex",
+							gap: 1.5,
+							overflowX: "auto",
+							pb: 1,
+							"&::-webkit-scrollbar": { height: 4 },
+							"&::-webkit-scrollbar-thumb": {
+								backgroundColor: "#F0C0D0",
+								borderRadius: 2,
+							},
+						}}
+					>
+						{recentlyViewed.map((item) => (
+							<Box
+								key={`${item.categoryId}-${item.id}`}
+								onClick={() =>
+									navigate(`/products/${item.categoryId}/${item.id}`)
+								}
+								sx={{
+									minWidth: 120,
+									maxWidth: 120,
+									borderRadius: 2,
+									border: "1px solid #F0C0D0",
+									overflow: "hidden",
+									cursor: "pointer",
+									flexShrink: 0,
+									transition: "all 0.2s",
+									"&:hover": {
+										borderColor: "#E91E8C",
+										boxShadow: "0 2px 8px rgba(233,30,140,0.15)",
+									},
+								}}
+							>
+								{item.image ? (
+									<Box
+										component="img"
+										src={item.image}
+										alt={item.name}
+										sx={{
+											width: "100%",
+											height: 90,
+											objectFit: "cover",
+											display: "block",
+										}}
+									/>
+								) : (
+									<Box
+										sx={{
+											width: "100%",
+											height: 90,
+											backgroundColor: "#FFF0F8",
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "center",
+										}}
+									>
+										<Typography sx={{ fontSize: "1.5rem" }}>
+											💅
+										</Typography>
+									</Box>
+								)}
+								<Box sx={{ p: 0.8 }}>
+									<Typography
+										sx={{
+											fontSize: "0.7rem",
+											fontWeight: 600,
+											color: "var(--text-main)",
+											lineHeight: 1.3,
+											overflow: "hidden",
+											textOverflow: "ellipsis",
+											display: "-webkit-box",
+											WebkitLineClamp: 2,
+											WebkitBoxOrient: "vertical",
+										}}
+									>
+										{item.name}
+									</Typography>
+									<Typography
+										sx={{
+											fontSize: "0.72rem",
+											color: "#E91E8C",
+											fontWeight: 700,
+											mt: 0.3,
+										}}
+									>
+										₦{item.price?.toLocaleString()}
+									</Typography>
 								</Box>
-							)}
-							<Box sx={{ p: 0.8 }}>
-								<Typography sx={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-									{item.name}
-								</Typography>
-								<Typography sx={{ fontSize: '0.72rem', color: '#E91E8C', fontWeight: 700, mt: 0.3 }}>
-									₦{item.price?.toLocaleString()}
-								</Typography>
 							</Box>
-						</Box>
-					))}
-				</Box>
+						))}
+					</Box>
+				</Container>
+			)}
+
+			{/* Nail Care Guide link */}
+			<Container maxWidth="sm" sx={{ mt: 2, mb: 1, textAlign: "center" }}>
+				<Typography
+					component="a"
+					href="/nail-care"
+					sx={{
+						fontFamily: '"Georgia", serif',
+						fontSize: "0.82rem",
+						color: "#E91E8C",
+						textDecoration: "underline",
+						cursor: "pointer",
+						"&:hover": { color: "#C2185B" },
+					}}
+				>
+					How to apply &amp; care for your press-ons →
+				</Typography>
 			</Container>
-		)}
 
-		{/* Nail Care Guide link */}
-	<Container maxWidth="sm" sx={{ mt: 2, mb: 1, textAlign: "center" }}>
-		<Typography
-			component="a"
-			href="/nail-care"
-			sx={{ fontFamily: '"Georgia", serif', fontSize: "0.82rem", color: "#E91E8C", textDecoration: "underline", cursor: "pointer", "&:hover": { color: "#C2185B" } }}
-		>
-			How to apply &amp; care for your press-ons →
-		</Typography>
-	</Container>
-
-	{/* Sticky action bar */}
+			{/* Sticky action bar */}
 			<Box
 				sx={{
 					position: "fixed",

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -12,8 +12,14 @@ import {
   Switch,
   Box,
   Typography,
+  CircularProgress,
+  LinearProgress,
 } from '@mui/material';
-
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import ImageIcon from '@mui/icons-material/Image';
+import ClearIcon from '@mui/icons-material/Clear';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../lib/firebase';
 import { pressOnNailShapes, pressOnLengths } from '../../data/products';
 
 const fontFamily = '"Georgia", serif';
@@ -38,9 +44,14 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
   const [form, setForm] = useState(initialState);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     setError('');
+    setUploading(false);
+    setUploadProgress(0);
     if (product) {
       setForm({
         name: product.name || '',
@@ -66,6 +77,43 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
   };
 
+  const handleFileSelect = (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Image must be under 10 MB.');
+      return;
+    }
+    setError('');
+    setUploading(true);
+    setUploadProgress(0);
+
+    const ext = file.name.split('.').pop();
+    const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+    const storageRef = ref(storage, `products/${fileName}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on(
+      'state_changed',
+      (snap) => setUploadProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100)),
+      (err) => { setError('Upload failed: ' + err.message); setUploading(false); },
+      async () => {
+        const url = await getDownloadURL(uploadTask.snapshot.ref);
+        setForm((prev) => ({ ...prev, image: url }));
+        setUploading(false);
+      },
+    );
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFileSelect(file);
+  };
+
   const handleSubmit = async () => {
     setBusy(true);
     setError('');
@@ -81,7 +129,6 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
         discountLabel: form.discountEnabled ? (form.discountLabel || '') : '',
         saleEndsAt: form.discountEnabled && form.saleEndsAt ? form.saleEndsAt : null,
       };
-      // Only include stock if a value was provided (Firestore rejects undefined)
       if (form.stock !== '') {
         data.stock = parseInt(form.stock, 10);
       }
@@ -157,16 +204,109 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
               InputLabelProps={{ sx: { fontFamily } }}
             />
           </Grid>
+
+          {/* Image upload */}
           <Grid item xs={12}>
+            <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-purple)', mb: 1 }}>
+              Product Image
+            </Typography>
+
+            {/* Upload drop zone */}
+            <Box
+              onClick={() => !uploading && fileInputRef.current?.click()}
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
+              sx={{
+                border: '2px dashed',
+                borderColor: uploading ? '#E91E8C' : form.image ? '#4A0E4E' : '#F0C0D0',
+                borderRadius: 2,
+                p: 2,
+                textAlign: 'center',
+                cursor: uploading ? 'default' : 'pointer',
+                backgroundColor: form.image ? '#FFF5F8' : '#FAFAFA',
+                transition: 'all 0.2s',
+                '&:hover': { borderColor: '#E91E8C', backgroundColor: '#FFF5F8' },
+                position: 'relative',
+                minHeight: 100,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 1,
+              }}
+            >
+              {form.image && !uploading ? (
+                <>
+                  <Box
+                    component="img"
+                    src={form.image}
+                    alt="preview"
+                    sx={{ maxHeight: 140, maxWidth: '100%', borderRadius: 1, objectFit: 'contain' }}
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                  <Typography sx={{ fontFamily, fontSize: '0.75rem', color: '#888' }}>
+                    Click or drag to replace
+                  </Typography>
+                </>
+              ) : uploading ? (
+                <>
+                  <CircularProgress size={28} sx={{ color: '#E91E8C' }} />
+                  <Typography sx={{ fontFamily, fontSize: '0.82rem', color: '#E91E8C' }}>
+                    Uploading… {uploadProgress}%
+                  </Typography>
+                  <LinearProgress
+                    variant="determinate"
+                    value={uploadProgress}
+                    sx={{ width: '80%', borderRadius: 1, '& .MuiLinearProgress-bar': { backgroundColor: '#E91E8C' } }}
+                  />
+                </>
+              ) : (
+                <>
+                  <CloudUploadIcon sx={{ fontSize: 36, color: '#F0C0D0' }} />
+                  <Typography sx={{ fontFamily, fontSize: '0.85rem', color: '#888' }}>
+                    Click or drag & drop to upload
+                  </Typography>
+                  <Typography sx={{ fontFamily, fontSize: '0.75rem', color: '#bbb' }}>
+                    JPG, PNG, WEBP — max 10 MB
+                  </Typography>
+                </>
+              )}
+            </Box>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={(e) => handleFileSelect(e.target.files?.[0])}
+            />
+
+            {/* Clear button */}
+            {form.image && !uploading && (
+              <Button
+                size="small"
+                startIcon={<ClearIcon />}
+                onClick={() => setForm((prev) => ({ ...prev, image: '' }))}
+                sx={{ mt: 0.5, fontFamily, fontSize: '0.75rem', color: '#999', textTransform: 'none' }}
+              >
+                Remove image
+              </Button>
+            )}
+
+            {/* URL fallback */}
             <TextField
               fullWidth
-              label="Image URL"
-              value={form.image}
-              onChange={handleChange('image')}
-              InputProps={{ sx: { fontFamily } }}
-              InputLabelProps={{ sx: { fontFamily } }}
+              label="Or paste image URL"
+              value={form.image.startsWith('http') && !form.image.includes('firebasestorage') ? form.image : ''}
+              onChange={(e) => setForm((prev) => ({ ...prev, image: e.target.value }))}
+              placeholder="https://..."
+              size="small"
+              sx={{ mt: 1.5 }}
+              InputProps={{ sx: { fontFamily, fontSize: '0.83rem' }, startAdornment: <ImageIcon sx={{ color: '#ccc', mr: 0.5, fontSize: 18 }} /> }}
+              InputLabelProps={{ sx: { fontFamily, fontSize: '0.83rem' } }}
             />
           </Grid>
+
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', alignItems: 'center', p: 1.5, borderRadius: 2, border: '1px solid #eee', backgroundColor: form.hidden ? '#FFF0F5' : '#fafafa' }}>
               <FormControlLabel
@@ -305,7 +445,7 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={busy || !form.name || !form.price}
+          disabled={busy || uploading || !form.name || !form.price}
           sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
         >
           {product ? 'Update' : 'Add'}

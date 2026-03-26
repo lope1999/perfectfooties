@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Chip,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AddIcon from '@mui/icons-material/Add';
@@ -170,8 +171,7 @@ export default function CartPage() {
     const message = `Hi! I\u2019d like to place a combined order.\n\n${lines.join('\n')}\n${totalLine}${depositLine}\n\nPlease confirm availability and payment details. Thank you!`;
     const encoded = encodeURIComponent(message);
     const whatsAppUrl = `https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`;
-    // Skip/no-payment path: still inside user gesture, open new tab before any awaits
-    if (!paymentReference) window.open(whatsAppUrl, '_blank');
+    if (!paymentReference) return;
 
     // Async operations after window.open
     try {
@@ -182,7 +182,7 @@ export default function CartPage() {
         }
       });
       pressOns.forEach((p) => {
-        if (p.readyMade && p.categoryId && p.stock !== undefined) {
+        if (p.readyMade && !p.specialRequest && p.categoryId && p.stock !== undefined) {
           stockItems.push({ collection: 'productCategories', categoryId: p.categoryId, productId: p.productId, quantity: Number(p.quantity) || 1 });
         }
       });
@@ -211,6 +211,11 @@ export default function CartPage() {
           kind: 'pressOn', name: p.name, price: p.price, quantity: p.quantity || 1,
           ...(p.nailBedSize && { nailBedSize: p.nailBedSize }),
           ...(p.presetSize && { presetSize: p.presetSize }),
+          ...(p.selectedLength && { selectedLength: p.selectedLength }),
+          ...(p.setIncludes?.length > 0 && { setIncludes: p.setIncludes }),
+          ...(p.inspirationTags?.length > 0 && { inspirationTags: p.inspirationTags }),
+          ...(p.nailNotes && { nailNotes: p.nailNotes }),
+          ...(p.specialRequest && { specialRequest: true }),
         })),
       ];
       try {
@@ -280,7 +285,7 @@ export default function CartPage() {
         items: [
           ...services.map((s) => ({ kind: 'service', serviceName: s.name, price: s.price, date: s.appointmentDate })),
           ...products.map((p) => ({ kind: 'product', name: p.name, price: p.price * (p.quantity || 1), quantity: p.quantity })),
-          ...pressOns.map((p) => ({ kind: 'press-on', name: p.name, price: p.price * (p.quantity || 1), nailShape: p.nailShape, quantity: p.quantity })),
+          ...pressOns.map((p) => ({ kind: 'press-on', name: p.name, price: p.price * (p.quantity || 1), nailShape: p.nailShape, quantity: p.quantity, selectedLength: p.selectedLength, setIncludes: p.setIncludes, inspirationTags: p.inspirationTags, nailNotes: p.nailNotes, specialRequest: p.specialRequest || false })),
         ],
         total,
         finalTotal,
@@ -294,7 +299,7 @@ export default function CartPage() {
 
   const payWithPaystackCart = () => {
     const pk = import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY || '';
-    if (!pk || !window.PaystackPop) { handleCompleteServiceOrder(''); return; }
+    if (!pk || !window.PaystackPop) { alert('Payment is required to confirm your booking. Please refresh the page and try again.'); return; }
     const handler = window.PaystackPop.setup({
       key: pk,
       email: user?.email || 'guest@chizzys.com',
@@ -630,6 +635,37 @@ export default function CartPage() {
                         {p.presetSize && ` \u00B7 Size: ${p.presetSize}`}
                         {p.nailBedSize && ` \u00B7 Bed: ${p.nailBedSize}`}
                       </Typography>
+                      {p.selectedLength && (
+                        <Typography sx={{ color: '#777', fontSize: '0.82rem', mt: 0.2 }}>
+                          Length: {p.selectedLength}
+                        </Typography>
+                      )}
+                      {p.setIncludes?.length > 0 && (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                          {p.setIncludes.map((tag) => (
+                            <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.68rem', height: 20, backgroundColor: '#FCE4EC', color: '#C2185B', fontWeight: 600 }} />
+                          ))}
+                        </Box>
+                      )}
+                      {p.inspirationTags?.length > 0 && (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                          {p.inspirationTags.map((tag) => (
+                            <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.68rem', height: 20, backgroundColor: '#EDE7F6', color: '#5E35B1', fontWeight: 600 }} />
+                          ))}
+                        </Box>
+                      )}
+                      {p.nailNotes && (
+                        <Typography sx={{ color: '#888', fontSize: '0.78rem', mt: 0.4, fontStyle: 'italic' }}>
+                          &ldquo;{p.nailNotes}&rdquo;
+                        </Typography>
+                      )}
+                      {p.specialRequest && (
+                        <Chip
+                          label="Made to Order — 4–7 days"
+                          size="small"
+                          sx={{ mt: 0.5, fontSize: '0.68rem', height: 20, backgroundColor: '#FFF8E1', color: '#B8860B', fontWeight: 700, border: '1px solid #FFD54F' }}
+                        />
+                      )}
                       {p.orderingForOthers && p.otherPeople?.length > 0 && (
                         <Typography sx={{ color: '#999', fontSize: '0.78rem', mt: 0.3 }}>
                           +{p.otherPeople.length} other person(s)
@@ -919,16 +955,10 @@ export default function CartPage() {
           </Typography>
 
           <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Pay the 50% deposit via Paystack to confirm your booking, or proceed to WhatsApp to arrange payment manually.
+            Pay the 50% deposit via Paystack to confirm your booking.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5, gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          <Button
-            onClick={() => handleCompleteServiceOrder('')}
-            sx={{ color: '#888', fontSize: '0.82rem', textTransform: 'none', fontFamily: '"Georgia", serif' }}
-          >
-            Skip — Pay on WhatsApp
-          </Button>
           <Button
             onClick={payWithPaystackCart}
             sx={{

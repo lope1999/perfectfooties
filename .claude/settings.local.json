@@ -128,7 +128,13 @@
       "Bash(npm run:*)",
       "Bash(ls:*)",
       "Bash(python3 -:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(wc:*)",
+      "Bash(grep -n \"^\t\t\t\\)\\)}$\\\\|^\t\t\t\t\\)\\)}$\\\\|filteredCategories.map\\\\|ready-made\\\\|ReadyMade\" \"C:\\\\Users\\\\CHIZOBA-TEMP-PC\\\\Documents\\\\e-shop\\\\src\\\\pages\\\\ProductsMenuPage.jsx\")",
+      "Bash(node -e \"require.resolve\\(''firebase/functions''\\)\")",
+      "Bash(node -e \"require\\(''./index.js''\\)\")",
+      "Bash(node_modules/.bin/firebase-functions index.js)",
+      "Bash(node -e \"console.log\\(require\\(''firebase-functions/package.json''\\).version\\)\")"
     ]
   }
 }

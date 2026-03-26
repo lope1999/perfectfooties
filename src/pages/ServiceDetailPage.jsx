@@ -41,7 +41,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { saveOrder } from '../lib/orderService';
 import { fetchBookedSlots, saveBookedSlot, addToWaitlist } from '../lib/bookedSlotsService';
-import { verifyPaystackDeposit } from '../lib/paymentService';
+import { verifyPaystackDeposit, confirmOrderDirectly } from '../lib/paymentService';
 import {
   validateReferralCode,
   applyReferral,
@@ -113,6 +113,7 @@ export default function ServiceDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paidReference, setPaidReference] = useState(null);
 
   // Referral code
   const [showRefField, setShowRefField] = useState(false);
@@ -176,6 +177,54 @@ export default function ServiceDetailPage() {
       .finally(() => setSlotsLoading(false));
   }, [appointmentDate]);
 
+  useEffect(() => {
+    if (!paidReference || !service) return;
+    const ep = getServiceEffectivePrice(service, discounts);
+    const ls = nailLength ? (LENGTH_SURCHARGE[nailLength] ?? 0) : 0;
+    const pwl = ep + ls;
+    const rd = referralValid ? Math.min(REFERRAL_DISCOUNT, pwl) : 0;
+    const ld = Math.min(loyaltyUnits * REDEMPTION_VALUE, Math.max(0, pwl - rd));
+    const fp = Math.max(0, pwl - rd - ld);
+    const dep = Math.round(fp * 0.5);
+    const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
+    const depositInfo = `\n\n✅ Deposit Paid: ${formatNaira(dep)} (Paystack Ref: ${paidReference})`;
+    const discountLines = [];
+    if (ls > 0) discountLines.push(`- Length add-on (${nailLength}): +${formatNaira(ls)}`);
+    if (rd > 0) discountLines.push(`- Referral Code (${refCodeInput.toUpperCase()}): -${formatNaira(rd)}`);
+    if (ld > 0) discountLines.push(`- Loyalty Points (${loyaltyUnits * REDEMPTION_UNIT} pts): -${formatNaira(ld)}`);
+    const discountStr = discountLines.length > 0 ? `\n\nDiscounts:\n${discountLines.join('\n')}\nFinal Price: ${formatNaira(fp)}` : '';
+    const extensionLine = hasExtensions === true
+      ? `\n- Existing Extensions: Yes (${extensionType || 'Type not specified'})`
+      : hasExtensions === false ? '\n- Existing Extensions: No' : '';
+    const msg = `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nType: Salon Visit\nPreferred Date: ${fullDate}\nService: ${service.name}\nPrice: ${formatNaira(pwl)}${discountStr}${depositInfo}\n\nDetails:\n- Nail Shape: ${nailShape}\n- Nail Length: ${nailLength}${extensionLine}\n\nPlease confirm availability. Thank you!`;
+    const waUrl = `https://api.whatsapp.com/send?phone=2349053714197&text=${encodeURIComponent(msg)}`;
+    navigate('/thank-you', {
+      state: {
+        type: 'service',
+        customerName,
+        serviceName: service.name,
+        appointmentDate: fullDate,
+        total: ep,
+        finalTotal: fp,
+        referralDiscount: rd,
+        loyaltyDiscount: ld,
+        depositAmount: dep,
+        paidDeposit: true,
+        items: [{
+          kind: 'service',
+          serviceName: service.name,
+          price: fp,
+          date: fullDate,
+          nailShape,
+          nailLength,
+          hasExtensions,
+          extensionType: hasExtensions ? extensionType : '',
+        }],
+      },
+    });
+    window.open(waUrl, '_blank');
+  }, [paidReference]);
+
   if (categoriesLoading) {
     return (
       <Box sx={{ pt: 14, display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -223,29 +272,10 @@ export default function ServiceDetailPage() {
     }
   };
 
-  const buildMessage = (paymentReference = '') => {
-    const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
-    const depositInfo = paymentReference
-      ? `\n\n✅ Deposit Paid: ${formatNaira(depositAmount)} (Paystack Ref: ${paymentReference})`
-      : `\n\n⚠️ Deposit: To be paid via WhatsApp`;
-    const discountLines = [];
-    if (lengthSurcharge > 0) discountLines.push(`- Length add-on (${nailLength}): +${formatNaira(lengthSurcharge)}`);
-    if (referralDiscount > 0) discountLines.push(`- Referral Code (${refCodeInput.toUpperCase()}): -${formatNaira(referralDiscount)}`);
-    if (loyaltyDiscount > 0) discountLines.push(`- Loyalty Points (${loyaltyUnits * REDEMPTION_UNIT} pts): -${formatNaira(loyaltyDiscount)}`);
-    const discountStr = discountLines.length > 0 ? `\n\nDiscounts:\n${discountLines.join('\n')}\nFinal Price: ${formatNaira(finalPrice)}` : '';
-    const extensionLine = hasExtensions === true
-      ? `\n- Existing Extensions: Yes (${extensionType || 'Type not specified'})`
-      : hasExtensions === false
-      ? '\n- Existing Extensions: No'
-      : '';
-    return `Hi! I'd like to book an appointment.\n\nName: ${customerName}\nType: Salon Visit\nPreferred Date: ${fullDate}\nService: ${service.name}\nPrice: ${formatNaira(priceWithLength)}${discountStr}${depositInfo}\n\nDetails:\n- Nail Shape: ${nailShape}\n- Nail Length: ${nailLength}${extensionLine}\n\nPlease confirm availability. Thank you!`;
-  };
-
   const handleCompleteOrder = (paymentReference = '') => {
+    if (!paymentReference) { setPaymentModalOpen(false); return; }
     setPaymentModalOpen(false);
     const fullDate = `${formatDate(appointmentDate)} at ${appointmentTime}`;
-    const waUrl = `https://api.whatsapp.com/send?phone=2349053714197&text=${encodeURIComponent(buildMessage(paymentReference))}`;
-
     if (user) {
       saveOrder(user.uid, {
         type: 'service',
@@ -253,7 +283,7 @@ export default function ServiceDetailPage() {
         customerName: customerName.trim(),
         email: user.email || '',
         appointmentDate: fullDate,
-        ...(paymentReference && { paymentReference }),
+        paymentReference,
         ...(referralDiscount > 0 && { referralCode: refCodeInput.toUpperCase(), referralDiscount }),
         ...(loyaltyDiscount > 0 && { loyaltyDiscount, loyaltyPointsUsed: loyaltyUnits * REDEMPTION_UNIT }),
         items: [{
@@ -266,12 +296,8 @@ export default function ServiceDetailPage() {
           hasExtensions,
           extensionType: hasExtensions ? extensionType : '',
         }],
-      }).then((orderRef) => {
+      }).then(async (orderRef) => {
         saveBookedSlot({ date: formatDate(appointmentDate), time: appointmentTime, orderId: orderRef.id, uid: user.uid }).catch(() => {});
-        if (paymentReference) {
-            verifyPaystackDeposit({ reference: paymentReference, orderId: orderRef.id, uid: user.uid }).catch(() => {});
-          }
-        // Apply referral bonus to referrer + redeem loyalty points
         if (referralValid && refCodeInput) {
           applyReferral(refCodeInput.trim(), user.uid).catch(() => {});
           sessionStorage.removeItem('pendingReferralCode');
@@ -280,38 +306,20 @@ export default function ServiceDetailPage() {
           redeemLoyaltyPoints(user.uid, loyaltyUnits * REDEMPTION_UNIT).catch(() => {});
           clearPendingLoyaltyReward();
         }
-      }).catch(() => {});
+        // Primary: confirm directly in Firestore (triggers email via onAppointmentConfirmed)
+        await confirmOrderDirectly(user.uid, orderRef.id);
+        // Background: verify payment with Paystack API (non-blocking)
+        verifyPaystackDeposit({ reference: paymentReference, orderId: orderRef.id, uid: user.uid }).catch(() => {});
+      }).catch((err) => console.error('[Booking] Order confirmation error:', err))
+      .finally(() => setPaidReference(paymentReference));
+    } else {
+      setPaidReference(paymentReference);
     }
-    navigate('/thank-you', {
-      state: {
-        type: 'service',
-        customerName,
-        serviceName: service.name,
-        appointmentDate: `${formatDate(appointmentDate)} at ${appointmentTime}`,
-        total: effectivePrice,
-        finalTotal: finalPrice,
-        referralDiscount,
-        loyaltyDiscount,
-        depositAmount,
-        whatsappUrl: waUrl,
-        paidDeposit: !!paymentReference,
-        items: [{
-          kind: 'service',
-          serviceName: service.name,
-          price: finalPrice,
-          date: `${formatDate(appointmentDate)} at ${appointmentTime}`,
-          nailShape,
-          nailLength,
-          hasExtensions,
-          extensionType: hasExtensions ? extensionType : '',
-        }],
-      },
-    });
   };
 
   const payWithPaystack = () => {
     const pk = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY) || '';
-    if (!pk || !window.PaystackPop) { handleCompleteOrder(''); return; }
+    if (!pk || !window.PaystackPop) { alert('Payment is required to confirm your booking. Please refresh the page and try again.'); return; }
     const handler = window.PaystackPop.setup({
       key: pk,
       email: user?.email || 'guest@chizzys.com',
@@ -697,11 +705,10 @@ export default function ServiceDetailPage() {
             </Box>
           </Box>
           <Typography sx={{ fontSize: '0.82rem', color: '#777', lineHeight: 1.6 }}>
-            Pay the 50% deposit now via Paystack to secure your slot, or proceed to WhatsApp to arrange payment manually.
+            Pay the 50% deposit now via Paystack to secure your slot.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, flexWrap: 'wrap', gap: 1 }}>
-          <Button onClick={() => handleCompleteOrder('')} sx={{ fontFamily: ff, color: '#777', textTransform: 'none' }}>Skip Deposit</Button>
           <Button onClick={payWithPaystack} sx={{ backgroundColor: '#E91E8C', color: '#fff', borderRadius: '20px', px: 3, fontFamily: ff, fontWeight: 600, textTransform: 'none', '&:hover': { backgroundColor: '#C2185B' } }}>
             Pay {formatNaira(depositAmount)} Deposit
           </Button>

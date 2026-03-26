@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
   Paper,
   Accordion,
-
   AccordionSummary,
   AccordionDetails,
   Table,
@@ -22,7 +21,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Switch,
+  FormControlLabel,
+  Divider,
 } from '@mui/material';
+import { DEFAULT_SET_INCLUDES_OPTIONS, DEFAULT_INSPIRATION_OPTIONS } from '../../data/customPressOnOptions';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -50,6 +53,25 @@ export default function ProductsSection({ collectionName, categories, loading, o
   const [deleteCatDialog, setDeleteCatDialog] = useState(null);
   const [deleteProductDialog, setDeleteProductDialog] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [optionInput, setOptionInput] = useState({});
+
+  // Auto-seed default options for custom press-on categories that have none
+  useEffect(() => {
+    if (type !== 'presson') return;
+    categories.forEach((cat) => {
+      if (cat.readyMade) return;
+      const updates = {};
+      if (!cat.setIncludesOptions?.length) updates.setIncludesOptions = DEFAULT_SET_INCLUDES_OPTIONS;
+      if (!cat.inspirationOptions?.length) updates.inspirationOptions = DEFAULT_INSPIRATION_OPTIONS;
+      if (cat.showSetIncludes === undefined) updates.showSetIncludes = true;
+      if (cat.showInspirations === undefined) updates.showInspirations = true;
+      if (cat.showNotesField === undefined) updates.showNotesField = true;
+      if (Object.keys(updates).length > 0) {
+        updateCategory(collectionName, cat.id, updates).then(onRefresh).catch(console.error);
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categories.map((c) => c.id).join(',')]);
 
   const title = type === 'presson' ? 'Press-On Products' : 'Retail Products';
 
@@ -176,7 +198,141 @@ export default function ProductsSection({ collectionName, categories, loading, o
             </Box>
           </AccordionSummary>
           <AccordionDetails>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+            {!cat.readyMade && (
+              <>
+                {/* Field Visibility Toggles */}
+                <Box sx={{ mb: 2, p: 2, borderRadius: 2, backgroundColor: '#F9F0FF', border: '1px solid #CE93D8' }}>
+                  <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-purple)', mb: 1 }}>
+                    Field Visibility
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    <FormControlLabel
+                      control={<Switch size="small" checked={cat.showSetIncludes !== false} onChange={async (e) => { await updateCategory(collectionName, cat.id, { showSetIncludes: e.target.checked }); onRefresh(); }} />}
+                      label={<Typography sx={{ fontFamily, fontSize: '0.82rem' }}>Set Includes?</Typography>}
+                    />
+                    <FormControlLabel
+                      control={<Switch size="small" checked={cat.showInspirations !== false} onChange={async (e) => { await updateCategory(collectionName, cat.id, { showInspirations: e.target.checked }); onRefresh(); }} />}
+                      label={<Typography sx={{ fontFamily, fontSize: '0.82rem' }}>Inspirations?</Typography>}
+                    />
+                    <FormControlLabel
+                      control={<Switch size="small" checked={cat.showNotesField !== false} onChange={async (e) => { await updateCategory(collectionName, cat.id, { showNotesField: e.target.checked }); onRefresh(); }} />}
+                      label={<Typography sx={{ fontFamily, fontSize: '0.82rem' }}>Notes Field?</Typography>}
+                    />
+                  </Box>
+                </Box>
+
+                {/* Set Includes Options */}
+                <Box sx={{ mb: 2, p: 2, borderRadius: 2, backgroundColor: '#FFF8E1', border: '1px solid #FFE082' }}>
+                  <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '0.88rem', color: '#7A5800', mb: 1 }}>
+                    &ldquo;Set Includes?&rdquo; Options
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1.5 }}>
+                    {(cat.setIncludesOptions || []).map((opt) => (
+                      <Chip
+                        key={opt}
+                        label={opt}
+                        size="small"
+                        onDelete={async () => {
+                          const newOpts = (cat.setIncludesOptions || []).filter((o) => o !== opt);
+                          await updateCategory(collectionName, cat.id, { setIncludesOptions: newOpts });
+                          onRefresh();
+                        }}
+                        sx={{ fontSize: '0.72rem' }}
+                      />
+                    ))}
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <TextField
+                      size="small"
+                      placeholder="Add option…"
+                      value={optionInput[cat.id]?.setIncludes || ''}
+                      onChange={(e) => setOptionInput((prev) => ({ ...prev, [cat.id]: { ...prev[cat.id], setIncludes: e.target.value } }))}
+                      onKeyDown={async (e) => {
+                        if (e.key !== 'Enter') return;
+                        const val = (optionInput[cat.id]?.setIncludes || '').trim();
+                        if (!val) return;
+                        await updateCategory(collectionName, cat.id, { setIncludesOptions: [...(cat.setIncludesOptions || []), val] });
+                        setOptionInput((prev) => ({ ...prev, [cat.id]: { ...prev[cat.id], setIncludes: '' } }));
+                        onRefresh();
+                      }}
+                      sx={{ flex: 1, '& .MuiOutlinedInput-root': { fontFamily } }}
+                    />
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={async () => {
+                        const val = (optionInput[cat.id]?.setIncludes || '').trim();
+                        if (!val) return;
+                        await updateCategory(collectionName, cat.id, { setIncludesOptions: [...(cat.setIncludesOptions || []), val] });
+                        setOptionInput((prev) => ({ ...prev, [cat.id]: { ...prev[cat.id], setIncludes: '' } }));
+                        onRefresh();
+                      }}
+                      sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+                    >
+                      Add
+                    </Button>
+                  </Box>
+                </Box>
+
+                {/* Inspiration Options */}
+                <Box sx={{ mb: 2, p: 2, borderRadius: 2, backgroundColor: '#EDE7F6', border: '1px solid #CE93D8' }}>
+                  <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '0.88rem', color: '#5E35B1', mb: 1 }}>
+                    Inspiration Options
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1.5 }}>
+                    {(cat.inspirationOptions || []).map((opt) => (
+                      <Chip
+                        key={opt}
+                        label={opt}
+                        size="small"
+                        onDelete={async () => {
+                          const newOpts = (cat.inspirationOptions || []).filter((o) => o !== opt);
+                          await updateCategory(collectionName, cat.id, { inspirationOptions: newOpts });
+                          onRefresh();
+                        }}
+                        sx={{ fontSize: '0.72rem', backgroundColor: '#D1C4E9', color: '#4527A0' }}
+                      />
+                    ))}
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <TextField
+                      size="small"
+                      placeholder="Add option…"
+                      value={optionInput[cat.id]?.inspiration || ''}
+                      onChange={(e) => setOptionInput((prev) => ({ ...prev, [cat.id]: { ...prev[cat.id], inspiration: e.target.value } }))}
+                      onKeyDown={async (e) => {
+                        if (e.key !== 'Enter') return;
+                        const val = (optionInput[cat.id]?.inspiration || '').trim();
+                        if (!val) return;
+                        await updateCategory(collectionName, cat.id, { inspirationOptions: [...(cat.inspirationOptions || []), val] });
+                        setOptionInput((prev) => ({ ...prev, [cat.id]: { ...prev[cat.id], inspiration: '' } }));
+                        onRefresh();
+                      }}
+                      sx={{ flex: 1, '& .MuiOutlinedInput-root': { fontFamily } }}
+                    />
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={async () => {
+                        const val = (optionInput[cat.id]?.inspiration || '').trim();
+                        if (!val) return;
+                        await updateCategory(collectionName, cat.id, { inspirationOptions: [...(cat.inspirationOptions || []), val] });
+                        setOptionInput((prev) => ({ ...prev, [cat.id]: { ...prev[cat.id], inspiration: '' } }));
+                        onRefresh();
+                      }}
+                      sx={{ fontFamily, backgroundColor: '#5E35B1', '&:hover': { backgroundColor: '#4527A0' } }}
+                    >
+                      Add
+                    </Button>
+                  </Box>
+                </Box>
+                <Divider sx={{ mb: 2, borderColor: '#F0C0D0' }} />
+              </>
+            )}
+            <Box sx={{ display: 'flex', justifyContent: !cat.readyMade ? 'space-between' : 'flex-end', alignItems: 'center', mb: 1 }}>
+              {!cat.readyMade && (
+                <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Length Variants</Typography>
+              )}
               <Button
                 size="small"
                 startIcon={<AddIcon />}
@@ -187,14 +343,14 @@ export default function ProductsSection({ collectionName, categories, loading, o
                 }}
                 sx={{ fontFamily, color: 'var(--text-purple)' }}
               >
-                Add Product
+                {cat.readyMade ? 'Add Product' : 'Add Variant'}
               </Button>
             </Box>
             <TableContainer>
               <Table size="small">
                 <TableHead>
                   <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                    {['Image', 'Name', 'Price', 'Stock', 'Actions'].map((h) => (
+                    {(cat.readyMade ? ['Image', 'Name', 'Price', 'Stock', 'Actions'] : ['Name', 'Price', 'Actions']).map((h) => (
                       <TableCell key={h} sx={{ fontFamily, fontWeight: 700 }}>{h}</TableCell>
                     ))}
                   </TableRow>
@@ -203,6 +359,20 @@ export default function ProductsSection({ collectionName, categories, loading, o
                   {(cat.products || []).map((p) => {
                     const isHidden = !!p.hidden;
                     const isOutOfStock = p.stock !== undefined && p.stock <= 0;
+                    if (!cat.readyMade) return (
+                      <TableRow key={p.id} hover>
+                        <TableCell sx={{ fontFamily }}>{p.name}</TableCell>
+                        <TableCell sx={{ fontFamily }}>₦{(p.price || 0).toLocaleString()}</TableCell>
+                        <TableCell>
+                          <IconButton size="small" onClick={() => { setEditProduct(p); setEditCategoryId(cat.id); setProductDialogOpen(true); }}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => setDeleteProductDialog({ categoryId: cat.id, productId: p.id, name: p.name })}>
+                            <DeleteOutlineIcon fontSize="small" sx={{ color: '#d32f2f' }} />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    );
                     return (
                     <TableRow key={p.id} hover sx={isHidden ? { opacity: 0.5 } : undefined}>
                       <TableCell>
@@ -293,8 +463,8 @@ export default function ProductsSection({ collectionName, categories, loading, o
                   })}
                   {(cat.products || []).length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={5} sx={{ textAlign: 'center', fontFamily, py: 2, color: '#777' }}>
-                        No products in this category
+                      <TableCell colSpan={cat.readyMade ? 5 : 3} sx={{ textAlign: 'center', fontFamily, py: 2, color: '#777' }}>
+                        {cat.readyMade ? 'No products in this category' : 'No length variants yet'}
                       </TableCell>
                     </TableRow>
                   )}

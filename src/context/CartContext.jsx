@@ -186,7 +186,7 @@ export function CartProvider({ children }) {
     const { services, products, pressOns } = state.items;
     const serviceTotal = services.reduce((sum, s) => sum + s.price, 0);
     const productTotal = products.reduce((sum, p) => sum + p.price * p.quantity, 0);
-    const pressOnTotal = pressOns.reduce((sum, p) => sum + p.price, 0);
+    const pressOnTotal = pressOns.reduce((sum, p) => sum + p.price * (p.quantity || 1), 0);
     return serviceTotal + productTotal + pressOnTotal;
   };
 

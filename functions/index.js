@@ -1,8 +1,9 @@
 const { onDocumentUpdated } = require("firebase-functions/v2/firestore");
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { initializeApp } = require("firebase-admin/app");
 const { logger } = require("firebase-functions");
+const crypto = require("crypto");
 
 const { findRestockedProducts } = require("./lib/stockDiff");
 const { sendBackInStockEmail, sendAppointmentConfirmationEmail } = require("./lib/emailSender");
@@ -161,3 +162,81 @@ exports.onAppointmentConfirmed = onDocumentUpdated(
     }
   },
 );
+
+// ── HTTP: Paystack webhook ─────────────────────────────────────────────────────
+// Configure this URL in Paystack dashboard → Settings → API Keys & Webhooks
+// URL will be: https://<region>-chizzystyles-shop.cloudfunctions.net/paystackWebhook
+exports.paystackWebhook = onRequest({ rawBody: true }, async (req, res) => {
+  if (req.method !== "POST") {
+    res.status(405).send("Method Not Allowed");
+    return;
+  }
+
+  const secretKey = process.env.PAYSTACK_SECRET_KEY;
+  if (!secretKey) {
+    logger.error("PAYSTACK_SECRET_KEY not configured");
+    res.status(500).send("Server misconfiguration");
+    return;
+  }
+
+  // Validate Paystack signature to confirm the request is genuine
+  const signature = req.headers["x-paystack-signature"];
+  const hash = crypto
+    .createHmac("sha512", secretKey)
+    .update(req.rawBody)
+    .digest("hex");
+
+  if (hash !== signature) {
+    logger.warn("Invalid Paystack webhook signature");
+    res.status(401).send("Invalid signature");
+    return;
+  }
+
+  const event = req.body;
+  logger.info(`Paystack webhook event: ${event.event}`, { reference: event.data?.reference });
+
+  // Only handle successful charge events
+  if (event.event !== "charge.success") {
+    res.status(200).send("OK");
+    return;
+  }
+
+  const reference = event.data?.reference;
+  if (!reference) {
+    res.status(200).send("OK");
+    return;
+  }
+
+  // Find the matching order by paymentReference field
+  const db = getFirestore();
+  const snap = await db
+    .collectionGroup("orders")
+    .where("paymentReference", "==", reference)
+    .limit(1)
+    .get();
+
+  if (snap.empty) {
+    logger.info(`Webhook: no order found for reference ${reference}`);
+    res.status(200).send("OK");
+    return;
+  }
+
+  const orderDoc = snap.docs[0];
+  const order = orderDoc.data();
+
+  if (order.depositVerified) {
+    logger.info(`Webhook: order ${orderDoc.id} already verified, skipping`);
+    res.status(200).send("OK");
+    return;
+  }
+
+  await orderDoc.ref.update({
+    status: "confirmed",
+    depositVerified: true,
+    depositPaidAt: FieldValue.serverTimestamp(),
+    webhookVerified: true,
+  });
+
+  logger.info(`Webhook: order ${orderDoc.id} confirmed via webhook (ref: ${reference})`);
+  res.status(200).send("OK");
+});

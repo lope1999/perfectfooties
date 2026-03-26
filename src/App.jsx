@@ -28,6 +28,7 @@ import AccountPage from './pages/AccountPage';
 import GalleryPage from './pages/GalleryPage';
 import ThankYouPage from './pages/ThankYouPage';
 import PressOnDetailPage from './pages/PressOnDetailPage';
+import PressOnCategoryPage from './pages/PressOnCategoryPage';
 import NailCarePage from './pages/NailCarePage';
 import GroupBookingPage from './pages/GroupBookingPage';
 
@@ -50,49 +51,62 @@ function App() {
   }, []);
 
   return (
-    <>
-      <ScrollToTop />
-      <Navbar />
-      <AppointmentReminderPopup />
-      <StatusChangeToast />
-      <Box sx={{ pb: { xs: '64px', md: 0 } }}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/services" element={<ServiceMenuPage />} />
-          <Route path="/services/:serviceId" element={<ServiceDetailPage />} />
-          <Route path="/products" element={<ProductsMenuPage />} />
-          <Route path="/products/:categoryId/:productId" element={<PressOnDetailPage />} />
-          <Route path="/shop" element={<NailShopPage />} />
-          <Route path="/book" element={<BookAppointmentPage />} />
-          <Route path="/reschedule" element={<RescheduleAppointmentPage />} />
-          <Route path="/order" element={<PlaceOrderPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/account" element={<AccountPage />} />
-          <Route path="/our-story" element={<OurStoryPage />} />
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/testimonials" element={<TestimonialsPage />} />
-          <Route path="/gift-cards" element={<GiftCardPage />} />
-          <Route path="/our-team" element={<OurTeamPage />} />
-          <Route path="/gallery" element={<GalleryPage />} />
-          <Route path="/thank-you" element={<ThankYouPage />} />
-          <Route path="/nail-care" element={<NailCarePage />} />
-          <Route path="/group-booking" element={<GroupBookingPage />} />
-          <Route
-            path="/admin"
-            element={
-              <Suspense fallback={LazyFallback}>
-                <AdminPage />
-              </Suspense>
-            }
-          />
-        </Routes>
-      </Box>
-      <WhatsAppBubble />
-      <MobileBottomNav />
-      {location.pathname !== '/admin' && <Footer />}
-      <Analytics />
-    </>
+		<>
+			<ScrollToTop />
+			<Navbar />
+			<AppointmentReminderPopup />
+			<StatusChangeToast />
+			<Box sx={{ pb: { xs: "64px", md: 0 } }}>
+				<Routes>
+					<Route path="/" element={<HomePage />} />
+					<Route path="/services" element={<ServiceMenuPage />} />
+					<Route
+						path="/services/:serviceId"
+						element={<ServiceDetailPage />}
+					/>
+					<Route path="/products" element={<ProductsMenuPage />} />
+					<Route
+						path="/products/:categoryId"
+						element={<PressOnCategoryPage />}
+					/>
+					<Route
+						path="/products/:categoryId/:productId"
+						element={<PressOnDetailPage />}
+					/>
+					<Route path="/shop" element={<NailShopPage />} />
+					{/* <Route path="/book" element={<BookAppointmentPage />} /> */}
+					<Route
+						path="/reschedule"
+						element={<RescheduleAppointmentPage />}
+					/>
+					<Route path="/order" element={<PlaceOrderPage />} />
+					<Route path="/cart" element={<CartPage />} />
+					<Route path="/checkout" element={<CheckoutPage />} />
+					<Route path="/account" element={<AccountPage />} />
+					<Route path="/our-story" element={<OurStoryPage />} />
+					<Route path="/blog" element={<BlogPage />} />
+					<Route path="/testimonials" element={<TestimonialsPage />} />
+					<Route path="/gift-cards" element={<GiftCardPage />} />
+					<Route path="/our-team" element={<OurTeamPage />} />
+					<Route path="/gallery" element={<GalleryPage />} />
+					<Route path="/thank-you" element={<ThankYouPage />} />
+					<Route path="/nail-care" element={<NailCarePage />} />
+					<Route path="/group-booking" element={<GroupBookingPage />} />
+					<Route
+						path="/admin"
+						element={
+							<Suspense fallback={LazyFallback}>
+								<AdminPage />
+							</Suspense>
+						}
+					/>
+				</Routes>
+			</Box>
+			<WhatsAppBubble />
+			<MobileBottomNav />
+			{location.pathname !== "/admin" && <Footer />}
+			<Analytics />
+		</>
   );
 }
 

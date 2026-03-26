@@ -85,7 +85,10 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {
-      if (typeFilter !== 'all' && o.type !== typeFilter) return false;
+      if (typeFilter === 'customPressOn') {
+        const isCustom = (o.items || []).some((item) => item.setIncludes?.length > 0 || item.nailNotes || item.selectedLength);
+        if (!isCustom) return false;
+      } else if (typeFilter !== 'all' && o.type !== typeFilter) return false;
       if (statusFilter !== 'all' && o.status !== statusFilter) return false;
       if (search) {
         const s = search.toLowerCase();
@@ -351,6 +354,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             sx={{ minWidth: 140, fontFamily }}
           >
             <MenuItem value="all">All Types</MenuItem>
+            <MenuItem value="customPressOn">Custom Press-On</MenuItem>
             {orderTypes.map((t) => (
               <MenuItem key={t} value={t}>{t}</MenuItem>
             ))}
@@ -574,6 +578,43 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                                   <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
                                     Nail Bed Size: {item.nailBedSize}
                                   </Typography>
+                                )}
+                                {item.selectedLength && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
+                                    Length: {item.selectedLength}
+                                  </Typography>
+                                )}
+                                {item.setIncludes?.length > 0 && (
+                                  <Box sx={{ mt: 0.5 }}>
+                                    <Typography sx={{ fontFamily, fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-purple)', mb: 0.3 }}>Set Includes:</Typography>
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.4 }}>
+                                      {item.setIncludes.map((tag) => (
+                                        <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.65rem', height: 18, backgroundColor: '#FCE4EC', color: '#C2185B', fontWeight: 600 }} />
+                                      ))}
+                                    </Box>
+                                  </Box>
+                                )}
+                                {item.inspirationTags?.length > 0 && (
+                                  <Box sx={{ mt: 0.5 }}>
+                                    <Typography sx={{ fontFamily, fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-purple)', mb: 0.3 }}>Inspiration:</Typography>
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.4 }}>
+                                      {item.inspirationTags.map((tag) => (
+                                        <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.65rem', height: 18, backgroundColor: '#EDE7F6', color: '#5E35B1', fontWeight: 600 }} />
+                                      ))}
+                                    </Box>
+                                  </Box>
+                                )}
+                                {item.nailNotes && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#888', mt: 0.4, fontStyle: 'italic' }}>
+                                    Notes: &ldquo;{item.nailNotes}&rdquo;
+                                  </Typography>
+                                )}
+                                {item.specialRequest && (
+                                  <Chip
+                                    label="⚠️ Special Request — Made to Order"
+                                    size="small"
+                                    sx={{ mt: 0.5, fontSize: '0.68rem', height: 20, backgroundColor: '#FFF8E1', color: '#B8860B', fontWeight: 700, border: '1px solid #FFD54F' }}
+                                  />
                                 )}
                                 {item.otherPeople?.length > 0 && (
                                   <Box sx={{ mt: 0.5, pl: 1, borderLeft: '2px solid #E0B0C0', ml: 0.5 }}>

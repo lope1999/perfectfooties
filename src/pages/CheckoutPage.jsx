@@ -206,6 +206,11 @@ export default function CheckoutPage() {
         detail += `\n   Quantity: ${p.quantity} set(s)`;
         if (p.nailBedSize) detail += `\n   Nail Bed Size: ${p.nailBedSize}`;
         if (p.presetSize) detail += `\n   Preset Size: ${p.presetSize}`;
+        if (p.selectedLength) detail += `\n   Length: ${p.selectedLength}`;
+        if (p.setIncludes?.length > 0) detail += `\n   Set Includes: ${p.setIncludes.join(', ')}`;
+        if (p.inspirationTags?.length > 0) detail += `\n   Inspiration: ${p.inspirationTags.join(', ')}`;
+        if (p.nailNotes) detail += `\n   Notes: ${p.nailNotes}`;
+        if (p.specialRequest) detail += `\n   ⚠️ SPECIAL REQUEST — Made to Order (production: 4–7 days)`;
         if (p.orderingForOthers && p.otherPeople?.length > 0) {
           p.otherPeople.forEach((o) => {
             detail += `\n   Also for: ${o.name || 'N/A'} \u2014 Shape: ${o.nailShape || 'Same'} \u2014 Nail Bed: ${o.nailBedSize || 'N/A'}`;
@@ -244,8 +249,9 @@ export default function CheckoutPage() {
 
     const message = `Hi! I\u2019d like to place an order.\n\n${lines.join('\n')}\n${totalLine}${depositLine}\n\nPlease confirm availability and payment details. Thank you!`;
     const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
-    // Skip/no-payment path: still inside user gesture, open new tab before any awaits
-    if (!paymentReference) window.open(waUrl, '_blank');
+    // Open WhatsApp only when no deposit required (products/press-ons only — no service)
+    if (!paymentReference && services.length === 0) window.open(waUrl, '_blank');
+    if (!paymentReference && services.length > 0) { setSubmitting(false); return; }
 
     // Background async operations (save shipping, decrement stock, save order, redeem gift card)
     saveShippingDetails(user.uid, shipping).catch(() => {});
@@ -259,7 +265,7 @@ export default function CheckoutPage() {
         }
       });
       pressOns.forEach((p) => {
-        if (p.readyMade && p.categoryId && p.stock !== undefined) {
+        if (p.readyMade && !p.specialRequest && p.categoryId && p.stock !== undefined) {
           stockItems.push({ collection: 'productCategories', categoryId: p.categoryId, productId: p.productId, quantity: Number(p.quantity) || 1 });
         }
       });
@@ -288,6 +294,11 @@ export default function CheckoutPage() {
           ...(p.nailShape && { nailShape: p.nailShape }),
           ...(p.nailBedSize && { nailBedSize: p.nailBedSize }),
           ...(p.presetSize && { presetSize: p.presetSize }),
+          ...(p.selectedLength && { selectedLength: p.selectedLength }),
+          ...(p.setIncludes?.length > 0 && { setIncludes: p.setIncludes }),
+          ...(p.inspirationTags?.length > 0 && { inspirationTags: p.inspirationTags }),
+          ...(p.nailNotes && { nailNotes: p.nailNotes }),
+          ...(p.specialRequest && { specialRequest: true }),
           ...(p.orderingForOthers && p.otherPeople?.length > 0 && { otherPeople: p.otherPeople }),
         })),
       ];
@@ -353,7 +364,7 @@ export default function CheckoutPage() {
         items: [
           ...services.map((s) => ({ kind: 'service', serviceName: s.name, price: s.price })),
           ...products.map((p) => ({ kind: 'retail', name: p.name, price: p.price * (p.quantity || 1), quantity: p.quantity })),
-          ...pressOns.map((p) => ({ kind: 'press-on', name: p.name, price: p.price * (p.quantity || 1), nailShape: p.nailShape, quantity: p.quantity || 1 })),
+          ...pressOns.map((p) => ({ kind: 'press-on', name: p.name, price: p.price * (p.quantity || 1), nailShape: p.nailShape, quantity: p.quantity || 1, selectedLength: p.selectedLength, setIncludes: p.setIncludes, inspirationTags: p.inspirationTags, nailNotes: p.nailNotes, specialRequest: p.specialRequest || false })),
         ],
         total: services.reduce((s, i) => s + i.price, 0) + products.reduce((s, i) => s + i.price * (i.quantity || 1), 0) + pressOns.reduce((s, i) => s + i.price * (i.quantity || 1), 0),
         finalTotal,
@@ -387,7 +398,7 @@ export default function CheckoutPage() {
 
   const payWithPaystack = () => {
     const pk = import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY || '';
-    if (!pk || !window.PaystackPop) { handleCompleteOrder('', pendingShipping); return; }
+    if (!pk || !window.PaystackPop) { alert('Payment is required to confirm your booking. Please refresh the page and try again.'); return; }
     window.PaystackPop.setup({
       key: pk,
       email: user?.email || 'guest@chizzys.com',
@@ -812,16 +823,10 @@ export default function CheckoutPage() {
           )}
 
           <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Pay the 50% deposit via Paystack to confirm your booking, or skip to arrange payment manually via WhatsApp.
+            Pay the 50% deposit via Paystack to confirm your booking.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5, gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          <Button
-            onClick={() => handleCompleteOrder('', pendingShipping)}
-            sx={{ color: '#888', fontSize: '0.82rem', textTransform: 'none', fontFamily: '"Georgia", serif' }}
-          >
-            Skip — Arrange on WhatsApp
-          </Button>
           <Button
             onClick={payWithPaystack}
             sx={{
