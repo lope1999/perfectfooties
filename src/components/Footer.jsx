@@ -96,11 +96,11 @@ export default function Footer() {
 							>
 								Services
 							</Typography>
-							<MuiLink sx={linkSx} onClick={() => navigate("/services")}>
+							<MuiLink sx={linkSx} onClick={() => navigate("/products")}>
 								Products Menu
 							</MuiLink>
-							<MuiLink sx={linkSx} onClick={() => navigate("/book")}>
-								Book Appointment
+							<MuiLink sx={linkSx} onClick={() => navigate("/services")}>
+								Services Menu 
 							</MuiLink>
 							<MuiLink
 								sx={linkSx}
