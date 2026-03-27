@@ -3225,8 +3225,28 @@ function OrderCard({ order, rated, onRate, onReschedule, onCancel, onEdit, onReo
 				/>
 			</Box>
 			<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: "1rem" }}>
-				{formatNaira(order.total)}
+				{formatNaira((order.total || 0) + (order.extraCharge || 0))}
 			</Typography>
+			{order.extraCharge > 0 && (
+				<Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5, flexWrap: "wrap" }}>
+					<Chip
+						label={`+${formatNaira(order.extraCharge)} extra charge`}
+						size="small"
+						sx={{
+							backgroundColor: "#FFF3E0",
+							color: "#E65100",
+							fontWeight: 700,
+							fontSize: "0.68rem",
+							border: "1px solid #FFCC02",
+						}}
+					/>
+					{order.extraChargeReason && (
+						<Typography sx={{ fontSize: "0.75rem", color: "#888", fontStyle: "italic" }}>
+							{order.extraChargeReason}
+						</Typography>
+					)}
+				</Box>
+			)}
 			<Typography sx={{ color: "#777", fontSize: "0.82rem", mt: 0.3 }}>
 				{formatDate(order.createdAt)}
 			</Typography>

@@ -397,7 +397,7 @@ export default function DashboardSection({
       const day = days.find((d) => d.date === key);
       if (day) {
         day.orders += 1;
-        if (REVENUE_STATUSES.includes(o.status)) day.revenue += o.total || 0;
+        if (REVENUE_STATUSES.includes(o.status)) day.revenue += (o.total || 0) + (o.extraCharge || 0);
       }
     });
 
@@ -418,7 +418,7 @@ export default function DashboardSection({
       const created = o.createdAt?.toDate ? o.createdAt.toDate() : null;
       if (!created) return;
       const mo = months.find((m) => m.year === created.getFullYear() && m.month === created.getMonth());
-      if (mo) { mo.orders += 1; if (REVENUE_STATUSES.includes(o.status)) mo.revenue += o.total || 0; }
+      if (mo) { mo.orders += 1; if (REVENUE_STATUSES.includes(o.status)) mo.revenue += (o.total || 0) + (o.extraCharge || 0); }
     });
 
     return {

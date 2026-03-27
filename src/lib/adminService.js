@@ -242,7 +242,7 @@ export function computeUserStats(users, orders) {
     const appointmentCount = userOrders.filter((o) => o.type === 'service').length;
     const totalPaid = userOrders
       .filter((o) => REVENUE_STATUSES.includes(o.status))
-      .reduce((sum, o) => sum + (o.total || 0), 0);
+      .reduce((sum, o) => sum + (o.total || 0) + (o.extraCharge || 0), 0);
     const lastOrder = userOrders.length > 0
       ? userOrders.reduce((latest, o) => {
           const t = o.createdAt?.toDate?.() || new Date(0);
@@ -338,7 +338,7 @@ export function computeDashboardStats(orders) {
   const total = orders.length;
   const revenue = orders
     .filter((o) => REVENUE_STATUSES.includes(o.status))
-    .reduce((sum, o) => sum + (o.total || 0), 0);
+    .reduce((sum, o) => sum + (o.total || 0) + (o.extraCharge || 0), 0);
   const pending = orders.filter((o) => o.status === 'pending').length;
   const confirmed = orders.filter((o) => o.status === 'confirmed').length;
   const received = orders.filter((o) => o.status === 'received').length;

@@ -237,6 +237,8 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
       notes: order.notes || '',
       total: order.total ?? '',
       appointmentDate: order.appointmentDate || '',
+      extraCharge: order.extraCharge ?? '',
+      extraChargeReason: order.extraChargeReason || '',
     });
     setEditDialog(order);
   };
@@ -251,6 +253,8 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
         phone: editForm.phone.trim(),
         notes: editForm.notes,
         total: parseFloat(editForm.total) || editDialog.total,
+        extraCharge: parseFloat(editForm.extraCharge) || 0,
+        extraChargeReason: editForm.extraChargeReason || '',
       };
       if (editForm.appointmentDate) updates.appointmentDate = editForm.appointmentDate;
       await updateOrder(editDialog.uid, editDialog.id, updates);
@@ -537,7 +541,14 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                         ))}
                       </Select>
                     </TableCell>
-                    <TableCell sx={{ fontFamily }}>₦{(o.total || 0).toLocaleString()}</TableCell>
+                    <TableCell sx={{ fontFamily }}>
+                      ₦{((o.total || 0) + (o.extraCharge || 0)).toLocaleString()}
+                      {o.extraCharge > 0 && (
+                        <Box sx={{ fontSize: '0.7rem', color: '#E65100', mt: 0.3 }}>
+                          +₦{o.extraCharge.toLocaleString()} extra
+                        </Box>
+                      )}
+                    </TableCell>
                     <TableCell sx={{ fontFamily, fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
                       {(() => {
                         const raw = o.appointmentDate || o.items?.[0]?.date;
@@ -726,6 +737,25 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                             <Typography sx={{ fontFamily, fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-purple)', mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                               Notes
                             </Typography>
+                            {o.extraCharge > 0 && (
+                              <Box sx={{ mb: 1.5, p: 1.5, borderRadius: 2, backgroundColor: '#FFF3E0', border: '1px solid #FFCC02' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                  <Typography sx={{ fontFamily, fontSize: '0.82rem', fontWeight: 700, color: '#E65100' }}>
+                                    Extra Charge
+                                  </Typography>
+                                  <Chip
+                                    label={`+₦${o.extraCharge.toLocaleString()}`}
+                                    size="small"
+                                    sx={{ backgroundColor: '#E65100', color: '#fff', fontWeight: 700, fontSize: '0.72rem' }}
+                                  />
+                                </Box>
+                                {o.extraChargeReason && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.8rem', color: '#555' }}>
+                                    <strong>Reason:</strong> {o.extraChargeReason}
+                                  </Typography>
+                                )}
+                              </Box>
+                            )}
                             {o.notes ? (
                               <Typography sx={{ fontFamily, fontSize: '0.82rem', color: 'var(--text-muted)', mb: 1 }}>
                                 {o.notes}
@@ -803,6 +833,20 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
             value={editForm.total ?? ''}
             onChange={(e) => setEditForm((f) => ({ ...f, total: e.target.value }))}
             sx={inputSx}
+          />
+          <TextField
+            label="Extra Charge (₦)" size="small" fullWidth type="number"
+            value={editForm.extraCharge ?? ''}
+            onChange={(e) => setEditForm((f) => ({ ...f, extraCharge: e.target.value }))}
+            sx={inputSx}
+            helperText="Additional amount charged due to extra products/services"
+          />
+          <TextField
+            label="Extra Charge Reason" size="small" fullWidth multiline minRows={2}
+            value={editForm.extraChargeReason || ''}
+            onChange={(e) => setEditForm((f) => ({ ...f, extraChargeReason: e.target.value }))}
+            sx={inputSx}
+            placeholder="e.g. Extra gel polish, additional nail art design..."
           />
           <TextField
             label="Notes" size="small" fullWidth multiline minRows={2}
