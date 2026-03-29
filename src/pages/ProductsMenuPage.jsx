@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
 	Box,
 	Typography,
@@ -23,38 +23,45 @@ import {
 	DialogContent,
 	DialogActions,
 } from "@mui/material";
-import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
-import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
-import LoginIcon from '@mui/icons-material/Login';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import CloseIcon from '@mui/icons-material/Close';
-import StraightenIcon from '@mui/icons-material/Straighten';
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
+import LoginIcon from "@mui/icons-material/Login";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
+import CloseIcon from "@mui/icons-material/Close";
+import StraightenIcon from "@mui/icons-material/Straighten";
+import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import ScrollReveal from '../components/ScrollReveal';
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import ScrollReveal from "../components/ScrollReveal";
 import PresetSizeGuide from "../components/PresetSizeGuide";
-import useProductCategories from '../hooks/useProductCategories';
-import { useAuth } from '../context/AuthContext';
-import { useWishlist } from '../context/WishlistContext';
-import { useNotifications } from '../context/NotificationContext';
-import { pressOnNailShapes } from '../data/products';
-import { saveStockNotification } from '../lib/stockService';
-import { hasDiscount, getEffectivePrice, getDiscountLabel, getSaleEndsAt } from '../lib/discountUtils';
-import FlashSaleCountdown from '../components/FlashSaleCountdown';
+import useProductCategories from "../hooks/useProductCategories";
+import { useAuth } from "../context/AuthContext";
+import { useWishlist } from "../context/WishlistContext";
+import { useNotifications } from "../context/NotificationContext";
+import { pressOnNailShapes } from "../data/products";
+import { saveStockNotification } from "../lib/stockService";
+import { fetchNicheCollections } from "../lib/nicheCollectionService";
+import {
+	hasDiscount,
+	getEffectivePrice,
+	getDiscountLabel,
+	getSaleEndsAt,
+} from "../lib/discountUtils";
+import FlashSaleCountdown from "../components/FlashSaleCountdown";
 
-const sectionColors = ['#FFF0F5', '#FCE4EC', '#F3E5F6', '#F8E8F0', '#FFF5F8'];
+const sectionColors = ["#FFF0F5", "#FCE4EC", "#F3E5F6", "#F8E8F0", "#FFF5F8"];
 
 function formatNaira(amount) {
-  return `₦${amount.toLocaleString()}`;
+	return `₦${amount.toLocaleString()}`;
 }
 
-const lengthOptions = ['Short', 'Medium', 'Long'];
+const lengthOptions = ["Short", "Medium", "Long"];
 
 function isOutOfStock(product) {
-  return product.stock !== undefined && product.stock <= 0;
+	return product.stock !== undefined && product.stock <= 0;
 }
 
 export default function ProductsMenuPage() {
@@ -78,6 +85,17 @@ export default function ProductsMenuPage() {
 	const [lengthFilter, setLengthFilter] = useState("");
 	const [priceRange, setPriceRange] = useState([0, 30000]);
 	const [inStockOnly, setInStockOnly] = useState(false);
+
+	// Niche collections preview
+	const [nichePreview, setNichePreview] = useState([]);
+	const [nicheLoading, setNicheLoading] = useState(true);
+
+	useEffect(() => {
+		fetchNicheCollections({ activeOnly: true })
+			.then((cols) => setNichePreview(cols.slice(0, 4)))
+			.catch(() => setNichePreview([]))
+			.finally(() => setNicheLoading(false));
+	}, []);
 
 	// Custom nail info dialog state
 	const [customInfoOpen, setCustomInfoOpen] = useState(false);
@@ -139,9 +157,9 @@ export default function ProductsMenuPage() {
 				filteredProducts: applyFilters(cat.products),
 			}))
 			.filter((cat) => {
-			if (!cat.readyMade) return true; // custom categories always show as single cards
-			return cat.filteredProducts.length > 0;
-		});
+				if (!cat.readyMade) return true; // custom categories always show as single cards
+				return cat.filteredProducts.length > 0;
+			});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [
 		productCategories,
@@ -332,8 +350,8 @@ export default function ProductsMenuPage() {
 									lineHeight: 1.6,
 								}}
 							>
-								<strong>Note:</strong> The images shown except the{" "}
-								<b>Available Press-ons</b> are visual guides only — not
+								<strong>Note:</strong> The images shown are visual
+								guides only except the <b>"Niche Collections"</b> — not
 								the actual products. They represent the style and vibe
 								you&rsquo;re going for.{" "}
 								<span
@@ -410,6 +428,425 @@ export default function ProductsMenuPage() {
 						</Box>
 					</ScrollReveal>
 				)}
+
+				{/* Niche Collections Banner */}
+				<ScrollReveal direction="up" delay={0.35}>
+					<Box
+						sx={{
+							mt: 3,
+							borderRadius: 3,
+							overflow: "hidden",
+							border: "1.5px solid #9C27B0",
+							background:
+								"linear-gradient(135deg, #8E24AA 0%, #D81B60 60%, #E91E8C 100%)",
+							transition: "all 0.25s ease",
+							"&:hover": {
+								boxShadow: "0 8px 28px rgba(142,36,170,0.3)",
+							},
+							maxWidth: 940,
+							mx: "auto",
+						}}
+					>
+						{/* Header row */}
+						<Box
+							sx={{
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "space-between",
+								px: { xs: 2.5, sm: 4 },
+								pt: 2.5,
+								pb: 1.5,
+								gap: 2,
+								flexWrap: "wrap",
+								cursor: "pointer",
+							}}
+							onClick={() => navigate("/collections")}
+						>
+							<Box sx={{ maxWidth: 480 }}>
+								{/* Badge pill */}
+								<Box
+									sx={{
+										display: "inline-flex",
+										alignItems: "center",
+										gap: 0.7,
+										mb: 1.2,
+										backgroundColor: "rgba(255,255,255,0.15)",
+										border: "1px solid rgba(255,255,255,0.25)",
+										borderRadius: "20px",
+										px: 1.4,
+										py: 0.45,
+										backdropFilter: "blur(6px)",
+									}}
+								>
+									<AutoAwesomeIcon sx={{ color: "#FFD6EC", fontSize: 13 }} />
+									<Typography
+										sx={{
+											color: "#FFD6EC",
+											fontSize: "0.68rem",
+											fontWeight: 700,
+											textTransform: "uppercase",
+											letterSpacing: 1.3,
+										}}
+									>
+										Made to Order
+									</Typography>
+								</Box>
+
+								{/* Title */}
+								<Typography
+									sx={{
+										fontFamily: '"Georgia", serif',
+										fontWeight: 700,
+										fontSize: { xs: "1.4rem", sm: "1.65rem" },
+										color: "#fff",
+										mb: 1,
+										lineHeight: 1.2,
+										letterSpacing: "-0.01em",
+									}}
+								>
+									Niche Collections
+								</Typography>
+
+								{/* Description */}
+								<Typography
+									sx={{
+										color: "rgba(255,255,255,0.82)",
+										fontSize: { xs: "0.82rem", sm: "0.88rem" },
+										lineHeight: 1.65,
+										mb: 1.8,
+										fontFamily: '"Georgia", serif',
+									}}
+								>
+									Curated seasonal sets designed for the soft-glam, luxury-loving girlies who appreciate understated elegance — every stroke and line crafted with precision and intention.
+								</Typography>
+
+								{/* Feature chips */}
+								<Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+									{[
+										{ icon: "✦", label: "Choose your shape & length" },
+										{ icon: "✦", label: "Limited seasonal sets" },
+										{ icon: "✦", label: "Ready in 4–7 days" },
+									].map(({ icon, label }) => (
+										<Box
+											key={label}
+											sx={{
+												display: "flex",
+												alignItems: "center",
+												gap: 0.6,
+												backgroundColor: "rgba(255,255,255,0.12)",
+												border: "1px solid rgba(255,255,255,0.2)",
+												borderRadius: "14px",
+												px: 1.3,
+												py: 0.5,
+											}}
+										>
+											<Typography sx={{ color: "#FFD6EC", fontSize: "0.62rem", lineHeight: 1 }}>{icon}</Typography>
+											<Typography sx={{ color: "rgba(255,255,255,0.9)", fontSize: "0.72rem", fontWeight: 600, whiteSpace: "nowrap" }}>
+												{label}
+											</Typography>
+										</Box>
+									))}
+								</Box>
+							</Box>
+							<Button
+								onClick={(e) => {
+									e.stopPropagation();
+									navigate("/collections");
+								}}
+								sx={{
+									background:
+										"linear-gradient(135deg, #E91E8C, #FF6BB5)",
+									color: "#fff",
+									borderRadius: "20px",
+									fontFamily: '"Georgia", serif',
+									fontWeight: 700,
+									fontSize: "0.82rem",
+									textTransform: "none",
+									px: 2.5,
+									py: 1,
+									flexShrink: 0,
+									boxShadow: "0 2px 10px rgba(233,30,140,0.4)",
+									"&:hover": {
+										background:
+											"linear-gradient(135deg, #C2185B, #E91E8C)",
+									},
+								}}
+							>
+								Explore All →
+							</Button>
+						</Box>
+
+						{/* Preview cards row */}
+						<Box
+							sx={{
+								display: "flex",
+								gap: 1.5,
+								px: { xs: 2, sm: 4 },
+								pb: 2.5,
+								overflowX: "auto",
+								"&::-webkit-scrollbar": { height: 4 },
+								"&::-webkit-scrollbar-track": {
+									background: "rgba(255,255,255,0.08)",
+									borderRadius: 2,
+								},
+								"&::-webkit-scrollbar-thumb": {
+									background: "rgba(255,255,255,0.28)",
+									borderRadius: 2,
+								},
+							}}
+						>
+							{nicheLoading
+								? [1, 2, 3].map((i) => (
+										<Box
+											key={i}
+											sx={{
+												width: 170,
+												height: 210,
+												flexShrink: 0,
+												borderRadius: 2,
+												backgroundColor: "rgba(255,255,255,0.1)",
+												"@keyframes nichePulse": {
+													"0%, 100%": { opacity: 0.5 },
+													"50%": { opacity: 0.9 },
+												},
+												animation:
+													"nichePulse 1.5s ease-in-out infinite",
+											}}
+										/>
+									))
+								: nichePreview.length === 0
+									? null
+									: [
+											...nichePreview.map((col) => {
+												const cover =
+													Array.isArray(col.images) &&
+													col.images[0]
+														? col.images[0]
+														: null;
+												const statusColor =
+													col.status === "open"
+														? "#2e7d32"
+														: col.status === "upcoming"
+															? "#e65100"
+															: "#616161";
+												const statusBg =
+													col.status === "open"
+														? "#e8f5e9"
+														: col.status === "upcoming"
+															? "#fff3e0"
+															: "#f5f5f5";
+												const statusLabel =
+													col.status === "open"
+														? "Open"
+														: col.status === "upcoming"
+															? "Soon"
+															: "Closed";
+												const hasSurcharge =
+													col.lengthSurcharges &&
+													Object.values(col.lengthSurcharges).some(
+														(v) => v > 0,
+													);
+												return (
+													<Box
+														key={col.id}
+														onClick={() =>
+															col.status !== "closed" &&
+															navigate(`/collections/${col.id}`)
+														}
+														sx={{
+															width: 170,
+															flexShrink: 0,
+															borderRadius: 2,
+															overflow: "hidden",
+															backgroundColor: "#fff",
+															boxShadow:
+																"0 2px 12px rgba(0,0,0,0.25)",
+															cursor:
+																col.status !== "closed"
+																	? "pointer"
+																	: "default",
+															transition: "all 0.22s ease",
+															"&:hover":
+																col.status !== "closed"
+																	? {
+																			transform:
+																				"translateY(-4px)",
+																			boxShadow:
+																				"0 10px 24px rgba(0,0,0,0.35)",
+																		}
+																	: {},
+														}}
+													>
+														{cover ? (
+															<Box
+																component="img"
+																src={cover}
+																alt={col.name}
+																sx={{
+																	width: "100%",
+																	height: 130,
+																	objectFit: "cover",
+																	display: "block",
+																}}
+															/>
+														) : (
+															<Box
+																sx={{
+																	width: "100%",
+																	height: 130,
+																	backgroundColor: "#FFF0F5",
+																	display: "flex",
+																	alignItems: "center",
+																	justifyContent: "center",
+																}}
+															>
+																<AutoAwesomeIcon
+																	sx={{
+																		color: "#F0C0D0",
+																		fontSize: 32,
+																	}}
+																/>
+															</Box>
+														)}
+														<Box sx={{ p: 1.2 }}>
+															<Box
+																sx={{
+																	display: "flex",
+																	justifyContent:
+																		"space-between",
+																	alignItems: "flex-start",
+																	mb: 0.4,
+																	gap: 0.5,
+																}}
+															>
+																<Typography
+																	noWrap
+																	sx={{
+																		fontFamily:
+																			'"Georgia", serif',
+																		fontWeight: 700,
+																		fontSize: "0.76rem",
+																		color: "#2D0845",
+																		lineHeight: 1.2,
+																		flex: 1,
+																	}}
+																>
+																	{col.name}
+																</Typography>
+																<Chip
+																	label={statusLabel}
+																	size="small"
+																	sx={{
+																		backgroundColor: statusBg,
+																		color: statusColor,
+																		fontWeight: 700,
+																		fontSize: "0.52rem",
+																		height: 15,
+																		flexShrink: 0,
+																		"& .MuiChip-label": {
+																			px: 0.5,
+																		},
+																	}}
+																/>
+															</Box>
+															{col.season && (
+																<Typography
+																	sx={{
+																		fontSize: "0.67rem",
+																		color: "#E91E8C",
+																		fontWeight: 600,
+																		mb: 0.4,
+																	}}
+																>
+																	{col.season}
+																</Typography>
+															)}
+															<Typography
+																sx={{
+																	fontFamily:
+																		'"Georgia", serif',
+																	fontWeight: 700,
+																	fontSize: "0.8rem",
+																	color: "#6B1050",
+																}}
+															>
+																{hasSurcharge && (
+																	<Typography
+																		component="span"
+																		sx={{
+																			fontWeight: 400,
+																			fontSize: "0.62rem",
+																			color: "#999",
+																			mr: 0.3,
+																		}}
+																	>
+																		from
+																	</Typography>
+																)}
+																₦
+																{Number(
+																	col.price,
+																).toLocaleString()}
+															</Typography>
+														</Box>
+													</Box>
+												);
+											}),
+											<Box
+												key="view-all"
+												onClick={() => navigate("/collections")}
+												sx={{
+													width: 90,
+													flexShrink: 0,
+													borderRadius: 2,
+													border:
+														"1.5px dashed rgba(255,255,255,0.35)",
+													display: "flex",
+													flexDirection: "column",
+													alignItems: "center",
+													justifyContent: "center",
+													gap: 0.8,
+													cursor: "pointer",
+													py: 2,
+													transition: "all 0.22s ease",
+													"&:hover": {
+														backgroundColor:
+															"rgba(255,255,255,0.1)",
+														borderColor: "rgba(255,255,255,0.6)",
+													},
+												}}
+											>
+												<AutoAwesomeIcon
+													sx={{
+														color: "rgba(255,255,255,0.55)",
+														fontSize: 20,
+													}}
+												/>
+												<Typography
+													sx={{
+														color: "rgba(255,255,255,0.8)",
+														fontSize: "0.7rem",
+														fontFamily: '"Georgia", serif',
+														fontWeight: 600,
+														textAlign: "center",
+														lineHeight: 1.3,
+													}}
+												>
+													View All
+												</Typography>
+												<Typography
+													sx={{
+														color: "rgba(255,255,255,0.5)",
+														fontSize: "0.8rem",
+													}}
+												>
+													→
+												</Typography>
+											</Box>,
+										]}
+						</Box>
+					</Box>
+				</ScrollReveal>
 
 				{/* Filter & Sort Toggle */}
 				<Box sx={{ mt: 3 }}>
@@ -684,9 +1121,12 @@ export default function ProductsMenuPage() {
 				</Box>
 			)}
 
-			{/* Ready-Made Product Sections */}
+			{/* Ready-Made Product Sections — replaced by Niche Collections */}
 			{filteredCategories.map((category, index) => {
-				if (!category.readyMade) return null;
+				if (!category.readyMade || category.readyMade) {
+					void index;
+					return null;
+				}
 				return (
 					<Box key={category.id}>
 						<Box

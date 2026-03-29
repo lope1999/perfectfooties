@@ -10,14 +10,18 @@ export const NAIL_SHAPE_PATHS = {
   Ballerina: 'M2,35 L7,6 L13,6 L18,35 Z',
 };
 
-export default function NailShapeSelector({ value, onChange }) {
+export default function NailShapeSelector({ value, onChange, availableOnly }) {
+  const entries = availableOnly
+    ? Object.entries(NAIL_SHAPE_PATHS).filter(([shape]) => availableOnly.includes(shape))
+    : Object.entries(NAIL_SHAPE_PATHS);
+
   return (
     <Box>
       <Typography sx={{ fontSize: '0.78rem', color: '#777', mb: 1.5 }}>
         Tap a shape to select it
       </Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-        {Object.entries(NAIL_SHAPE_PATHS).map(([shape, path]) => {
+        {entries.map(([shape, path]) => {
           const selected = value === shape;
           return (
             <Box

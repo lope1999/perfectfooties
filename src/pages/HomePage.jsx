@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import AnnouncementBanner from '../components/AnnouncementBanner';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -183,6 +184,9 @@ export default function HomePage() {
 					</ScrollReveal>
 				</Box>
 			</Box>
+
+			{/* Announcement Banner — shown below hero */}
+			<AnnouncementBanner />
 
 			{/* Interstitial — between hero and info */}
 			{/* <Interstitial

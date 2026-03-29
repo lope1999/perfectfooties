@@ -5,6 +5,7 @@ import { CircularProgress, Box } from '@mui/material';
 import ScrollToTop from './components/ScrollToTop';
 import Navbar from './components/Navbar';
 import AppointmentReminderPopup from './components/AppointmentReminderPopup';
+import ReviewReminderPopup from './components/ReviewReminderPopup';
 import StatusChangeToast from './components/StatusChangeToast';
 import Footer from './components/Footer';
 import WhatsAppBubble from './components/WhatsAppBubble';
@@ -31,6 +32,8 @@ import PressOnDetailPage from './pages/PressOnDetailPage';
 import PressOnCategoryPage from './pages/PressOnCategoryPage';
 import NailCarePage from './pages/NailCarePage';
 import GroupBookingPage from './pages/GroupBookingPage';
+import NicheCollectionsPage from './pages/NicheCollectionsPage';
+import NicheCollectionDetailPage from './pages/NicheCollectionDetailPage';
 
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 
@@ -55,6 +58,7 @@ function App() {
 			<ScrollToTop />
 			<Navbar />
 			<AppointmentReminderPopup />
+			<ReviewReminderPopup />
 			<StatusChangeToast />
 			<Box sx={{ pb: { xs: "64px", md: 0 } }}>
 				<Routes>
@@ -92,6 +96,8 @@ function App() {
 					<Route path="/thank-you" element={<ThankYouPage />} />
 					<Route path="/nail-care" element={<NailCarePage />} />
 					<Route path="/group-booking" element={<GroupBookingPage />} />
+				<Route path="/collections" element={<NicheCollectionsPage />} />
+				<Route path="/collections/:collectionId" element={<NicheCollectionDetailPage />} />
 					<Route
 						path="/admin"
 						element={

@@ -26,6 +26,8 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import CloseIcon from '@mui/icons-material/Close';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import CampaignIcon from '@mui/icons-material/Campaign';
 
 const SIDEBAR_WIDTH = 250;
 const SIDEBAR_COLLAPSED_WIDTH = 68;
@@ -35,6 +37,7 @@ const sections = [
   { key: 'orders', label: 'Orders', icon: <ShoppingCartIcon /> },
   { key: 'appointments', label: 'Appointments', icon: <EventNoteIcon /> },
   { key: 'customers', label: 'Customers', icon: <PeopleIcon /> },
+  { key: 'nichecollections', label: 'Niche Collections', icon: <AutoAwesomeIcon /> },
   { key: 'pressons', label: 'Press-On Products', icon: <StorefrontIcon /> },
   { key: 'retail', label: 'Retail Products', icon: <InventoryIcon /> },
   { key: 'services', label: 'Services', icon: <LocalOfferIcon /> },
@@ -43,6 +46,7 @@ const sections = [
   { key: 'giftcards', label: 'Gift Cards', icon: <CardGiftcardIcon /> },
   { key: 'gallery', label: 'Gallery', icon: <PhotoLibraryIcon /> },
   { key: 'cancellations', label: 'Cancellations', icon: <CancelIcon /> },
+  { key: 'announcements', label: 'Announcements', icon: <CampaignIcon /> },
 ];
 
 export default function AdminSidebar({ active, onSelect, mobileOpen, onMobileClose, collapsed, onToggleCollapse }) {

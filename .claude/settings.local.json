@@ -135,7 +135,9 @@
       "Bash(node -e \"require\\(''./index.js''\\)\")",
       "Bash(node_modules/.bin/firebase-functions index.js)",
       "Bash(node -e \"console.log\\(require\\(''firebase-functions/package.json''\\).version\\)\")",
-      "Bash(npx kill-port:*)"
+      "Bash(npx kill-port:*)",
+      "Bash(node -e \"require\\(''''./index.js''''\\)\")",
+      "Bash(claude doctor:*)"
     ]
   }
 }

@@ -23,14 +23,18 @@ function formatNaira(amount) {
   return `₦${Number(amount).toLocaleString()}`;
 }
 
-export default function NailLengthSelector({ value, onChange, surcharges }) {
+export default function NailLengthSelector({ value, onChange, surcharges, availableOnly }) {
+  const entries = availableOnly
+    ? Object.entries(NAIL_LENGTH_PATHS).filter(([length]) => availableOnly.includes(length))
+    : Object.entries(NAIL_LENGTH_PATHS);
+
   return (
     <Box>
       <Typography sx={{ fontSize: '0.78rem', color: '#777', mb: 1.5 }}>
         Tap a length to select it
       </Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-        {Object.entries(NAIL_LENGTH_PATHS).map(([length, path]) => {
+        {entries.map(([length, path]) => {
           const selected = value === length;
           const surcharge = surcharges?.[length] ?? null;
           return (

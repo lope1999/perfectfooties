@@ -15,7 +15,10 @@ import BlogPostsSection from '../components/admin/BlogPostsSection';
 import GallerySection from '../components/admin/GallerySection';
 import LoyaltySection from '../components/admin/LoyaltySection';
 import CancellationsSection from '../components/admin/CancellationsSection';
+import NicheCollectionsSection from '../components/admin/NicheCollectionsSection';
+import AnnouncementsSection from '../components/admin/AnnouncementsSection';
 import { fetchAllOrders, seedAndFetchCategories, fetchAllUsers, computeUserStats, fetchServiceDiscounts, fetchCategories } from '../lib/adminService';
+import { fetchNicheCollections } from '../lib/nicheCollectionService';
 import { fetchGalleryImages } from '../lib/galleryService';
 import { fetchAllGiftCards } from '../lib/giftCardService';
 import { seedAndFetchBlogPosts } from '../lib/blogService';
@@ -37,6 +40,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState([]);
   const [serviceDiscounts, setServiceDiscounts] = useState({});
   const [serviceCategories, setServiceCategories] = useState([]);
+  const [nicheCollections, setNicheCollections] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const theme = useTheme();
@@ -46,7 +50,7 @@ export default function AdminPage() {
     setLoading(true);
     try {
       // Seed + fetch categories in one read each, all requests in parallel
-      const [o, pc, rc, gc, uf, sd, sc, bp, gi] = await Promise.allSettled([
+      const [o, pc, rc, gc, uf, sd, sc, bp, gi, nc] = await Promise.allSettled([
         fetchAllOrders(),
         seedAndFetchCategories('productCategories', staticPressOns),
         seedAndFetchCategories('retailCategories', staticRetail),
@@ -56,6 +60,7 @@ export default function AdminPage() {
         seedAndFetchCategories('serviceCategories', staticServiceCategories),
         seedAndFetchBlogPosts(staticBlogPosts),
         fetchGalleryImages(),
+        fetchNicheCollections(),
       ]);
 
       if (o.status === 'fulfilled') {
@@ -82,6 +87,7 @@ export default function AdminPage() {
       } else {
         setServiceCategories(staticServiceCategories);
       }
+      setNicheCollections(nc.status === 'fulfilled' ? nc.value : []);
     } catch (err) {
       console.error('Admin data load error:', err);
       setPressOnCategories(staticPressOns);
@@ -164,6 +170,16 @@ export default function AdminPage() {
         return <LoyaltySection loading={loading} />;
       case 'cancellations':
         return <CancellationsSection />;
+      case 'nichecollections':
+        return (
+          <NicheCollectionsSection
+            collections={nicheCollections}
+            loading={loading}
+            onRefresh={loadData}
+          />
+        );
+      case 'announcements':
+        return <AnnouncementsSection />;
       default:
         return null;
     }
