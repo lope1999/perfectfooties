@@ -20,7 +20,9 @@ export async function fetchNicheCollections({ activeOnly = false } = {}) {
   const snap = await getDocs(query(ref, orderBy('createdAt', 'desc')));
   let docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   if (activeOnly) {
-    docs = docs.filter((c) => c.status === 'open' || c.status === 'upcoming');
+    docs = docs.filter(
+      (c) => (c.status === 'open' || c.status === 'upcoming') && !c.hiddenFromStorefront,
+    );
   }
   return docs;
 }
@@ -43,6 +45,7 @@ export async function addNicheCollection(data) {
     requiresMeasurements: Boolean(data.requiresMeasurements),
     multiSetDiscount: Boolean(data.multiSetDiscount),
     multiSetDiscountPercent: data.multiSetDiscount ? Number(data.multiSetDiscountPercent) || 0 : 0,
+    hiddenFromStorefront: Boolean(data.hiddenFromStorefront),
     createdAt: serverTimestamp(),
   });
 }

@@ -31,6 +31,8 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ImageUploadField from './ImageUploadField';
 import {
   addNicheCollection,
@@ -77,6 +79,7 @@ const emptyForm = {
   requiresMeasurements: false,
   multiSetDiscount: false,
   multiSetDiscountPercent: '',
+  hiddenFromStorefront: false,
 };
 
 function formatNaira(n) {
@@ -129,6 +132,7 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
       requiresMeasurements: Boolean(col.requiresMeasurements),
       multiSetDiscount: Boolean(col.multiSetDiscount),
       multiSetDiscountPercent: col.multiSetDiscountPercent ?? '',
+      hiddenFromStorefront: Boolean(col.hiddenFromStorefront),
     });
     setDialogOpen(true);
   };
@@ -154,6 +158,7 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
       requiresMeasurements: Boolean(col.requiresMeasurements),
       multiSetDiscount: Boolean(col.multiSetDiscount),
       multiSetDiscountPercent: col.multiSetDiscountPercent ?? '',
+      hiddenFromStorefront: false,
     });
     setDialogOpen(true);
   };
@@ -217,6 +222,7 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
         requiresMeasurements: form.requiresMeasurements,
         multiSetDiscount: form.multiSetDiscount,
         multiSetDiscountPercent: form.multiSetDiscount ? Number(form.multiSetDiscountPercent) || 0 : 0,
+        hiddenFromStorefront: form.hiddenFromStorefront,
       };
 
       if (editingId) {
@@ -259,6 +265,17 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
       onRefresh();
     } catch {
       showSnack('Failed to update status', 'error');
+    }
+  };
+
+  const handleVisibilityToggle = async (col) => {
+    const next = !col.hiddenFromStorefront;
+    try {
+      await updateNicheCollection(col.id, { hiddenFromStorefront: next });
+      showSnack(next ? 'Hidden from storefront' : 'Visible on storefront');
+      onRefresh();
+    } catch {
+      showSnack('Failed to update visibility', 'error');
     }
   };
 
@@ -351,12 +368,19 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
                     <TableCell sx={{ fontFamily, fontSize: '0.85rem', color: '#666' }}>{col.season || '—'}</TableCell>
                     <TableCell sx={{ fontFamily, fontWeight: 600, fontSize: '0.88rem' }}>{formatNaira(col.price)}</TableCell>
                     <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                         <Chip
                           label={col.status}
                           size="small"
                           sx={{ backgroundColor: scfg.bg, color: scfg.color, fontWeight: 700, fontSize: '0.68rem', height: 20 }}
                         />
+                        {col.hiddenFromStorefront && (
+                          <Chip
+                            label="Hidden"
+                            size="small"
+                            sx={{ backgroundColor: '#f5f5f5', color: '#888', fontWeight: 700, fontSize: '0.68rem', height: 20 }}
+                          />
+                        )}
                         <Tooltip title={col.status === 'open' ? 'Close orders' : 'Open orders'}>
                           <Switch
                             size="small"
@@ -372,6 +396,11 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 0.5 }}>
+                        <Tooltip title={col.hiddenFromStorefront ? 'Show on storefront' : 'Hide from storefront'}>
+                          <IconButton size="small" onClick={() => handleVisibilityToggle(col)} sx={{ color: col.hiddenFromStorefront ? '#bbb' : '#4A0E4E' }}>
+                            {col.hiddenFromStorefront ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                          </IconButton>
+                        </Tooltip>
                         <Tooltip title="Edit">
                           <IconButton size="small" onClick={() => openEdit(col)} sx={{ color: '#E91E8C' }}>
                             <EditIcon fontSize="small" />
@@ -611,6 +640,23 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
                 />
               }
               label={<Typography sx={{ fontFamily, fontSize: '0.85rem' }}>Multi-set discount (2+ sets)</Typography>}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={form.hiddenFromStorefront}
+                  onChange={(e) => setForm((f) => ({ ...f, hiddenFromStorefront: e.target.checked }))}
+                  sx={{ '& .MuiSwitch-thumb': { backgroundColor: form.hiddenFromStorefront ? '#888' : '#E91E8C' } }}
+                />
+              }
+              label={
+                <Box>
+                  <Typography sx={{ fontFamily, fontSize: '0.85rem' }}>Hide from storefront</Typography>
+                  <Typography sx={{ fontFamily, fontSize: '0.72rem', color: '#888' }}>
+                    Collection won't appear on the live site
+                  </Typography>
+                </Box>
+              }
             />
           </Box>
 
