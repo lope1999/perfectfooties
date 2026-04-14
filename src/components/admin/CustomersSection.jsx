@@ -18,17 +18,45 @@ import {
   FormControlLabel,
   Switch,
   InputAdornment,
+  Collapse,
+  IconButton,
+  Divider,
+  CircularProgress,
 } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import StarIcon from '@mui/icons-material/Star';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import SearchIcon from '@mui/icons-material/Search';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { updateCustomerPerks } from '../../lib/adminService';
 
 const fontFamily = '"Georgia", serif';
 
 function formatNaira(amount) {
   return `\u20A6${amount.toLocaleString()}`;
+}
+
+// Mirror of AccountPage CLIENT_TIERS — review-count based
+const CLIENT_TIERS = [
+  { min: 5, label: 'Diamond Diva',  emoji: '💎', color: '#5E35B1', bg: '#EDE7F6', border: '#B39DDB' },
+  { min: 4, label: 'Star Client',   emoji: '⭐', color: '#B8860B', bg: '#FFFDE7', border: '#FFD54F' },
+  { min: 3, label: 'Nail Lover',    emoji: '💅', color: '#C2185B', bg: '#FCE4EC', border: '#F48FB1' },
+  { min: 2, label: 'Glam Client',   emoji: '✨', color: '#6A1B9A', bg: '#EDE7F6', border: '#B39DDB' },
+  { min: 1, label: 'Fresh Darling', emoji: '🌸', color: '#2E7D32', bg: '#F1F8E9', border: '#A5D6A7' },
+  { min: 0, label: 'New Member',    emoji: '🌟', color: '#E91E8C', bg: '#FFF0F5', border: '#F0C0D0' },
+];
+
+const PERK_LABELS = {
+  pressOnDiscount: '5% Press-On Discount',
+  glamBadge: 'Glam Badge',
+  earlyAccess: 'Early Access',
+  priorityBooking: 'Priority Booking',
+};
+
+function getClientTier(reviewCount) {
+  return CLIENT_TIERS.find((t) => (reviewCount || 0) >= t.min) || CLIENT_TIERS[CLIENT_TIERS.length - 1];
 }
 
 function StatCard({ title, value, icon, gradient }) {
@@ -74,6 +102,9 @@ export default function CustomersSection({ users, loading }) {
   const [orderBy, setOrderBy] = useState('totalPaid');
   const [orderDir, setOrderDir] = useState('desc');
   const [regularsOnly, setRegularsOnly] = useState(false);
+  const [expandedUid, setExpandedUid] = useState(null);
+  const [perkSaving, setPerkSaving] = useState({});
+  const [localPerks, setLocalPerks] = useState({});
 
   const handleSort = (field) => {
     if (orderBy === field) {
@@ -120,6 +151,28 @@ export default function CustomersSection({ users, loading }) {
     const created = u.createdAt?.toDate?.() || u.createdAt;
     return created instanceof Date && created >= thisMonthStart;
   }).length;
+
+  const getPerks = (u) => {
+    const base = u.tierPerks || {};
+    const overrides = localPerks[u.uid] || {};
+    return { pressOnDiscount: false, glamBadge: false, earlyAccess: false, priorityBooking: false, ...base, ...overrides };
+  };
+
+  const handlePerkToggle = async (u, perkKey) => {
+    const current = getPerks(u);
+    const newVal = !current[perkKey];
+    const newPerks = { ...current, [perkKey]: newVal };
+    setLocalPerks((prev) => ({ ...prev, [u.uid]: newPerks }));
+    setPerkSaving((prev) => ({ ...prev, [`${u.uid}-${perkKey}`]: true }));
+    try {
+      await updateCustomerPerks(u.uid, newPerks);
+    } catch {
+      // revert on error
+      setLocalPerks((prev) => ({ ...prev, [u.uid]: { ...current } }));
+    } finally {
+      setPerkSaving((prev) => ({ ...prev, [`${u.uid}-${perkKey}`]: false }));
+    }
+  };
 
   if (loading) {
     return (
@@ -232,6 +285,7 @@ export default function CustomersSection({ users, loading }) {
           <TableHead>
             <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 32 }}>#</TableCell>
+              <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 32 }} />
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
                 {sortableHead('Customer', 'displayName')}
               </TableCell>
@@ -248,7 +302,7 @@ export default function CustomersSection({ users, loading }) {
                 {sortableHead('Revenue', 'totalPaid')}
               </TableCell>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700 }} align="center">
-                Status
+                Tier
               </TableCell>
             </TableRow>
           </TableHead>
@@ -264,10 +318,26 @@ export default function CustomersSection({ users, loading }) {
               const joined = u.createdAt?.toDate?.()
                 ? u.createdAt.toDate().toLocaleDateString()
                 : '—';
+              const tier = getClientTier(u.reviewCount);
+              const perks = getPerks(u);
+              const isExpanded = expandedUid === u.uid;
 
-              return (
-                <TableRow key={u.uid} sx={{ '&:hover': { bgcolor: '#f3e5f5' } }}>
+              return [
+                <TableRow
+                  key={u.uid}
+                  sx={{
+                    '&:hover': { bgcolor: '#f3e5f5' },
+                    cursor: 'pointer',
+                    backgroundColor: isExpanded ? '#fdf4ff' : 'inherit',
+                  }}
+                  onClick={() => setExpandedUid(isExpanded ? null : u.uid)}
+                >
                   <TableCell sx={{ fontFamily, fontSize: '0.78rem', color: '#999', width: 32 }}>{idx + 1}</TableCell>
+                  <TableCell sx={{ p: 0.5 }}>
+                    <IconButton size="small">
+                      {isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                    </IconButton>
+                  </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Avatar
@@ -300,34 +370,104 @@ export default function CustomersSection({ users, loading }) {
                     {formatNaira(u.totalPaid || 0)}
                   </TableCell>
                   <TableCell align="center">
-                    {u.isRegular ? (
-                      <Chip
-                        icon={<StarIcon sx={{ fontSize: 14 }} />}
-                        label="Regular"
-                        size="small"
-                        sx={{
-                          backgroundColor: '#FCE4EC',
-                          color: '#E91E8C',
-                          fontFamily,
-                          fontWeight: 600,
-                          fontSize: '0.72rem',
-                        }}
-                      />
-                    ) : (
-                      <Chip
-                        label="New"
-                        size="small"
-                        variant="outlined"
-                        sx={{ fontFamily, fontSize: '0.72rem' }}
-                      />
-                    )}
+                    <Chip
+                      label={`${tier.emoji} ${tier.label}`}
+                      size="small"
+                      sx={{
+                        backgroundColor: tier.bg,
+                        color: tier.color,
+                        border: `1px solid ${tier.border}`,
+                        fontFamily,
+                        fontWeight: 700,
+                        fontSize: '0.7rem',
+                      }}
+                    />
                   </TableCell>
-                </TableRow>
-              );
+                </TableRow>,
+
+                <TableRow key={`${u.uid}-detail`}>
+                  <TableCell colSpan={8} sx={{ p: 0, border: 0 }}>
+                    <Collapse in={isExpanded}>
+                      <Box sx={{ p: 2.5, backgroundColor: '#fdf4ff', borderBottom: '1px solid #F0C0D0' }}>
+                        <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 2 }}>
+                          {/* Tier info */}
+                          <Box
+                            sx={{
+                              p: 2,
+                              borderRadius: 2,
+                              backgroundColor: tier.bg,
+                              border: `1px solid ${tier.border}`,
+                              minWidth: 200,
+                            }}
+                          >
+                            <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1rem', color: tier.color, mb: 0.5 }}>
+                              {tier.emoji} {tier.label}
+                            </Typography>
+                            <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#666', mb: 1 }}>
+                              Reviews: {u.reviewCount || 0} &nbsp;|&nbsp; Points: {u.loyaltyPoints || 0}
+                            </Typography>
+                            <Typography sx={{ fontFamily, fontSize: '0.75rem', color: '#888' }}>
+                              Orders: {u.orderCount || 0} &nbsp;|&nbsp; Appointments: {u.appointmentCount || 0}
+                            </Typography>
+                          </Box>
+
+                          {/* Perk toggles */}
+                          <Box sx={{ flex: 1 }}>
+                            <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-purple)', mb: 1 }}>
+                              Activate Perks
+                            </Typography>
+                            <Grid container spacing={1}>
+                              {Object.keys(PERK_LABELS).map((key) => {
+                                const saving = !!perkSaving[`${u.uid}-${key}`];
+                                return (
+                                  <Grid item xs={12} sm={6} key={key}>
+                                    <Box
+                                      sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        p: 1,
+                                        borderRadius: 2,
+                                        border: '1px solid #E0B0D0',
+                                        backgroundColor: '#fff',
+                                      }}
+                                    >
+                                      <Typography sx={{ fontFamily, fontSize: '0.82rem', fontWeight: 600 }}>
+                                        {PERK_LABELS[key]}
+                                      </Typography>
+                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                        {saving && <CircularProgress size={14} sx={{ color: '#E91E8C' }} />}
+                                        <Switch
+                                          size="small"
+                                          checked={!!perks[key]}
+                                          onChange={() => handlePerkToggle(u, key)}
+                                          disabled={saving}
+                                          sx={{
+                                            '& .MuiSwitch-switchBase.Mui-checked': { color: '#E91E8C' },
+                                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#E91E8C' },
+                                          }}
+                                        />
+                                      </Box>
+                                    </Box>
+                                  </Grid>
+                                );
+                              })}
+                            </Grid>
+                          </Box>
+                        </Box>
+                        <Divider sx={{ mt: 1 }} />
+                        <Typography sx={{ fontFamily, fontSize: '0.72rem', color: '#aaa', mt: 1 }}>
+                          UID: {u.uid}
+                        </Typography>
+                      </Box>
+                    </Collapse>
+                  </TableCell>
+                </TableRow>,
+              ];
             })}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} sx={{ textAlign: 'center', fontFamily, py: 4, color: '#777' }}>
+                <TableCell colSpan={8} sx={{ textAlign: 'center', fontFamily, py: 4, color: '#777' }}>
                   {search ? 'No customers match your search' : 'No customers yet'}
                 </TableCell>
               </TableRow>

@@ -260,6 +260,13 @@ export function computeUserStats(users, orders) {
   });
 }
 
+// ─── Customer Perks ─────────────────────────────────────
+
+export async function updateCustomerPerks(uid, perks) {
+  const ref = doc(db, 'users', uid);
+  return updateDoc(ref, { tierPerks: perks });
+}
+
 // ─── Service Discounts ──────────────────────────────────
 
 export async function fetchServiceDiscounts() {

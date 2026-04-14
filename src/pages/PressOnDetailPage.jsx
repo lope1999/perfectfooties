@@ -17,6 +17,9 @@ import {
   Tooltip,
   Switch,
   FormControlLabel,
+  Dialog,
+  DialogContent,
+  Rating,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -44,12 +47,22 @@ import {
 import { hasDiscount, getEffectivePrice, getDiscountLabel } from '../lib/discountUtils';
 import NailBedSizeInput from '../components/NailBedSizeInput';
 import NailShapeSelector from '../components/NailShapeSelector';
+import NailLengthSelector from '../components/NailLengthSelector';
 import SignInPrompt from '../components/SignInPrompt';
 import PresetSizeGuide from '../components/PresetSizeGuide';
 import useProductCategories from '../hooks/useProductCategories';
 import { addRecentlyViewed, getRecentlyViewed } from '../lib/recentlyViewed';
 import { getSaleEndsAt } from '../lib/discountUtils';
 import FlashSaleCountdown from '../components/FlashSaleCountdown';
+import { fetchTestimonials } from '../lib/testimonialService';
+import { storage } from '../lib/firebase';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+
+const WHATSAPP_NUMBER = '2349053714197';
+const BUSINESS_EMAIL = 'chizobaezeh338@gmail.com';
 
 const presetSizes = ['XS', 'S', 'M', 'L'];
 
@@ -98,6 +111,19 @@ export default function PressOnDetailPage() {
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
+
+  // Order for Someone
+  const [giftFor, setGiftFor] = useState({ enabled: false, name: '', nailBedSizes: '', nailShape: '', length: '' });
+
+  // True to Photo image upload (max 2, for custom orders)
+  const [refImages, setRefImages] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
+  // Post-add contact dialog
+  const [contactDialog, setContactDialog] = useState(null);
+
+  // Review cards
+  const [testimonials, setTestimonials] = useState([]);
   const [shareAnchor, setShareAnchor] = useState(null);
 
   // Referral / loyalty
@@ -163,6 +189,33 @@ export default function PressOnDetailPage() {
 
   const maxLoyaltyUnits = Math.floor(loyaltyBalance / REDEMPTION_UNIT);
 
+  useEffect(() => {
+    fetchTestimonials().then((t) => setTestimonials(t.slice(0, 6))).catch(() => {});
+  }, []);
+
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    const remaining = 2 - refImages.length;
+    if (remaining <= 0) return;
+    const toUpload = files.slice(0, remaining);
+    setUploading(true);
+    try {
+      const urls = await Promise.all(
+        toUpload.map(async (file) => {
+          const path = `true-to-photo/${Date.now()}-${file.name}`;
+          const snap = await uploadBytes(storageRef(storage, path), file);
+          return getDownloadURL(snap.ref);
+        })
+      );
+      setRefImages((prev) => [...prev, ...urls].slice(0, 2));
+    } catch {
+      showToast('Image upload failed. Please try again.', 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleApplyReferral = async () => {
     if (!refCodeInput.trim()) return;
     setReferralChecking(true);
@@ -216,8 +269,14 @@ export default function PressOnDetailPage() {
     quantity,
     nailBedSize: nailBedSize || '',
     presetSize: presetSize || '',
-    orderingForOthers: false,
-    otherPeople: [],
+    orderingForOthers: giftFor.enabled,
+    otherPeople: giftFor.enabled ? [{
+      name: giftFor.name.trim(),
+      nailBedSize: giftFor.nailBedSizes,
+      nailShape: giftFor.nailShape,
+      selectedLength: giftFor.length,
+    }] : [],
+    ...(refImages.length > 0 && { referenceImages: refImages }),
     customerName: customerName.trim(),
     categoryId: category.id,
     readyMade: isReadyMade,
@@ -231,7 +290,11 @@ export default function PressOnDetailPage() {
     const item = buildCartItem();
     addPressOn(item);
     showToast(`${item.name} added to cart`, 'success');
-    navigate('/products');
+    if (!isReadyMade) {
+      setContactDialog({ productName: product.name, item });
+    } else {
+      navigate('/products');
+    }
   };
 
   const handleCheckout = () => {
@@ -1014,8 +1077,105 @@ export default function PressOnDetailPage() {
 									What are preset sizes?
 								</Button>
 							</Box>
+
+							{/* True to Photo / Reference Images */}
+							<Box sx={{ mb: 3 }}>
+								<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 0.5, fontSize: '1rem' }}>
+									Reference / Inspiration Images
+								</Typography>
+								<Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)', mb: 1.5 }}>
+									Upload up to 2 reference images — mood board, True-to-Photo inspiration, or anything you love.
+								</Typography>
+								<Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+									{refImages.map((url, idx) => (
+										<Box key={idx} sx={{ position: 'relative', width: 90, height: 90 }}>
+											<Box component="img" src={url} alt={`ref ${idx + 1}`} sx={{ width: 90, height: 90, borderRadius: 2, objectFit: 'cover', border: '1.5px solid #F0C0D0' }} />
+											<IconButton
+												size="small"
+												onClick={() => setRefImages((prev) => prev.filter((_, i) => i !== idx))}
+												sx={{ position: 'absolute', top: -8, right: -8, backgroundColor: '#fff', width: 22, height: 22, border: '1px solid #F0C0D0', p: 0, '&:hover': { backgroundColor: '#FFF0F5' } }}
+											>
+												<Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#E91E8C', lineHeight: 1 }}>✕</Typography>
+											</IconButton>
+										</Box>
+									))}
+									{refImages.length < 2 && (
+										<Box
+											component="label"
+											sx={{ width: 90, height: 90, borderRadius: 2, border: '1.5px dashed #F0C0D0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: uploading ? 'not-allowed' : 'pointer', backgroundColor: '#FFF0F5', gap: 0.5, '&:hover': { borderColor: '#E91E8C' } }}
+										>
+											<input type="file" accept="image/*" multiple hidden onChange={handleImageUpload} disabled={uploading} />
+											{uploading ? <CircularProgress size={18} sx={{ color: '#E91E8C' }} /> : <CloudUploadIcon sx={{ color: '#E91E8C', fontSize: 22 }} />}
+											<Typography sx={{ fontSize: '0.65rem', color: '#E91E8C', textAlign: 'center', lineHeight: 1.2 }}>
+												{uploading ? 'Uploading…' : 'Add photo'}
+											</Typography>
+										</Box>
+									)}
+								</Box>
+							</Box>
 						</>
 					)}
+
+					{/* Order for Someone Else */}
+					<Box sx={{ mb: 3, p: 2, borderRadius: 3, border: `1.5px solid ${giftFor.enabled ? '#E91E8C' : '#F0C0D0'}`, backgroundColor: giftFor.enabled ? '#FFF0F5' : '#FAFAFA', transition: 'all 0.25s ease' }}>
+						<FormControlLabel
+							control={
+								<Switch
+									checked={giftFor.enabled}
+									onChange={(e) => setGiftFor((prev) => ({ ...prev, enabled: e.target.checked }))}
+									size="small"
+									sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#E91E8C' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#E91E8C' } }}
+								/>
+							}
+							label={
+								<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+									<CardGiftcardIcon sx={{ fontSize: 18, color: giftFor.enabled ? '#E91E8C' : '#999' }} />
+									<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.92rem', color: giftFor.enabled ? '#E91E8C' : 'var(--text-main)' }}>
+										Order for someone else
+									</Typography>
+								</Box>
+							}
+						/>
+						<Collapse in={giftFor.enabled}>
+							<Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
+								<TextField
+									fullWidth
+									size="small"
+									label="Recipient's Name"
+									value={giftFor.name}
+									onChange={(e) => setGiftFor((prev) => ({ ...prev, name: e.target.value }))}
+									sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#F0C0D0' }, '&.Mui-focused fieldset': { borderColor: '#E91E8C' } } }}
+								/>
+								<Box>
+									<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-purple)', mb: 0.5 }}>
+										Recipient's Nail Bed Sizes
+									</Typography>
+									<NailBedSizeInput
+										value={giftFor.nailBedSizes}
+										onChange={(v) => setGiftFor((prev) => ({ ...prev, nailBedSizes: v }))}
+									/>
+								</Box>
+								<Box>
+									<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-purple)', mb: 0.5 }}>
+										Nail Shape
+									</Typography>
+									<NailShapeSelector
+										value={giftFor.nailShape}
+										onChange={(s) => setGiftFor((prev) => ({ ...prev, nailShape: s }))}
+									/>
+								</Box>
+								<Box>
+									<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-purple)', mb: 0.5 }}>
+										Nail Length
+									</Typography>
+									<NailLengthSelector
+										value={giftFor.length}
+										onChange={(l) => setGiftFor((prev) => ({ ...prev, length: l }))}
+									/>
+								</Box>
+							</Box>
+						</Collapse>
+					</Box>
 
 					{/* Discounts & Rewards */}
 					{isFormValid && (
@@ -1455,6 +1615,28 @@ export default function PressOnDetailPage() {
 				</Typography>
 			</Container>
 
+			{/* Review Cards */}
+			{testimonials.length > 0 && (
+				<Container maxWidth="sm" sx={{ mt: 4, mb: 2 }}>
+					<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 1.5, fontSize: '1rem' }}>
+						What Our Clients Say
+					</Typography>
+					<Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { height: 4 }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#F0C0D0', borderRadius: 2 } }}>
+						{testimonials.map((t, i) => (
+							<Box key={t.id || i} sx={{ minWidth: 200, maxWidth: 200, flexShrink: 0, p: 2, borderRadius: 3, border: '1px solid #F0C0D0', backgroundColor: '#FFFAFA' }}>
+								<Rating value={t.rating || 5} readOnly size="small" sx={{ '& .MuiRating-iconFilled': { color: '#E91E8C' }, mb: 0.5 }} />
+								<Typography sx={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5, mb: 1, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+									&ldquo;{t.text || t.message || ''}&rdquo;
+								</Typography>
+								<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-purple)' }}>
+									— {(t.clientName || t.name || 'Client').split(' ')[0]}
+								</Typography>
+							</Box>
+						))}
+					</Box>
+				</Container>
+			)}
+
 			{/* Sticky action bar */}
 			<Box
 				sx={{
@@ -1535,6 +1717,54 @@ export default function PressOnDetailPage() {
 				open={signInPromptOpen}
 				onClose={() => setSignInPromptOpen(false)}
 			/>
+
+			{/* Post-add Contact Dialog */}
+			<Dialog open={!!contactDialog} onClose={() => setContactDialog(null)} maxWidth="xs" fullWidth>
+				<DialogContent sx={{ p: 3, textAlign: 'center' }}>
+					<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-main)', mb: 0.5 }}>
+						Order Added!
+					</Typography>
+					<Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)', mb: 2.5, lineHeight: 1.6 }}>
+						<strong>{contactDialog?.productName}</strong> is in your cart. Let us know you&rsquo;ve placed this custom order so we can start preparing your nail design.
+					</Typography>
+					<Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+						<Button
+							component="a"
+							href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hi! I just added "${contactDialog?.productName}" to my cart as a custom press-on order on Chizzysstyles. Please help me confirm my order.`)}`}
+							target="_blank"
+							rel="noopener noreferrer"
+							fullWidth
+							startIcon={<WhatsAppIcon />}
+							sx={{ backgroundColor: '#25D366', color: '#fff', borderRadius: '20px', fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', py: 1.1, '&:hover': { backgroundColor: '#1ebe5d' } }}
+						>
+							Message on WhatsApp
+						</Button>
+						<Button
+							component="a"
+							href={`mailto:${BUSINESS_EMAIL}?subject=${encodeURIComponent('Custom Press-On Order — ' + (contactDialog?.productName || ''))}&body=${encodeURIComponent(`Hi! I just placed a custom order for "${contactDialog?.productName}" on Chizzysstyles. Please find my order details in my cart.`)}`}
+							fullWidth
+							startIcon={<EmailOutlinedIcon />}
+							sx={{ backgroundColor: '#4A0E4E', color: '#fff', borderRadius: '20px', fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.9rem', textTransform: 'none', py: 1.1, '&:hover': { backgroundColor: '#360a38' } }}
+						>
+							Send Email
+						</Button>
+						<Button
+							fullWidth
+							onClick={() => { setContactDialog(null); navigate('/cart'); }}
+							sx={{ border: '1.5px solid #F0C0D0', borderRadius: '20px', color: 'var(--text-purple)', fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.88rem', textTransform: 'none', py: 1 }}
+						>
+							View Cart
+						</Button>
+						<Button
+							fullWidth
+							onClick={() => { setContactDialog(null); navigate('/products'); }}
+							sx={{ color: '#999', fontFamily: '"Georgia", serif', fontSize: '0.82rem', textTransform: 'none', py: 0.5 }}
+						>
+							Continue Shopping
+						</Button>
+					</Box>
+				</DialogContent>
+			</Dialog>
 		</Box>
   );
 }

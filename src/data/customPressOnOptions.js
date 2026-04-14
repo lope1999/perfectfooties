@@ -19,6 +19,7 @@ export const DEFAULT_SET_INCLUDES_OPTIONS = [
 ];
 
 export const DEFAULT_INSPIRATION_OPTIONS = [
+  'True to Photo / Replica',
   'Elegant & Minimal',
   'Bold & Statement',
   'Edgy / Gothic',

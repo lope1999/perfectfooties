@@ -26,6 +26,8 @@ import {
   CircularProgress,
   Checkbox,
   Toolbar,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditIcon from '@mui/icons-material/Edit';
@@ -35,6 +37,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import AddIcon from '@mui/icons-material/Add';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import { updateOrderStatus, deleteOrder, addOrderNote, createAdminOrder, updateOrder } from '../../lib/adminService';
 import { exportOrdersToCSV } from '../../lib/csvExport';
 import { sendConfirmationEmail } from '../../lib/emailService';
@@ -73,6 +76,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   const [editForm, setEditForm] = useState({});
   const [selectedOrders, setSelectedOrders] = useState(new Set());
   const [bulkStatus, setBulkStatus] = useState('');
+  const [hideAbandonedPending, setHideAbandonedPending] = useState(true);
   const [bulkBusy, setBulkBusy] = useState(false);
   const [addForm, setAddForm] = useState({
     customerName: '', email: '', phone: '', status: 'pending',
@@ -85,6 +89,8 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {
+      // Hide abandoned niche collection checkouts (saved before payment, never completed)
+      if (hideAbandonedPending && o.type === 'nicheCollection' && o.status === 'pending') return false;
       if (typeFilter === 'customPressOn') {
         const isCustom = (o.items || []).some((item) => item.setIncludes?.length > 0 || item.nailNotes || item.selectedLength);
         if (!isCustom) return false;
@@ -99,7 +105,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
       }
       return true;
     });
-  }, [orders, typeFilter, statusFilter, search]);
+  }, [orders, typeFilter, statusFilter, search, hideAbandonedPending]);
 
   const handleStatusChange = async (uid, orderId, newStatus) => {
     setBusy(true);
@@ -296,6 +302,56 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
     });
   };
 
+  const printShippingLabel = (o) => {
+    const date = o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString() : '—';
+    const items = (o.items || [])
+      .map((item, i) => {
+        let line = `${i + 1}. ${item.serviceName || item.name || 'Item'} × ${item.quantity || 1} — ₦${(item.price || 0).toLocaleString()}`;
+        if (item.nailShape) line += ` | Shape: ${item.nailShape}`;
+        if (item.presetSize) line += ` | Size: ${item.presetSize}`;
+        if (item.nailBedSize) line += ` | Nail Bed: ${item.nailBedSize}`;
+        if (item.selectedLength) line += ` | Length: ${item.selectedLength}`;
+        return `<p style="margin:4px 0;">${line}</p>`;
+      })
+      .join('');
+    const win = window.open('', '_blank', 'width=600,height=700');
+    win.document.write(`<!DOCTYPE html><html><head><title>Shipping Label — ${o.id}</title>
+      <style>
+        body { font-family: Georgia, serif; padding: 32px; color: #222; }
+        .border { border: 2px dashed #444; padding: 24px; max-width: 500px; margin: auto; }
+        .brand { font-size: 1.4rem; font-weight: 700; color: #4A0E4E; text-align: center; letter-spacing: 1px; margin-bottom: 4px; }
+        .sub { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 20px; }
+        h3 { font-size: 0.75rem; text-transform: uppercase; color: #999; letter-spacing: 1px; margin: 16px 0 4px; }
+        p { margin: 2px 0; font-size: 0.95rem; }
+        .divider { border-top: 1px dashed #aaa; margin: 16px 0; }
+        .total { font-size: 1.1rem; font-weight: 700; color: #4A0E4E; }
+        @media print { body { padding: 0; } }
+      </style></head><body>
+      <div class="border">
+        <div class="brand">CHIZZYSTYLES</div>
+        <div class="sub">Luxury Press-On Nails & Nail Services</div>
+        <div class="divider"></div>
+        <h3>Ship To</h3>
+        <p><strong>${o.customerName || '—'}</strong></p>
+        <p>${o.phone || o.shipping?.phone || '—'}</p>
+        <p>${o.email || '—'}</p>
+        ${o.shipping ? `<p>${[o.shipping.address, o.shipping.lga, o.shipping.state].filter(Boolean).join(', ')}</p>` : ''}
+        <div class="divider"></div>
+        <h3>Order Details</h3>
+        <p>Order ID: <strong>${o.id}</strong></p>
+        <p>Date: ${date}</p>
+        <p>Type: ${o.type || '—'}</p>
+        <div class="divider"></div>
+        <h3>Items</h3>
+        ${items}
+        <div class="divider"></div>
+        <p class="total">Total: ₦${((o.total || 0) + (o.extraCharge || 0)).toLocaleString()}</p>
+      </div>
+      <script>window.onload = function(){ window.print(); window.close(); }</script>
+      </body></html>`);
+    win.document.close();
+  };
+
   const toggleSelectAll = () => {
     if (selectedOrders.size === filtered.length) {
       setSelectedOrders(new Set());
@@ -375,6 +431,22 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             <MenuItem key={s} value={s}>{s}</MenuItem>
           ))}
         </Select>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={hideAbandonedPending}
+              onChange={(e) => setHideAbandonedPending(e.target.checked)}
+              size="small"
+              sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#4A0E4E' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#4A0E4E' } }}
+            />
+          }
+          label={
+            <Typography sx={{ fontFamily, fontSize: '0.82rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+              Hide abandoned checkouts
+            </Typography>
+          }
+          sx={{ ml: 0.5 }}
+        />
       </Box>
 
       {/* Bulk action toolbar */}
@@ -527,6 +599,9 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                     </IconButton>
                     <IconButton size="small" onClick={() => { setNoteDialog(o); setNoteText(''); }} title="Add note">
                       <NoteAddIcon fontSize="small" sx={{ color: 'var(--text-purple)' }} />
+                    </IconButton>
+                    <IconButton size="small" onClick={() => printShippingLabel(o)} title="Print shipping label">
+                      <LocalShippingIcon fontSize="small" sx={{ color: '#2e7d32' }} />
                     </IconButton>
                     <IconButton size="small" onClick={() => setDeleteDialog(o)} title="Delete">
                       <DeleteOutlineIcon fontSize="small" sx={{ color: '#d32f2f' }} />

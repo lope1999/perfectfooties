@@ -27,6 +27,18 @@ import ShareIcon from '@mui/icons-material/Share';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import CheckIcon from '@mui/icons-material/Check';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import {
+  Dialog,
+  DialogContent,
+  Collapse as MuiCollapse,
+  Switch,
+  FormControlLabel,
+  Rating,
+} from '@mui/material';
 import { pressOnQuantities } from '../data/products';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -40,12 +52,19 @@ import {
   getPendingLoyaltyReward,
 } from '../lib/loyaltyService';
 import { hasDiscount, getEffectivePrice, getDiscountLabel } from '../lib/discountUtils';
+import { fetchTestimonials } from '../lib/testimonialService';
+import { storage } from '../lib/firebase';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import NailBedSizeInput from '../components/NailBedSizeInput';
 import NailShapeSelector from '../components/NailShapeSelector';
+import NailLengthSelector from '../components/NailLengthSelector';
 import SignInPrompt from '../components/SignInPrompt';
 import PresetSizeGuide from '../components/PresetSizeGuide';
 import useProductCategories from '../hooks/useProductCategories';
 import { DEFAULT_SET_INCLUDES_OPTIONS, DEFAULT_INSPIRATION_OPTIONS } from '../data/customPressOnOptions';
+
+const WHATSAPP_NUMBER = '2349053714197';
+const BUSINESS_EMAIL = 'chizobaezeh338@gmail.com';
 
 function formatNaira(amount) {
   return `₦${Number(amount).toLocaleString()}`;
@@ -87,6 +106,19 @@ export default function PressOnCategoryPage() {
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [shareAnchor, setShareAnchor] = useState(null);
 
+  // Order for Someone
+  const [giftFor, setGiftFor] = useState({ enabled: false, name: '', nailBedSizes: '', nailShape: '', length: '' });
+
+  // True to Photo image upload (max 2)
+  const [refImages, setRefImages] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
+  // Post-add contact dialog (for custom orders)
+  const [contactDialog, setContactDialog] = useState(null); // { categoryTitle, cartItem }
+
+  // Review cards
+  const [testimonials, setTestimonials] = useState([]);
+
   const [showRefField, setShowRefField] = useState(false);
   const [refCodeInput, setRefCodeInput] = useState('');
   const [referralValid, setReferralValid] = useState(false);
@@ -124,6 +156,34 @@ export default function PressOnCategoryPage() {
   }, [user]);
 
   const maxLoyaltyUnits = Math.floor(loyaltyBalance / REDEMPTION_UNIT);
+
+  // Fetch review cards
+  useEffect(() => {
+    fetchTestimonials().then((t) => setTestimonials(t.slice(0, 6))).catch(() => {});
+  }, []);
+
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    const remaining = 2 - refImages.length;
+    if (remaining <= 0) return;
+    const toUpload = files.slice(0, remaining);
+    setUploading(true);
+    try {
+      const urls = await Promise.all(
+        toUpload.map(async (file) => {
+          const path = `true-to-photo/${Date.now()}-${file.name}`;
+          const snap = await uploadBytes(storageRef(storage, path), file);
+          return getDownloadURL(snap.ref);
+        })
+      );
+      setRefImages((prev) => [...prev, ...urls].slice(0, 2));
+    } catch {
+      showToast('Image upload failed. Please try again.', 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleApplyReferral = async () => {
     if (!refCodeInput.trim()) return;
@@ -188,6 +248,7 @@ export default function PressOnCategoryPage() {
   const buildCartItem = () => {
     const price = selectedProduct ? getEffectivePrice(selectedProduct) : 0;
     const hasDisc = selectedProduct ? hasDiscount(selectedProduct) : false;
+    const isTrueToPhoto = inspirationsSelected.includes('True to Photo / Replica');
     return {
       productId: selectedProduct?.id || '',
       name: `${category.title} — ${selectedProduct?.name || ''}`,
@@ -202,8 +263,14 @@ export default function PressOnCategoryPage() {
       setIncludes: buildSetIncludes(),
       inspirationTags: buildInspirationTags(),
       nailNotes: nailNotes.trim(),
-      orderingForOthers: false,
-      otherPeople: [],
+      orderingForOthers: giftFor.enabled,
+      otherPeople: giftFor.enabled ? [{
+        name: giftFor.name.trim(),
+        nailBedSize: giftFor.nailBedSizes,
+        nailShape: giftFor.nailShape,
+        selectedLength: giftFor.length,
+      }] : [],
+      ...(isTrueToPhoto && refImages.length > 0 && { referenceImages: refImages }),
       customerName: customerName.trim(),
       categoryId: category.id,
       readyMade: false,
@@ -216,7 +283,7 @@ export default function PressOnCategoryPage() {
     const item = buildCartItem();
     addPressOn(item);
     showToast(`${category.title} added to cart`, 'success');
-    navigate('/products');
+    setContactDialog({ categoryTitle: category.title, item });
   };
 
   const handleCheckout = () => {
@@ -587,6 +654,113 @@ export default function PressOnCategoryPage() {
             </Box>
           )}
 
+          {/* True to Photo image upload */}
+          {inspirationsSelected.includes('True to Photo / Replica') && (
+            <Box sx={{ mb: 3, p: 2, backgroundColor: '#F3E5F6', borderRadius: 3, border: '1px solid #CE93D8' }}>
+              <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: '#6A1B9A', fontSize: '0.95rem', mb: 0.5 }}>
+                📸 Reference Photos (True to Photo)
+              </Typography>
+              <Typography sx={{ fontSize: '0.8rem', color: '#888', mb: 1.5 }}>
+                Upload up to 2 reference photos. We'll recreate them as closely as possible.
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 1 }}>
+                {refImages.map((url, i) => (
+                  <Box key={i} sx={{ position: 'relative' }}>
+                    <Box component="img" src={url} sx={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 2, border: '2px solid #CE93D8' }} />
+                    <Box
+                      onClick={() => setRefImages((prev) => prev.filter((_, idx) => idx !== i))}
+                      sx={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', backgroundColor: '#d32f2f', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 700 }}
+                    >
+                      ×
+                    </Box>
+                  </Box>
+                ))}
+                {refImages.length < 2 && (
+                  <Box
+                    component="label"
+                    sx={{
+                      width: 80, height: 80, borderRadius: 2, border: '2px dashed #CE93D8',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                      cursor: uploading ? 'wait' : 'pointer', backgroundColor: '#fff',
+                      '&:hover': { borderColor: '#9C27B0', backgroundColor: '#F9F0FF' },
+                    }}
+                  >
+                    {uploading ? <CircularProgress size={20} sx={{ color: '#9C27B0' }} /> : (
+                      <>
+                        <CloudUploadIcon sx={{ fontSize: 22, color: '#CE93D8' }} />
+                        <Typography sx={{ fontSize: '0.6rem', color: '#999', mt: 0.3 }}>Upload</Typography>
+                      </>
+                    )}
+                    <input type="file" accept="image/*" hidden onChange={handleImageUpload} disabled={uploading} />
+                  </Box>
+                )}
+              </Box>
+              <Typography sx={{ fontSize: '0.72rem', color: '#999' }}>
+                {refImages.length}/2 photos uploaded
+              </Typography>
+            </Box>
+          )}
+
+          {/* Order for Someone Else */}
+          <Box sx={{ mb: 3, p: 2, backgroundColor: '#FFF8FF', borderRadius: 3, border: '1px solid #F0C0D0' }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={giftFor.enabled}
+                  onChange={(e) => setGiftFor((p) => ({ ...p, enabled: e.target.checked }))}
+                  sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#E91E8C' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#E91E8C' } }}
+                />
+              }
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                  <CardGiftcardIcon sx={{ fontSize: 18, color: '#E91E8C' }} />
+                  <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-purple)' }}>
+                    Ordering for someone else?
+                  </Typography>
+                </Box>
+              }
+            />
+            <MuiCollapse in={giftFor.enabled}>
+              <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Recipient's Name"
+                  value={giftFor.name}
+                  onChange={(e) => setGiftFor((p) => ({ ...p, name: e.target.value }))}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                />
+                <Box>
+                  <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.85rem', mb: 1, color: 'var(--text-main)' }}>
+                    Their Nail Bed Sizes
+                  </Typography>
+                  <NailBedSizeInput
+                    value={giftFor.nailBedSizes}
+                    onChange={(v) => setGiftFor((p) => ({ ...p, nailBedSizes: v }))}
+                  />
+                </Box>
+                <Box>
+                  <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.85rem', mb: 1, color: 'var(--text-main)' }}>
+                    Their Preferred Shape
+                  </Typography>
+                  <NailShapeSelector
+                    value={giftFor.nailShape}
+                    onChange={(s) => setGiftFor((p) => ({ ...p, nailShape: s }))}
+                  />
+                </Box>
+                <Box>
+                  <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.85rem', mb: 1, color: 'var(--text-main)' }}>
+                    Their Preferred Length
+                  </Typography>
+                  <NailLengthSelector
+                    value={giftFor.length}
+                    onChange={(l) => setGiftFor((p) => ({ ...p, length: l }))}
+                  />
+                </Box>
+              </Box>
+            </MuiCollapse>
+          </Box>
+
           {/* Notes */}
           {showNotesField && (
             <Box sx={{ mb: 3 }}>
@@ -742,6 +916,104 @@ export default function PressOnCategoryPage() {
 
       <PresetSizeGuide open={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)} />
       <SignInPrompt open={signInPromptOpen} onClose={() => setSignInPromptOpen(false)} message="Sign in to place your order and track it later." />
+
+      {/* Post-add contact dialog */}
+      {contactDialog && (() => {
+        const item = contactDialog.item;
+        const details = [
+          `Category: ${contactDialog.categoryTitle}`,
+          item.selectedLength ? `Length: ${item.selectedLength}` : '',
+          item.nailShape ? `Shape: ${item.nailShape}` : '',
+          item.nailBedSize ? `Nail Bed Size: ${item.nailBedSize}` : '',
+          item.setIncludes?.length > 0 ? `Set Includes: ${item.setIncludes.join(', ')}` : '',
+          item.inspirationTags?.length > 0 ? `Inspiration: ${item.inspirationTags.join(', ')}` : '',
+          item.nailNotes ? `Notes: ${item.nailNotes}` : '',
+          item.orderingForOthers && item.otherPeople?.[0]?.name ? `Gift For: ${item.otherPeople[0].name}` : '',
+        ].filter(Boolean).join('\n');
+        const waMsg = encodeURIComponent(`Hi Chizzystyles! 🌸\n\nI just added a custom press-on set to my cart and wanted to confirm:\n\n${details}\n\nPlease let me know if you need anything else. Thank you!`);
+        const emailSubject = encodeURIComponent(`Custom Press-On Order — ${contactDialog.categoryTitle}`);
+        const emailBody = encodeURIComponent(`Hi Chizzystyles,\n\nI've added a custom press-on set to my cart.\n\n${details}\n\nPlease confirm availability. Thank you!`);
+        return (
+          <Dialog open maxWidth="xs" fullWidth onClose={() => { setContactDialog(null); navigate('/products'); }}>
+            <DialogContent sx={{ textAlign: 'center', pt: 3, pb: 3 }}>
+              <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-main)', mb: 1 }}>
+                Added to Cart! 🎉
+              </Typography>
+              <Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.88rem', color: 'var(--text-muted)', mb: 3 }}>
+                For custom orders we recommend confirming your design details via WhatsApp or email before checkout.
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Button
+                  fullWidth
+                  startIcon={<WhatsAppIcon />}
+                  href={`https://wa.me/${WHATSAPP_NUMBER}?text=${waMsg}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ backgroundColor: '#25D366', color: '#fff', borderRadius: '30px', py: 1.1, fontFamily: '"Georgia", serif', fontWeight: 700, textTransform: 'none', '&:hover': { backgroundColor: '#1da851' } }}
+                >
+                  Confirm via WhatsApp
+                </Button>
+                <Button
+                  fullWidth
+                  startIcon={<EmailOutlinedIcon />}
+                  href={`mailto:${BUSINESS_EMAIL}?subject=${emailSubject}&body=${emailBody}`}
+                  sx={{ backgroundColor: '#4A0E4E', color: '#fff', borderRadius: '30px', py: 1.1, fontFamily: '"Georgia", serif', fontWeight: 700, textTransform: 'none', '&:hover': { backgroundColor: '#3a0b3e' } }}
+                >
+                  Confirm via Email
+                </Button>
+                <Button
+                  onClick={() => { setContactDialog(null); navigate('/cart'); }}
+                  sx={{ fontFamily: '"Georgia", serif', color: '#E91E8C', textTransform: 'none', fontWeight: 600, fontSize: '0.85rem' }}
+                >
+                  Go to Cart
+                </Button>
+                <Button
+                  onClick={() => { setContactDialog(null); navigate('/products'); }}
+                  sx={{ fontFamily: '"Georgia", serif', color: 'var(--text-muted)', textTransform: 'none', fontSize: '0.82rem' }}
+                >
+                  Continue Shopping
+                </Button>
+              </Box>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
+
+      {/* Review Cards */}
+      {testimonials.length > 0 && (
+        <Box sx={{ backgroundColor: '#FFF0F5', pt: 5, pb: { xs: 16, md: 8 }, mt: 2 }}>
+          <Container maxWidth="lg">
+            <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.3rem', color: 'var(--text-main)', mb: 3, textAlign: 'center' }}>
+              What Our Clients Say 💅
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { height: 4 }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#F0C0D0', borderRadius: 2 } }}>
+              {testimonials.map((t) => (
+                <Box
+                  key={t.id}
+                  sx={{
+                    minWidth: 240,
+                    maxWidth: 280,
+                    p: 2.5,
+                    backgroundColor: '#fff',
+                    borderRadius: 3,
+                    border: '1px solid #F0C0D0',
+                    flexShrink: 0,
+                    boxShadow: '0 2px 8px rgba(233,30,140,0.06)',
+                  }}
+                >
+                  <Rating value={t.rating || 5} readOnly size="small" sx={{ color: '#E91E8C', mb: 1 }} />
+                  <Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6, mb: 1.5, display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    "{t.testimonial}"
+                  </Typography>
+                  <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-purple)' }}>
+                    — {t.name?.split(' ')[0] || 'Client'}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Container>
+        </Box>
+      )}
     </Box>
   );
 }

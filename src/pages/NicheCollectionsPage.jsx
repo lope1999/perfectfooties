@@ -13,10 +13,15 @@ import {
   TextField,
   MenuItem,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import StraightenIcon from '@mui/icons-material/Straighten';
 import ScrollReveal from '../components/ScrollReveal';
 import { fetchNicheCollections } from '../lib/nicheCollectionService';
 
@@ -32,11 +37,55 @@ const STATUS_CONFIG = {
 
 const seasonOptions = ['All', 'Spring', 'Summer', 'Autumn', 'Winter', "Valentine's", 'Christmas', 'Custom'];
 
+const ff = '"Georgia", serif';
+
+function HowToMeasureModal({ open, onClose }) {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ fontFamily: ff, fontWeight: 700, pb: 1 }}>
+        📏 How to Measure Your Nail Bed
+      </DialogTitle>
+      <DialogContent>
+        <Typography sx={{ fontFamily: ff, fontSize: '0.9rem', color: 'var(--text-muted)', mb: 2 }}>
+          Follow these steps for the most accurate nail sizes:
+        </Typography>
+        {[
+          { step: '1', text: 'Cut a thin strip of paper or use a soft flexible tape measure.' },
+          { step: '2', text: 'Wrap it snugly around the widest point of each nail plate (not the cuticle).' },
+          { step: '3', text: 'Mark where the paper overlaps and measure the length in millimetres (mm).' },
+          { step: '4', text: 'Measure all 10 fingers: both thumbs, index, middle, ring, and pinky.' },
+          { step: '5', text: 'If between sizes, choose the larger for a more comfortable fit.' },
+        ].map(({ step, text }) => (
+          <Box key={step} sx={{ display: 'flex', gap: 1.5, mb: 1.5 }}>
+            <Box sx={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: '#E91E8C', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: ff, fontWeight: 700, fontSize: '0.82rem', flexShrink: 0 }}>
+              {step}
+            </Box>
+            <Typography sx={{ fontFamily: ff, fontSize: '0.88rem', color: 'var(--text-main)', pt: 0.4 }}>{text}</Typography>
+          </Box>
+        ))}
+        <Box sx={{ mt: 2, p: 2, backgroundColor: '#FFF0F5', borderRadius: 2, border: '1px solid #F0C0D0' }}>
+          <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.85rem', color: '#E91E8C', mb: 1 }}>General Size Reference (Thumb width)</Typography>
+          {[{ size: 'XS', mm: '~14–15mm' }, { size: 'S', mm: '~15–16mm' }, { size: 'M', mm: '~16–17mm' }, { size: 'L', mm: '~17–18mm+' }].map(({ size, mm }) => (
+            <Box key={size} sx={{ display: 'flex', gap: 2, mb: 0.5 }}>
+              <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.82rem', minWidth: 30 }}>{size}</Typography>
+              <Typography sx={{ fontFamily: ff, fontSize: '0.82rem', color: '#666' }}>{mm}</Typography>
+            </Box>
+          ))}
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} sx={{ fontFamily: ff, color: '#E91E8C', textTransform: 'none', fontWeight: 600 }}>Got it!</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 export default function NicheCollectionsPage() {
   const navigate = useNavigate();
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [seasonFilter, setSeasonFilter] = useState('All');
+  const [measureOpen, setMeasureOpen] = useState(false);
 
   useEffect(() => {
     fetchNicheCollections({ activeOnly: true })
@@ -142,6 +191,29 @@ export default function NicheCollectionsPage() {
 						>
 							Made to order — 4–7 business day production
 						</Typography>
+					</Box>
+				</ScrollReveal>
+
+				<ScrollReveal direction="up" delay={0.2}>
+					<Box sx={{ mt: 2 }}>
+						<Button
+							startIcon={<StraightenIcon sx={{ fontSize: '0.9rem !important' }} />}
+							onClick={() => setMeasureOpen(true)}
+							size="small"
+							sx={{
+								fontFamily: ff,
+								fontSize: '0.82rem',
+								textTransform: 'none',
+								color: '#E91E8C',
+								border: '1px solid #F0C0D0',
+								borderRadius: '20px',
+								px: 2,
+								py: 0.6,
+								'&:hover': { backgroundColor: '#FFF0F5' },
+							}}
+						>
+							How to Measure Your Nail Bed
+						</Button>
 					</Box>
 				</ScrollReveal>
 			</Box>
@@ -427,5 +499,7 @@ export default function NicheCollectionsPage() {
 				</Grid>
 			</Container>
 		</Box>
+
+		<HowToMeasureModal open={measureOpen} onClose={() => setMeasureOpen(false)} />
   );
 }

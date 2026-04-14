@@ -3247,9 +3247,16 @@ function OrderCard({ order, rated, onRate, onReschedule, onCancel, onEdit, onReo
 					)}
 				</Box>
 			)}
-			<Typography sx={{ color: "#777", fontSize: "0.82rem", mt: 0.3 }}>
-				{formatDate(order.createdAt)}
-			</Typography>
+			<Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 0.3 }}>
+				<Typography sx={{ color: "#777", fontSize: "0.82rem" }}>
+					Placed: {formatDate(order.createdAt)}
+				</Typography>
+				{order.updatedAt && formatDate(order.updatedAt) !== formatDate(order.createdAt) && (
+					<Typography sx={{ color: "#aaa", fontSize: "0.82rem" }}>
+						Updated: {formatDate(order.updatedAt)}
+					</Typography>
+				)}
+			</Box>
 			{order.type !== "service" && !["cancelled","rescheduled","no-show"].includes(order.status) && (
 				<OrderProgressTracker status={order.status} order={order} />
 			)}

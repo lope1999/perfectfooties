@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chizzysstyles — Email Templates</title>
+  <style>
+    /* Print styles — each template starts on a new page */
+    @media print {
+      .page-break { page-break-before: always; }
+      .template-label { display: block; }
+      body { margin: 0; }
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 24px 0;
+    }
+    .template-label {
+      text-align: center;
+      font-family: Georgia, serif;
+      font-size: 13px;
+      font-weight: bold;
+      color: #4A0E4E;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin: 40px auto 12px;
+      max-width: 600px;
+    }
+    .template-label:first-of-type { margin-top: 0; }
+    .divider {
+      border: none;
+      border-top: 2px dashed #F0C0D0;
+      margin: 40px auto;
+      max-width: 600px;
+    }
+    /* ── Shared email wrapper ── */
+    .email-wrapper {
+      max-width: 600px;
+      margin: 0 auto 0;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    }
+    .email-header {
+      background: linear-gradient(135deg, #4A0E4E 0%, #7B1FA2 100%);
+      padding: 36px 32px 28px;
+      text-align: center;
+    }
+    .email-header .brand {
+      font-family: Georgia, serif;
+      font-size: 26px;
+      font-weight: bold;
+      color: #ffffff;
+      letter-spacing: 1px;
+      margin: 0 0 4px;
+    }
+    .email-header .tagline {
+      font-family: Georgia, serif;
+      font-size: 13px;
+      color: #E91E8C;
+      margin: 0;
+      font-style: italic;
+    }
+    .accent-bar {
+      height: 4px;
+      background: linear-gradient(90deg, #E91E8C, #F48FB1, #E91E8C);
+    }
+    .email-body {
+      padding: 36px 32px 28px;
+    }
+    .greeting {
+      font-family: Georgia, serif;
+      font-size: 20px;
+      font-weight: bold;
+      color: #4A0E4E;
+      margin: 0 0 12px;
+    }
+    .body-text {
+      font-family: Arial, sans-serif;
+      font-size: 15px;
+      color: #444444;
+      line-height: 1.7;
+      margin: 0 0 20px;
+    }
+    .info-box {
+      background: #FFF0F5;
+      border: 1px solid #F0C0D0;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin: 20px 0;
+    }
+    .info-box-title {
+      font-family: Georgia, serif;
+      font-size: 13px;
+      font-weight: bold;
+      color: #E91E8C;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0 0 12px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid #F0C0D0;
+      font-size: 14px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-row .label {
+      color: #888;
+      font-family: Arial, sans-serif;
+    }
+    .info-row .value {
+      color: #333;
+      font-weight: bold;
+      font-family: Georgia, serif;
+      text-align: right;
+      max-width: 60%;
+    }
+    .cta-btn {
+      display: inline-block;
+      background: #E91E8C;
+      color: #ffffff !important;
+      text-decoration: none;
+      font-family: Georgia, serif;
+      font-size: 15px;
+      font-weight: bold;
+      padding: 14px 32px;
+      border-radius: 30px;
+      margin: 8px 0 20px;
+    }
+    .cta-secondary {
+      display: inline-block;
+      background: transparent;
+      color: #4A0E4E !important;
+      text-decoration: none;
+      font-family: Georgia, serif;
+      font-size: 14px;
+      font-weight: bold;
+      padding: 12px 28px;
+      border-radius: 30px;
+      border: 2px solid #4A0E4E;
+      margin: 4px 0 20px;
+    }
+    .badge {
+      display: inline-block;
+      background: #E91E8C;
+      color: #fff;
+      font-family: Georgia, serif;
+      font-size: 13px;
+      font-weight: bold;
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    .note {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: #888;
+      line-height: 1.6;
+      margin: 16px 0 0;
+      padding: 12px 16px;
+      border-left: 3px solid #F0C0D0;
+      background: #FAFAFA;
+      border-radius: 0 6px 6px 0;
+    }
+    .email-footer {
+      background: #FAFAFA;
+      border-top: 1px solid #F0C0D0;
+      padding: 24px 32px;
+      text-align: center;
+    }
+    .email-footer p {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      color: #999;
+      margin: 4px 0;
+      line-height: 1.6;
+    }
+    .email-footer a {
+      color: #999;
+      text-decoration: none;
+    }
+    .email-footer .brand-footer {
+      font-family: Georgia, serif;
+      font-size: 13px;
+      font-weight: bold;
+      color: #4A0E4E;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════
+     TEMPLATE 1 — ORDER PLACED CONFIRMATION
+     Variables: {{customer_name}}, {{order_id}},
+                {{order_total}}, {{order_items}},
+                {{shipping_name}}, {{shipping_address}},
+                {{shipping_state}}, {{shipping_lga}}
+     ══════════════════════════════════════════════════ -->
+
+<p class="template-label">Template 1 &mdash; Order Placed Confirmation</p>
+
+<div class="email-wrapper">
+  <div class="email-header">
+    <p class="brand">Chizzysstyles</p>
+    <p class="tagline">Handcrafted press-ons, made with love</p>
+  </div>
+  <div class="accent-bar"></div>
+
+  <div class="email-body">
+    <p class="greeting">Hey {{customer_name}}! 🌸</p>
+    <p class="body-text">
+      We've received your order and it's now in our queue. Every set is handcrafted just for you,
+      so please allow <strong>4–7 business days</strong> for production before your nails are shipped out.
+      We'll keep you posted every step of the way!
+    </p>
+
+    <div class="info-box">
+      <p class="info-box-title">Order Summary</p>
+      <div class="info-row">
+        <span class="label">Order ID</span>
+        <span class="value">{{order_id}}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Items</span>
+        <span class="value">{{order_items}}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Order Total</span>
+        <span class="value">{{order_total}}</span>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <p class="info-box-title">Shipping To</p>
+      <div class="info-row">
+        <span class="label">Name</span>
+        <span class="value">{{shipping_name}}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Address</span>
+        <span class="value">{{shipping_address}}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">State / LGA</span>
+        <span class="value">{{shipping_state}} / {{shipping_lga}}</span>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin: 28px 0 8px;">
+      <a href="https://www.chizzysstyles.store/account" class="cta-btn">Track My Order</a>
+    </div>
+
+    <p class="note">
+      Have a question about your order? Reply to this email or send us a message on WhatsApp —
+      we're always happy to help. 💕
+    </p>
+  </div>
+
+  <div class="email-footer">
+    <p class="brand-footer">Chizzysstyles</p>
+    <p>
+      <a href="https://www.instagram.com/chizzysstyles">Instagram</a>
+      &nbsp;·&nbsp;
+      <a href="https://www.chizzysstyles.store/">Website</a>
+    </p>
+    <p style="margin-top:8px;">
+      &copy; 2025 Chizzysstyles. All rights reserved.<br>
+      You're receiving this because you placed an order on our site.
+    </p>
+  </div>
+</div>
+
+<hr class="divider page-break" />
+
+<!-- ══════════════════════════════════════════════════
+     TEMPLATE 2 — APPOINTMENT BOOKING CONFIRMATION
+     Variables: {{customer_name}}, {{order_id}},
+                {{appointment_date}}, {{deposit}}
+     ══════════════════════════════════════════════════ -->
+
+<p class="template-label">Template 2 &mdash; Appointment Booking Confirmation</p>
+
+<div class="email-wrapper">
+  <div class="email-header">
+    <p class="brand">Chizzysstyles</p>
+    <p class="tagline">Handcrafted press-ons, made with love</p>
+  </div>
+  <div class="accent-bar"></div>
+
+  <div class="email-body">
+    <p class="greeting">You're booked, {{customer_name}}! ✨</p>
+    <p class="body-text">
+      Your appointment is confirmed. We're so excited to work with you!
+      Please arrive on time and come with clean, bare nails for the best result.
+      If anything changes, let us know at least <strong>24 hours in advance</strong>.
+    </p>
+
+    <div class="info-box">
+      <p class="info-box-title">Appointment Details</p>
+      <div class="info-row">
+        <span class="label">Booking Ref</span>
+        <span class="value">{{order_id}}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Date &amp; Time</span>
+        <span class="value">{{appointment_date}}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Deposit Paid</span>
+        <span class="value">{{deposit}}</span>
+      </div>
+    </div>
+
+    <p class="body-text">
+      Your deposit secures your slot. The remaining balance is due on the day of your appointment.
+    </p>
+
+    <div style="text-align:center; margin: 28px 0 8px;">
+      <a href="https://www.chizzysstyles.store/account" class="cta-btn">View My Booking</a>
+    </div>
+
+    <p class="note">
+      Need to reschedule? Visit your account page or reply to this email and we'll sort it out. 💕
+    </p>
+  </div>
+
+  <div class="email-footer">
+    <p class="brand-footer">Chizzysstyles</p>
+    <p>
+      <a href="https://www.instagram.com/chizzysstyles">Instagram</a>
+      &nbsp;·&nbsp;
+      <a href="https://www.chizzysstyles.store/">Website</a>
+    </p>
+    <p style="margin-top:8px;">
+      &copy; 2025 Chizzysstyles. All rights reserved.<br>
+      You're receiving this because you booked an appointment on our site.
+    </p>
+  </div>
+</div>
+
+<hr class="divider page-break" />
+
+<!-- ══════════════════════════════════════════════════
+     TEMPLATE 3 — WELCOME (NEW USER)
+     Variables: {{customer_name}}
+     ══════════════════════════════════════════════════ -->
+
+<p class="template-label">Template 3 &mdash; Welcome (New User Sign-Up)</p>
+
+<div class="email-wrapper">
+  <div class="email-header">
+    <p class="brand">Chizzysstyles</p>
+    <p class="tagline">Handcrafted press-ons, made with love</p>
+  </div>
+  <div class="accent-bar"></div>
+
+  <div class="email-body">
+    <p class="greeting">Welcome to Chizzysstyles, {{customer_name}}! 💅</p>
+    <p class="body-text">
+      We're so glad you're here! You've just joined a community of girlies who take their nail
+      game seriously. Whether you're here for our custom press-ons, our niche seasonal collections,
+      or to book a nail appointment — you're in the right place.
+    </p>
+
+    <div class="info-box">
+      <p class="info-box-title">What you can do on your account</p>
+      <div class="info-row">
+        <span class="label">🛍️ Shop</span>
+        <span class="value">Browse custom press-ons &amp; collections</span>
+      </div>
+      <div class="info-row">
+        <span class="label">📦 Track</span>
+        <span class="value">Follow your orders in real time</span>
+      </div>
+      <div class="info-row">
+        <span class="label">📅 Book</span>
+        <span class="value">Schedule nail appointments</span>
+      </div>
+      <div class="info-row">
+        <span class="label">⭐ Earn</span>
+        <span class="value">Collect loyalty points on every order</span>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin: 28px 0 8px;">
+      <a href="https://www.chizzysstyles.store/products" class="cta-btn">Shop Press-Ons</a>
+    </div>
+    <div style="text-align:center;">
+      <a href="https://www.chizzysstyles.store/collections" class="cta-secondary">Browse Collections</a>
+    </div>
+
+    <p class="note">
+      Follow us on Instagram <a href="https://www.instagram.com/chizzysstyles" style="color:#E91E8C;">@chizzysstyles</a>
+      for inspo, behind-the-scenes content, and first looks at new sets. 🌸
+    </p>
+  </div>
+
+  <div class="email-footer">
+    <p class="brand-footer">Chizzysstyles</p>
+    <p>
+      <a href="https://www.instagram.com/chizzysstyles">Instagram</a>
+      &nbsp;·&nbsp;
+      <a href="https://www.chizzysstyles.store/">Website</a>
+    </p>
+    <p style="margin-top:8px;">
+      &copy; 2025 Chizzysstyles. All rights reserved.<br>
+      You're receiving this because you created an account on our site.
+    </p>
+  </div>
+</div>
+
+<hr class="divider page-break" />
+
+<!-- ══════════════════════════════════════════════════
+     TEMPLATE 4 — ORDER RECEIVED (DELIVERED)
+     Variables: {{customer_name}}, {{order_id}},
+                {{order_total}}, {{order_items}}
+     ══════════════════════════════════════════════════ -->
+
+
+<div class="email-wrapper">
+  <div class="email-header">
+    <p class="brand">Chizzysstyles</p>
+    <p class="tagline">Handcrafted press-ons, made with love</p>
+  </div>
+  <div class="accent-bar"></div>
+
+  <div class="email-body">
+    <div style="text-align:center; margin-bottom: 20px;">
+      <span class="badge">Your nails have arrived! 🎉</span>
+    </div>
+
+    <p class="greeting">Hey {{customer_name}}!</p>
+    <p class="body-text">
+      Your order has been marked as <strong>received</strong> — we hope your new press-ons
+      are everything you dreamed of! 💅 Take them for a spin and let us know what you think.
+    </p>
+
+    <div class="info-box">
+      <p class="info-box-title">Order Recap</p>
+      <div class="info-row">
+        <span class="label">Order ID</span>
+        <span class="value">{{order_id}}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Items</span>
+        <span class="value">{{order_items}}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Total Paid</span>
+        <span class="value">{{order_total}}</span>
+      </div>
+    </div>
+
+    <p class="body-text">
+      Loved your nails? A quick review means the world to us and helps other clients
+      find the perfect set. It only takes a minute! ✨
+    </p>
+
+    <div style="text-align:center; margin: 28px 0 8px;">
+      <a href="https://www.chizzysstyles.store/account" class="cta-btn">Leave a Review</a>
+    </div>
+
+    <p class="note">
+      <strong>Nail care tip:</strong> Apply a thin layer of clear top coat every 2–3 days
+      to extend the wear of your press-ons. Visit our
+      <a href="https://www.chizzysstyles.store/nail-care" style="color:#E91E8C;">Nail Care Guide</a>
+      for full aftercare advice.
+    </p>
+  </div>
+
+  <div class="email-footer">
+    <p class="brand-footer">Chizzysstyles</p>
+    <p>
+      <a href="https://www.instagram.com/chizzysstyles">Instagram</a>
+      &nbsp;·&nbsp;
+      <a href="https://www.chizzysstyles.store/">Website</a>
+    </p>
+    <p style="margin-top:8px;">
+      &copy; 2025 Chizzysstyles. All rights reserved.<br>
+      You're receiving this because you placed an order on our site.
+    </p>
+  </div>
+</div>
+
+<hr class="divider page-break" />
+
+<!-- ══════════════════════════════════════════════════
+     TEMPLATE 5 — APPOINTMENT COMPLETED
+     Variables: {{customer_name}}, {{appointment_date}}
+     ══════════════════════════════════════════════════ -->
+
+
+<div class="email-wrapper">
+  <div class="email-header">
+    <p class="brand">Chizzysstyles</p>
+    <p class="tagline">Handcrafted press-ons, made with love</p>
+  </div>
+  <div class="accent-bar"></div>
+
+  <div class="email-body">
+    <div style="text-align:center; margin-bottom: 20px;">
+      <span class="badge">Thank you for visiting us! 💖</span>
+    </div>
+
+    <p class="greeting">It was so lovely having you, {{customer_name}}!</p>
+    <p class="body-text">
+      Your appointment on <strong>{{appointment_date}}</strong> is now complete.
+      We genuinely hope you're obsessed with your nails — you deserve to feel amazing
+      every time you look at your hands. 🌸
+    </p>
+
+    <div class="info-box">
+      <p class="info-box-title">Aftercare Reminders</p>
+      <div class="info-row">
+        <span class="label">First 2 hours</span>
+        <span class="value">Avoid water &amp; heat</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Daily</span>
+        <span class="value">Apply cuticle oil to keep nails healthy</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Every 2–3 days</span>
+        <span class="value">Top coat to extend wear</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Removal</span>
+        <span class="value">Soak in warm water — never force off</span>
+      </div>
+    </div>
+
+    <p class="body-text">
+      Share your look on Instagram and tag us
+      <a href="https://www.instagram.com/chizzysstyles" style="color:#E91E8C; font-weight:bold;">@chizzysstyles</a>
+      — we'd love to feature you! 📸
+    </p>
+
+    <div style="text-align:center; margin: 28px 0 8px;">
+      <a href="https://www.chizzysstyles.store/account" class="cta-btn">Leave a Review</a>
+    </div>
+    <div style="text-align:center;">
+      <a href="https://www.chizzysstyles.store/services" class="cta-secondary">Book Again</a>
+    </div>
+
+    <p class="note">
+      Loyalty points from today's appointment have been added to your account.
+      Check your <a href="https://www.chizzysstyles.store/account" style="color:#E91E8C;">profile</a>
+      to see your current balance. 💕
+    </p>
+  </div>
+
+  <div class="email-footer">
+    <p class="brand-footer">Chizzysstyles</p>
+    <p>
+      <a href="https://www.instagram.com/chizzysstyles">Instagram</a>
+      &nbsp;·&nbsp;
+      <a href="https://www.chizzysstyles.store/">Website</a>
+    </p>
+    <p style="margin-top:8px;">
+      &copy; 2025 Chizzysstyles. All rights reserved.<br>
+      You're receiving this because you booked an appointment on our site.
+    </p>
+  </div>
+</div>
+
+</body>
+</html>
