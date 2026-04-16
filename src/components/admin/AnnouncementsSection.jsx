@@ -41,7 +41,7 @@ import {
   updateAnnouncement,
   deleteAnnouncement,
 } from '../../lib/announcementService';
-import { fetchNicheCollections } from '../../lib/nicheCollectionService';
+import { fetchProducts } from '../../lib/productService';
 import ImageUploadField from './ImageUploadField';
 
 const fontFamily = '"Georgia", serif';
@@ -66,7 +66,7 @@ export default function AnnouncementsSection() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
-  const [nicheCollections, setNicheCollections] = useState([]);
+  const [products, setProducts] = useState([]);
   const [selectedCollectionId, setSelectedCollectionId] = useState('');
 
   const loadAnnouncements = () => {
@@ -83,7 +83,7 @@ export default function AnnouncementsSection() {
     setSnack({ open: true, message, severity });
 
   const openDialog = () => {
-    fetchNicheCollections().then(setNicheCollections).catch(() => setNicheCollections([]));
+    fetchProducts().then(setProducts).catch(() => setProducts([]));
   };
 
   const openAdd = () => {
@@ -105,8 +105,8 @@ export default function AnnouncementsSection() {
       active: Boolean(a.active),
       expiresAt: a.expiresAt ? a.expiresAt.toDate?.().toISOString().slice(0, 16) : '',
     });
-    // Pre-select collection if ctaLink matches /collections/:id
-    const match = (a.ctaLink || '').match(/^\/collections\/(.+)$/);
+    // Pre-select product if ctaLink matches /shop/:id
+    const match = (a.ctaLink || '').match(/^\/shop\/(.+)$/);
     setSelectedCollectionId(match ? match[1] : '');
     openDialog();
     setDialogOpen(true);
@@ -197,14 +197,14 @@ export default function AnnouncementsSection() {
           startIcon={<AddIcon />}
           onClick={openAdd}
           sx={{
-            backgroundColor: '#E91E8C',
+            backgroundColor: '#e3242b',
             color: '#fff',
             borderRadius: '20px',
             fontFamily,
             fontWeight: 600,
             textTransform: 'none',
             px: 2.5,
-            '&:hover': { backgroundColor: '#C2185B' },
+            '&:hover': { backgroundColor: '#b81b21' },
           }}
         >
           New Announcement
@@ -215,7 +215,7 @@ export default function AnnouncementsSection() {
       <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 'none', border: '1px solid #eee' }}>
         <Table>
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#FFF0F5' }}>
+            <TableRow sx={{ backgroundColor: '#FFF8F0' }}>
               {['Title', 'Message', 'CTA', 'Expires', 'Active', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ fontFamily, fontWeight: 700, fontSize: '0.8rem', color: '#888' }}>{h}</TableCell>
               ))}
@@ -271,7 +271,7 @@ export default function AnnouncementsSection() {
                       size="small"
                       checked={Boolean(a.active)}
                       onChange={() => handleToggleActive(a)}
-                      sx={{ '& .MuiSwitch-thumb': { backgroundColor: a.active ? '#E91E8C' : '#bbb' } }}
+                      sx={{ '& .MuiSwitch-thumb': { backgroundColor: a.active ? '#e3242b' : '#bbb' } }}
                     />
                   </TableCell>
                   <TableCell>
@@ -282,7 +282,7 @@ export default function AnnouncementsSection() {
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Edit">
-                        <IconButton size="small" onClick={() => openEdit(a)} sx={{ color: '#E91E8C' }}>
+                        <IconButton size="small" onClick={() => openEdit(a)} sx={{ color: '#e3242b' }}>
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
@@ -333,7 +333,7 @@ export default function AnnouncementsSection() {
                       <Chip
                         label={`${form.ctaLabel} →`}
                         size="small"
-                        sx={{ backgroundColor: '#E91E8C', color: '#fff', fontWeight: 700, fontSize: '0.62rem' }}
+                        sx={{ backgroundColor: '#e3242b', color: '#fff', fontWeight: 700, fontSize: '0.62rem' }}
                       />
                     )}
                     <CloseIcon sx={{ fontSize: 12, opacity: 0.5 }} />
@@ -408,43 +408,43 @@ export default function AnnouncementsSection() {
               </Typography>
             </Divider>
             <FormControl fullWidth size="small">
-              <InputLabel sx={{ fontFamily }}>Link to Niche Collection</InputLabel>
+              <InputLabel sx={{ fontFamily }}>Link to Product</InputLabel>
               <Select
                 value={selectedCollectionId}
-                label="Link to Niche Collection"
+                label="Link to Product"
                 onChange={(e) => {
                   const colId = e.target.value;
                   setSelectedCollectionId(colId);
                   if (!colId) return;
-                  const col = nicheCollections.find((c) => c.id === colId);
+                  const col = products.find((c) => c.id === colId);
                   if (!col) return;
                   setForm((f) => ({
                     ...f,
-                    ctaLink: `/collections/${col.id}`,
-                    ctaLabel: f.ctaLabel.trim() ? f.ctaLabel : 'Shop the Set',
+                    ctaLink: `/shop/${col.id}`,
+                    ctaLabel: f.ctaLabel.trim() ? f.ctaLabel : 'Shop Now',
                   }));
                 }}
                 sx={{ fontFamily }}
                 renderValue={(val) => {
                   if (!val) return <em style={{ color: '#aaa' }}>None — manual link below</em>;
-                  const col = nicheCollections.find((c) => c.id === val);
+                  const col = products.find((c) => c.id === val);
                   return col ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <AutoAwesomeIcon sx={{ fontSize: 14, color: '#E91E8C' }} />
+                      <AutoAwesomeIcon sx={{ fontSize: 14, color: '#e3242b' }} />
                       {col.name}
-                      {col.season && <Typography component="span" sx={{ fontSize: '0.72rem', color: '#E91E8C', ml: 0.5 }}>({col.season})</Typography>}
+                      {col.material && <Typography component="span" sx={{ fontSize: '0.72rem', color: '#e3242b', ml: 0.5 }}>({col.material})</Typography>}
                     </Box>
                   ) : val;
                 }}
               >
                 <MenuItem value=""><em>None — manual link below</em></MenuItem>
-                {nicheCollections.map((col) => (
+                {products.map((col) => (
                   <MenuItem key={col.id} value={col.id}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <AutoAwesomeIcon sx={{ fontSize: 14, color: '#E91E8C' }} />
+                      <AutoAwesomeIcon sx={{ fontSize: 14, color: '#e3242b' }} />
                       <Typography sx={{ fontFamily, fontSize: '0.88rem' }}>{col.name}</Typography>
-                      {col.season && (
-                        <Typography sx={{ fontSize: '0.72rem', color: '#E91E8C' }}>({col.season})</Typography>
+                      {col.material && (
+                        <Typography sx={{ fontSize: '0.72rem', color: '#e3242b' }}>({col.material})</Typography>
                       )}
                       <Chip
                         label={col.status}
@@ -506,7 +506,7 @@ export default function AnnouncementsSection() {
               <Switch
                 checked={form.active}
                 onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
-                sx={{ '& .MuiSwitch-thumb': { backgroundColor: form.active ? '#E91E8C' : '#bbb' } }}
+                sx={{ '& .MuiSwitch-thumb': { backgroundColor: form.active ? '#e3242b' : '#bbb' } }}
               />
             }
             label={<Typography sx={{ fontFamily, fontSize: '0.88rem', fontWeight: 600 }}>Show on homepage now</Typography>}
@@ -522,12 +522,12 @@ export default function AnnouncementsSection() {
             sx={{
               fontFamily,
               fontWeight: 700,
-              backgroundColor: '#E91E8C',
+              backgroundColor: '#e3242b',
               color: '#fff',
               borderRadius: '20px',
               textTransform: 'none',
               px: 3,
-              '&:hover': { backgroundColor: '#C2185B' },
+              '&:hover': { backgroundColor: '#b81b21' },
             }}
           >
             {busy ? 'Saving…' : editingId ? 'Save Changes' : 'Create'}

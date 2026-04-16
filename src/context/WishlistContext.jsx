@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 
-const STORAGE_KEY = 'chizzystyles-wishlist';
+const STORAGE_KEY = 'perfectfooties-wishlist';
 
 function loadFromStorage() {
   try {

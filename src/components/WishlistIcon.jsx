@@ -13,7 +13,7 @@ export default function WishlistIcon() {
       <IconButton
         onClick={() => navigate('/account#wishlist')}
         sx={{
-          color: '#E91E8C',
+          color: '#e3242b',
           '&:hover': { color: 'var(--text-purple)' },
         }}
       >
@@ -21,7 +21,7 @@ export default function WishlistIcon() {
           badgeContent={count}
           sx={{
             '& .MuiBadge-badge': {
-              backgroundColor: '#E91E8C',
+              backgroundColor: '#e3242b',
               color: '#fff',
               fontSize: '0.7rem',
               fontWeight: 700,

@@ -6,31 +6,33 @@
 
 /* ── Colour tokens ───────────────────────────────────────── */
 :root {
+  /* Primary: #e3242b (red) | Secondary: #00ffff (cyan) */
+  /* Accents: warm cream, tan border, pink undertones     */
   --bg-page:     #ffffff;
-  --bg-soft:     #FFF0F5;
-  --bg-soft2:    #FCE4EC;
-  --bg-soft3:    #F3E5F6;
+  --bg-soft:     #FFF8F0;   /* warm cream */
+  --bg-soft2:    #FFE8E8;   /* pink undertone */
+  --bg-soft3:    #FFF0E6;   /* light cream */
   --bg-muted:    #FAFAFA;
   --bg-card:     #ffffff;
 
-  --text-main:   #000000;
-  --text-muted:  #555555;
+  --text-main:   #1A1A1A;
+  --text-muted:  #6B5B45;
   --text-dim:    #888888;
-  --text-purple: #4A0E4E;
+  --text-purple: #006666;   /* dark teal/cyan for readable secondary text */
 }
 
 [data-theme="dark"] {
-  --bg-page:     #0f0118;
-  --bg-soft:     #200535;
-  --bg-soft2:    #2a063f;
-  --bg-soft3:    #250340;
-  --bg-muted:    #160228;
-  --bg-card:     #1c0530;
+  --bg-page:     #0a0000;
+  --bg-soft:     #1a0505;
+  --bg-soft2:    #1f0808;
+  --bg-soft3:    #150303;
+  --bg-muted:    #0e0202;
+  --bg-card:     #120404;
 
-  --text-main:   #f5e6f5;
-  --text-muted:  #c09ad0;
-  --text-dim:    #8a6a9a;
-  --text-purple: #d4a0e0;
+  --text-main:   #f5f0f0;
+  --text-muted:  #c09898;
+  --text-dim:    #8a6060;
+  --text-purple: #00cccc;   /* lighter cyan for dark mode */
 }
 
 body {

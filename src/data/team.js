@@ -2,42 +2,26 @@ export const teamMembers = [
 	{
 		id: "ceo",
 		name: "Chizzy",
-		role: "Founder & CEO",
+		role: "Founder & Lead Craftsman",
 		department: "Leadership",
 		image: "/images/team/stylist-1.jpg.jpg",
-		bio: "Chizzy is the creative force behind Chizzystyles. With a deep passion for nail artistry and years of hands-on experience, she built the brand from the ground up — turning a love for beautiful nails into a full-service nail studio and press-on brand. She oversees every aspect of the business, from design direction to client experience.",
+		bio: "Chizzy is the creative force and lead craftsman behind PerfectFooties. With a deep passion for leatherwork and years of hands-on experience, she built the brand from the ground up — turning a love for quality craftsmanship into a full-service leather goods brand. She oversees every piece, from design direction to final quality inspection.",
 	},
 	{
-		id: "lead-stylist",
+		id: "lead-craftsman",
 		name: "Chizzy",
-		role: "Lead Nail Stylist",
-		department: "Stylists",
+		role: "Lead Leather Artisan",
+		department: "Craftsmanship",
 		image: "/images/team/stylist-1.jpg.jpg",
-		bio: "Chizzy specializes in Gel-X extensions and intricate nail art. Known for her precision and creativity, she brings each client's vision to life with detailed designs, clean lines, and flawless finishes. She has been with Chizzystyles since day one.",
+		bio: "Chizzy specialises in handstitched leather construction and custom shoe-making. Known for her precision and attention to detail, she brings each client's vision to life with clean edges, tight saddle stitching, and flawless finishing. Every piece that leaves the workshop passes through her hands.",
 	},
-	// {
-	// 	id: "stylist-2",
-	// 	name: "Tomi",
-	// 	role: "Nail Stylist",
-	// 	department: "Stylists",
-	// 	image: "/images/team/stylist-1.jpg.jpg",
-	// 	bio: "Tomi is our hard gel and polygel specialist. She is passionate about nail health and structure, ensuring every set she creates is not only beautiful but also strong and long-lasting. Clients love her calm energy and attention to detail.",
-	// },
-	// {
-	// 	id: "stylist-3",
-	// 	name: "Kemi",
-	// 	role: "Nail Stylist & Pedicurist",
-	// 	department: "Stylists",
-	// 	image: "/images/team/stylist-1.jpg.jpg",
-	// 	bio: "Kemi handles our pedicure services and press-on production. With a gentle touch and an eye for colour, she delivers relaxing pedicure experiences and helps craft our ready-to-wear press-on nail sets.",
-	// },
 	{
 		id: "designer",
 		name: "Chizoba",
 		role: "Brand Designer",
 		department: "Design",
 		image: "/images/team/stylist-1.jpg.jpg",
-		bio: "Chizoba is the visual storyteller behind the Chizzystyles brand. From social media graphics to packaging design to website design and email marketing, she ensures everything looks cohesive, elegant, and on-brand. She also designs our gift card templates and promotional materials.",
+		bio: "Chizoba is the visual storyteller behind the PerfectFooties brand. From social media graphics to packaging design to website and email marketing, she ensures everything looks cohesive, elegant, and on-brand. She also handles product photography and promotional materials.",
 	},
 	{
 		id: "marketer",
@@ -45,8 +29,8 @@ export const teamMembers = [
 		role: "Marketing & Social Media",
 		department: "Marketing",
 		image: "/images/team/stylist-1.jpg.jpg",
-		bio: "Chizoba runs our social media presence and marketing campaigns. She connects with our community, shares client transformations, and keeps Chizzystyles trending. Her content strategy has helped the brand reach thousands of nail lovers across Lagos and beyond.",
+		bio: "Chizoba runs our social media presence and marketing campaigns. She connects with our community, shares behind-the-scenes content from the workshop, and keeps PerfectFooties visible. Her content strategy has helped the brand reach thousands of leather goods lovers across Lagos and beyond.",
 	},
 ];
 
-export const departments = ['Leadership', 'Stylists', 'Design', 'Marketing'];
+export const departments = ['Leadership', 'Craftsmanship', 'Design', 'Marketing'];

@@ -4,7 +4,7 @@ import { Box, Typography, Button, IconButton, Container, GlobalStyles } from '@m
 import CloseIcon from '@mui/icons-material/Close';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { fetchActiveAnnouncements } from '../lib/announcementService';
-import { fetchNicheCollectionById } from '../lib/nicheCollectionService';
+import { fetchProductById } from '../lib/productService';
 
 const SLIDE_DURATION = 6000; // ms per announcement
 
@@ -25,9 +25,9 @@ export default function AnnouncementBanner() {
         setAnnouncements(visible);
 
         visible.forEach((a) => {
-          const match = (a.ctaLink || '').match(/^\/collections\/(.+)$/);
+          const match = (a.ctaLink || '').match(/^\/shop\/(.+)$/);
           if (match) {
-            fetchNicheCollectionById(match[1])
+            fetchProductById(match[1])
               .then((col) => {
                 if (col?.images?.length) {
                   setColImages((prev) => ({ ...prev, [a.id]: col.images.filter(Boolean) }));
@@ -104,7 +104,7 @@ export default function AnnouncementBanner() {
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         sx={{
-          background: 'linear-gradient(135deg, #FF6BB5 0%, #E91E8C 55%, #C2185B 100%)',
+          background: 'linear-gradient(135deg, #FF6BB5 0%, #e3242b 55%, #b81b21 100%)',
           color: '#fff',
           position: 'relative',
           overflow: 'hidden',
@@ -215,7 +215,7 @@ export default function AnnouncementBanner() {
                   onClick={handleCta}
                   sx={{
                     background: 'rgba(255,255,255,0.95)',
-                    color: '#C2185B',
+                    color: '#b81b21',
                     borderRadius: '24px',
                     px: { xs: 2.5, md: 3.5 },
                     py: { xs: 1, md: 1.3 },
@@ -264,7 +264,7 @@ export default function AnnouncementBanner() {
                     pointerEvents: 'none',
                   },
                   '&::before': { left: 0, background: 'linear-gradient(to right, #FF6BB5, transparent)' },
-                  '&::after': { right: 0, background: 'linear-gradient(to left, #C2185B, transparent)' },
+                  '&::after': { right: 0, background: 'linear-gradient(to left, #b81b21, transparent)' },
                 }}
               >
                 <Box
@@ -315,10 +315,10 @@ export default function AnnouncementBanner() {
                     width: i === index ? 20 : 7,
                     height: 7,
                     borderRadius: '4px',
-                    backgroundColor: i === index ? '#E91E8C' : 'rgba(255,255,255,0.3)',
+                    backgroundColor: i === index ? '#e3242b' : 'rgba(255,255,255,0.3)',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
-                    '&:hover': { backgroundColor: i === index ? '#E91E8C' : 'rgba(255,255,255,0.6)' },
+                    '&:hover': { backgroundColor: i === index ? '#e3242b' : 'rgba(255,255,255,0.6)' },
                   }}
                 />
               ))}

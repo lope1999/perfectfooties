@@ -7,7 +7,7 @@ import { parseAppointmentDate, isWithinHours, isUpcoming, formatRelativeTime } f
 
 const NotificationContext = createContext(null);
 
-const DISMISSED_KEY = 'chizzystyles-notifications-dismissed';
+const DISMISSED_KEY = 'perfectfooties-notifications-dismissed';
 
 const STATUS_LABELS = {
   pending: 'Pending',

@@ -37,7 +37,7 @@ const fontFamily = '"Georgia", serif';
 const emptyForm = {
   title: '',
   category: '',
-  author: 'Chizzy — Chizzystyles',
+  author: 'PerfectFooties',
   date: '',
   readTime: '',
   image: '',
@@ -46,7 +46,7 @@ const emptyForm = {
   sources: [''],
 };
 
-const categoryOptions = ['Nail Care', 'Gel Polishes', 'Nail Brands'];
+const categoryOptions = ['Leather Care', 'Craftsmanship', 'Leather Types', 'Style Guide'];
 
 export default function BlogPostsSection({ blogPosts, loading, onRefresh }) {
   const [search, setSearch] = useState('');
@@ -96,7 +96,7 @@ export default function BlogPostsSection({ blogPosts, loading, onRefresh }) {
     setForm({
       title: post.title || '',
       category: post.category || '',
-      author: post.author || 'Chizzy — Chizzystyles',
+      author: post.author || 'PerfectFooties',
       date: post.date || '',
       readTime: post.readTime || '',
       image: post.image || '',
@@ -194,7 +194,7 @@ export default function BlogPostsSection({ blogPosts, loading, onRefresh }) {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={openAddDialog}
-          sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+          sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
         >
           Add Blog Post
         </Button>
@@ -240,7 +240,7 @@ export default function BlogPostsSection({ blogPosts, loading, onRefresh }) {
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table size="small">
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
+            <TableRow sx={{ backgroundColor: '#006666' }}>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 40 }} />
               {['Title', 'Category', 'Author', 'Date', 'Read Time', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
@@ -433,7 +433,7 @@ export default function BlogPostsSection({ blogPosts, loading, onRefresh }) {
             onClick={handleSave}
             variant="contained"
             disabled={busy}
-            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
           >
             {editingPost ? 'Update' : 'Create'}
           </Button>

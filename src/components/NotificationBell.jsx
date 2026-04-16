@@ -36,14 +36,14 @@ export default function NotificationBell() {
       <Tooltip title="Notifications" arrow>
         <IconButton
           onClick={(e) => setAnchorEl(e.currentTarget)}
-          sx={{ color: '#E91E8C', '&:hover': { color: 'var(--text-purple)' } }}
+          sx={{ color: '#e3242b', '&:hover': { color: 'var(--text-purple)' } }}
         >
           <Badge
             badgeContent={undismissedCount || 0}
             invisible={undismissedCount === 0}
             sx={{
               '& .MuiBadge-badge': {
-                backgroundColor: '#E91E8C',
+                backgroundColor: '#e3242b',
                 color: '#fff',
                 fontSize: '0.7rem',
                 fontWeight: 700,
@@ -80,7 +80,7 @@ export default function NotificationBell() {
             alignItems: 'center',
             px: 2,
             py: 1.5,
-            borderBottom: '1px solid #F0C0D0',
+            borderBottom: '1px solid #E8D5B0',
           }}
         >
           <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '0.95rem' }}>
@@ -93,9 +93,9 @@ export default function NotificationBell() {
               sx={{
                 fontFamily,
                 fontSize: '0.75rem',
-                color: '#E91E8C',
+                color: '#e3242b',
                 textTransform: 'none',
-                '&:hover': { backgroundColor: '#FFF0F5' },
+                '&:hover': { backgroundColor: '#FFF8F0' },
               }}
             >
               Mark all read
@@ -112,7 +112,7 @@ export default function NotificationBell() {
               const isStatusChange = n.type === 'status-change';
               const isCancelled = isStatusChange && n.status === 'cancelled';
 
-              let iconColor = isReminder ? '#ed6c02' : '#E91E8C';
+              let iconColor = isReminder ? '#ed6c02' : '#e3242b';
               let titleColor = isReminder ? '#ed6c02' : '#000';
               let icon = isReminder ? <AccessTimeIcon fontSize="small" /> : <EventNoteIcon fontSize="small" />;
 
@@ -129,9 +129,9 @@ export default function NotificationBell() {
                     sx={{
                       py: 1.5,
                       px: 2,
-                      backgroundColor: isDismissed ? 'transparent' : '#FFF0F5',
+                      backgroundColor: isDismissed ? 'transparent' : '#FFF8F0',
                       opacity: isDismissed ? 0.55 : 1,
-                      '&:hover': { backgroundColor: isDismissed ? '#fafafa' : '#FCE4EC' },
+                      '&:hover': { backgroundColor: isDismissed ? '#fafafa' : '#FFE8E8' },
                     }}
                   >
                     <Box sx={{ mr: 1.5, color: iconColor, mt: 0.3 }}>
@@ -153,7 +153,7 @@ export default function NotificationBell() {
                       }}
                     />
                   </ListItemButton>
-                  {i < notifications.length - 1 && <Divider sx={{ borderColor: '#F0C0D0' }} />}
+                  {i < notifications.length - 1 && <Divider sx={{ borderColor: '#E8D5B0' }} />}
                 </Box>
               );
             })}

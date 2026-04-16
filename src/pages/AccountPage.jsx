@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
 	Box,
@@ -24,10 +24,13 @@ import {
 	MenuItem,
 	FormControl,
 	InputLabel,
+	Rating,
+	Stepper,
+	Step,
+	StepLabel,
 } from "@mui/material";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
-import EventNoteIcon from "@mui/icons-material/EventNote";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
@@ -38,10 +41,7 @@ import StarBorderIcon from "@mui/icons-material/StarBorder";
 import EditIcon from "@mui/icons-material/Edit";
 import PhoneIcon from "@mui/icons-material/Phone";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import ContentCutIcon from "@mui/icons-material/ContentCut";
-import NailBedSizeInput from "../components/NailBedSizeInput";
 import RateReviewIcon from "@mui/icons-material/RateReview";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -73,7 +73,7 @@ import {
 	REDEMPTION_UNIT, REDEMPTION_VALUE,
 } from "../lib/loyaltyService";
 
-const TABS = ["profile", "orders", "appointments", "wishlist"];
+const TABS = ["profile", "orders", "wishlist"];
 const ff = '"Georgia", serif';
 
 function formatNaira(amount) {
@@ -94,64 +94,14 @@ function memberSince(ts) {
 	return d.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
 }
 
-// Auto-compute preset tip size (XS/S/M/L) from nail bed sizes in mm.
-// Uses the same data as PresetSizeGuide: tip 0 = ~18mm, tip 9 = ~9mm.
-// Tiebreaker: per the guide, "choose the larger size for a more comfortable fit" → L > M > S > XS.
-function computePresetSize(nailBedSizeStr) {
-	if (!nailBedSizeStr) return "";
-	const tipToMm = (tip) => 18 - tip;
-	// finger key suffix → { XS, S, M, L } tip numbers (from PresetSizeGuide table)
-	const fingerTips = {
-		T: { XS: 3, S: 2, M: 1, L: 0 },
-		I: { XS: 7, S: 6, M: 5, L: 4 },
-		M: { XS: 5, S: 4, M: 3, L: 2 },
-		R: { XS: 6, S: 5, M: 4, L: 3 },
-		P: { XS: 9, S: 8, M: 7, L: 6 },
-	};
-	// Larger sizes rank higher — used as tiebreaker
-	const sizeRank = { XS: 0, S: 1, M: 2, L: 3 };
-	const scores = { XS: 0, S: 0, M: 0, L: 0 };
-	let count = 0;
-	nailBedSizeStr.split(",").forEach((part) => {
-		const [key, val] = part.trim().split(":");
-		if (!key || !val) return;
-		const mm = parseFloat(val.trim());
-		if (isNaN(mm)) return;
-		const suffix = key.trim().slice(1); // 'RT' → 'T', 'LM' → 'M'
-		const tipMap = fingerTips[suffix];
-		if (!tipMap) return;
-		count++;
-		Object.entries(tipMap).forEach(([size, tip]) => {
-			scores[size] += Math.abs(mm - tipToMm(tip));
-		});
-	});
-	if (count === 0) return "";
-	return Object.entries(scores).reduce(
-		(best, [size, score]) => {
-			if (score < best.score) return { size, score };
-			// On a tie, prefer the larger size (more comfortable fit per the guide)
-			if (score === best.score && sizeRank[size] > sizeRank[best.size])
-				return { size, score };
-			return best;
-		},
-		{ size: "", score: Infinity },
-	).size;
-}
-
-// Normalize presetSize values from order data ('XS (Extra Small)' → 'XS')
-function normalizePresetSize(str) {
-	if (!str) return "";
-	return str.split(" ")[0];
-}
-
-// Client loyalty tiers — 1 review per level, brand-aligned
+// Client loyalty tiers — review-based, brand-aligned
 const CLIENT_TIERS = [
-	{ min: 5, label: 'Diamond Diva',  emoji: '💎', color: 'var(--text-purple)', bg: '#F3E5F5', border: '#CE93D8', desc: 'The absolute elite — top of the nail game!',        perk: 'Free delivery on all orders' },
-	{ min: 4, label: 'Star Client',   emoji: '⭐', color: '#B8860B', bg: '#FFFDE7', border: '#FFD54F', desc: 'Proven loyal — a true Chizzys star!',                perk: '5% off all press-on orders' },
-	{ min: 3, label: 'Nail Lover',    emoji: '💅', color: '#C2185B', bg: '#FCE4EC', border: '#F48FB1', desc: 'Three visits strong — dedicated to the craft!',       perk: 'Early access to new collections' },
-	{ min: 2, label: 'Glam Client',   emoji: '✨', color: '#6A1B9A', bg: '#EDE7F6', border: '#B39DDB', desc: "You came back — we love your loyalty!",               perk: 'Priority booking + exclusive member deals' },
-	{ min: 1, label: 'Fresh Darling', emoji: '🌸', color: '#2E7D32', bg: '#F1F8E9', border: '#A5D6A7', desc: 'Brand new — welcome to Chizzys Nails!',               perk: 'Free custom nail design consultation' },
-	{ min: 0, label: 'New Member',    emoji: '🌟', color: '#E91E8C', bg: '#FFF0F5', border: '#F0C0D0', desc: 'Welcome! Leave your first review to start your loyalty journey.', perk: null },
+	{ min: 5, label: 'Master Patron',  emoji: '🏆', color: 'var(--text-purple)', bg: '#F3E5F5', border: '#CE93D8', desc: 'The absolute elite — our most loyal customer!',    perk: 'Free delivery on all orders' },
+	{ min: 4, label: 'Star Client',    emoji: '⭐', color: '#B8860B', bg: '#FFFDE7', border: '#FFD54F', desc: 'Proven loyal — a true PerfectFooties star!',           perk: '5% off all orders' },
+	{ min: 3, label: 'Craft Lover',    emoji: '🎨', color: '#b81b21', bg: '#FFE8E8', border: '#F48FB1', desc: 'Three orders strong — dedicated to quality craft!',    perk: 'Early access to new collections' },
+	{ min: 2, label: 'Glam Client',    emoji: '✨', color: '#6A1B9A', bg: '#EDE7F6', border: '#B39DDB', desc: "You came back — we love your loyalty!",                perk: 'Priority ordering + exclusive member deals' },
+	{ min: 1, label: 'Fresh Patron',   emoji: '🌟', color: '#2E7D32', bg: '#F1F8E9', border: '#A5D6A7', desc: 'Welcome to PerfectFooties — first order placed!',      perk: 'Free personalised style consultation' },
+	{ min: 0, label: 'New Member',     emoji: '🎯', color: '#e3242b', bg: '#FFF8F0', border: '#E8D5B0', desc: 'Welcome! Leave your first review to start your loyalty journey.', perk: null },
 ];
 
 function getClientTier(reviewCount) {
@@ -173,12 +123,12 @@ const statBtnSx = {
 	p: 1.5,
 	borderRadius: 2,
 	backgroundColor: "#fff",
-	border: "1px solid #F0C0D0",
+	border: "1px solid #E8D5B0",
 	textAlign: "center",
 	cursor: "pointer",
 	transition: "all 0.2s ease",
 	"&:hover": {
-		borderColor: "#E91E8C",
+		borderColor: "#e3242b",
 		boxShadow: "0 2px 8px rgba(233,30,140,0.12)",
 	},
 };
@@ -186,7 +136,7 @@ const statBtnSx = {
 export default function AccountPage() {
 	const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth();
 	const { wishlist, removeFromWishlist } = useWishlist();
-	const { addProduct, addPressOn } = useCart();
+	const { addProduct } = useCart();
 	const { showToast } = useNotifications();
 	const location = useLocation();
 	const navigate = useNavigate();
@@ -220,7 +170,6 @@ export default function AccountPage() {
 
 	// Profile UI state
 	const [editOpen, setEditOpen] = useState(false);
-	const [nailSizesOpen, setNailSizesOpen] = useState(false);
 	const [profile, setProfile] = useState({
 		phone: "",
 		address: "",
@@ -230,10 +179,6 @@ export default function AccountPage() {
 		phone: "",
 		address: "",
 		displayName: "",
-	});
-	const [nailForm, setNailForm] = useState({
-		nailBedSize: "",
-		nailTipSize: "",
 	});
 
 	useEffect(() => {
@@ -303,17 +248,13 @@ export default function AccountPage() {
 			address: saved.address || "",
 			displayName: saved.displayName || user.displayName || "",
 		});
-		setNailForm({
-			nailBedSize: saved.nailBedSize || "",
-			nailTipSize: saved.nailTipSize || "",
-		});
 	}, [user]);
 
 	const handleTabChange = (_, newVal) => {
 		navigate(`/account#${TABS[newVal]}`, { replace: true });
 	};
 
-	const handleCancelAppointment = async () => {
+	const handleCancelOrder = async () => {
 		if (!cancelDialog || !cancelReason) return;
 		const id = cancelDialog.id;
 		const prevStatus = cancelDialog.status;
@@ -337,11 +278,7 @@ export default function AccountPage() {
 				customerName: cancelDialog.customerName || user.displayName || "",
 				customerEmail: user.email || "",
 				orderType: cancelDialog.type || "",
-				serviceName:
-					cancelDialog.items?.[0]?.serviceName ||
-					cancelDialog.items?.[0]?.name ||
-					"",
-				appointmentDate: cancelDialog.appointmentDate || "",
+				itemName: cancelDialog.items?.[0]?.name || "",
 				reason: finalReason,
 			});
 		} catch (_) {
@@ -358,35 +295,12 @@ export default function AccountPage() {
 	};
 
 	const handleOpenEditOrder = (order) => {
-		const firstItem = order.items?.[0] || {};
 		setEditOrderForm({
 			customerName: order.customerName || "",
 			notes: order.notes || "",
-			nailShape: firstItem.nailShape || "",
-			nailBedSize: firstItem.nailBedSize || "",
-			presetSize: firstItem.presetSize || "",
 			phone: order.phone || "",
 		});
 		setEditOrderDialog(order);
-	};
-
-	const handleReorder = (order) => {
-		const pressOnItems = order.items?.filter((i) => i.kind === 'pressOn') || [];
-		if (!pressOnItems.length) return;
-		pressOnItems.forEach((item) => {
-			addPressOn({
-				name: item.name,
-				price: item.price,
-				quantity: item.quantity || 1,
-				nailShape: item.nailShape || '',
-				nailBedSize: item.nailBedSize || '',
-				presetSize: item.presetSize || '',
-				type: item.type || '',
-				stock: 99,
-			});
-		});
-		showToast(`${pressOnItems.length} item(s) added to cart`, 'success');
-		navigate('/cart');
 	};
 
 	const handleEditOrderSave = async () => {
@@ -400,31 +314,6 @@ export default function AccountPage() {
 				updates.notes = editOrderForm.notes;
 			if (editOrderForm.phone !== undefined)
 				updates.phone = editOrderForm.phone;
-			const isService =
-				editOrderDialog.type === "service" ||
-				editOrderDialog.type === "mixed";
-			const isPressOn = !isService && editOrderDialog.items?.[0];
-			if (isPressOn) {
-				updates.items = editOrderDialog.items.map((item, i) =>
-					i === 0
-						? {
-								...item,
-								nailShape:
-									editOrderForm.nailShape !== undefined
-										? editOrderForm.nailShape
-										: item.nailShape,
-								nailBedSize:
-									editOrderForm.nailBedSize !== undefined
-										? editOrderForm.nailBedSize
-										: item.nailBedSize,
-								presetSize:
-									editOrderForm.presetSize !== undefined
-										? editOrderForm.presetSize
-										: item.presetSize,
-							}
-						: item,
-				);
-			}
 			await updateOrderDetails(user.uid, editOrderDialog.id, updates);
 			setOrders((prev) =>
 				prev.map((o) =>
@@ -440,23 +329,17 @@ export default function AccountPage() {
 		}
 	};
 
-	const serviceOrders = orders.filter(
-		(o) => o.type === "service" || o.type === "mixed",
-	);
-	const otherOrders = orders.filter((o) => o.type !== "service");
 	const reviewCount = Object.keys(ratedOrders).length;
 	const giftCardOrders = orders.filter((o) =>
 		o.items?.some((i) =>
-			(i.name || i.serviceName || "").toLowerCase().includes("gift card"),
+			(i.name || "").toLowerCase().includes("gift card"),
 		),
 	);
 
 	// Loyalty points — from Firestore (null while loading, falls back to order-computed)
 	const computedPoints = orders.reduce((total, o) => {
-		const earnedForService = o.type === "service" && o.status === "completed";
-		const earnedForOrder = o.type !== "service" && o.status === "received";
-		if (!earnedForService && !earnedForOrder) return total;
-		return total + (o.type === "service" ? 20 : 15);
+		if (!['received', 'completed', 'delivered'].includes(o.status)) return total;
+		return total + 15;
 	}, 0);
 	console.log(
 		"[Loyalty Debug] orders:",
@@ -474,17 +357,8 @@ export default function AccountPage() {
 		Math.floor(loyaltyPoints / REDEMPTION_UNIT) * REDEMPTION_VALUE;
 	const maxRedeemableUnits = Math.floor(loyaltyPoints / REDEMPTION_UNIT);
 
-	const referralCode = myReferralCode || (user?.uid ? `CHIZZYS-${user.uid.slice(0, 8).toUpperCase()}` : '');
+	const referralCode = myReferralCode || (user?.uid ? `FOOTIES-${user.uid.slice(0, 8).toUpperCase()}` : '');
 	const referralLink = `${window.location.origin}/?ref=${referralCode}`;
-
-	// Re-booking prompt logic
-	const hasCompletedAppt = serviceOrders.some(
-		(o) => o.status === "completed" || o.status === "received",
-	);
-	const hasActiveAppt = serviceOrders.some((o) =>
-		["pending", "confirmed", "in progress"].includes(o.status),
-	);
-	const showRebookPrompt = hasCompletedAppt && !hasActiveAppt;
 
 	// Extract phone/address from orders if not saved in profile
 	const phoneFromOrders = useMemo(() => {
@@ -498,24 +372,6 @@ export default function AccountPage() {
 	const shippingFromOrders = useMemo(() => {
 		for (const o of orders) {
 			if (o.shipping?.address) return o.shipping;
-		}
-		return null;
-	}, [orders]);
-
-	// Latest nail sizes from orders (auto-populate if not saved)
-	const nailSizesFromOrders = useMemo(() => {
-		const sorted = [...orders].sort(
-			(a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0),
-		);
-		for (const o of sorted) {
-			for (const item of o.items || []) {
-				if (item.nailBedSize || item.presetSize) {
-					return {
-						nailBedSize: item.nailBedSize || "",
-						nailTipSize: normalizePresetSize(item.presetSize),
-					};
-				}
-			}
 		}
 		return null;
 	}, [orders]);
@@ -560,42 +416,10 @@ export default function AccountPage() {
 		setEditOpen(false);
 	};
 
-	const openNailSizes = () => {
-		const base = nailSizesFromOrders || { nailBedSize: "", nailTipSize: "" };
-		setNailForm({
-			nailBedSize: nailForm.nailBedSize || base.nailBedSize,
-			nailTipSize: nailForm.nailTipSize || base.nailTipSize,
-		});
-		setNailSizesOpen(true);
-	};
-
-	const saveNailSizes = () => {
-		const saved = JSON.parse(
-			localStorage.getItem(`profile_${user.uid}`) || "{}",
-		);
-		localStorage.setItem(
-			`profile_${user.uid}`,
-			JSON.stringify({
-				...saved,
-				nailBedSize: nailForm.nailBedSize,
-				nailTipSize: nailForm.nailTipSize,
-			}),
-		);
-		setNailSizesOpen(false);
-	};
-
-	// Parse nail bed size string to count filled fingers
-	const filledFingers = useMemo(() => {
-		const str =
-			nailForm.nailBedSize || nailSizesFromOrders?.nailBedSize || "";
-		if (!str) return 0;
-		return str.split(",").filter((p) => p.includes(":")).length;
-	}, [nailForm.nailBedSize, nailSizesFromOrders]);
-
 	if (authLoading) {
 		return (
 			<Box sx={{ pt: 16, textAlign: "center" }}>
-				<CircularProgress sx={{ color: "#E91E8C" }} />
+				<CircularProgress sx={{ color: "#e3242b" }} />
 			</Box>
 		);
 	}
@@ -607,12 +431,12 @@ export default function AccountPage() {
 					pt: { xs: 12, md: 14 },
 					pb: 10,
 					minHeight: "100vh",
-					backgroundColor: "#FFF0F5",
+					backgroundColor: "#FFF8F0",
 				}}
 			>
 				<Container maxWidth="sm" sx={{ textAlign: "center" }}>
 					<PersonOutlineIcon
-						sx={{ fontSize: 64, color: "#E91E8C", mb: 2 }}
+						sx={{ fontSize: 64, color: "#e3242b", mb: 2 }}
 					/>
 					<Typography
 						variant="h4"
@@ -622,12 +446,12 @@ export default function AccountPage() {
 					</Typography>
 					<Typography sx={{ color: "var(--text-muted)", mb: 4, lineHeight: 1.7 }}>
 						Sign in with Google to view your order history, track
-						appointments, and manage your profile.
+						deliveries, and manage your profile.
 					</Typography>
 					<Button
 						onClick={() => signInWithGoogle().catch(() => {})}
 						sx={{
-							backgroundColor: "#E91E8C",
+							backgroundColor: "#e3242b",
 							color: "#fff",
 							borderRadius: "30px",
 							px: 4,
@@ -635,7 +459,7 @@ export default function AccountPage() {
 							fontFamily: ff,
 							fontWeight: 600,
 							fontSize: "0.95rem",
-							"&:hover": { backgroundColor: "#C2185B" },
+							"&:hover": { backgroundColor: "#b81b21" },
 						}}
 					>
 						Sign in with Google
@@ -651,7 +475,7 @@ export default function AccountPage() {
 				pt: { xs: 10, md: 12 },
 				pb: 10,
 				minHeight: "100vh",
-				backgroundColor: "#FFF0F5",
+				backgroundColor: "#FFF8F0",
 			}}
 		>
 			<Container maxWidth="md">
@@ -683,14 +507,13 @@ export default function AccountPage() {
 							textTransform: "none",
 							fontSize: "0.95rem",
 						},
-						"& .Mui-selected": { color: "#E91E8C" },
-						"& .MuiTabs-indicator": { backgroundColor: "#E91E8C" },
-						"& .MuiTabs-scrollButtons": { color: "#E91E8C" },
+						"& .Mui-selected": { color: "#e3242b" },
+						"& .MuiTabs-indicator": { backgroundColor: "#e3242b" },
+						"& .MuiTabs-scrollButtons": { color: "#e3242b" },
 					}}
 				>
 					<Tab label="Profile" />
 					<Tab label="Orders" />
-					<Tab label="Appointments" />
 					<Tab
 						icon={<FavoriteIcon sx={{ fontSize: 18 }} />}
 						iconPosition="start"
@@ -716,7 +539,7 @@ export default function AccountPage() {
 									sx={{
 										width: 90,
 										height: 90,
-										border: "3px solid #E91E8C",
+										border: "3px solid #e3242b",
 									}}
 								/>
 							</Box>
@@ -749,9 +572,9 @@ export default function AccountPage() {
 								size="small"
 								sx={{
 									mt: 1.5,
-									border: "1.5px solid #E91E8C",
+									border: "1.5px solid #e3242b",
 									borderRadius: "20px",
-									color: "#E91E8C",
+									color: "#e3242b",
 									px: 2.5,
 									py: 0.6,
 									fontFamily: ff,
@@ -759,7 +582,7 @@ export default function AccountPage() {
 									fontSize: "0.82rem",
 									textTransform: "none",
 									"&:hover": {
-										backgroundColor: "#E91E8C",
+										backgroundColor: "#e3242b",
 										color: "#fff",
 									},
 								}}
@@ -789,36 +612,12 @@ export default function AccountPage() {
 										lineHeight: 1,
 									}}
 								>
-									{otherOrders.length}
+									{orders.length}
 								</Typography>
 								<Typography
 									sx={{ fontSize: "0.72rem", color: "#777", mt: 0.3 }}
 								>
 									Orders
-								</Typography>
-							</Box>
-							<Box
-								sx={statBtnSx}
-								//onClick={() => navigate("/services")}
-							>
-								<CalendarTodayIcon
-									sx={{ fontSize: 24, color: "#E91E8C", mb: 0.5 }}
-								/>
-								<Typography
-									sx={{
-										fontFamily: ff,
-										fontWeight: 700,
-										fontSize: "1.4rem",
-										color: "#E91E8C",
-										lineHeight: 1,
-									}}
-								>
-									{serviceOrders.length}
-								</Typography>
-								<Typography
-									sx={{ fontSize: "0.72rem", color: "#777", mt: 0.3 }}
-								>
-									Appointments
 								</Typography>
 							</Box>
 							<Box
@@ -850,14 +649,14 @@ export default function AccountPage() {
 								onClick={() => navigate("/account#wishlist")}
 							>
 								<FavoriteIcon
-									sx={{ fontSize: 24, color: "#E91E8C", mb: 0.5 }}
+									sx={{ fontSize: 24, color: "#e3242b", mb: 0.5 }}
 								/>
 								<Typography
 									sx={{
 										fontFamily: ff,
 										fontWeight: 700,
 										fontSize: "1.4rem",
-										color: "#E91E8C",
+										color: "#e3242b",
 										lineHeight: 1,
 									}}
 								>
@@ -1057,7 +856,7 @@ export default function AccountPage() {
 												}}
 											>
 												🎉 Maximum tier reached — you&apos;re a
-												Chizzys legend!
+												PerfectFooties legend!
 											</Typography>
 										)}
 									</Box>
@@ -1069,7 +868,7 @@ export default function AccountPage() {
 							sx={{
 								mb: 3,
 								borderRadius: 3,
-								border: "1.5px solid #F0C0D0",
+								border: "1.5px solid #E8D5B0",
 								overflow: "hidden",
 							}}
 						>
@@ -1077,8 +876,8 @@ export default function AccountPage() {
 								sx={{
 									px: 2,
 									py: 1.2,
-									backgroundColor: "#FFF0F5",
-									borderBottom: "1px solid #F0C0D0",
+									backgroundColor: "#FFF8F0",
+									borderBottom: "1px solid #E8D5B0",
 								}}
 							>
 								<Typography
@@ -1086,7 +885,7 @@ export default function AccountPage() {
 										fontFamily: ff,
 										fontWeight: 700,
 										fontSize: "0.85rem",
-										color: "#E91E8C",
+										color: "#e3242b",
 									}}
 								>
 									🎁 Loyalty Tier Perks
@@ -1175,7 +974,7 @@ export default function AccountPage() {
 								p: 2.5,
 								borderRadius: 3,
 								background:
-									"linear-gradient(135deg, #FFF8E1 0%, #FFF0F5 100%)",
+									"linear-gradient(135deg, #FFF8E1 0%, #FFF8F0 100%)",
 								border: "1.5px solid #FFD54F",
 							}}
 						>
@@ -1213,8 +1012,7 @@ export default function AccountPage() {
 										<Typography
 											sx={{ fontSize: "0.72rem", color: "#777" }}
 										>
-											Earn points on every completed order &
-											appointment
+											Earn points on every delivered order
 										</Typography>
 									</Box>
 								</Box>
@@ -1270,7 +1068,7 @@ export default function AccountPage() {
 								{redeemableNaira > 0 && (
 									<Box
 										sx={{
-											backgroundColor: "#E91E8C",
+											backgroundColor: "#e3242b",
 											borderRadius: "14px",
 											px: 1.5,
 											py: 0.4,
@@ -1326,9 +1124,7 @@ export default function AccountPage() {
 										lineHeight: 1.8,
 									}}
 								>
-									💅 <strong>15 pts</strong> per press-on order ·{" "}
-									<strong>20 pts</strong> per appointment ·{" "}
-									<strong>50 pts = ₦1,000 off</strong>
+									🏅 <strong>15 pts</strong> per completed order · <strong>50 pts = ₦1,000 off</strong>
 								</Typography>
 							</Box>
 						</Box>
@@ -1340,7 +1136,7 @@ export default function AccountPage() {
 								p: 2.5,
 								borderRadius: 3,
 								background:
-									"linear-gradient(135deg, #EDE7F6 0%, #FFF0F5 100%)",
+									"linear-gradient(135deg, #EDE7F6 0%, #FFF8F0 100%)",
 								border: "1.5px solid #CE93D8",
 							}}
 						>
@@ -1505,7 +1301,7 @@ export default function AccountPage() {
 								fullWidth
 								onClick={() => {
 									const msg = encodeURIComponent(
-										`💅 Hey! I use Chizzys Nails for my press-ons & appointments — they're amazing! Use my code *${referralCode}* to get ₦1,000 off your first order: ${referralLink}`,
+										`Hey! I shop at PerfectFooties for handmade leather goods — they're amazing! Use my code *${referralCode}* to get ₦1,000 off your first order: ${referralLink}`,
 									);
 									window.open(
 										`https://api.whatsapp.com/send?text=${msg}`,
@@ -1535,7 +1331,7 @@ export default function AccountPage() {
 								}}
 							>
 								Referral points go into your loyalty balance — redeem at
-								checkout on any order or appointment
+								checkout on any order
 							</Typography>
 						</Box>
 
@@ -1544,26 +1340,26 @@ export default function AccountPage() {
 							sx={{ display: "flex", gap: 1.5, mb: 3, flexWrap: "wrap" }}
 						>
 							<Button
-								startIcon={<ContentCutIcon />}
-								onClick={openNailSizes}
+								startIcon={<ShoppingBagIcon />}
+								onClick={() => navigate("/shop")}
 								sx={{
 									flex: 1,
 									minWidth: 140,
-									border: "1.5px solid #E91E8C",
+									border: "1.5px solid #e3242b",
 									borderRadius: "20px",
-									color: "#E91E8C",
+									color: "#e3242b",
 									py: 1,
 									fontFamily: ff,
 									fontWeight: 600,
 									fontSize: "0.85rem",
 									textTransform: "none",
 									"&:hover": {
-										backgroundColor: "#E91E8C",
+										backgroundColor: "#e3242b",
 										color: "#fff",
 									},
 								}}
 							>
-								View Nail Sizes
+								Shop Now
 							</Button>
 							<Button
 								startIcon={<RateReviewIcon />}
@@ -1571,7 +1367,7 @@ export default function AccountPage() {
 								sx={{
 									flex: 1,
 									minWidth: 140,
-									border: "1.5px solid #4A0E4E",
+									border: "1.5px solid #006666",
 									borderRadius: "20px",
 									color: "var(--text-purple)",
 									py: 1,
@@ -1580,34 +1376,12 @@ export default function AccountPage() {
 									fontSize: "0.85rem",
 									textTransform: "none",
 									"&:hover": {
-										backgroundColor: "#4A0E4E",
+										backgroundColor: "#006666",
 										color: "#fff",
 									},
 								}}
 							>
 								All Reviews
-							</Button>
-							<Button
-								startIcon={<EventNoteIcon />}
-								onClick={() => navigate("/services")}
-								sx={{
-									flex: 1,
-									minWidth: 140,
-									border: "1.5px solid #4A0E4E",
-									borderRadius: "20px",
-									color: "var(--text-purple)",
-									py: 1,
-									fontFamily: ff,
-									fontWeight: 600,
-									fontSize: "0.85rem",
-									textTransform: "none",
-									"&:hover": {
-										backgroundColor: "#4A0E4E",
-										color: "#fff",
-									},
-								}}
-							>
-								Book Appointment
 							</Button>
 						</Box>
 
@@ -1619,7 +1393,7 @@ export default function AccountPage() {
 									p: 2.5,
 									borderRadius: 3,
 									backgroundColor: "#fff",
-									border: "1px solid #F0C0D0",
+									border: "1px solid #E8D5B0",
 								}}
 							>
 								<Box
@@ -1646,7 +1420,7 @@ export default function AccountPage() {
 										<IconButton
 											size="small"
 											onClick={openEditProfile}
-											sx={{ color: "#E91E8C" }}
+											sx={{ color: "#e3242b" }}
 										>
 											<EditIcon sx={{ fontSize: 16 }} />
 										</IconButton>
@@ -1662,7 +1436,7 @@ export default function AccountPage() {
 										}}
 									>
 										<PhoneIcon
-											sx={{ fontSize: 18, color: "#E91E8C" }}
+											sx={{ fontSize: 18, color: "#e3242b" }}
 										/>
 										<Typography
 											sx={{
@@ -1686,7 +1460,7 @@ export default function AccountPage() {
 										<LocationOnIcon
 											sx={{
 												fontSize: 18,
-												color: "#E91E8C",
+												color: "#e3242b",
 												mt: 0.1,
 											}}
 										/>
@@ -1704,106 +1478,9 @@ export default function AccountPage() {
 							</Box>
 						)}
 
-						{/* Nail Sizes Preview */}
-						{(filledFingers > 0 ||
-							nailForm.nailTipSize ||
-							nailSizesFromOrders) && (
-							<Box
-								onClick={openNailSizes}
-								sx={{
-									mb: 3,
-									p: 2.5,
-									borderRadius: 3,
-									backgroundColor: "#fff",
-									border: "1px solid #F0C0D0",
-									cursor: "pointer",
-									"&:hover": { borderColor: "#E91E8C" },
-									transition: "all 0.2s ease",
-								}}
-							>
-								<Box
-									sx={{
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "space-between",
-									}}
-								>
-									<Box
-										sx={{
-											display: "flex",
-											alignItems: "center",
-											gap: 1,
-										}}
-									>
-										<ContentCutIcon
-											sx={{ fontSize: 18, color: "#E91E8C" }}
-										/>
-										<Typography
-											sx={{
-												fontFamily: ff,
-												fontWeight: 700,
-												fontSize: "0.85rem",
-												color: "var(--text-purple)",
-												textTransform: "uppercase",
-												letterSpacing: 0.5,
-											}}
-										>
-											My Nail Sizes
-										</Typography>
-									</Box>
-									<ChevronRightIcon sx={{ color: "#ccc" }} />
-								</Box>
-								<Box
-									sx={{
-										display: "flex",
-										gap: 1,
-										mt: 1.5,
-										flexWrap: "wrap",
-									}}
-								>
-									{filledFingers > 0 && (
-										<Chip
-											label={`Nail Bed: ${filledFingers}/10 fingers measured`}
-											size="small"
-											sx={{
-												backgroundColor: "#FFF0F5",
-												color: "var(--text-purple)",
-												fontWeight: 600,
-												fontSize: "0.78rem",
-											}}
-										/>
-									)}
-									{!filledFingers &&
-										nailSizesFromOrders?.nailBedSize && (
-											<Chip
-												label={`Nail Bed: from last order`}
-												size="small"
-												sx={{
-													backgroundColor: "#FFF0F5",
-													color: "var(--text-purple)",
-													fontWeight: 600,
-													fontSize: "0.78rem",
-												}}
-											/>
-										)}
-									{(nailForm.nailTipSize ||
-										nailSizesFromOrders?.nailTipSize) && (
-										<Chip
-											label={`Tip Size: ${nailForm.nailTipSize || nailSizesFromOrders?.nailTipSize}`}
-											size="small"
-											sx={{
-												backgroundColor: "#FFF0F5",
-												color: "#E91E8C",
-												fontWeight: 600,
-												fontSize: "0.78rem",
-											}}
-										/>
-									)}
-								</Box>
-							</Box>
-						)}
 
-						<Divider sx={{ borderColor: "#F0C0D0", mb: 3 }} />
+
+					<Divider sx={{ borderColor: "#E8D5B0", mb: 3 }} />
 
 						{/* Sign Out */}
 						<Box sx={{ textAlign: "center" }}>
@@ -1811,15 +1488,15 @@ export default function AccountPage() {
 								startIcon={<LogoutIcon />}
 								onClick={signOut}
 								sx={{
-									border: "2px solid #E91E8C",
+									border: "2px solid #e3242b",
 									borderRadius: "30px",
-									color: "#E91E8C",
+									color: "#e3242b",
 									px: 3,
 									py: 1,
 									fontFamily: ff,
 									fontWeight: 600,
 									"&:hover": {
-										backgroundColor: "#E91E8C",
+										backgroundColor: "#e3242b",
 										color: "#fff",
 									},
 								}}
@@ -1835,9 +1512,9 @@ export default function AccountPage() {
 					<Box>
 						{ordersLoading ? (
 							<Box sx={{ textAlign: "center", py: 6 }}>
-								<CircularProgress sx={{ color: "#E91E8C" }} />
+								<CircularProgress sx={{ color: "#e3242b" }} />
 							</Box>
-						) : otherOrders.length === 0 ? (
+						) : orders.length === 0 ? (
 							<Box sx={{ textAlign: "center", py: 6 }}>
 								<ReceiptLongOutlinedIcon
 									sx={{ fontSize: 48, color: "#ccc", mb: 1 }}
@@ -1851,18 +1528,18 @@ export default function AccountPage() {
 									Orders placed while signed in will appear here.
 								</Typography>
 								<Button
-									onClick={() => navigate("/products")}
+									onClick={() => navigate("/shop")}
 									sx={{
 										mt: 2,
-										border: "2px solid #E91E8C",
+										border: "2px solid #e3242b",
 										borderRadius: "30px",
-										color: "#E91E8C",
+										color: "#e3242b",
 										px: 3,
 										py: 1,
 										fontFamily: ff,
 										fontWeight: 600,
 										"&:hover": {
-											backgroundColor: "#E91E8C",
+											backgroundColor: "#e3242b",
 											color: "#fff",
 										},
 									}}
@@ -1871,129 +1548,12 @@ export default function AccountPage() {
 								</Button>
 							</Box>
 						) : (
-							otherOrders.map((order) => (
+							orders.map((order) => (
 								<OrderCard
 									key={order.id}
 									order={order}
 									rated={!!ratedOrders[order.id]}
 									onRate={() => setRateDialog(order)}
-									onReorder={() => handleReorder(order)}
-								/>
-							))
-						)}
-					</Box>
-				)}
-
-				{/* ── Appointments Tab ── */}
-				{tabIndex === 2 && (
-					<Box>
-						{/* Re-booking prompt */}
-						{showRebookPrompt && (
-							<Box
-								sx={{
-									mb: 3,
-									p: 2.5,
-									borderRadius: 3,
-									background:
-										"linear-gradient(135deg, #FCE4EC 0%, #F8BBD9 100%)",
-									border: "1.5px solid #F48FB1",
-									display: "flex",
-									alignItems: "center",
-									gap: 2,
-									flexWrap: "wrap",
-								}}
-							>
-								<Box sx={{ flex: 1, minWidth: 200 }}>
-									<Typography
-										sx={{
-											fontFamily: ff,
-											fontWeight: 700,
-											fontSize: "1rem",
-											color: "#C2185B",
-											mb: 0.3,
-										}}
-									>
-										💅 Ready for your next appointment?
-									</Typography>
-									<Typography
-										sx={{
-											fontSize: "0.85rem",
-											color: "var(--text-muted)",
-											lineHeight: 1.5,
-										}}
-									>
-										You’ve completed a session — treat yourself again
-										and keep your nails looking amazing!
-									</Typography>
-								</Box>
-								<Button
-									onClick={() => navigate("/services")}
-									sx={{
-										backgroundColor: "#E91E8C",
-										color: "#fff",
-										borderRadius: "30px",
-										px: 3,
-										py: 1,
-										fontFamily: ff,
-										fontWeight: 600,
-										fontSize: "0.88rem",
-										whiteSpace: "nowrap",
-										"&:hover": { backgroundColor: "#C2185B" },
-									}}
-								>
-									Book Again
-								</Button>
-							</Box>
-						)}
-						{ordersLoading ? (
-							<Box sx={{ textAlign: "center", py: 6 }}>
-								<CircularProgress sx={{ color: "#E91E8C" }} />
-							</Box>
-						) : serviceOrders.length === 0 ? (
-							<Box sx={{ textAlign: "center", py: 6 }}>
-								<EventNoteIcon
-									sx={{ fontSize: 48, color: "#ccc", mb: 1 }}
-								/>
-								<Typography sx={{ color: "#999" }}>
-									No appointments yet.
-								</Typography>
-								<Typography
-									sx={{ color: "#aaa", fontSize: "0.85rem", mt: 0.5 }}
-								>
-									Appointments booked while signed in will appear here.
-								</Typography>
-								<Button
-									onClick={() => navigate("/services")}
-									sx={{
-										mt: 2,
-										border: "2px solid #E91E8C",
-										borderRadius: "30px",
-										color: "#E91E8C",
-										px: 3,
-										py: 1,
-										fontFamily: ff,
-										fontWeight: 600,
-										"&:hover": {
-											backgroundColor: "#E91E8C",
-											color: "#fff",
-										},
-									}}
-								>
-									Browse Nail Services
-								</Button>
-							</Box>
-						) : (
-							serviceOrders.map((order) => (
-								<OrderCard
-									key={order.id}
-									order={order}
-									rated={!!ratedOrders[order.id]}
-									onRate={() => setRateDialog(order)}
-									onReschedule={() =>
-										navigate("/reschedule", {
-											state: { orderId: order.id },
-										})
-									}
 									onCancel={() => setCancelDialog(order)}
 									onEdit={() => handleOpenEditOrder(order)}
 								/>
@@ -2003,7 +1563,7 @@ export default function AccountPage() {
 				)}
 
 				{/* ── Wishlist Tab ── */}
-				{tabIndex === 3 && (
+				{tabIndex === 2 && (
 					<Box>
 						{wishlist.length === 0 ? (
 							<Box sx={{ textAlign: "center", py: 6 }}>
@@ -2024,17 +1584,17 @@ export default function AccountPage() {
 									Tap the heart icon on products to save them here.
 								</Typography>
 								<Button
-									onClick={() => navigate("/products")}
+									onClick={() => navigate("/shop")}
 									sx={{
-										border: "2px solid #E91E8C",
+										border: "2px solid #e3242b",
 										borderRadius: "30px",
-										color: "#E91E8C",
+										color: "#e3242b",
 										px: 3,
 										py: 1,
 										fontFamily: ff,
 										fontWeight: 600,
 										"&:hover": {
-											backgroundColor: "#E91E8C",
+											backgroundColor: "#e3242b",
 											color: "#fff",
 										},
 									}}
@@ -2053,7 +1613,7 @@ export default function AccountPage() {
 										p: 2,
 										mb: 1.5,
 										borderRadius: 3,
-										border: "1px solid #F0C0D0",
+										border: "1px solid #E8D5B0",
 										backgroundColor: "#fff",
 										transition: "box-shadow 0.2s ease",
 										"&:hover": {
@@ -2063,7 +1623,7 @@ export default function AccountPage() {
 								>
 									<Box
 										onClick={() =>
-											navigate("/products", {
+											navigate("/shop", {
 												state: { categoryId: item.categoryId },
 											})
 										}
@@ -2106,7 +1666,7 @@ export default function AccountPage() {
 												size="small"
 												sx={{
 													mt: 0.5,
-													backgroundColor: "#E91E8C",
+													backgroundColor: "#e3242b",
 													color: "#fff",
 													fontFamily: ff,
 													fontWeight: 700,
@@ -2118,7 +1678,7 @@ export default function AccountPage() {
 									<Tooltip title="View product">
 										<IconButton
 											onClick={() =>
-												navigate("/products", {
+												navigate("/shop", {
 													state: { categoryId: item.categoryId },
 												})
 											}
@@ -2148,7 +1708,7 @@ export default function AccountPage() {
 											}}
 											sx={{
 												color: "#999",
-												"&:hover": { color: "#E91E8C" },
+												"&:hover": { color: "#e3242b" },
 											}}
 										>
 											<ShoppingCartOutlinedIcon />
@@ -2161,7 +1721,7 @@ export default function AccountPage() {
 											}
 											sx={{
 												color: "#ccc",
-												"&:hover": { color: "#E91E8C" },
+												"&:hover": { color: "#e3242b" },
 											}}
 										>
 											<DeleteOutlineIcon />
@@ -2204,11 +1764,7 @@ export default function AccountPage() {
 							variant="h6"
 							sx={{ fontFamily: ff, fontWeight: 700, color: "#d32f2f" }}
 						>
-							Cancel{" "}
-							{cancelDialog?.type === "service"
-								? "Appointment"
-								: "Order"}
-							?
+							Cancel Order?
 						</Typography>
 					</DialogTitle>
 					<DialogContent>
@@ -2226,12 +1782,6 @@ export default function AccountPage() {
 									cancelDialog?.items?.[0]?.name ||
 									"this item"}
 							</strong>
-							{cancelDialog?.appointmentDate ? (
-								<>
-									{" "}
-									on <strong>{cancelDialog.appointmentDate}</strong>
-								</>
-							) : null}
 							. This action cannot be undone. Please tell us why:
 						</Typography>
 						<FormControl
@@ -2252,10 +1802,10 @@ export default function AccountPage() {
 								sx={{ fontFamily: ff, borderRadius: 2 }}
 							>
 								<MenuItem
-									value="Wrong order / appointment booked"
+									value="Wrong item / order placed"
 									sx={{ fontFamily: ff }}
 								>
-									Wrong order / appointment booked
+									Wrong item / order placed
 								</MenuItem>
 								<MenuItem
 									value="Price too high"
@@ -2331,13 +1881,10 @@ export default function AccountPage() {
 								textTransform: "none",
 							}}
 						>
-							Keep{" "}
-							{cancelDialog?.type === "service"
-								? "Appointment"
-								: "Order"}
+							Keep Order
 						</Button>
 						<Button
-							onClick={handleCancelAppointment}
+							onClick={handleCancelOrder}
 							disabled={
 								cancelLoading ||
 								!cancelReason ||
@@ -2597,12 +2144,7 @@ export default function AccountPage() {
 					PaperProps={{ sx: { borderRadius: 4 } }}
 				>
 					<DialogTitle sx={{ fontFamily: ff, fontWeight: 700, pb: 0.5 }}>
-						Edit{" "}
-						{editOrderDialog?.type === "service" ||
-						editOrderDialog?.type === "mixed"
-							? "Appointment"
-							: "Order"}{" "}
-						Details
+						Edit Order Details
 						<Typography
 							sx={{
 								fontSize: "0.78rem",
@@ -2697,16 +2239,16 @@ export default function AccountPage() {
 							onClick={handleEditOrderSave}
 							disabled={editOrderSaving}
 							sx={{
-								backgroundColor: "#E91E8C",
+								backgroundColor: "#e3242b",
 								color: "#fff",
 								borderRadius: "20px",
 								px: 3,
 								fontFamily: ff,
 								fontWeight: 600,
 								textTransform: "none",
-								"&:hover": { backgroundColor: "#C2185B" },
+								"&:hover": { backgroundColor: "#b81b21" },
 								"&.Mui-disabled": {
-									backgroundColor: "#F0C0D0",
+									backgroundColor: "#E8D5B0",
 									color: "#fff",
 								},
 							}}
@@ -2794,13 +2336,13 @@ export default function AccountPage() {
 						<Button
 							onClick={saveEditProfile}
 							sx={{
-								backgroundColor: "#E91E8C",
+								backgroundColor: "#e3242b",
 								color: "#fff",
 								borderRadius: "20px",
 								px: 3,
 								fontFamily: ff,
 								fontWeight: 600,
-								"&:hover": { backgroundColor: "#C2185B" },
+								"&:hover": { backgroundColor: "#b81b21" },
 							}}
 						>
 							Save
@@ -2808,581 +2350,336 @@ export default function AccountPage() {
 					</DialogActions>
 				</Dialog>
 
-				{/* ── Nail Sizes Dialog ── */}
+				{/* ── Rate Dialog ── */}
+				<RateDialog
+					open={!!rateDialog}
+					order={rateDialog}
+					userName={user?.displayName || ""}
+					onClose={() => setRateDialog(null)}
+					onSubmitted={(orderId) => {
+						setRatedOrders((prev) => ({ ...prev, [orderId]: true }));
+						setRateDialog(null);
+						if (user?.uid)
+							incrementUserReviewCount(user.uid).catch(() => {});
+						showToast(
+							"Thank you! Your review has been submitted.",
+							"success",
+						);
+					}}
+				/>
+
+				{/* ── Edit Profile Dialog ── */}
 				<Dialog
-					open={nailSizesOpen}
-					onClose={() => setNailSizesOpen(false)}
-					maxWidth="sm"
+					open={editOpen}
+					onClose={() => setEditOpen(false)}
+					maxWidth="xs"
 					fullWidth
 					PaperProps={{ sx: { borderRadius: 3 } }}
 				>
-					<DialogTitle sx={{ fontFamily: ff, fontWeight: 700, pb: 0 }}>
-						My Nail Sizes
-						<Typography
-							sx={{
-								fontSize: "0.8rem",
-								color: "#777",
-								mt: 0.4,
-								fontFamily: ff,
-								fontWeight: 400,
-								lineHeight: 1.5,
-							}}
-						>
-							{nailSizesFromOrders
-								? "Pulled from your last order — edit and save to update."
-								: "Measure each nail bed at its widest point using a ruler or tape measure."}
-						</Typography>
+					<DialogTitle sx={{ fontFamily: ff, fontWeight: 700 }}>
+						Edit Profile
 					</DialogTitle>
-					<DialogContent sx={{ pt: "12px !important" }}>
-						{/* Nail bed sizes — per finger in mm */}
-						<NailBedSizeInput
-							value={nailForm.nailBedSize}
-							onChange={(val) => {
-								const autoSize = computePresetSize(val);
-								setNailForm((f) => ({
+					<DialogContent sx={{ pt: "8px !important" }}>
+						<TextField
+							fullWidth
+							label="Display Name"
+							value={editForm.displayName}
+							onChange={(e) =>
+								setEditForm((f) => ({
 									...f,
-									nailBedSize: val,
-									nailTipSize: autoSize || f.nailTipSize,
-								}));
-							}}
+									displayName: e.target.value,
+								}))
+							}
+							size="small"
+							sx={inputSx}
 						/>
-
-						{/* Nail tip size */}
-						<Box sx={{ mt: 2.5 }}>
-							<Typography
-								sx={{
-									fontFamily: ff,
-									fontWeight: 700,
-									fontSize: "0.85rem",
-									color: "var(--text-purple)",
-									mb: 1,
-								}}
-							>
-								Nail Tip Size
-							</Typography>
-							<Typography
-								sx={{ fontSize: "0.78rem", color: "#777", mb: 1.2 }}
-							>
-								Auto-calculated from your nail bed sizes above. You can
-								override if needed.
-							</Typography>
-							<Box sx={{ display: "flex", gap: 1 }}>
-								{["XS", "S", "M", "L"].map((size) => (
-									<Box
-										key={size}
-										onClick={() =>
-											setNailForm((f) => ({
-												...f,
-												nailTipSize:
-													f.nailTipSize === size ? "" : size,
-											}))
-										}
-										sx={{
-											flex: 1,
-											textAlign: "center",
-											py: 1.2,
-											borderRadius: 2,
-											cursor: "pointer",
-											border:
-												nailForm.nailTipSize === size
-													? "2px solid #E91E8C"
-													: "2px solid #F0C0D0",
-											backgroundColor:
-												nailForm.nailTipSize === size
-													? "#FFF0F5"
-													: "#fff",
-											transition: "all 0.2s ease",
-											"&:hover": { borderColor: "#E91E8C" },
-										}}
-									>
-										<Typography
-											sx={{
-												fontFamily: ff,
-												fontWeight: 700,
-												fontSize: "0.95rem",
-												color:
-													nailForm.nailTipSize === size
-														? "#E91E8C"
-														: "#333",
-											}}
-										>
-											{size}
-										</Typography>
-									</Box>
-								))}
-							</Box>
-						</Box>
+						<TextField
+							fullWidth
+							label="Phone Number"
+							value={editForm.phone}
+							onChange={(e) =>
+								setEditForm((f) => ({ ...f, phone: e.target.value }))
+							}
+							size="small"
+							placeholder="+234 xxx xxx xxxx"
+							sx={inputSx}
+						/>
+						<TextField
+							fullWidth
+							label="Address"
+							value={editForm.address}
+							onChange={(e) =>
+								setEditForm((f) => ({ ...f, address: e.target.value }))
+							}
+							size="small"
+							multiline
+							rows={2}
+							placeholder="Your delivery / home address"
+							sx={{ ...inputSx, mb: 0 }}
+						/>
 					</DialogContent>
 					<DialogActions sx={{ px: 3, pb: 3 }}>
 						<Button
-							onClick={() => setNailSizesOpen(false)}
+							onClick={() => setEditOpen(false)}
 							sx={{ fontFamily: ff, color: "#777" }}
 						>
 							Cancel
 						</Button>
 						<Button
-							onClick={saveNailSizes}
+							onClick={saveEditProfile}
 							sx={{
-								backgroundColor: "#E91E8C",
+								backgroundColor: "#e3242b",
 								color: "#fff",
 								borderRadius: "20px",
 								px: 3,
 								fontFamily: ff,
 								fontWeight: 600,
-								"&:hover": { backgroundColor: "#C2185B" },
+								"&:hover": { backgroundColor: "#b81b21" },
 							}}
 						>
-							Save Sizes
+							Save
 						</Button>
 					</DialogActions>
 				</Dialog>
+
 			</Container>
 		</Box>
 	);
 }
 
-function RateDialog({ open, order, userName, onClose, onSubmitted }) {
-	const [name, setName] = useState(userName || "");
-	const [rating, setRating] = useState(0);
-	const [occupation, setOccupation] = useState("");
-	const [review, setReview] = useState("");
-	const [submitting, setSubmitting] = useState(false);
+// ─── Rate Dialog ──────────────────────────────────────────────────────────────
+function RateDialog({ open, onClose, order, onSubmit }) {
+	const [rating, setRating] = React.useState(0);
+	const [comment, setComment] = React.useState('');
+	const [submitting, setSubmitting] = React.useState(false);
 
-	useEffect(() => {
-		if (open) {
-			setName(userName || "");
-			setRating(0);
-			setOccupation("");
-			setReview("");
-		}
-	}, [open, userName]);
+	React.useEffect(() => {
+		if (open) { setRating(0); setComment(''); }
+	}, [open]);
 
 	const handleSubmit = async () => {
-		if (!order || rating === 0 || !review.trim()) return;
+		if (!rating) return;
 		setSubmitting(true);
-		const resolvedName = name.trim() || userName;
-		try {
-			const serviceName =
-				order.items?.[0]?.serviceName ||
-				order.items?.[0]?.name ||
-				"Service";
-			await saveTestimonial({
-				name: resolvedName,
-				occupation: occupation.trim() || "Client",
-				service: serviceName,
-				type: (order.type === "service" || order.type === "mixed") ? "appointment" : "purchase",
-				rating,
-				testimonial: review.trim(),
-				avatar: resolvedName.charAt(0).toUpperCase(),
-				orderId: order.id,
-			});
-			onSubmitted(order.id);
-		} catch (err) {
-			console.error("Failed to save review:", err);
-		} finally {
-			setSubmitting(false);
-			setRating(0);
-			setOccupation("");
-			setReview("");
-		}
+		await onSubmit({ orderId: order?.id, rating, comment, type: 'purchase' });
+		setSubmitting(false);
+		onClose();
 	};
 
 	return (
-		<Dialog
-			open={open}
-			onClose={onClose}
-			maxWidth="sm"
-			fullWidth
-			PaperProps={{ sx: { borderRadius: 3 } }}
-		>
-			<DialogTitle
-				sx={{ fontFamily: ff, fontWeight: 700, textAlign: "center", pb: 0.5 }}
-			>
-				Rate Your Experience
+		<Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth
+			PaperProps={{ sx: { borderRadius: 4, p: 1 } }}>
+			<DialogTitle sx={{ fontFamily: '"Georgia", serif', fontWeight: 700 }}>
+				Product Order Review
 			</DialogTitle>
-			<Box sx={{ display: 'flex', justifyContent: 'center', mb: 0.5 }}>
-				<Chip
-					label={order?.type === 'service' || order?.type === 'mixed' ? 'Appointment Review' : 'Product Order Review'}
-					size="small"
-					sx={{
-						backgroundColor: order?.type === 'service' || order?.type === 'mixed' ? '#4A0E4E' : '#E91E8C',
-						color: '#fff',
-						fontFamily: ff,
-						fontWeight: 600,
-						fontSize: '0.72rem',
-					}}
-				/>
-			</Box>
 			<DialogContent>
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "center",
-						gap: 0.5,
-						mb: 2,
-						mt: 1,
-					}}
-				>
-					{[1, 2, 3, 4, 5].map((star) => (
-						<Box
-							key={star}
-							onClick={() => setRating(star)}
-							sx={{ cursor: "pointer" }}
-						>
-							{star <= rating ? (
-								<StarIcon sx={{ color: "#E91E8C", fontSize: 36 }} />
-							) : (
-								<StarBorderIcon
-									sx={{ color: "#E91E8C", fontSize: 36 }}
-								/>
-							)}
-						</Box>
-					))}
+				<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+					<Rating
+						value={rating}
+						onChange={(_, v) => setRating(v)}
+						size="large"
+						sx={{ color: '#e3242b' }}
+					/>
+					<TextField
+						multiline
+						rows={3}
+						label="Your review (optional)"
+						value={comment}
+						onChange={(e) => setComment(e.target.value)}
+						fullWidth
+					/>
 				</Box>
-				<TextField
-					fullWidth
-					label="Your Name"
-					value={name}
-					onChange={(e) => setName(e.target.value)}
-					size="small"
-					sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
-				/>
-				<TextField
-					fullWidth
-					label="Your Occupation (optional)"
-					value={occupation}
-					onChange={(e) => setOccupation(e.target.value)}
-					size="small"
-					sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
-				/>
-				<TextField
-					fullWidth
-					label="Your Review"
-					value={review}
-					onChange={(e) => setReview(e.target.value.slice(0, 350))}
-					multiline
-					rows={3}
-					inputProps={{ maxLength: 350 }}
-					helperText={`${review.length}/350`}
-					sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
-				/>
 			</DialogContent>
-			<DialogActions sx={{ justifyContent: "center", pb: 3 }}>
-				<Button onClick={onClose} sx={{ fontFamily: ff, color: "#777" }}>
-					Cancel
-				</Button>
+			<DialogActions sx={{ px: 3, pb: 2 }}>
+				<Button onClick={onClose} sx={{ color: '#999' }}>Cancel</Button>
 				<Button
 					onClick={handleSubmit}
-					disabled={submitting || rating === 0 || !review.trim()}
-					sx={{
-						backgroundColor: "#E91E8C",
-						color: "#fff",
-						borderRadius: "30px",
-						px: 4,
-						py: 1,
-						fontFamily: ff,
-						fontWeight: 600,
-						"&:hover": { backgroundColor: "#C2185B" },
-						"&.Mui-disabled": {
-							backgroundColor: "#F0C0D0",
-							color: "#fff",
-						},
-					}}
+					disabled={!rating || submitting}
+					variant="contained"
+					sx={{ backgroundColor: '#e3242b', borderRadius: 30, px: 3, fontFamily: '"Georgia", serif', fontWeight: 600, '&:hover': { backgroundColor: '#b81b21' } }}
 				>
-					{submitting ? "Submitting…" : "Submit Review"}
+					{submitting ? 'Submitting...' : 'Submit'}
 				</Button>
 			</DialogActions>
 		</Dialog>
 	);
 }
 
+// ─── Order Steps ──────────────────────────────────────────────────────────────
 const ORDER_STEPS = [
-	{ key: 'pending',    label: 'Placed'         },
-	{ key: 'confirmed',  label: 'Confirmed'       },
-	{ key: 'production', label: 'In Production'   },
-	{ key: 'shipping',   label: 'Shipped'         },
-	{ key: 'received',   label: 'Delivered'       },
+	{ key: 'pending',    label: 'Order Placed'  },
+	{ key: 'confirmed',  label: 'Confirmed'     },
+	{ key: 'production', label: 'In Production' },
+	{ key: 'shipped',    label: 'Shipped'       },
+	{ key: 'delivered',  label: 'Delivered'     },
 ];
 
-function OrderProgressTracker({ status, order }) {
+// ─── Order Progress Tracker ───────────────────────────────────────────────────
+function OrderProgressTracker({ status }) {
 	const activeIdx = (() => {
-		if (status === 'completed' || status === 'received') return 4;
-		if (status === 'shipping') return 3;
+		if (status === 'delivered' || status === 'received' || status === 'completed') return 4;
+		if (status === 'shipped') return 3;
 		if (status === 'production') return 2;
 		if (status === 'confirmed') return 1;
 		return 0;
 	})();
 
-	const deliveryText = (() => {
-		if (!order || !['pending', 'confirmed', 'production'].includes(status)) return null;
-		const isCustom = order.items?.some((i) => i.nailBedSize);
-		const [dMin, dMax] = isCustom ? [4, 7] : [2, 3];
-		const raw = order.createdAt?.toDate ? order.createdAt.toDate() : order.createdAt ? new Date(order.createdAt) : null;
-		if (!raw) return null;
-		const addBizDays = (date, n) => {
-			const d = new Date(date);
-			let count = 0;
-			while (count < n) {
-				d.setDate(d.getDate() + 1);
-				if (d.getDay() !== 0 && d.getDay() !== 6) count++;
-			}
-			return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-		};
-		return `${addBizDays(raw, dMin)} – ${addBizDays(raw, dMax)}`;
-	})();
-
 	return (
-		<Box sx={{ mt: 2, mb: 1 }}>
-			<Box sx={{ display: 'flex', alignItems: 'center' }}>
-				{ORDER_STEPS.map((step, idx) => (
-					<Box key={step.key} sx={{ display: 'flex', alignItems: 'center', flex: idx < ORDER_STEPS.length - 1 ? 1 : 0 }}>
-						<Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-							<Box sx={{
-								width: idx === activeIdx ? 14 : 10,
-								height: idx === activeIdx ? 14 : 10,
-								borderRadius: '50%',
-								backgroundColor: idx <= activeIdx ? '#E91E8C' : '#e0e0e0',
-								border: idx === activeIdx ? '2px solid #C2185B' : 'none',
-								flexShrink: 0,
-							}} />
-						</Box>
-						{idx < ORDER_STEPS.length - 1 && (
-							<Box sx={{ flex: 1, height: 2, backgroundColor: idx < activeIdx ? '#E91E8C' : '#e0e0e0', mx: 0.3 }} />
-						)}
-					</Box>
+		<Box sx={{ mt: 2 }}>
+			<Stepper activeStep={activeIdx} alternativeLabel>
+				{ORDER_STEPS.map((step, i) => (
+					<Step key={step.key} completed={i <= activeIdx}>
+						<StepLabel
+							StepIconProps={{
+								sx: {
+									color: i <= activeIdx ? '#e3242b !important' : undefined,
+									'&.Mui-completed': { color: '#e3242b' },
+									'&.Mui-active':    { color: '#e3242b' },
+								},
+							}}
+						>
+							<Typography sx={{ fontSize: '0.7rem', color: i <= activeIdx ? '#e3242b' : '#aaa' }}>
+								{step.label}
+							</Typography>
+						</StepLabel>
+					</Step>
 				))}
-			</Box>
-			<Box sx={{ display: 'flex', mt: 0.8 }}>
-				{ORDER_STEPS.map((step, idx) => (
-					<Box key={step.key} sx={{ flex: idx < ORDER_STEPS.length - 1 ? 1 : 0, textAlign: idx === 0 ? 'left' : idx === ORDER_STEPS.length - 1 ? 'right' : 'center' }}>
-						<Typography sx={{ fontSize: '0.62rem', fontWeight: idx === activeIdx ? 700 : 400, color: idx <= activeIdx ? '#E91E8C' : '#aaa', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
-							{step.label}
-						</Typography>
-					</Box>
-				))}
-			</Box>
-			{deliveryText && (
-				<Typography sx={{ fontSize: '0.68rem', color: '#888', mt: 0.6, textAlign: 'center' }}>
-					Est. delivery: {deliveryText}
+			</Stepper>
+
+			{(status === 'shipped') && (
+				<Typography sx={{ mt: 1, fontSize: '0.78rem', color: '#888', textAlign: 'center' }}>
+					Estimated delivery: 5&ndash;10 business days after shipping
 				</Typography>
 			)}
 		</Box>
 	);
 }
 
-function OrderCard({ order, rated, onRate, onReschedule, onCancel, onEdit, onReorder }) {
+// ─── Order Card ───────────────────────────────────────────────────────────────
+function OrderCard({ order, onCancel, onEdit, onRate }) {
+	const isCancelled = order.status === 'cancelled';
+	const isDelivered = ['delivered', 'received', 'completed'].includes(order.status);
+	const isPending   = order.status === 'pending';
+
+	const typeLabel = (() => {
+		const t = order.type || '';
+		if (t === 'nicheCollection' || t === 'product') return 'Leather Product';
+		return 'Order';
+	})();
+
 	const statusColor = {
-		pending: "#FF9800",
-		confirmed: "#2196F3",
-		production: "#9C27B0",
-		shipping: "#1976D2",
-		received: "#4CAF50",
-		completed: "#4CAF50",
-		"in progress": "#9C27B0",
-		rescheduled: "#FF9800",
-		cancelled: "#f44336",
-		"no-show": "#9E9E9E",
-	};
+		pending:    '#f59e0b',
+		confirmed:  '#3b82f6',
+		production: '#8b5cf6',
+		shipped:    '#06b6d4',
+		delivered:  '#10b981',
+		received:   '#10b981',
+		completed:  '#10b981',
+		cancelled:  '#ef4444',
+	}[order.status] || '#999';
+
 	return (
 		<Box
 			sx={{
+				border: '1px solid #E8D5B0',
+				borderRadius: 3,
 				p: 2.5,
 				mb: 2,
-				borderRadius: 3,
-				border: "1px solid #F0C0D0",
-				backgroundColor: "#fff",
+				backgroundColor: isCancelled ? '#fff5f5' : '#fff',
+				opacity: isCancelled ? 0.85 : 1,
+				transition: 'box-shadow 0.2s',
+				'&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.08)' },
 			}}
 		>
-			<Box
-				sx={{
-					display: "flex",
-					justifyContent: "space-between",
-					alignItems: "center",
-					mb: 1,
-				}}
-			>
-				<Chip
-					label={order.type}
-					size="small"
-					sx={{
-						backgroundColor: "#4A0E4E",
-						color: "#fff",
-						fontWeight: 700,
-						fontSize: "0.7rem",
-						textTransform: "capitalize",
-					}}
-				/>
-				<Chip
-					label={order.status}
-					size="small"
-					sx={{
-						backgroundColor: statusColor[order.status] || "#999",
-						color: "#fff",
-						fontWeight: 600,
-						fontSize: "0.7rem",
-						textTransform: "capitalize",
-					}}
-				/>
-			</Box>
-			<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: "1rem" }}>
-				{formatNaira((order.total || 0) + (order.extraCharge || 0))}
-			</Typography>
-			{order.extraCharge > 0 && (
-				<Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5, flexWrap: "wrap" }}>
-					<Chip
-						label={`+${formatNaira(order.extraCharge)} extra charge`}
-						size="small"
-						sx={{
-							backgroundColor: "#FFF3E0",
-							color: "#E65100",
-							fontWeight: 700,
-							fontSize: "0.68rem",
-							border: "1px solid #FFCC02",
-						}}
-					/>
-					{order.extraChargeReason && (
-						<Typography sx={{ fontSize: "0.75rem", color: "#888", fontStyle: "italic" }}>
-							{order.extraChargeReason}
-						</Typography>
-					)}
-				</Box>
-			)}
-			<Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 0.3 }}>
-				<Typography sx={{ color: "#777", fontSize: "0.82rem" }}>
-					Placed: {formatDate(order.createdAt)}
-				</Typography>
-				{order.updatedAt && formatDate(order.updatedAt) !== formatDate(order.createdAt) && (
-					<Typography sx={{ color: "#aaa", fontSize: "0.82rem" }}>
-						Updated: {formatDate(order.updatedAt)}
+			{/* Header row */}
+			<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+				<Box>
+					<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1rem', color: '#1a1a1a' }}>
+						Order #{order.id?.slice(-6).toUpperCase()}
 					</Typography>
-				)}
+					<Typography sx={{ fontSize: '0.78rem', color: '#888', mt: 0.3 }}>
+						{order.createdAt?.toDate
+							? order.createdAt.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+							: 'Date unknown'}
+					</Typography>
+				</Box>
+				<Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+					<Chip
+						label={typeLabel}
+						size="small"
+						sx={{ backgroundColor: '#FFF8F0', color: '#c9792e', fontWeight: 600, fontSize: '0.72rem', borderRadius: 2 }}
+					/>
+					<Chip
+						label={order.status?.charAt(0).toUpperCase() + order.status?.slice(1) || 'Pending'}
+						size="small"
+						sx={{ backgroundColor: statusColor + '22', color: statusColor, fontWeight: 700, fontSize: '0.72rem', borderRadius: 2 }}
+					/>
+				</Box>
 			</Box>
-			{order.type !== "service" && !["cancelled","rescheduled","no-show"].includes(order.status) && (
-				<OrderProgressTracker status={order.status} order={order} />
-			)}
-			{order.items?.length > 0 && (
-				<Box sx={{ mt: 1 }}>
+
+			{/* Items */}
+			{Array.isArray(order.items) && order.items.length > 0 && (
+				<Box sx={{ mb: 1.5 }}>
 					{order.items.map((item, i) => (
-						<Typography
-							key={i}
-							sx={{ color: "var(--text-muted)", fontSize: "0.82rem" }}
-						>
-							{item.name || item.serviceName || "Item"}
-							{item.quantity > 1 ? ` x${item.quantity}` : ""}
-						</Typography>
+						<Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#555', py: 0.3 }}>
+							<Typography sx={{ fontSize: '0.85rem' }}>
+								{item.name || item.productName || 'Item'}{item.quantity ? ` x${item.quantity}` : ''}
+							</Typography>
+							{item.price && (
+								<Typography sx={{ fontSize: '0.85rem', fontWeight: 600 }}>
+									\u20a6{Number(item.price).toLocaleString()}
+								</Typography>
+							)}
+						</Box>
 					))}
 				</Box>
 			)}
-			{(order.status === "received" || order.status === "completed") && (
-				<Box sx={{ mt: 1.5 }}>
-					<Button
-						size="small"
-						onClick={onRate}
-						disabled={rated}
-						sx={{
-							border: "1.5px solid #E91E8C",
-							borderRadius: "20px",
-							color: rated ? "#999" : "#E91E8C",
-							borderColor: rated ? "#ccc" : "#E91E8C",
-							px: 2,
-							fontFamily: ff,
-							fontWeight: 600,
-							fontSize: "0.78rem",
-							textTransform: "none",
-							"&:hover": rated
-								? {}
-								: { backgroundColor: "#E91E8C", color: "#fff" },
-						}}
-					>
-						{rated ? "Rated ✓" : "Rate this"}
-					</Button>
+
+			{/* Total */}
+			{order.total && (
+				<Box sx={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E8D5B0', pt: 1, mt: 1 }}>
+					<Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>Total</Typography>
+					<Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#e3242b' }}>
+						\u20a6{Number(order.total).toLocaleString()}
+					</Typography>
 				</Box>
 			)}
-		{onReorder && order.items?.some((i) => i.kind === 'pressOn') &&
-		['confirmed', 'production', 'shipping', 'received', 'completed'].includes(order.status) && (
-		<Box sx={{ mt: 1.5 }}>
-			<Button
-				size="small"
-				startIcon={<ReplayIcon sx={{ fontSize: 14 }} />}
-				onClick={onReorder}
-				sx={{
-					border: '1.5px solid #9C27B0',
-					borderRadius: '20px',
-					color: '#9C27B0',
-					px: 2,
-					fontFamily: ff,
-					fontWeight: 600,
-					fontSize: '0.78rem',
-					textTransform: 'none',
-					'&:hover': { backgroundColor: '#9C27B0', color: '#fff' },
-				}}
-			>
-				Reorder
-			</Button>
-		</Box>
-	)}
-	{order.status === 'pending' && onEdit && (
-		<Box sx={{ mt: 1.5 }}>
-			<Button
-				size="small"
-				startIcon={<EditIcon sx={{ fontSize: 14 }} />}
-				onClick={onEdit}
-				sx={{
-					border: '1.5px solid #E91E8C',
-					borderRadius: '20px',
-					color: '#E91E8C',
-					px: 2,
-					fontFamily: ff,
-					fontWeight: 600,
-					fontSize: '0.78rem',
-					textTransform: 'none',
-					'&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
-				}}
-			>
-				Edit Details
-			</Button>
-		</Box>
-	)}
-	{(order.type === 'service' || order.type === 'mixed') && (order.status === 'pending' || order.status === 'confirmed') && (
-			<Box sx={{ mt: 1.5, display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-				{order.status === 'confirmed' && (
+
+			{/* Progress tracker */}
+			{!isCancelled && <OrderProgressTracker status={order.status} />}
+
+			{/* Action buttons */}
+			<Box sx={{ display: 'flex', gap: 1.5, mt: 2, flexWrap: 'wrap' }}>
+				{isPending && !isCancelled && (
+					<>
+						<Button
+							size="small"
+							variant="outlined"
+							onClick={() => onEdit(order)}
+							sx={{ borderRadius: 30, borderColor: '#e3242b', color: '#e3242b', fontSize: '0.78rem', '&:hover': { backgroundColor: '#fff0f0' } }}
+						>
+							Edit Order
+						</Button>
+						<Button
+							size="small"
+							variant="outlined"
+							onClick={() => onCancel(order)}
+							sx={{ borderRadius: 30, borderColor: '#ef4444', color: '#ef4444', fontSize: '0.78rem', '&:hover': { backgroundColor: '#fff5f5' } }}
+						>
+							Cancel Order
+						</Button>
+					</>
+				)}
+				{isDelivered && !order.rated && (
 					<Button
 						size="small"
-						onClick={onReschedule}
-						sx={{ border: '1.5px solid #4A0E4E', borderRadius: '20px', color: 'var(--text-purple)', px: 2, fontFamily: ff, fontWeight: 600, fontSize: '0.78rem', textTransform: 'none', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' } }}
+						variant="contained"
+						onClick={() => onRate(order)}
+						sx={{ borderRadius: 30, backgroundColor: '#e3242b', fontSize: '0.78rem', '&:hover': { backgroundColor: '#b81b21' } }}
 					>
-						Reschedule
+						Rate Order
 					</Button>
 				)}
-				<Button
-					size="small"
-					onClick={onCancel}
-					sx={{ border: '1.5px solid #d32f2f', borderRadius: '20px', color: '#d32f2f', px: 2, fontFamily: ff, fontWeight: 600, fontSize: '0.78rem', textTransform: 'none', '&:hover': { backgroundColor: '#d32f2f', color: '#fff' } }}
-				>
-					Cancel
-				</Button>
 			</Box>
-		)}
-		{/* Reschedule details */}
-		{order.status === 'rescheduled' && (
-			<Box sx={{ mt: 1.5, p: 1.2, borderRadius: 2, backgroundColor: '#FFF3E0', border: '1px solid #FFCC02' }}>
-				{order.previousDate && (
-					<Typography sx={{ fontSize: '0.75rem', color: '#777' }}>
-						Originally: {order.previousDate}
-					</Typography>
-				)}
-				{order.appointmentDate && (
-					<Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#2e7d32', mt: 0.2 }}>
-						New date: {order.appointmentDate}
-					</Typography>
-				)}
-				{order.rescheduleReason && (
-					<Typography sx={{ fontSize: '0.75rem', color: 'var(--text-muted)', mt: 0.3 }}>
-						Reason: {order.rescheduleReason}
-					</Typography>
-				)}
-			</Box>
-		)}
 		</Box>
 	);
 }

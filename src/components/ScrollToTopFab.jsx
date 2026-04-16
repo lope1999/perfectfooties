@@ -22,12 +22,12 @@ export default function ScrollToTopFab({ threshold = 400 }) {
             position: 'fixed',
             bottom: { xs: 80, md: 24 },
             right: 16,
-            backgroundColor: '#E91E8C',
+            backgroundColor: '#e3242b',
             color: '#fff',
             zIndex: 1300,
             boxShadow: '0 4px 16px rgba(233,30,140,0.4)',
             '&:hover': {
-              backgroundColor: '#C2185B',
+              backgroundColor: '#b81b21',
               boxShadow: '0 6px 20px rgba(233,30,140,0.55)',
             },
           }}

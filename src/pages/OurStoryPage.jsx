@@ -28,7 +28,7 @@ export default function OurStoryPage() {
 							<Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
 								<AutoAwesomeIcon
 									sx={{
-										color: "#E91E8C",
+										color: "#e3242b",
 										fontSize: { xs: "1rem", sm: "1.1rem" },
 										mr: 1,
 									}}
@@ -38,7 +38,7 @@ export default function OurStoryPage() {
 									sx={{
 										fontFamily: '"Georgia", serif',
 										fontWeight: 500,
-										color: "#4b0050",
+										color: "var(--text-purple)",
 										fontSize: {
 											xs: "0.80rem",
 											sm: "0.90rem",
@@ -47,8 +47,8 @@ export default function OurStoryPage() {
 										letterSpacing: "0.02em",
 									}}
 								>
-									Chizzysstyles is the parent brand of Chizzysnails, a
-									nail art and beauty brand founded by Chizoba.
+									PerfectFooties is a handcrafted leather goods brand rooted
+									in quality, precision, and lasting style.
 								</Typography>
 							</Box>
 
@@ -60,14 +60,14 @@ export default function OurStoryPage() {
 									mb: 3,
 								}}
 							>
-								What began as a small interest in nail artistry has
-								grown into a purpose-driven passion. Chizzysnails was
-								created not just to design beautiful nails, but to help
-								other women feel confident, polished, and proud of their
-								hands — one set at a time. From humble beginnings
-								experimenting with designs in a Lagos apartment, the
-								vision has steadily evolved into a brand centered on
-								beauty, self-expression, and confidence.
+								What began as a deep appreciation for fine leatherwork has
+								grown into a purpose-driven craft. PerfectFooties was built
+								not just to make beautiful goods, but to create pieces that
+								carry meaning — built to last, made to be worn, and designed
+								to tell a story. From humble beginnings experimenting with
+								leather in a Lagos workshop, the vision has steadily evolved
+								into a brand centered on quality, self-expression, and
+								enduring style.
 							</Typography>
 
 							<Typography
@@ -78,12 +78,12 @@ export default function OurStoryPage() {
 									mb: 3,
 								}}
 							>
-								Chizoba, the founder, is a self-taught nail artist whose
-								journey has been shaped by curiosity, consistency, and a
-								genuine love for the craft. She continuously learns,
-								practices, and refines her skills to stay current with
-								trends and perfect every detail, believing that growth
-								never stops in the beauty industry.
+								Every piece — whether a pair of shoes, a belt, a bag, or a
+								wallet — is handcrafted with care and intention. We source
+								quality leather, work with skilled hands, and take time with
+								every stitch and edge. We believe that true craftsmanship
+								cannot be rushed, and that the details are what set a piece
+								apart from the ordinary.
 							</Typography>
 
 							<Typography
@@ -94,17 +94,17 @@ export default function OurStoryPage() {
 									mb: 3,
 								}}
 							>
-								Today, Chizzysnails offers a full range of services —
-								from Gel X and hard gel extensions to custom press-on
-								nails. Every appointment is a personalised experience
-								because nails are more than beauty — they are
-								confidence, mood, personality, and style expressed at
-								your fingertips.
+								Today, PerfectFooties offers a growing range of handmade
+								leather goods — from custom shoes and boots to bags, belts,
+								and accessories. Every order is a personal experience because
+								leather goods are more than fashion — they are character,
+								utility, and craftsmanship expressed in the things you carry
+								every day.
 							</Typography>
 
 							<Typography
 								sx={{
-									color: "#E91E8C",
+									color: "#e3242b",
 									fontSize: "1.15rem",
 									lineHeight: 1.9,
 									fontWeight: 600,
@@ -112,8 +112,8 @@ export default function OurStoryPage() {
 									fontStyle: "italic",
 								}}
 							>
-								"Gloss and grace in every set — that is the Chizzystyles
-								promise."
+								"Crafted with intention, built to last — that is the
+								PerfectFooties promise."
 							</Typography>
 						</ScrollReveal>
 					</Grid>
@@ -124,7 +124,7 @@ export default function OurStoryPage() {
 							<Box
 								component="img"
 								src="/images/story/founders-2.jpeg"
-								alt="Woman planning with laptop"
+								alt="Craftsman at work"
 								sx={{
 									width: "100%",
 									borderRadius: 4,

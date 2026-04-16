@@ -102,7 +102,7 @@ export default function CancellationsSection() {
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-          <CircularProgress sx={{ color: '#E91E8C' }} />
+          <CircularProgress sx={{ color: '#e3242b' }} />
         </Box>
       ) : filtered.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 8 }}>

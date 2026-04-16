@@ -20,7 +20,9 @@ import ImageIcon from '@mui/icons-material/Image';
 import ClearIcon from '@mui/icons-material/Clear';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../lib/firebase';
-import { pressOnNailShapes, pressOnLengths } from '../../data/products';
+// Kept for admin until Phase 5 updates the product form for leather goods
+const pressOnNailShapes = ['Almond', 'Coffin', 'Stiletto', 'Square', 'Round', 'Oval', 'Ballerina'];
+const pressOnLengths = ['Short (S)', 'Medium (M)', 'Long (L)', 'XL (Extra Long)'];
 
 const fontFamily = '"Georgia", serif';
 
@@ -218,14 +220,14 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
               onDragOver={(e) => e.preventDefault()}
               sx={{
                 border: '2px dashed',
-                borderColor: uploading ? '#E91E8C' : form.image ? '#4A0E4E' : '#F0C0D0',
+                borderColor: uploading ? '#e3242b' : form.image ? '#006666' : '#E8D5B0',
                 borderRadius: 2,
                 p: 2,
                 textAlign: 'center',
                 cursor: uploading ? 'default' : 'pointer',
                 backgroundColor: form.image ? '#FFF5F8' : '#FAFAFA',
                 transition: 'all 0.2s',
-                '&:hover': { borderColor: '#E91E8C', backgroundColor: '#FFF5F8' },
+                '&:hover': { borderColor: '#e3242b', backgroundColor: '#FFF5F8' },
                 position: 'relative',
                 minHeight: 100,
                 display: 'flex',
@@ -250,19 +252,19 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
                 </>
               ) : uploading ? (
                 <>
-                  <CircularProgress size={28} sx={{ color: '#E91E8C' }} />
-                  <Typography sx={{ fontFamily, fontSize: '0.82rem', color: '#E91E8C' }}>
+                  <CircularProgress size={28} sx={{ color: '#e3242b' }} />
+                  <Typography sx={{ fontFamily, fontSize: '0.82rem', color: '#e3242b' }}>
                     Uploading… {uploadProgress}%
                   </Typography>
                   <LinearProgress
                     variant="determinate"
                     value={uploadProgress}
-                    sx={{ width: '80%', borderRadius: 1, '& .MuiLinearProgress-bar': { backgroundColor: '#E91E8C' } }}
+                    sx={{ width: '80%', borderRadius: 1, '& .MuiLinearProgress-bar': { backgroundColor: '#e3242b' } }}
                   />
                 </>
               ) : (
                 <>
-                  <CloudUploadIcon sx={{ fontSize: 36, color: '#F0C0D0' }} />
+                  <CloudUploadIcon sx={{ fontSize: 36, color: '#E8D5B0' }} />
                   <Typography sx={{ fontFamily, fontSize: '0.85rem', color: '#888' }}>
                     Click or drag & drop to upload
                   </Typography>
@@ -308,15 +310,15 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
           </Grid>
 
           <Grid item xs={12}>
-            <Box sx={{ display: 'flex', alignItems: 'center', p: 1.5, borderRadius: 2, border: '1px solid #eee', backgroundColor: form.hidden ? '#FFF0F5' : '#fafafa' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', p: 1.5, borderRadius: 2, border: '1px solid #eee', backgroundColor: form.hidden ? '#FFF8F0' : '#fafafa' }}>
               <FormControlLabel
                 control={
                   <Switch
                     checked={form.hidden}
                     onChange={(e) => setForm((prev) => ({ ...prev, hidden: e.target.checked }))}
                     sx={{
-                      '& .MuiSwitch-switchBase.Mui-checked': { color: '#E91E8C' },
-                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#E91E8C' },
+                      '& .MuiSwitch-switchBase.Mui-checked': { color: '#e3242b' },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#e3242b' },
                     }}
                   />
                 }
@@ -446,7 +448,7 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
           onClick={handleSubmit}
           variant="contained"
           disabled={busy || uploading || !form.name || !form.price}
-          sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+          sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
         >
           {product ? 'Update' : 'Add'}
         </Button>

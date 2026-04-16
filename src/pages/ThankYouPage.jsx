@@ -28,7 +28,7 @@ function SummaryRow({ label, value, highlight, strike }) {
         sx={{
           fontSize: '0.84rem',
           fontWeight: highlight ? 700 : 500,
-          color: strike ? '#E91E8C' : highlight ? '#1a1a1a' : '#444',
+          color: strike ? '#e3242b' : highlight ? '#1a1a1a' : '#444',
           textDecoration: strike ? 'none' : 'none',
         }}
       >
@@ -109,8 +109,8 @@ export default function ThankYouPage() {
               width: 90,
               height: 90,
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, #E91E8C22, #9C27B022)',
-              border: '2.5px solid #E91E8C44',
+              background: 'linear-gradient(135deg, #e3242b22, #9C27B022)',
+              border: '2.5px solid #e3242b44',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -124,7 +124,7 @@ export default function ThankYouPage() {
               },
             }}
           >
-            <CheckCircleOutlineIcon sx={{ fontSize: 52, color: '#E91E8C' }} />
+            <CheckCircleOutlineIcon sx={{ fontSize: 52, color: '#e3242b' }} />
           </Box>
 
           <Typography
@@ -132,7 +132,7 @@ export default function ThankYouPage() {
             sx={{
               fontWeight: 800,
               fontSize: { xs: '1.6rem', md: '2rem' },
-              background: 'linear-gradient(135deg, #E91E8C, #9C27B0)',
+              background: 'linear-gradient(135deg, #e3242b, #9C27B0)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               mb: 0.5,
@@ -174,11 +174,11 @@ export default function ThankYouPage() {
             }}
           >
             {isAppointment ? (
-              <CalendarMonthIcon sx={{ fontSize: 20, color: '#E91E8C' }} />
+              <CalendarMonthIcon sx={{ fontSize: 20, color: '#e3242b' }} />
             ) : (
-              <ShoppingBagOutlinedIcon sx={{ fontSize: 20, color: '#E91E8C' }} />
+              <ShoppingBagOutlinedIcon sx={{ fontSize: 20, color: '#e3242b' }} />
             )}
-            <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#C2185B' }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#b81b21' }}>
               {isReschedule ? 'Reschedule Summary' : isAppointment ? 'Appointment Summary' : 'Order Summary'}
             </Typography>
           </Box>
@@ -207,7 +207,7 @@ export default function ThankYouPage() {
                         {item.setIncludes?.length > 0 && (
                           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.4, mt: 0.5 }}>
                             {item.setIncludes.map((tag) => (
-                              <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.65rem', height: 18, backgroundColor: '#FCE4EC', color: '#C2185B', fontWeight: 600 }} />
+                              <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.65rem', height: 18, backgroundColor: '#FFE8E8', color: '#b81b21', fontWeight: 600 }} />
                             ))}
                           </Box>
                         )}
@@ -232,8 +232,8 @@ export default function ThankYouPage() {
                         )}
                         {item.date && (
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.3 }}>
-                            <AccessTimeIcon sx={{ fontSize: 13, color: '#E91E8C' }} />
-                            <Typography sx={{ fontSize: '0.75rem', color: '#E91E8C', fontWeight: 600 }}>
+                            <AccessTimeIcon sx={{ fontSize: 13, color: '#e3242b' }} />
+                            <Typography sx={{ fontSize: '0.75rem', color: '#e3242b', fontWeight: 600 }}>
                               {item.date}
                             </Typography>
                           </Box>
@@ -260,8 +260,8 @@ export default function ThankYouPage() {
                 </Box>
                 {appointmentDate && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.4 }}>
-                    <AccessTimeIcon sx={{ fontSize: 13, color: '#E91E8C' }} />
-                    <Typography sx={{ fontSize: '0.75rem', color: '#E91E8C', fontWeight: 600 }}>{appointmentDate}</Typography>
+                    <AccessTimeIcon sx={{ fontSize: 13, color: '#e3242b' }} />
+                    <Typography sx={{ fontSize: '0.75rem', color: '#e3242b', fontWeight: 600 }}>{appointmentDate}</Typography>
                   </Box>
                 )}
               </Box>
@@ -294,7 +294,7 @@ export default function ThankYouPage() {
                 sx={{
                   fontWeight: 800,
                   fontSize: '1.1rem',
-                  background: 'linear-gradient(135deg, #E91E8C, #9C27B0)',
+                  background: 'linear-gradient(135deg, #e3242b, #9C27B0)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
@@ -326,7 +326,7 @@ export default function ThankYouPage() {
               transition: 'all 0.62s cubic-bezier(0.34,1.56,0.64,1) 0.15s',
             }}
           >
-            <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#C2185B', mb: 2 }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#b81b21', mb: 2 }}>
               Order Progress
             </Typography>
             {(() => {
@@ -348,13 +348,13 @@ export default function ThankYouPage() {
                             width: idx === activeIdx ? 14 : 10,
                             height: idx === activeIdx ? 14 : 10,
                             borderRadius: '50%',
-                            backgroundColor: idx <= activeIdx ? '#E91E8C' : '#e0e0e0',
-                            border: idx === activeIdx ? '2px solid #C2185B' : 'none',
+                            backgroundColor: idx <= activeIdx ? '#e3242b' : '#e0e0e0',
+                            border: idx === activeIdx ? '2px solid #b81b21' : 'none',
                             flexShrink: 0,
                           }}
                         />
                         {idx < steps.length - 1 && (
-                          <Box sx={{ flex: 1, height: 2, backgroundColor: idx < activeIdx ? '#E91E8C' : '#e0e0e0', mx: 0.3 }} />
+                          <Box sx={{ flex: 1, height: 2, backgroundColor: idx < activeIdx ? '#e3242b' : '#e0e0e0', mx: 0.3 }} />
                         )}
                       </Box>
                     ))}
@@ -362,7 +362,7 @@ export default function ThankYouPage() {
                   <Box sx={{ display: 'flex', mt: 0.8 }}>
                     {steps.map((step, idx) => (
                       <Box key={step.key} sx={{ flex: idx < steps.length - 1 ? 1 : 0, textAlign: idx === 0 ? 'left' : idx === steps.length - 1 ? 'right' : 'center' }}>
-                        <Typography sx={{ fontSize: '0.62rem', fontWeight: idx === activeIdx ? 700 : 400, color: idx <= activeIdx ? '#E91E8C' : '#aaa', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                        <Typography sx={{ fontSize: '0.62rem', fontWeight: idx === activeIdx ? 700 : 400, color: idx <= activeIdx ? '#e3242b' : '#aaa', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
                           {step.label}
                         </Typography>
                       </Box>
@@ -392,7 +392,7 @@ export default function ThankYouPage() {
             transition: 'all 0.65s cubic-bezier(0.34,1.56,0.64,1) 0.2s',
           }}
         >
-          <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#C2185B', mb: 1.5 }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#b81b21', mb: 1.5 }}>
             What happens next?
           </Typography>
           {[
@@ -403,7 +403,7 @@ export default function ThankYouPage() {
                 : 'You\'ll receive a WhatsApp message from us to confirm details and arrange payment.',
             },
             {
-              icon: <AccessTimeIcon sx={{ fontSize: 18, color: '#E91E8C' }} />,
+              icon: <AccessTimeIcon sx={{ fontSize: 18, color: '#e3242b' }} />,
               text: isReschedule
                 ? 'We\'ll confirm your new appointment slot on WhatsApp and update your booking.'
                 : isAppointment
@@ -531,95 +531,22 @@ export default function ThankYouPage() {
             transition: 'all 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.3s',
           }}
         >
-          {isAppointment ? (
-            <>
-              <Button
-                fullWidth
-                onClick={() => navigate('/services')}
-                sx={{
-                  py: 1.4,
-                  borderRadius: '50px',
-                  background: 'linear-gradient(135deg, #E91E8C, #9C27B0)',
-                  color: '#fff',
-                  fontWeight: 700,
-                  fontSize: '0.9rem',
-                  boxShadow: '0 4px 16px rgba(233,30,140,0.3)',
-                  '&:hover': { background: 'linear-gradient(135deg, #C2185B, #7B1FA2)', boxShadow: '0 6px 20px rgba(233,30,140,0.4)' },
-                }}
-              >
-                Browse More Services
-              </Button>
-              <Button
-                fullWidth
-                onClick={() => navigate('/products')}
-                variant="outlined"
-                sx={{
-                  py: 1.3,
-                  borderRadius: '50px',
-                  border: '2px solid #E91E8C',
-                  color: '#E91E8C',
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                  '&:hover': { background: '#FFF0F8', borderColor: '#C2185B' },
-                }}
-              >
-                Shop Press-Ons
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                fullWidth
-                onClick={() => navigate('/products')}
-                sx={{
-                  py: 1.4,
-                  borderRadius: '50px',
-                  background: 'linear-gradient(135deg, #E91E8C, #9C27B0)',
-                  color: '#fff',
-                  fontWeight: 700,
-                  fontSize: '0.9rem',
-                  boxShadow: '0 4px 16px rgba(233,30,140,0.3)',
-                  '&:hover': { background: 'linear-gradient(135deg, #C2185B, #7B1FA2)', boxShadow: '0 6px 20px rgba(233,30,140,0.4)' },
-                }}
-              >
-                Continue Shopping
-              </Button>
-              <Button
-                fullWidth
-                onClick={() => navigate('/services')}
-                variant="outlined"
-                sx={{
-                  py: 1.3,
-                  borderRadius: '50px',
-                  border: '2px solid #E91E8C',
-                  color: '#E91E8C',
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                  '&:hover': { background: '#FFF0F8', borderColor: '#C2185B' },
-                }}
-              >
-                Book an Appointment
-              </Button>
-            </>
-          )}
-          {!isAppointment && (
-            <Button
+          <Button
               fullWidth
-              onClick={() => navigate('/nail-care')}
+              onClick={() => navigate('/shop')}
               sx={{
-                py: 1.2,
+                py: 1.4,
                 borderRadius: '50px',
-                background: 'transparent',
-                color: '#E91E8C',
-                fontWeight: 600,
-                fontSize: '0.84rem',
-                border: '1.5px solid #F0C0D0',
-                '&:hover': { background: '#FFF0F8', borderColor: '#E91E8C' },
+                background: 'linear-gradient(135deg, #e3242b, #b81b21)',
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: '0.9rem',
+                boxShadow: '0 4px 16px rgba(227,36,43,0.3)',
+                '&:hover': { background: 'linear-gradient(135deg, #b81b21, #8a1318)', boxShadow: '0 6px 20px rgba(227,36,43,0.4)' },
               }}
             >
-              Nail Care Guide
+              Continue Shopping
             </Button>
-          )}
           <Button
             fullWidth
             onClick={() => navigate('/account')}

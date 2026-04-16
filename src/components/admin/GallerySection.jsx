@@ -191,7 +191,7 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
               variant="outlined"
               onClick={handleSeedFromLocal}
               disabled={busy}
-              sx={{ fontFamily, fontSize: '0.8rem', textTransform: 'none', borderColor: '#E91E8C', color: '#E91E8C', '&:hover': { borderColor: '#C2185B', backgroundColor: '#FFF0F5' } }}
+              sx={{ fontFamily, fontSize: '0.8rem', textTransform: 'none', borderColor: '#e3242b', color: '#e3242b', '&:hover': { borderColor: '#b81b21', backgroundColor: '#FFF8F0' } }}
             >
               {busy ? 'Seeding…' : 'Seed from local images'}
             </Button>
@@ -200,7 +200,7 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={openAddDialog}
-            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
         >
           Add Image
         </Button>
@@ -242,7 +242,7 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table size="small">
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
+            <TableRow sx={{ backgroundColor: '#006666' }}>
               {['Preview', 'Caption', 'Category', 'Order', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
                   {h}
@@ -342,7 +342,7 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
             onClick={handleSave}
             variant="contained"
             disabled={busy}
-            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
           >
             {editingImage ? 'Update' : 'Add'}
           </Button>

@@ -8,7 +8,7 @@ export default function AdminGuard({ children }) {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <CircularProgress sx={{ color: '#E91E8C' }} />
+        <CircularProgress sx={{ color: '#e3242b' }} />
       </Box>
     );
   }

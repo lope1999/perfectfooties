@@ -5,26 +5,22 @@ import AdminGuard from '../components/admin/AdminGuard';
 import AdminSidebar, { SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from '../components/admin/AdminSidebar';
 import DashboardSection from '../components/admin/DashboardSection';
 import OrdersSection from '../components/admin/OrdersSection';
-import AppointmentsSection from '../components/admin/AppointmentsSection';
 import ProductsSection from '../components/admin/ProductsSection';
 import CustomersSection from '../components/admin/CustomersSection';
-import ServiceDiscountsSection from '../components/admin/ServiceDiscountsSection';
-import ServicesSection from '../components/admin/ServicesSection';
 import GiftCardsSection from '../components/admin/GiftCardsSection';
 import BlogPostsSection from '../components/admin/BlogPostsSection';
 import GallerySection from '../components/admin/GallerySection';
 import LoyaltySection from '../components/admin/LoyaltySection';
-import CancellationsSection from '../components/admin/CancellationsSection';
 import NicheCollectionsSection from '../components/admin/NicheCollectionsSection';
 import AnnouncementsSection from '../components/admin/AnnouncementsSection';
-import { fetchAllOrders, seedAndFetchCategories, fetchAllUsers, computeUserStats, fetchServiceDiscounts, fetchCategories } from '../lib/adminService';
-import { fetchNicheCollections } from '../lib/nicheCollectionService';
+import { fetchAllOrders, seedAndFetchCategories, fetchAllUsers, computeUserStats } from '../lib/adminService';
+import { fetchProducts } from '../lib/productService';
 import { fetchGalleryImages } from '../lib/galleryService';
 import { fetchAllGiftCards } from '../lib/giftCardService';
 import { seedAndFetchBlogPosts } from '../lib/blogService';
-import { productCategories as staticPressOns } from '../data/products';
+// Leather products are added via admin panel — no static seed data
+const staticPressOns = [];
 import { retailCategories as staticRetail } from '../data/retailProducts';
-import { serviceCategories as staticServiceCategories } from '../data/services';
 import { blogPosts as staticBlogPosts } from '../data/blog';
 
 export default function AdminPage() {
@@ -38,9 +34,7 @@ export default function AdminPage() {
   const [blogPosts, setBlogPosts] = useState([]);
   const [galleryImages, setGalleryImages] = useState([]);
   const [users, setUsers] = useState([]);
-  const [serviceDiscounts, setServiceDiscounts] = useState({});
-  const [serviceCategories, setServiceCategories] = useState([]);
-  const [nicheCollections, setNicheCollections] = useState([]);
+  const [shopProducts, setShopProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const theme = useTheme();
@@ -49,18 +43,15 @@ export default function AdminPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      // Seed + fetch categories in one read each, all requests in parallel
-      const [o, pc, rc, gc, uf, sd, sc, bp, gi, nc] = await Promise.allSettled([
+      const [o, pc, rc, gc, uf, bp, gi, sp] = await Promise.allSettled([
         fetchAllOrders(),
         seedAndFetchCategories('productCategories', staticPressOns),
         seedAndFetchCategories('retailCategories', staticRetail),
         fetchAllGiftCards(),
         fetchAllUsers(),
-        fetchServiceDiscounts(),
-        seedAndFetchCategories('serviceCategories', staticServiceCategories),
         seedAndFetchBlogPosts(staticBlogPosts),
         fetchGalleryImages(),
-        fetchNicheCollections(),
+        fetchProducts(),
       ]);
 
       if (o.status === 'fulfilled') {
@@ -81,13 +72,7 @@ export default function AdminPage() {
       const rawUsers = uf.status === 'fulfilled' ? uf.value : [];
       const allOrders = o.status === 'fulfilled' ? o.value : [];
       setUsers(computeUserStats(rawUsers, allOrders));
-      setServiceDiscounts(sd.status === 'fulfilled' ? sd.value : {});
-      if (sc.status === 'fulfilled') {
-        setServiceCategories(sc.value);
-      } else {
-        setServiceCategories(staticServiceCategories);
-      }
-      setNicheCollections(nc.status === 'fulfilled' ? nc.value : []);
+      setShopProducts(sp.status === 'fulfilled' ? sp.value : []);
     } catch (err) {
       console.error('Admin data load error:', err);
       setPressOnCategories(staticPressOns);
@@ -115,9 +100,7 @@ export default function AdminPage() {
           />
         );
       case 'orders':
-        return <OrdersSection orders={orders.filter(o => o.type !== 'service')} loading={loading} onRefresh={loadData} filterType="product" />;
-      case 'appointments':
-        return <AppointmentsSection orders={orders} loading={loading} onRefresh={loadData} />;
+        return <OrdersSection orders={orders} loading={loading} onRefresh={loadData} />;
       case 'pressons':
         return (
           <ProductsSection
@@ -140,8 +123,6 @@ export default function AdminPage() {
         );
       case 'customers':
         return <CustomersSection users={users} loading={loading} />;
-      case 'services':
-        return <ServicesSection serviceCategories={serviceCategories} serviceDiscounts={serviceDiscounts} loading={loading} onRefresh={loadData} />;
       case 'blog':
         return (
           <BlogPostsSection
@@ -168,12 +149,10 @@ export default function AdminPage() {
         );
       case 'loyalty':
         return <LoyaltySection loading={loading} />;
-      case 'cancellations':
-        return <CancellationsSection />;
       case 'nichecollections':
         return (
           <NicheCollectionsSection
-            collections={nicheCollections}
+            collections={shopProducts}
             loading={loading}
             onRefresh={loadData}
           />

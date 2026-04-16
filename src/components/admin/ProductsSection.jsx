@@ -25,7 +25,6 @@ import {
   FormControlLabel,
   Divider,
 } from '@mui/material';
-import { DEFAULT_SET_INCLUDES_OPTIONS, DEFAULT_INSPIRATION_OPTIONS } from '../../data/customPressOnOptions';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -55,23 +54,7 @@ export default function ProductsSection({ collectionName, categories, loading, o
   const [busy, setBusy] = useState(false);
   const [optionInput, setOptionInput] = useState({});
 
-  // Auto-seed default options for custom press-on categories that have none
-  useEffect(() => {
-    if (type !== 'presson') return;
-    categories.forEach((cat) => {
-      if (cat.readyMade) return;
-      const updates = {};
-      if (!cat.setIncludesOptions?.length) updates.setIncludesOptions = DEFAULT_SET_INCLUDES_OPTIONS;
-      if (!cat.inspirationOptions?.length) updates.inspirationOptions = DEFAULT_INSPIRATION_OPTIONS;
-      if (cat.showSetIncludes === undefined) updates.showSetIncludes = true;
-      if (cat.showInspirations === undefined) updates.showInspirations = true;
-      if (cat.showNotesField === undefined) updates.showNotesField = true;
-      if (Object.keys(updates).length > 0) {
-        updateCategory(collectionName, cat.id, updates).then(onRefresh).catch(console.error);
-      }
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categories.map((c) => c.id).join(',')]);
+
 
   const title = type === 'presson' ? 'Press-On Products' : 'Retail Products';
 
@@ -156,7 +139,7 @@ export default function ProductsSection({ collectionName, categories, loading, o
             setCatForm({ id: '', title: '' });
             setCatDialog({ mode: 'add' });
           }}
-          sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+          sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
         >
           Add Category
         </Button>
@@ -267,7 +250,7 @@ export default function ProductsSection({ collectionName, categories, loading, o
                         setOptionInput((prev) => ({ ...prev, [cat.id]: { ...prev[cat.id], setIncludes: '' } }));
                         onRefresh();
                       }}
-                      sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+                      sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
                     >
                       Add
                     </Button>
@@ -326,7 +309,7 @@ export default function ProductsSection({ collectionName, categories, loading, o
                     </Button>
                   </Box>
                 </Box>
-                <Divider sx={{ mb: 2, borderColor: '#F0C0D0' }} />
+                <Divider sx={{ mb: 2, borderColor: '#E8D5B0' }} />
               </>
             )}
             <Box sx={{ display: 'flex', justifyContent: !cat.readyMade ? 'space-between' : 'flex-end', alignItems: 'center', mb: 1 }}>
@@ -517,7 +500,7 @@ export default function ProductsSection({ collectionName, categories, loading, o
             onClick={handleSaveCategory}
             variant="contained"
             disabled={busy || !catForm.title.trim() || (catDialog?.mode === 'add' && !catForm.id.trim())}
-            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
           >
             {catDialog?.mode === 'add' ? 'Create' : 'Update'}
           </Button>

@@ -6,20 +6,20 @@ export function createAppTheme(mode) {
     palette: {
       mode,
       primary: {
-        main: '#E91E8C',
-        light: '#FFC0CB',
-        dark: '#C2185B',
+        main:  '#e3242b',
+        light: '#f0898c',
+        dark:  '#b81b21',
       },
       secondary: {
-        main: isDark ? '#ce93d8' : '#4A0E4E',
+        main: isDark ? '#00cccc' : '#006666',
       },
       background: {
-        default: isDark ? '#0f0118' : '#ffffff',
-        paper:   isDark ? '#1c0530' : '#ffffff',
+        default: isDark ? '#0a0000' : '#ffffff',
+        paper:   isDark ? '#120404' : '#ffffff',
       },
       text: {
-        primary:   isDark ? '#f5e6f5' : '#000000',
-        secondary: isDark ? '#ce93d8' : '#4A0E4E',
+        primary:   isDark ? '#f5f0f0' : '#1A1A1A',
+        secondary: isDark ? '#00cccc' : '#006666',
       },
       divider: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)',
     },

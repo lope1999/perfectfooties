@@ -1,39 +1,37 @@
 export const faqData = [
 	{
-		question: "What is Gel X?",
+		question: "What types of leather goods do you make?",
 		answer:
-			"Gel X (Extensions) is a soft gel nail extension system that uses full-cover gel tips adhered to your natural nails with a gel adhesive and cured under a UV/LED lamp. They are lightweight, flexible, and give a natural-looking finish without the heavy filing or harsh chemicals associated with traditional acrylics. Gel X extensions typically last 3–4 weeks with proper care and are available in a wide variety of shapes and lengths.",
+			"PerfectFooties handcrafts a range of leather goods including shoes (oxfords, loafers, derbies, boots, and sandals), belts, bags, wallets, and accessories. We also take custom orders — if you have a specific piece in mind, reach out to us via WhatsApp and we will discuss what is possible.",
 	},
 	{
-		question: "What is Hard Gel / Polygel Overlay?",
+		question: "What type of leather do you use?",
 		answer:
-			"Hard gel is a durable gel product that is cured under a UV/LED lamp and cannot be soaked off — it must be filed down for removal. It is used to add strength, length, or structure to natural nails or tips. Polygel is a hybrid formula that combines acrylic powder and gel, offering the strength of acrylic with the flexibility of gel. Both are great options for clients who need long-lasting, chip-resistant nails with a sculpted finish.",
+			"We work primarily with quality full-grain and top-grain leather selected for grain consistency, thickness, and durability. The grade of leather used varies by product type and is specified in each product listing. We do not use bonded leather or low-grade splits in our handcrafted pieces.",
 	},
 	{
-		question: "How do I measure my nail bed for custom press-ons?",
+		question: "How do I place a custom order?",
 		answer:
-			"To measure your nail bed, use a soft measuring tape or a small strip of paper. Place the tape or paper flat across the widest part of your natural nail (usually near the centre) from one side wall to the other. Write down the measurement in millimetres for each finger. Alternatively, you can press your nails gently onto a piece of tape, trace the outline, and send us a photo along with a ruler reference. We will use these measurements to create a perfectly fitted set of custom press-ons for you.",
-		hasSizeGuideButton: true,
+			"To place a custom order, send us a message on WhatsApp (+234 807 363 7911) or email us at perfect.footies@gmail.com. Tell us what you have in mind — the type of piece, your preferred leather colour, size, and any design details. We will confirm feasibility, provide a quote, and begin production once a deposit is received.",
 	},
 	{
-		question: "Does the press-on order come with a nail kit?",
+		question: "How long does production take?",
 		answer:
-			"Yes! Every custom press-on order comes with a complimentary nail kit that includes a mini nail file, a cuticle pusher, nail glue, an alcohol prep pad, and a small instruction card with application tips. Everything you need for a salon-quality application at home is included in the package.",
+			"Standard products typically take 5–10 business days to produce before shipping. Custom orders may take longer depending on complexity — we will give you an estimated timeline when you confirm your order. We do not rush production because quality craftsmanship takes time.",
 	},
 	{
-		question: "Can I reschedule my appointment?",
+		question: "How do I care for my leather goods?",
 		answer:
-			"Yes, you can reschedule your appointment. Please contact us at least 24 hours before your scheduled time so we can find a new slot that works for you. Your 50% booking deposit will be carried over to the rescheduled appointment — no additional deposit is required. However, repeated no-shows or last-minute cancellations may result in forfeiture of the deposit. You can use our Reschedule Appointment page to submit your request directly.",
-		hasRescheduleButton: true,
+			"Wipe your leather goods with a dry cloth after use. Apply a quality leather conditioner every 2–3 months to keep the leather supple. Avoid prolonged exposure to direct sunlight, rain, or heat sources. For shoes, use matching shoe cream or wax polish regularly and store on wooden shoe trees. See our blog for a detailed leather care guide.",
 	},
 	{
-		question: "Can I get a refund on my order or booking?",
+		question: "Can I get a refund on my order?",
 		answer:
-			"Unfortunately, we do not offer refunds on press-on nail orders as production begins immediately once your order is confirmed — each set is handcrafted specifically for you using your measurements and preferences. For appointment bookings, the 50% non-refundable deposit is required to secure your slot and cover material preparation costs. We recommend reviewing your order details carefully before confirming. If you have any concerns, please reach out to us before placing your order and we will be happy to assist.",
+			"We do not offer refunds once production has begun, as each piece is handcrafted specifically for you. However, if there is a defect or quality issue with your order, contact us within 48 hours of receiving it and we will arrange a repair, replacement, or resolution. Please review your order details carefully before confirming.",
 	},
 	{
-		question: "How can I remove my press-on nails at home?",
+		question: "Do you deliver outside Lagos?",
 		answer:
-			"To safely remove your press-on nails at home, start by soaking your fingers in warm soapy water and a teaspoon of olive oil for 10–15 minutes to loosen the adhesive. Gently wiggle each nail from side to side — never force or peel them off, as this can damage your natural nails. If the nails were applied with glue, you can also soak them in acetone for 5–10 minutes using a small bowl or cotton pads secured with foil wraps. Once the press-ons lift easily, use a cuticle pusher to gently slide them off. After removal, buff your nails lightly, apply cuticle oil, and moisturise your hands to keep them healthy.",
+			"Yes, we deliver nationwide across Nigeria. Delivery timelines and costs vary by location. Lagos deliveries are typically faster. For orders outside Lagos, we will provide an estimated delivery window at the time of order confirmation. International shipping is available on request — contact us to discuss.",
 	},
 ];

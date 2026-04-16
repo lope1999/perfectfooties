@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 
-const STORAGE_KEY = 'chizzystyles-cart';
+const STORAGE_KEY = 'perfectfooties-cart';
 
 const initialState = {
   customerName: '',

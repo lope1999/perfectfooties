@@ -38,7 +38,7 @@ const fontFamily = '"Georgia", serif';
 
 function GreetingBanner() {
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning Chizzy' : hour < 17 ? 'Good afternoon Chizzy' : 'Good evening Chizzy';
+  const greeting = hour < 12 ? 'Good morning!' : hour < 17 ? 'Good afternoon!' : 'Good evening!';
   const today = new Date().toLocaleDateString('en-GB', {
     weekday: 'long',
     day: 'numeric',
@@ -49,7 +49,7 @@ function GreetingBanner() {
   return (
     <Box
       sx={{
-        background: 'linear-gradient(135deg, #4A0E4E 0%, #E91E8C 100%)',
+        background: 'linear-gradient(135deg, #006666 0%, #e3242b 100%)',
         borderRadius: 3,
         p: { xs: 3, md: 4 },
         mb: 3,
@@ -156,7 +156,7 @@ function AppointmentCard({ appointment }) {
     >
       <Avatar
         sx={{
-          bgcolor: imminent ? '#d32f2f' : '#4A0E4E',
+          bgcolor: imminent ? '#d32f2f' : '#006666',
           width: 40,
           height: 40,
           fontSize: '0.85rem',
@@ -281,7 +281,7 @@ function MiniBarChart({ title, data, color, prefix = '' }) {
 function QuickActionsPanel({ onNavigate }) {
   const actions = [
     { label: 'New Order', icon: <AddCircleOutlineIcon />, section: 'orders', color: 'var(--text-purple)' },
-    { label: 'Appointments', icon: <EventNoteIcon />, section: 'appointments', color: '#E91E8C' },
+    { label: 'Appointments', icon: <EventNoteIcon />, section: 'appointments', color: '#e3242b' },
     { label: 'Products', icon: <InventoryIcon />, section: 'pressons', color: '#2e7d32' },
     { label: 'Gift Cards', icon: <CardGiftcardIcon />, section: 'giftcards', color: '#e65100' },
   ];
@@ -476,14 +476,14 @@ export default function DashboardSection({
       title: 'Total Orders',
       value: productOrders.length,
       icon: <ShoppingCartIcon />,
-      gradient: 'linear-gradient(135deg, #4A0E4E 0%, #7B1FA2 100%)',
+      gradient: 'linear-gradient(135deg, #006666 0%, #7B1FA2 100%)',
       section: 'orders',
     },
     {
       title: 'Appointments',
       value: serviceOrders.length,
       icon: <EventNoteIcon />,
-      gradient: 'linear-gradient(135deg, #E91E8C 0%, #F48FB1 100%)',
+      gradient: 'linear-gradient(135deg, #e3242b 0%, #F48FB1 100%)',
       section: 'appointments',
     },
     {
@@ -545,7 +545,7 @@ export default function DashboardSection({
               <MiniBarChart
                 title="Orders (Last 7 Days)"
                 data={chartData.ordersData}
-                color="#4A0E4E"
+                color="#006666"
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -591,7 +591,7 @@ export default function DashboardSection({
           <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
             <Table size="small">
               <TableHead>
-                <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
+                <TableRow sx={{ backgroundColor: '#006666' }}>
                   {['#', 'Customer', 'Type', 'Status', 'Total', 'Date'].map((h) => (
                     <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
                       {h}
@@ -677,7 +677,7 @@ export default function DashboardSection({
 
           <SectionHeader
             title="Appointments"
-            icon={<EventNoteIcon sx={{ color: '#E91E8C' }} />}
+            icon={<EventNoteIcon sx={{ color: '#e3242b' }} />}
             onViewAll={onNavigate ? () => onNavigate('appointments') : undefined}
           />
           {upcomingAppointments.length > 0 ? (

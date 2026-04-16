@@ -13,16 +13,13 @@ import {
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import EventNoteIcon from '@mui/icons-material/EventNote';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import ArticleIcon from '@mui/icons-material/Article';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import PeopleIcon from '@mui/icons-material/People';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import CancelIcon from '@mui/icons-material/Cancel';
 import CloseIcon from '@mui/icons-material/Close';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -33,20 +30,17 @@ const SIDEBAR_WIDTH = 250;
 const SIDEBAR_COLLAPSED_WIDTH = 68;
 
 const sections = [
-  { key: 'dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
-  { key: 'orders', label: 'Orders', icon: <ShoppingCartIcon /> },
-  { key: 'appointments', label: 'Appointments', icon: <EventNoteIcon /> },
-  { key: 'customers', label: 'Customers', icon: <PeopleIcon /> },
-  { key: 'nichecollections', label: 'Niche Collections', icon: <AutoAwesomeIcon /> },
-  { key: 'pressons', label: 'Press-On Products', icon: <StorefrontIcon /> },
-  { key: 'retail', label: 'Retail Products', icon: <InventoryIcon /> },
-  { key: 'services', label: 'Services', icon: <LocalOfferIcon /> },
-  { key: 'loyalty', label: 'Loyalty & Referrals', icon: <EmojiEventsIcon /> },
-  { key: 'blog', label: 'Blog Posts', icon: <ArticleIcon /> },
-  { key: 'giftcards', label: 'Gift Cards', icon: <CardGiftcardIcon /> },
-  { key: 'gallery', label: 'Gallery', icon: <PhotoLibraryIcon /> },
-  { key: 'cancellations', label: 'Cancellations', icon: <CancelIcon /> },
-  { key: 'announcements', label: 'Announcements', icon: <CampaignIcon /> },
+  { key: 'dashboard',       label: 'Dashboard',       icon: <DashboardIcon /> },
+  { key: 'orders',          label: 'Orders',           icon: <ShoppingCartIcon /> },
+  { key: 'customers',       label: 'Customers',        icon: <PeopleIcon /> },
+  { key: 'nichecollections',label: 'Shop Products',    icon: <AutoAwesomeIcon /> },
+  { key: 'retail',          label: 'Retail Products',  icon: <InventoryIcon /> },
+  { key: 'pressons',        label: 'Press-On Archive', icon: <StorefrontIcon /> },
+  { key: 'loyalty',         label: 'Loyalty & Referrals', icon: <EmojiEventsIcon /> },
+  { key: 'blog',            label: 'Blog Posts',       icon: <ArticleIcon /> },
+  { key: 'giftcards',       label: 'Gift Cards',       icon: <CardGiftcardIcon /> },
+  { key: 'gallery',         label: 'Gallery',          icon: <PhotoLibraryIcon /> },
+  { key: 'announcements',   label: 'Announcements',    icon: <CampaignIcon /> },
 ];
 
 export default function AdminSidebar({ active, onSelect, mobileOpen, onMobileClose, collapsed, onToggleCollapse }) {
@@ -60,7 +54,7 @@ export default function AdminSidebar({ active, onSelect, mobileOpen, onMobileClo
       sx={{
         width: currentWidth,
         height: '100%',
-        backgroundColor: '#E61793',
+        backgroundColor: '#006666',
         color: '#fff',
         display: 'flex',
         flexDirection: 'column',
@@ -111,9 +105,7 @@ export default function AdminSidebar({ active, onSelect, mobileOpen, onMobileClo
                 py: 1.5,
                 px: collapsed && !isMobile ? 0 : 2.5,
                 justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
-                '&.Mui-selected': {
-                  backgroundColor: 'rgba(255,255,255,0.15)',
-                },
+                '&.Mui-selected': { backgroundColor: 'rgba(255,255,255,0.15)' },
                 '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' },
               }}
             >
@@ -164,7 +156,7 @@ export default function AdminSidebar({ active, onSelect, mobileOpen, onMobileClo
       <Drawer
         open={mobileOpen}
         onClose={onMobileClose}
-        PaperProps={{ sx: { width: SIDEBAR_WIDTH, backgroundColor: '#4A0E4E' } }}
+        PaperProps={{ sx: { width: SIDEBAR_WIDTH, backgroundColor: '#006666' } }}
       >
         {content}
       </Drawer>

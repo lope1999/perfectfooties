@@ -44,22 +44,17 @@ import { sendConfirmationEmail } from '../../lib/emailService';
 
 const fontFamily = '"Georgia", serif';
 
-const orderStatusOptions = ['pending', 'confirmed', 'production', 'shipping', 'received'];
-const appointmentStatusOptions = ['pending', 'confirmed', 'in progress', 'completed', 'rescheduled', 'cancelled'];
+const orderStatusOptions = ['pending', 'confirmed', 'production', 'shipped', 'delivered'];
 const statusColor = {
   pending: 'warning',
   confirmed: 'info',
   production: 'secondary',
-  shipping: 'primary',
-  received: 'success',
-  'in progress': 'secondary',
-  completed: 'success',
-  rescheduled: 'warning',
-  cancelled: 'error',
+  shipped: 'primary',
+  delivered: 'success',
 };
 
 export default function OrdersSection({ orders, loading, onRefresh, filterType }) {
-  const statusOptions = filterType === 'service' ? appointmentStatusOptions : orderStatusOptions;
+  const statusOptions = orderStatusOptions;
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -81,20 +76,14 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   const [addForm, setAddForm] = useState({
     customerName: '', email: '', phone: '', status: 'pending',
     total: '', notes: '', createdAt: '',
-    // service fields
-    serviceName: '', appointmentDate: '', appointmentTime: '',
-    // order fields
-    orderType: 'pressOn', itemName: '', quantity: 1,
+    orderType: 'product', itemName: '', quantity: 1,
   });
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {
-      // Hide abandoned niche collection checkouts (saved before payment, never completed)
-      if (hideAbandonedPending && o.type === 'nicheCollection' && o.status === 'pending') return false;
-      if (typeFilter === 'customPressOn') {
-        const isCustom = (o.items || []).some((item) => item.setIncludes?.length > 0 || item.nailNotes || item.selectedLength);
-        if (!isCustom) return false;
-      } else if (typeFilter !== 'all' && o.type !== typeFilter) return false;
+      // Hide abandoned product checkouts (saved before payment, never completed)
+      if (hideAbandonedPending && (o.type === 'product' || o.type === 'nicheCollection') && o.status === 'pending') return false;
+      if (typeFilter !== 'all' && o.type !== typeFilter) return false;
       if (statusFilter !== 'all' && o.status !== statusFilter) return false;
       if (search) {
         const s = search.toLowerCase();
@@ -169,52 +158,19 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   const resetAddForm = () => setAddForm({
     customerName: '', email: '', phone: '', status: 'pending',
     total: '', notes: '', createdAt: '',
-    serviceName: '', appointmentDate: '', appointmentTime: '',
-    orderType: 'pressOn', itemName: '', quantity: 1,
+    orderType: 'product', itemName: '', quantity: 1,
   });
 
   const handleAddSave = async () => {
     setBusy(true);
     try {
-      const isService = filterType === 'service';
       const price = parseFloat(addForm.total) || 0;
-      let appointmentDate = '';
-      let items = [];
-
-      if (isService) {
-        // Build formatted appointment date string
-        if (addForm.appointmentDate) {
-          const d = new Date(addForm.appointmentDate + 'T00:00:00');
-          const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
-          const day = d.getDate();
-          const month = d.toLocaleDateString('en-US', { month: 'long' });
-          const year = d.getFullYear();
-          let timePart = '';
-          if (addForm.appointmentTime) {
-            const [hh, mm] = addForm.appointmentTime.split(':');
-            const h = parseInt(hh, 10);
-            const ampm = h >= 12 ? 'PM' : 'AM';
-            const h12 = h % 12 || 12;
-            timePart = ` at ${h12}:${mm} ${ampm}`;
-          }
-          appointmentDate = `${dayName}, ${day} ${month} ${year}${timePart}`;
-        }
-        items = [{
-          kind: 'service',
-          serviceName: addForm.serviceName,
-          name: addForm.serviceName,
-          price,
-          date: appointmentDate,
-          quantity: 1,
-        }];
-      } else {
-        items = [{
-          kind: addForm.orderType,
-          name: addForm.itemName,
-          price,
-          quantity: parseInt(addForm.quantity, 10) || 1,
-        }];
-      }
+      const items = [{
+        kind: addForm.orderType,
+        name: addForm.itemName,
+        price,
+        quantity: parseInt(addForm.quantity, 10) || 1,
+      }];
 
       const orderData = {
         customerName: addForm.customerName,
@@ -223,11 +179,10 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
         status: addForm.status,
         total: price,
         notes: addForm.notes,
-        type: isService ? 'service' : addForm.orderType,
+        type: addForm.orderType,
         items,
         createdAt: addForm.createdAt ? new Date(addForm.createdAt + 'T00:00:00') : null,
       };
-      if (appointmentDate) orderData.appointmentDate = appointmentDate;
 
       await createAdminOrder(orderData);
       await onRefresh();
@@ -306,11 +261,9 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
     const date = o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString() : '—';
     const items = (o.items || [])
       .map((item, i) => {
-        let line = `${i + 1}. ${item.serviceName || item.name || 'Item'} × ${item.quantity || 1} — ₦${(item.price || 0).toLocaleString()}`;
-        if (item.nailShape) line += ` | Shape: ${item.nailShape}`;
-        if (item.presetSize) line += ` | Size: ${item.presetSize}`;
-        if (item.nailBedSize) line += ` | Nail Bed: ${item.nailBedSize}`;
-        if (item.selectedLength) line += ` | Length: ${item.selectedLength}`;
+        let line = `${i + 1}. ${item.name || 'Item'} × ${item.quantity || 1} — ₦${(item.price || 0).toLocaleString()}`;
+        if (item.size) line += ` | Size: ${item.size}`;
+        if (item.colour) line += ` | Colour: ${item.colour}`;
         return `<p style="margin:4px 0;">${line}</p>`;
       })
       .join('');
@@ -319,17 +272,17 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
       <style>
         body { font-family: Georgia, serif; padding: 32px; color: #222; }
         .border { border: 2px dashed #444; padding: 24px; max-width: 500px; margin: auto; }
-        .brand { font-size: 1.4rem; font-weight: 700; color: #4A0E4E; text-align: center; letter-spacing: 1px; margin-bottom: 4px; }
+        .brand { font-size: 1.4rem; font-weight: 700; color: #006666; text-align: center; letter-spacing: 1px; margin-bottom: 4px; }
         .sub { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 20px; }
         h3 { font-size: 0.75rem; text-transform: uppercase; color: #999; letter-spacing: 1px; margin: 16px 0 4px; }
         p { margin: 2px 0; font-size: 0.95rem; }
         .divider { border-top: 1px dashed #aaa; margin: 16px 0; }
-        .total { font-size: 1.1rem; font-weight: 700; color: #4A0E4E; }
+        .total { font-size: 1.1rem; font-weight: 700; color: #006666; }
         @media print { body { padding: 0; } }
       </style></head><body>
       <div class="border">
-        <div class="brand">CHIZZYSTYLES</div>
-        <div class="sub">Luxury Press-On Nails & Nail Services</div>
+        <div class="brand">PERFECTFOOTIES</div>
+        <div class="sub">Handcrafted Leather Goods — Lagos, Nigeria</div>
         <div class="divider"></div>
         <h3>Ship To</h3>
         <p><strong>${o.customerName || '—'}</strong></p>
@@ -370,7 +323,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   }
 
   const orderTypes = [...new Set(orders.map((o) => o.type).filter(Boolean))];
-  const title = filterType === 'service' ? 'Appointments' : 'Orders';
+  const title = 'Orders';
 
   return (
     <Box>
@@ -383,15 +336,15 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setAddDialog(true)}
-            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
           >
-            Add {filterType === 'service' ? 'Appointment' : 'Order'}
+            Add Order
           </Button>
           <Button
             variant="outlined"
             startIcon={<FileDownloadIcon />}
             onClick={() => exportOrdersToCSV(filtered, `${title.toLowerCase()}-export.csv`)}
-            sx={{ fontFamily, borderColor: '#4A0E4E', color: 'var(--text-purple)', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' } }}
+            sx={{ fontFamily, borderColor: '#006666', color: 'var(--text-purple)', '&:hover': { backgroundColor: '#006666', color: '#fff' } }}
           >
             Export CSV
           </Button>
@@ -414,7 +367,6 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             sx={{ minWidth: 140, fontFamily }}
           >
             <MenuItem value="all">All Types</MenuItem>
-            <MenuItem value="customPressOn">Custom Press-On</MenuItem>
             {orderTypes.map((t) => (
               <MenuItem key={t} value={t}>{t}</MenuItem>
             ))}
@@ -437,7 +389,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
               checked={hideAbandonedPending}
               onChange={(e) => setHideAbandonedPending(e.target.checked)}
               size="small"
-              sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#4A0E4E' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#4A0E4E' } }}
+              sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#006666' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#006666' } }}
             />
           }
           label={
@@ -483,7 +435,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             size="small"
             disabled={!bulkStatus || bulkBusy}
             onClick={handleBulkStatusUpdate}
-            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' }, fontWeight: 600, textTransform: 'none' }}
+            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' }, fontWeight: 600, textTransform: 'none' }}
           >
             {bulkBusy ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Apply'}
           </Button>
@@ -500,7 +452,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table size="small">
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
+            <TableRow sx={{ backgroundColor: '#006666' }}>
               <TableCell sx={{ color: '#fff', width: 40, p: 0.5 }}>
                 <Checkbox
                   size="small"
@@ -591,7 +543,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                       {sendingEmailId === o.id ? (
                         <CircularProgress size={18} sx={{ color: 'var(--text-purple)' }} />
                       ) : (
-                        <MailOutlineIcon fontSize="small" sx={{ color: o.email ? '#4A0E4E' : '#ccc' }} />
+                        <MailOutlineIcon fontSize="small" sx={{ color: o.email ? '#006666' : '#ccc' }} />
                       )}
                     </IconButton>
                     <IconButton size="small" onClick={() => handleEditOpen(o)} title="Edit order details">
@@ -631,12 +583,12 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                           <Box sx={{ mb: 1 }}>
                             <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700 }}>Items:</Typography>
                             {o.items.map((item, i) => (
-                              <Box key={i} sx={{ pl: 2, mb: 1, borderLeft: '2px solid #F0C0D0', ml: 1 }}>
+                              <Box key={i} sx={{ pl: 2, mb: 1, borderLeft: '2px solid #E8D5B0', ml: 1 }}>
                                 <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-purple)' }}>
                                   {item.serviceName || item.name || item.title || 'Item'}
                                 </Typography>
                                 <Typography sx={{ fontFamily, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                  {item.kind === 'service' ? 'Service Appointment' : item.kind === 'retail' ? 'Retail Product' : item.kind === 'pressOn' ? 'Press-On Nails' : item.kind || '—'}
+                                  {item.kind === 'product' ? 'Leather Product' : item.kind === 'retail' ? 'Retail Product' : item.kind === 'nicheCollection' ? 'Leather Product (Legacy)' : item.kind || '—'}
                                   {' • '}Qty: {item.quantity || 1}
                                   {' • '}₦{(item.price || 0).toLocaleString()}
                                   {item.originalPrice && (
@@ -650,75 +602,15 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                                     </Typography>
                                   )}
                                 </Typography>
-                                {item.nailShape && (
+                                {item.size && (
                                   <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
-                                    Shape: {item.nailShape}{item.nailLength ? ` • Length: ${item.nailLength}` : ''}
+                                    Size: {item.size}
                                   </Typography>
                                 )}
-                                {item.presetSize && (
+                                {item.colour && (
                                   <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
-                                    Preset Size: {item.presetSize}
+                                    Colour: {item.colour}
                                   </Typography>
-                                )}
-                                {item.nailBedSize && (
-                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
-                                    Nail Bed Size: {item.nailBedSize}
-                                  </Typography>
-                                )}
-                                {item.selectedLength && (
-                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
-                                    Length: {item.selectedLength}
-                                  </Typography>
-                                )}
-                                {item.setIncludes?.length > 0 && (
-                                  <Box sx={{ mt: 0.5 }}>
-                                    <Typography sx={{ fontFamily, fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-purple)', mb: 0.3 }}>Set Includes:</Typography>
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.4 }}>
-                                      {item.setIncludes.map((tag) => (
-                                        <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.65rem', height: 18, backgroundColor: '#FCE4EC', color: '#C2185B', fontWeight: 600 }} />
-                                      ))}
-                                    </Box>
-                                  </Box>
-                                )}
-                                {item.inspirationTags?.length > 0 && (
-                                  <Box sx={{ mt: 0.5 }}>
-                                    <Typography sx={{ fontFamily, fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-purple)', mb: 0.3 }}>Inspiration:</Typography>
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.4 }}>
-                                      {item.inspirationTags.map((tag) => (
-                                        <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.65rem', height: 18, backgroundColor: '#EDE7F6', color: '#5E35B1', fontWeight: 600 }} />
-                                      ))}
-                                    </Box>
-                                  </Box>
-                                )}
-                                {item.nailNotes && (
-                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#888', mt: 0.4, fontStyle: 'italic' }}>
-                                    Notes: &ldquo;{item.nailNotes}&rdquo;
-                                  </Typography>
-                                )}
-                                {item.specialRequest && (
-                                  <Chip
-                                    label="⚠️ Special Request — Made to Order"
-                                    size="small"
-                                    sx={{ mt: 0.5, fontSize: '0.68rem', height: 20, backgroundColor: '#FFF8E1', color: '#B8860B', fontWeight: 700, border: '1px solid #FFD54F' }}
-                                  />
-                                )}
-                                {item.otherPeople?.length > 0 && (
-                                  <Box sx={{ mt: 0.5, pl: 1, borderLeft: '2px solid #E0B0C0', ml: 0.5 }}>
-                                    <Typography sx={{ fontFamily, fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-purple)' }}>Also ordering for:</Typography>
-                                    {item.otherPeople.map((person, pi) => (
-                                      <Box key={pi} sx={{ mt: 0.25 }}>
-                                        <Typography sx={{ fontFamily, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                                          {person.name || `Person ${pi + 1}`}
-                                          {person.nailShape ? ` • Shape: ${person.nailShape}` : ''}
-                                        </Typography>
-                                        {person.nailBedSize && (
-                                          <Typography sx={{ fontFamily, fontSize: '0.75rem', color: '#777' }}>
-                                            Nail Bed Size: {person.nailBedSize}
-                                          </Typography>
-                                        )}
-                                      </Box>
-                                    ))}
-                                  </Box>
                                 )}
                               </Box>
                             ))}
@@ -779,7 +671,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                           </Box>
                         )}
                         {o.shipping && o.type !== 'service' && (
-                          <Box sx={{ mt: 1.5, p: 1.5, backgroundColor: '#FFF0F5', borderRadius: 2, border: '1px solid #F0C0D0' }}>
+                          <Box sx={{ mt: 1.5, p: 1.5, backgroundColor: '#FFF8F0', borderRadius: 2, border: '1px solid #E8D5B0' }}>
                             <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-purple)', mb: 0.5 }}>
                               Shipping Details
                             </Typography>
@@ -825,7 +717,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
       {/* Edit Order Dialog */}
       <Dialog open={!!editDialog} onClose={() => setEditDialog(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogTitle sx={{ fontFamily, fontWeight: 700 }}>
-          Edit {editDialog?.type === 'service' ? 'Appointment' : 'Order'} Details
+          Edit Order Details
           <Typography sx={{ fontSize: '0.8rem', color: '#777', fontFamily, fontWeight: 400, mt: 0.3 }}>
             ID: {editDialog?.id?.slice(0, 12)}… — {editDialog?.customerName || editDialog?.name || ''}
           </Typography>
@@ -855,17 +747,6 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
             sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
           />
-          {(editDialog?.type === 'service' || editDialog?.type === 'mixed') && (
-            <TextField
-              label="Appointment Date"
-              size="small"
-              fullWidth
-              value={editForm.appointmentDate || ''}
-              onChange={(e) => setEditForm((f) => ({ ...f, appointmentDate: e.target.value }))}
-              placeholder="e.g. Monday, 20 March 2026 at 2:00 PM"
-              sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
-            />
-          )}
           <TextField
             label="Total (₦)"
             size="small"
@@ -940,7 +821,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             onClick={handleAddNote}
             variant="contained"
             disabled={busy || !noteText.trim()}
-            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
           >
             Save Note
           </Button>
@@ -973,7 +854,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
       {/* Add Order/Appointment Dialog */}
       <Dialog open={addDialog} onClose={() => setAddDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontFamily, fontWeight: 700 }}>
-          Add Legacy {filterType === 'service' ? 'Appointment' : 'Order'}
+          Add Legacy Order
         </DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
           <TextField
@@ -1023,72 +904,38 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
           />
 
-          {filterType === 'service' ? (
-            <>
-              <TextField
-                label="Service Name"
-                required
-                value={addForm.serviceName}
-                onChange={(e) => setAddForm((f) => ({ ...f, serviceName: e.target.value }))}
-                fullWidth
-                size="small"
-                sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
-              />
-              <TextField
-                label="Appointment Date"
-                type="date"
-                value={addForm.appointmentDate}
-                onChange={(e) => setAddForm((f) => ({ ...f, appointmentDate: e.target.value }))}
-                fullWidth
-                size="small"
-                slotProps={{ inputLabel: { shrink: true } }}
-                sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
-              />
-              <TextField
-                label="Appointment Time"
-                type="time"
-                value={addForm.appointmentTime}
-                onChange={(e) => setAddForm((f) => ({ ...f, appointmentTime: e.target.value }))}
-                fullWidth
-                size="small"
-                slotProps={{ inputLabel: { shrink: true } }}
-                sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
-              />
-            </>
-          ) : (
-            <>
-              <Select
-                value={addForm.orderType}
-                onChange={(e) => setAddForm((f) => ({ ...f, orderType: e.target.value }))}
-                size="small"
-                fullWidth
-                sx={{ fontFamily }}
-              >
-                <MenuItem value="pressOn">Press On</MenuItem>
-                <MenuItem value="retail">Retail</MenuItem>
-                <MenuItem value="mixed">Mixed</MenuItem>
-              </Select>
-              <TextField
-                label="Item Name"
-                required
-                value={addForm.itemName}
-                onChange={(e) => setAddForm((f) => ({ ...f, itemName: e.target.value }))}
-                fullWidth
-                size="small"
-                sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
-              />
-              <TextField
-                label="Quantity"
-                type="number"
-                value={addForm.quantity}
-                onChange={(e) => setAddForm((f) => ({ ...f, quantity: e.target.value }))}
-                fullWidth
-                size="small"
-                slotProps={{ input: { inputProps: { min: 1 } } }}
-                sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
-              />
-            </>
-          )}
+          <>
+            <Select
+              value={addForm.orderType}
+              onChange={(e) => setAddForm((f) => ({ ...f, orderType: e.target.value }))}
+              size="small"
+              fullWidth
+              sx={{ fontFamily }}
+            >
+              <MenuItem value="product">Leather Product</MenuItem>
+              <MenuItem value="retail">Retail</MenuItem>
+              <MenuItem value="mixed">Mixed</MenuItem>
+            </Select>
+            <TextField
+              label="Item Name"
+              required
+              value={addForm.itemName}
+              onChange={(e) => setAddForm((f) => ({ ...f, itemName: e.target.value }))}
+              fullWidth
+              size="small"
+              sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+            />
+            <TextField
+              label="Quantity"
+              type="number"
+              value={addForm.quantity}
+              onChange={(e) => setAddForm((f) => ({ ...f, quantity: e.target.value }))}
+              fullWidth
+              size="small"
+              slotProps={{ input: { inputProps: { min: 1 } } }}
+              sx={{ '& .MuiOutlinedInput-root': { fontFamily } }}
+            />
+          </>
 
           <TextField
             label="Notes"
@@ -1117,8 +964,8 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
           <Button
             onClick={handleAddSave}
             variant="contained"
-            disabled={busy || !addForm.customerName.trim() || !addForm.total || (filterType === 'service' ? !addForm.serviceName.trim() : !addForm.itemName.trim())}
-            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            disabled={busy || !addForm.customerName.trim() || !addForm.total || !addForm.itemName.trim()}
+            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
           >
             Save
           </Button>

@@ -20,9 +20,9 @@ import useBlogPosts from '../hooks/useBlogPosts';
 import ScrollToTopFab from '../components/ScrollToTopFab';
 
 const categoryColors = {
-	"Nail Care": "#E91E8C",
-	"Gel Polishes": "#4A0E4E",
-	"Nail Brands": "#C2185B",
+	"Nail Care": "#e3242b",
+	"Gel Polishes": "#006666",
+	"Nail Brands": "#b81b21",
 	"Nail Art": "#AD1457",
 	"Nail Trends": "#880E4F",
 	"Nail Styles": "#d75498",
@@ -36,7 +36,7 @@ export default function BlogPage() {
   if (loading) {
     return (
       <Box sx={{ pt: 20, display: 'flex', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#FAFAFA' }}>
-        <CircularProgress sx={{ color: '#E91E8C' }} />
+        <CircularProgress sx={{ color: '#e3242b' }} />
       </Box>
     );
   }
@@ -65,7 +65,7 @@ export default function BlogPage() {
               mb: 1,
             }}
           >
-            The Chizzystyles Journal
+            The PerfectFooties Journal
           </Typography>
         </ScrollReveal>
         <ScrollReveal direction="up" delay={0.15}>
@@ -126,7 +126,7 @@ export default function BlogPage() {
                   label={blogPosts[0].category}
                   size="small"
                   sx={{
-                    backgroundColor: categoryColors[blogPosts[0].category] || '#E91E8C',
+                    backgroundColor: categoryColors[blogPosts[0].category] || '#e3242b',
                     color: '#fff',
                     fontWeight: 600,
                     fontFamily: '"Georgia", serif',
@@ -157,7 +157,7 @@ export default function BlogPage() {
               </Typography>
               <Typography
                 sx={{
-                  color: '#E91E8C',
+                  color: '#e3242b',
                   fontSize: '0.9rem',
                   fontWeight: 600,
                   fontFamily: '"Georgia", serif',
@@ -209,7 +209,7 @@ export default function BlogPage() {
                         label={post.category}
                         size="small"
                         sx={{
-                          backgroundColor: categoryColors[post.category] || '#E91E8C',
+                          backgroundColor: categoryColors[post.category] || '#e3242b',
                           color: '#fff',
                           fontWeight: 600,
                           fontSize: '0.75rem',
@@ -251,7 +251,7 @@ export default function BlogPage() {
                       </Typography>
                       <Typography
                         sx={{
-                          color: '#E91E8C',
+                          color: '#e3242b',
                           fontSize: '0.85rem',
                           fontWeight: 600,
                           fontFamily: '"Georgia", serif',
@@ -326,7 +326,7 @@ export default function BlogPage() {
                   label={selectedPost.category}
                   size="small"
                   sx={{
-                    backgroundColor: categoryColors[selectedPost.category] || '#E91E8C',
+                    backgroundColor: categoryColors[selectedPost.category] || '#e3242b',
                     color: '#fff',
                     fontWeight: 600,
                     fontFamily: '"Georgia", serif',
@@ -361,13 +361,13 @@ export default function BlogPage() {
                   mb: 4,
                   flexWrap: 'wrap',
                   p: 2,
-                  backgroundColor: '#FFF0F5',
+                  backgroundColor: '#FFF8F0',
                   borderRadius: 2,
-                  border: '1px solid #F0C0D0',
+                  border: '1px solid #E8D5B0',
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                  <PersonOutlineIcon sx={{ color: '#E91E8C', fontSize: 20 }} />
+                  <PersonOutlineIcon sx={{ color: '#e3242b', fontSize: 20 }} />
                   <Box>
                     <Typography sx={{ fontSize: '0.7rem', color: '#999', lineHeight: 1 }}>
                       Written by
@@ -378,7 +378,7 @@ export default function BlogPage() {
                   </Box>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                  <CalendarTodayIcon sx={{ color: '#E91E8C', fontSize: 18 }} />
+                  <CalendarTodayIcon sx={{ color: '#e3242b', fontSize: 18 }} />
                   <Box>
                     <Typography sx={{ fontSize: '0.7rem', color: '#999', lineHeight: 1 }}>
                       Published
@@ -389,7 +389,7 @@ export default function BlogPage() {
                   </Box>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                  <AccessTimeIcon sx={{ color: '#E91E8C', fontSize: 18 }} />
+                  <AccessTimeIcon sx={{ color: '#e3242b', fontSize: 18 }} />
                   <Box>
                     <Typography sx={{ fontSize: '0.7rem', color: '#999', lineHeight: 1 }}>
                       Read time
@@ -419,10 +419,10 @@ export default function BlogPage() {
               {/* Sources */}
               {selectedPost.sources && selectedPost.sources.length > 0 && (
                 <>
-                  <Divider sx={{ my: 4, borderColor: '#F0C0D0' }} />
+                  <Divider sx={{ my: 4, borderColor: '#E8D5B0' }} />
                   <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                      <MenuBookIcon sx={{ color: '#E91E8C', fontSize: 22 }} />
+                      <MenuBookIcon sx={{ color: '#e3242b', fontSize: 22 }} />
                       <Typography
                         sx={{
                           fontFamily: '"Georgia", serif',
@@ -442,7 +442,7 @@ export default function BlogPage() {
                           fontSize: '0.88rem',
                           lineHeight: 1.8,
                           pl: 2,
-                          borderLeft: '2px solid #F0C0D0',
+                          borderLeft: '2px solid #E8D5B0',
                           mb: 1,
                         }}
                       >

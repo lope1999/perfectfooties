@@ -5,7 +5,6 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import TermsModal from './TermsModal';
-import PricingTable from './PricingTable';
 
 const linkSx = {
   color: 'var(--text-purple)',
@@ -16,7 +15,7 @@ const linkSx = {
   mb: 1.2,
   textDecoration: 'none',
   '&:hover': {
-    color: '#E91E8C',
+    color: '#e3242b',
   },
 };
 
@@ -24,7 +23,6 @@ export default function Footer() {
   const navigate = useNavigate();
   const location = useLocation();
   const [termsOpen, setTermsOpen] = useState(false);
-  const [pricingOpen, setPricingOpen] = useState(false);
 
   const handleContactClick = () => {
     if (location.pathname !== '/') {
@@ -50,36 +48,33 @@ export default function Footer() {
 
   return (
 		<>
-			<Box sx={{ backgroundColor: "#FFC0CB", py: 6 }}>
+			<Box sx={{ backgroundColor: "#FFF8F0", borderTop: "1px solid #E8D5B0", py: 6 }}>
 				<Container maxWidth="lg">
 					<Grid container spacing={4}>
 						{/* Column 1 — Brand */}
 						<Grid item xs={12} sm={6} md={3}>
-							<Typography
-								variant="h6"
+							<Box
+								component="img"
+								src="/images/logo.png"
+								alt="PerfectFooties"
 								sx={{
-									fontFamily: '"Georgia", serif',
-									fontWeight: 700,
-									color: "#2c2c2c",
+									height: 48,
+									width: "auto",
+									objectFit: "contain",
 									mb: 2,
+									display: "block",
 								}}
-							>
-								Chizzy's Styles
-							</Typography>
+							/>
 							<Typography
 								sx={{
-									color: "#4d0051",
+									color: "var(--text-muted)",
 									fontSize: "0.85rem",
 									lineHeight: 1.7,
 								}}
 							>
-								{/* Chizzy's Nails is a refined nail brand rooted in Gloss
-								and Grace - where clean structure meets detailed minimal
-								artistry. */}
-								Our mission at ChizzysStyles is to create refined beauty
-								experiences that begin with the hands, delivering
-								elegance, confidence, artistry, gloss and grace through
-								Chizzy’s Nails.{" "}
+								PerfectFooties crafts handmade leather goods built to last.
+								From shoes to bags and accessories — every piece is made
+								with care, precision, and a passion for quality craftsmanship.
 							</Typography>
 						</Grid>
 
@@ -94,23 +89,11 @@ export default function Footer() {
 									fontSize: "0.95rem",
 								}}
 							>
-								Services
-							</Typography>
-							<MuiLink sx={linkSx} onClick={() => navigate("/products")}>
-								Products Menu
-							</MuiLink>
-							<MuiLink sx={linkSx} onClick={() => navigate("/services")}>
-								Services Menu 
-							</MuiLink>
-							<MuiLink
-								sx={linkSx}
-								onClick={() => navigate("/reschedule")}
-							>
-								Reschedule Appointment
-							</MuiLink>
-							{/* <MuiLink sx={linkSx} onClick={() => navigate("/shop")}>
 								Shop
-							</MuiLink> */}
+							</Typography>
+							<MuiLink sx={linkSx} onClick={() => navigate("/shop")}>
+								Shop
+							</MuiLink>
 							<MuiLink
 								sx={linkSx}
 								onClick={() => navigate("/gift-cards")}
@@ -147,12 +130,6 @@ export default function Footer() {
 							<MuiLink sx={linkSx} onClick={() => navigate("/gallery")}>
 								Gallery
 							</MuiLink>
-							<MuiLink
-								sx={linkSx}
-								onClick={() => navigate("/nail-care")}
-							>
-								Nail Care Guide
-							</MuiLink>
 							<MuiLink sx={linkSx} onClick={handleContactClick}>
 								Contact
 							</MuiLink>
@@ -174,10 +151,7 @@ export default function Footer() {
 							<MuiLink sx={linkSx} onClick={handleFaqClick}>
 								FAQ
 							</MuiLink>
-							<MuiLink sx={linkSx} onClick={() => setPricingOpen(true)}>
-								All Prices
-							</MuiLink>
-							<MuiLink sx={linkSx} onClick={() => setTermsOpen(true)}>
+<MuiLink sx={linkSx} onClick={() => setTermsOpen(true)}>
 								T&C
 							</MuiLink>
 						</Grid>
@@ -198,15 +172,12 @@ export default function Footer() {
 							<Typography
 								sx={{ color: "#1b1b1b", fontSize: "0.9rem", mb: 0.8 }}
 							>
-								chizobaezeh338@gmail.com
+								perfect.footies@gmail.com
 							</Typography>
 							<Typography
 								sx={{ color: "#1b1b1b", fontSize: "0.9rem", mb: 0.8 }}
 							>
-								0905 371 419 7
-							</Typography>
-							<Typography sx={{ color: "#1e1e1e", fontSize: "0.9rem" }}>
-								Cornerstone A, Labak Estate, Abule egba, Lagos.
+								0807 363 7911
 							</Typography>
 						</Grid>
 					</Grid>
@@ -214,7 +185,7 @@ export default function Footer() {
 					{/* Social Icons + Copyright */}
 					<Box
 						sx={{
-							borderTop: "1px solid rgba(74, 14, 78, 0.3)",
+							borderTop: "1px solid rgba(0, 102, 102, 0.25)",
 							mt: 5,
 							pt: 3,
 							textAlign: "center",
@@ -229,49 +200,44 @@ export default function Footer() {
 							}}
 						>
 							<IconButton
-								href="https://www.instagram.com/chizzys_styles?igsh=YTJ6bzU3ZW82cDFo&utm_source=qr"
+								href="https://www.instagram.com/perfect.footies"
 								target="_blank"
 								sx={{
 									color: "var(--text-purple)",
-									"&:hover": { color: "#E91E8C" },
+									"&:hover": { color: "#e3242b" },
 								}}
 							>
 								<InstagramIcon />
 							</IconButton>
 							<IconButton
-								href="https://tiktok.com/@chizzysstyles"
+								href="https://tiktok.com/@perfectfooties"
 								target="_blank"
 								sx={{
 									color: "var(--text-purple)",
-									"&:hover": { color: "#E91E8C" },
+									"&:hover": { color: "#e3242b" },
 								}}
 							>
 								<MusicNoteIcon />
 							</IconButton>
 							<IconButton
-								href="https://youtube.com/@chizzysstyles1505?si=pWaiuGVL8D93bQ_i"
+								href="https://youtube.com/@perfectfooties"
 								target="_blank"
 								sx={{
 									color: "var(--text-purple)",
-									"&:hover": { color: "#E91E8C" },
+									"&:hover": { color: "#e3242b" },
 								}}
 							>
 								<YouTubeIcon />
 							</IconButton>
 						</Box>
-						<Typography sx={{ color: "#4d0051", fontSize: "0.85rem" }}>
-							&copy; 2026 Designed by Chizzy's Styles. All rights
-							reserved.
+						<Typography sx={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+							&copy; 2026 PerfectFooties. All rights reserved.
 						</Typography>
 					</Box>
 				</Container>
 			</Box>
 
 			<TermsModal open={termsOpen} onClose={() => setTermsOpen(false)} />
-			<PricingTable
-				open={pricingOpen}
-				onClose={() => setPricingOpen(false)}
-			/>
 		</>
   );
 }

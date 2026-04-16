@@ -170,7 +170,7 @@ export default function CartPage() {
 
     const message = `Hi! I\u2019d like to place a combined order.\n\n${lines.join('\n')}\n${totalLine}${depositLine}\n\nPlease confirm availability and payment details. Thank you!`;
     const encoded = encodeURIComponent(message);
-    const whatsAppUrl = `https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`;
+    const whatsAppUrl = `https://api.whatsapp.com/send?phone=2348073637911&text=${encoded}`;
     if (!paymentReference) return;
 
     // Async operations after window.open
@@ -302,10 +302,10 @@ export default function CartPage() {
     if (!pk || !window.PaystackPop) { alert('Payment is required to confirm your booking. Please refresh the page and try again.'); return; }
     const handler = window.PaystackPop.setup({
       key: pk,
-      email: user?.email || 'guest@chizzys.com',
+      email: user?.email || 'guest@perfectfooties.com',
       amount: depositAmount * 100,
       currency: 'NGN',
-      ref: `CHIZZYS-APT-${Date.now()}`,
+      ref: `FOOTIES-APT-${Date.now()}`,
       metadata: { appointmentCount: services.length },
       callback: (response) => handleCompleteServiceOrder(response.reference),
       onClose: () => {},
@@ -314,11 +314,11 @@ export default function CartPage() {
   };
 
   return (
-    <Box sx={{ pt: { xs: 10, md: 12 }, pb: { xs: 22, md: 16 }, minHeight: '100vh', backgroundColor: '#FFF0F5' }}>
+    <Box sx={{ pt: { xs: 10, md: 12 }, pb: { xs: 22, md: 16 }, minHeight: '100vh', backgroundColor: '#FFF8F0' }}>
       <Container maxWidth="md">
         {/* Header */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <ShoppingCartOutlinedIcon sx={{ fontSize: 48, color: '#E91E8C', mb: 1 }} />
+          <ShoppingCartOutlinedIcon sx={{ fontSize: 48, color: '#e3242b', mb: 1 }} />
           <Typography
             variant="h3"
             sx={{
@@ -340,49 +340,19 @@ export default function CartPage() {
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Button
-                onClick={() => navigate('/book')}
-                sx={{
-                  border: '2px solid #E91E8C',
-                  borderRadius: '30px',
-                  color: 'var(--text-main)',
-                  px: 3,
-                  py: 1,
-                  fontFamily: '"Georgia", serif',
-                  fontWeight: 600,
-                  '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
-                }}
-              >
-                Book a Service
-              </Button>
-              <Button
                 onClick={() => navigate('/shop')}
                 sx={{
-                  border: '2px solid #E91E8C',
+                  border: '2px solid #e3242b',
                   borderRadius: '30px',
                   color: 'var(--text-main)',
                   px: 3,
                   py: 1,
                   fontFamily: '"Georgia", serif',
                   fontWeight: 600,
-                  '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
+                  '&:hover': { backgroundColor: '#e3242b', color: '#fff' },
                 }}
               >
                 Shop Products
-              </Button>
-              <Button
-                onClick={() => navigate('/order')}
-                sx={{
-                  border: '2px solid #E91E8C',
-                  borderRadius: '30px',
-                  color: 'var(--text-main)',
-                  px: 3,
-                  py: 1,
-                  fontFamily: '"Georgia", serif',
-                  fontWeight: 600,
-                  '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
-                }}
-              >
-                Order Press-Ons
               </Button>
             </Box>
           </Box>
@@ -402,7 +372,7 @@ export default function CartPage() {
                       p: 2,
                       mb: 1.5,
                       borderRadius: 2,
-                      border: '1px solid #F0C0D0',
+                      border: '1px solid #E8D5B0',
                       backgroundColor: '#fff',
                     }}
                   >
@@ -440,7 +410,7 @@ export default function CartPage() {
                         </Typography>
                       )}
                       {s.isHomeService && s.transportRange && (
-                        <Typography sx={{ color: '#E91E8C', fontSize: '0.78rem', fontWeight: 600 }}>
+                        <Typography sx={{ color: '#e3242b', fontSize: '0.78rem', fontWeight: 600 }}>
                           + {s.transportRange} est. transport (confirmed on booking)
                         </Typography>
                       )}
@@ -464,7 +434,7 @@ export default function CartPage() {
                           sx={{
                             fontFamily: '"Georgia", serif',
                             fontWeight: 700,
-                            color: s.originalPrice ? '#2e7d32' : '#E91E8C',
+                            color: s.originalPrice ? '#2e7d32' : '#e3242b',
                             whiteSpace: 'nowrap',
                           }}
                         >
@@ -474,14 +444,14 @@ export default function CartPage() {
                       <IconButton
                         size="small"
                         onClick={() => removeService(s.id)}
-                        sx={{ color: '#E91E8C' }}
+                        sx={{ color: '#e3242b' }}
                       >
                         <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                       </IconButton>
                     </Box>
                   </Box>
                 ))}
-                <Divider sx={{ borderColor: '#F0C0D0', mt: 2 }} />
+                <Divider sx={{ borderColor: '#E8D5B0', mt: 2 }} />
               </Box>
             )}
 
@@ -499,7 +469,7 @@ export default function CartPage() {
                       p: 2,
                       mb: 1.5,
                       borderRadius: 2,
-                      border: '1px solid #F0C0D0',
+                      border: '1px solid #E8D5B0',
                       backgroundColor: '#fff',
                     }}
                   >
@@ -535,11 +505,11 @@ export default function CartPage() {
                         onClick={() => updateProductQty(p.productId, p.quantity - 1)}
                         disabled={p.quantity <= 1}
                         sx={{
-                          color: '#E91E8C',
-                          border: '1.5px solid #E91E8C',
+                          color: '#e3242b',
+                          border: '1.5px solid #e3242b',
                           width: 28,
                           height: 28,
-                          '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
+                          '&:hover': { backgroundColor: '#e3242b', color: '#fff' },
                           '&.Mui-disabled': { borderColor: '#ddd', color: '#ddd' },
                         }}
                       >
@@ -551,7 +521,7 @@ export default function CartPage() {
                           fontWeight: 700,
                           minWidth: 24,
                           textAlign: 'center',
-                          color: '#E91E8C',
+                          color: '#e3242b',
                         }}
                       >
                         {p.quantity}
@@ -561,11 +531,11 @@ export default function CartPage() {
                         onClick={() => updateProductQty(p.productId, p.quantity + 1)}
                         disabled={p.quantity >= p.stock}
                         sx={{
-                          color: '#E91E8C',
-                          border: '1.5px solid #E91E8C',
+                          color: '#e3242b',
+                          border: '1.5px solid #e3242b',
                           width: 28,
                           height: 28,
-                          '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
+                          '&:hover': { backgroundColor: '#e3242b', color: '#fff' },
                           '&.Mui-disabled': { borderColor: '#ddd', color: '#ddd' },
                         }}
                       >
@@ -575,7 +545,7 @@ export default function CartPage() {
                         sx={{
                           fontFamily: '"Georgia", serif',
                           fontWeight: 700,
-                          color: '#E91E8C',
+                          color: '#e3242b',
                           minWidth: 70,
                           textAlign: 'right',
                         }}
@@ -585,14 +555,14 @@ export default function CartPage() {
                       <IconButton
                         size="small"
                         onClick={() => removeProduct(p.productId)}
-                        sx={{ color: '#E91E8C' }}
+                        sx={{ color: '#e3242b' }}
                       >
                         <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                       </IconButton>
                     </Box>
                   </Box>
                 ))}
-                <Divider sx={{ borderColor: '#F0C0D0', mt: 2 }} />
+                <Divider sx={{ borderColor: '#E8D5B0', mt: 2 }} />
               </Box>
             )}
 
@@ -610,7 +580,7 @@ export default function CartPage() {
                       p: 2,
                       mb: 1.5,
                       borderRadius: 2,
-                      border: '1px solid #F0C0D0',
+                      border: '1px solid #E8D5B0',
                       backgroundColor: '#fff',
                     }}
                   >
@@ -643,7 +613,7 @@ export default function CartPage() {
                       {p.setIncludes?.length > 0 && (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
                           {p.setIncludes.map((tag) => (
-                            <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.68rem', height: 20, backgroundColor: '#FCE4EC', color: '#C2185B', fontWeight: 600 }} />
+                            <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.68rem', height: 20, backgroundColor: '#FFE8E8', color: '#b81b21', fontWeight: 600 }} />
                           ))}
                         </Box>
                       )}
@@ -692,7 +662,7 @@ export default function CartPage() {
                           sx={{
                             fontFamily: '"Georgia", serif',
                             fontWeight: 700,
-                            color: p.originalPrice ? '#2e7d32' : '#E91E8C',
+                            color: p.originalPrice ? '#2e7d32' : '#e3242b',
                             whiteSpace: 'nowrap',
                           }}
                         >
@@ -702,20 +672,20 @@ export default function CartPage() {
                       <IconButton
                         size="small"
                         onClick={() => removePressOn(p.id)}
-                        sx={{ color: '#E91E8C' }}
+                        sx={{ color: '#e3242b' }}
                       >
                         <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                       </IconButton>
                     </Box>
                   </Box>
                 ))}
-                <Divider sx={{ borderColor: '#F0C0D0', mt: 2 }} />
+                <Divider sx={{ borderColor: '#E8D5B0', mt: 2 }} />
               </Box>
             )}
 
             {/* Appointment Deposit Info */}
             {services.length > 0 && (
-              <Box sx={{ mb: 3, p: 2.5, borderRadius: 3, border: '1.5px solid #E91E8C', backgroundColor: '#FFF0F8' }}>
+              <Box sx={{ mb: 3, p: 2.5, borderRadius: 3, border: '1.5px solid #e3242b', backgroundColor: '#FFF0F8' }}>
                 <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', fontSize: '0.95rem', mb: 1.5 }}>
                   Appointment Deposit Required
                 </Typography>
@@ -724,8 +694,8 @@ export default function CartPage() {
                   <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-muted)' }}>{formatNaira(serviceSubtotal)}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#E91E8C' }}>50% deposit to secure slot</Typography>
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#E91E8C' }}>{formatNaira(depositAmount)}</Typography>
+                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#e3242b' }}>50% deposit to secure slot</Typography>
+                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#e3242b' }}>{formatNaira(depositAmount)}</Typography>
                 </Box>
                 <Typography sx={{ fontSize: '0.78rem', color: '#999' }}>
                   Remaining {formatNaira(serviceSubtotal - depositAmount)} is due on the day of your appointment
@@ -734,27 +704,27 @@ export default function CartPage() {
             )}
 
             {/* Discounts & Rewards */}
-            <Box sx={{ mt: 2, mb: 3, p: 3, borderRadius: 3, backgroundColor: '#fff', border: '1px solid #F0C0D0' }}>
+            <Box sx={{ mt: 2, mb: 3, p: 3, borderRadius: 3, backgroundColor: '#fff', border: '1px solid #E8D5B0' }}>
               <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 2, fontSize: '0.95rem' }}>
                 Discounts &amp; Rewards
               </Typography>
 
               {/* Referral code */}
               <Box onClick={() => setShowRefField((v) => !v)} sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', mb: showRefField ? 1.5 : 0 }}>
-                <LocalOfferIcon sx={{ fontSize: 16, color: referralValid ? '#2e7d32' : '#E91E8C' }} />
-                <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: referralValid ? '#2e7d32' : '#E91E8C', fontFamily: '"Georgia", serif' }}>
+                <LocalOfferIcon sx={{ fontSize: 16, color: referralValid ? '#2e7d32' : '#e3242b' }} />
+                <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: referralValid ? '#2e7d32' : '#e3242b', fontFamily: '"Georgia", serif' }}>
                   {referralValid ? '\u20a6500 off applied!' : 'Have a referral code?'}
                 </Typography>
               </Box>
               <Collapse in={showRefField}>
                 <Box sx={{ display: 'flex', gap: 1, mb: 0.5 }}>
-                  <TextField size="small" placeholder="e.g. CHIZZYS-ABC123" value={refCodeInput}
+                  <TextField size="small" placeholder="e.g. FOOTIES-ABC123" value={refCodeInput}
                     onChange={(e) => { setRefCodeInput(e.target.value.toUpperCase()); setReferralValid(false); setReferralMsg(''); }}
-                    sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#F0C0D0' }, '&.Mui-focused fieldset': { borderColor: '#E91E8C' } } }}
+                    sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#E8D5B0' }, '&.Mui-focused fieldset': { borderColor: '#e3242b' } } }}
                     inputProps={{ style: { fontFamily: 'monospace', letterSpacing: 1 } }}
                   />
                   <Button onClick={handleApplyReferral} disabled={!refCodeInput.trim() || referralChecking}
-                    sx={{ backgroundColor: '#E91E8C', color: '#fff', borderRadius: 2, px: 2.5, fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.82rem', whiteSpace: 'nowrap', '&:hover': { backgroundColor: '#C2185B' }, '&.Mui-disabled': { backgroundColor: '#F0C0D0', color: '#fff' } }}>
+                    sx={{ backgroundColor: '#e3242b', color: '#fff', borderRadius: 2, px: 2.5, fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.82rem', whiteSpace: 'nowrap', '&:hover': { backgroundColor: '#b81b21' }, '&.Mui-disabled': { backgroundColor: '#E8D5B0', color: '#fff' } }}>
                     {referralChecking ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Apply'}
                   </Button>
                 </Box>
@@ -771,7 +741,7 @@ export default function CartPage() {
                         <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#B8860B' }}>🎁 ₦{pendingReward.naira.toLocaleString()} loyalty reward ready</Typography>
                         <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>{pendingReward.pts} pts saved — tap Apply to use</Typography>
                       </Box>
-                      <Button size="small" onClick={() => setLoyaltyUnits(Math.min(pendingReward.units, maxLoyaltyUnits))} sx={{ border: '1.5px solid #E91E8C', borderRadius: '20px', color: '#E91E8C', px: 2, py: 0.4, fontSize: '0.78rem', fontWeight: 700, textTransform: 'none', '&:hover': { backgroundColor: '#E91E8C', color: '#fff' } }}>Apply</Button>
+                      <Button size="small" onClick={() => setLoyaltyUnits(Math.min(pendingReward.units, maxLoyaltyUnits))} sx={{ border: '1.5px solid #e3242b', borderRadius: '20px', color: '#e3242b', px: 2, py: 0.4, fontSize: '0.78rem', fontWeight: 700, textTransform: 'none', '&:hover': { backgroundColor: '#e3242b', color: '#fff' } }}>Apply</Button>
                     </Box>
                   )}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -781,11 +751,11 @@ export default function CartPage() {
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.max(0, u - 1))} disabled={loyaltyUnits === 0} sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 28, height: 28 }}>
+                    <IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.max(0, u - 1))} disabled={loyaltyUnits === 0} sx={{ border: '1.5px solid #E8D5B0', borderRadius: '50%', width: 28, height: 28 }}>
                       <RemoveIcon sx={{ fontSize: 14 }} />
                     </IconButton>
                     <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, minWidth: 20, textAlign: 'center' }}>{loyaltyUnits}</Typography>
-                    <IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))} disabled={loyaltyUnits >= maxLoyaltyUnits} sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 28, height: 28 }}>
+                    <IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))} disabled={loyaltyUnits >= maxLoyaltyUnits} sx={{ border: '1.5px solid #E8D5B0', borderRadius: '50%', width: 28, height: 28 }}>
                       <AddIcon sx={{ fontSize: 14 }} />
                     </IconButton>
                     <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>units &times; &#8358;1,000 = <strong style={{ color: '#B8860B' }}>{formatNaira(loyaltyDiscount)} off</strong></Typography>
@@ -817,12 +787,12 @@ export default function CartPage() {
             <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 1.5, fontSize: '1.1rem' }}>
               Recently Viewed
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { height: 4 }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#F0C0D0', borderRadius: 2 } }}>
+            <Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { height: 4 }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#E8D5B0', borderRadius: 2 } }}>
               {recentlyViewed.map((item) => (
                 <Box
                   key={`${item.categoryId}-${item.id}`}
                   onClick={() => window.location.href = `/products/${item.categoryId}/${item.id}`}
-                  sx={{ minWidth: 130, maxWidth: 130, borderRadius: 2, border: '1px solid #F0C0D0', overflow: 'hidden', cursor: 'pointer', flexShrink: 0, backgroundColor: '#fff', transition: 'all 0.2s', '&:hover': { borderColor: '#E91E8C', boxShadow: '0 2px 8px rgba(233,30,140,0.15)' } }}
+                  sx={{ minWidth: 130, maxWidth: 130, borderRadius: 2, border: '1px solid #E8D5B0', overflow: 'hidden', cursor: 'pointer', flexShrink: 0, backgroundColor: '#fff', transition: 'all 0.2s', '&:hover': { borderColor: '#e3242b', boxShadow: '0 2px 8px rgba(233,30,140,0.15)' } }}
                 >
                   {item.image ? (
                     <Box component="img" src={item.image} alt={item.name} sx={{ width: '100%', height: 95, objectFit: 'cover', display: 'block' }} />
@@ -835,7 +805,7 @@ export default function CartPage() {
                     <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                       {item.name}
                     </Typography>
-                    <Typography sx={{ fontSize: '0.75rem', color: '#E91E8C', fontWeight: 700, mt: 0.3 }}>
+                    <Typography sx={{ fontSize: '0.75rem', color: '#e3242b', fontWeight: 700, mt: 0.3 }}>
                       ₦{item.price?.toLocaleString()}
                     </Typography>
                   </Box>
@@ -857,7 +827,7 @@ export default function CartPage() {
             zIndex: 1100,
             backgroundColor: 'rgba(255, 240, 245, 0.95)',
             backdropFilter: 'blur(8px)',
-            borderTop: '1px solid #F0C0D0',
+            borderTop: '1px solid #E8D5B0',
             py: 2,
             px: 3,
           }}
@@ -883,12 +853,12 @@ export default function CartPage() {
                   {referralDiscount > 0 && <Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.75rem', color: '#2e7d32' }}>Referral: -{formatNaira(referralDiscount)}</Typography>}
                   {loyaltyDiscount > 0 && <Typography sx={{ fontFamily: '"Georgia", serif', fontSize: '0.75rem', color: '#B8860B' }}>Loyalty: -{formatNaira(loyaltyDiscount)}</Typography>}
                   <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.15rem', color: 'var(--text-main)' }}>
-                    Total: <span style={{ color: '#E91E8C' }}>{formatNaira(finalTotal)}</span>
+                    Total: <span style={{ color: '#e3242b' }}>{formatNaira(finalTotal)}</span>
                   </Typography>
                 </>
               ) : (
                 <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.15rem', color: 'var(--text-main)' }}>
-                  Total: <span style={{ color: '#E91E8C' }}>{formatNaira(total)}</span>
+                  Total: <span style={{ color: '#e3242b' }}>{formatNaira(total)}</span>
                 </Typography>
               )}
             </Box>
@@ -896,7 +866,7 @@ export default function CartPage() {
               onClick={handleCheckout}
               disabled={checkoutLoading}
               sx={{
-                backgroundColor: '#E91E8C',
+                backgroundColor: '#e3242b',
                 color: '#fff',
                 borderRadius: '30px',
                 px: 4,
@@ -905,7 +875,7 @@ export default function CartPage() {
                 fontWeight: 600,
                 fontSize: '0.95rem',
                 '&:hover': {
-                  backgroundColor: '#C2185B',
+                  backgroundColor: '#b81b21',
                 },
               }}
             >
@@ -928,27 +898,27 @@ export default function CartPage() {
         </DialogTitle>
         <DialogContent>
           {/* Appointment list */}
-          <Box sx={{ mb: 2, p: 2, borderRadius: 2, backgroundColor: '#FFF0F8', border: '1px solid #F0C0D0' }}>
+          <Box sx={{ mb: 2, p: 2, borderRadius: 2, backgroundColor: '#FFF0F8', border: '1px solid #E8D5B0' }}>
             {services.map((s) => (
               <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
                 <Box sx={{ flex: 1, mr: 1 }}>
                   <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-main)' }}>{s.name}</Typography>
                   <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>{s.date}</Typography>
                 </Box>
-                <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#E91E8C', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
+                <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#e3242b', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
               </Box>
             ))}
           </Box>
 
-          <Divider sx={{ borderColor: '#F0C0D0', mb: 2 }} />
+          <Divider sx={{ borderColor: '#E8D5B0', mb: 2 }} />
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
             <Typography sx={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Appointment total</Typography>
             <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-muted)' }}>{formatNaira(serviceSubtotal)}</Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
-            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#E91E8C' }}>Deposit (50%)</Typography>
-            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#E91E8C' }}>{formatNaira(depositAmount)}</Typography>
+            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#e3242b' }}>Deposit (50%)</Typography>
+            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#e3242b' }}>{formatNaira(depositAmount)}</Typography>
           </Box>
           <Typography sx={{ fontSize: '0.78rem', color: '#999', mb: 2 }}>
             Balance {formatNaira(serviceSubtotal - depositAmount)} due on appointment day
@@ -962,7 +932,7 @@ export default function CartPage() {
           <Button
             onClick={payWithPaystackCart}
             sx={{
-              backgroundColor: '#E91E8C',
+              backgroundColor: '#e3242b',
               color: '#fff',
               borderRadius: '30px',
               px: 3,
@@ -971,7 +941,7 @@ export default function CartPage() {
               fontWeight: 600,
               fontSize: '0.88rem',
               whiteSpace: 'nowrap',
-              '&:hover': { backgroundColor: '#C2185B' },
+              '&:hover': { backgroundColor: '#b81b21' },
             }}
           >
             Pay {formatNaira(depositAmount)} Deposit

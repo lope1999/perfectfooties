@@ -9,7 +9,8 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { serviceCategories } from '../data/services';
-import { productCategories } from '../data/products';
+// Product pricing is now dynamic from Firestore — static import removed
+const productCategories = [];
 import useServiceDiscounts from '../hooks/useServiceDiscounts';
 import { hasDiscount, getEffectivePrice, hasServiceDiscount, getServiceEffectivePrice } from '../lib/discountUtils';
 
@@ -42,7 +43,7 @@ const rowSx = {
   px: 1.5,
   borderRadius: 1.5,
   '&:nth-of-type(odd)': {
-    backgroundColor: '#FFF0F5',
+    backgroundColor: '#FFF8F0',
   },
 };
 
@@ -59,7 +60,7 @@ const priceSx = {
   fontFamily: '"Georgia", serif',
   fontWeight: 700,
   fontSize: '0.9rem',
-  color: '#E91E8C',
+  color: '#e3242b',
   whiteSpace: 'nowrap',
 };
 
@@ -93,11 +94,11 @@ export default function PricingTable({ open, onClose }) {
             position: 'absolute',
             right: 12,
             top: 12,
-            color: '#E91E8C',
-            border: '1.5px solid #E91E8C',
+            color: '#e3242b',
+            border: '1.5px solid #e3242b',
             width: 32,
             height: 32,
-            '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
+            '&:hover': { backgroundColor: '#e3242b', color: '#fff' },
           }}
         >
           <CloseIcon sx={{ fontSize: 18 }} />
@@ -128,7 +129,7 @@ export default function PricingTable({ open, onClose }) {
       <DialogContent sx={{ px: { xs: 2, sm: 3 }, pb: 4 }}>
         {/* SERVICE APPOINTMENTS */}
         <Typography sx={sectionHeadingSx}>Service Appointments</Typography>
-        <Divider sx={{ borderColor: '#F0C0D0', mb: 1 }} />
+        <Divider sx={{ borderColor: '#E8D5B0', mb: 1 }} />
 
         {serviceCategories.map((cat) => {
           const pricing = getCategoryPricing(cat.services);
@@ -172,7 +173,7 @@ export default function PricingTable({ open, onClose }) {
 
         {/* PRESS-ON NAILS */}
         <Typography sx={{ ...sectionHeadingSx, mt: 4 }}>Press-On Nails</Typography>
-        <Divider sx={{ borderColor: '#F0C0D0', mb: 1 }} />
+        <Divider sx={{ borderColor: '#E8D5B0', mb: 1 }} />
 
         {productCategories
           .filter((cat) => !cat.readyMade)

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { productCategories as staticData } from '../data/products';
+// Products come from Firestore — no static fallback after leather transition
+const staticData = [];
 
 export default function useProductCategories() {
   const [categories, setCategories] = useState([]);

@@ -12,7 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { formatRelativeTime } from '../lib/appointmentDateUtils';
 
-const SESSION_KEY = 'chizzystyles-reminder-popup-shown';
+const SESSION_KEY = 'perfectfooties-reminder-popup-shown';
 const fontFamily = '"Georgia", serif';
 
 export default function AppointmentReminderPopup() {

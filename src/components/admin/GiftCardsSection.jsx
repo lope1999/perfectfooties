@@ -229,7 +229,7 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table size="small">
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
+            <TableRow sx={{ backgroundColor: '#006666' }}>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 40 }} />
               {['#', 'Code', 'Type', 'Recipient', 'Amount', 'Balance', 'Status', 'Created', 'Expires', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
@@ -326,10 +326,10 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
                                 fontFamily,
                                 fontSize: '0.78rem',
                                 textTransform: 'none',
-                                borderColor: '#E91E8C',
-                                color: '#E91E8C',
+                                borderColor: '#e3242b',
+                                color: '#e3242b',
                                 mt: 0.5,
-                                '&:hover': { borderColor: '#C2185B', backgroundColor: '#FFF0F5' },
+                                '&:hover': { borderColor: '#b81b21', backgroundColor: '#FFF8F0' },
                               }}
                             >
                               Deduct Balance
@@ -378,7 +378,7 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
         </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, p: 2, backgroundColor: '#FFF0F5', borderRadius: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, p: 2, backgroundColor: '#FFF8F0', borderRadius: 2 }}>
               <Box>
                 <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>Card Code</Typography>
                 <Typography sx={{ fontFamily, fontWeight: 700, letterSpacing: '1px' }}>{deductCard?.code}</Typography>
@@ -412,7 +412,7 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
               <Button
                 size="small"
                 onClick={() => setDeductAmount(String(deductCard.balance))}
-                sx={{ fontFamily, fontSize: '0.75rem', color: '#E91E8C', textTransform: 'none', mt: 0.5 }}
+                sx={{ fontFamily, fontSize: '0.75rem', color: '#e3242b', textTransform: 'none', mt: 0.5 }}
               >
                 Use full balance ({formatNaira(deductCard.balance)})
               </Button>
@@ -425,7 +425,7 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
             onClick={handleDeduct}
             variant="contained"
             disabled={busy || !deductAmount || Number(deductAmount) <= 0}
-            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
           >
             {deductAmount && Number(deductAmount) === deductCard?.balance ? 'Fully Redeem' : 'Deduct'}
           </Button>

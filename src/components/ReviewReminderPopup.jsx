@@ -12,7 +12,7 @@ import StarIcon from '@mui/icons-material/Star';
 import { useAuth } from '../context/AuthContext';
 import { fetchUnreviewedCompletedOrders } from '../lib/reviewReminderService';
 
-const SESSION_KEY = 'chizzystyles-review-reminder-shown';
+const SESSION_KEY = 'perfectfooties-review-reminder-shown';
 const fontFamily = '"Georgia", serif';
 
 export default function ReviewReminderPopup() {
@@ -56,7 +56,7 @@ export default function ReviewReminderPopup() {
       PaperProps={{
         sx: {
           borderRadius: 3,
-          border: '2px solid #E91E8C',
+          border: '2px solid #e3242b',
           maxWidth: 420,
           mx: 2,
         },
@@ -68,7 +68,7 @@ export default function ReviewReminderPopup() {
             width: 64,
             height: 64,
             borderRadius: '50%',
-            backgroundColor: '#FFF0F5',
+            backgroundColor: '#FFF8F0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -76,7 +76,7 @@ export default function ReviewReminderPopup() {
             mb: 2,
           }}
         >
-          <StarIcon sx={{ fontSize: 36, color: '#E91E8C' }} />
+          <StarIcon sx={{ fontSize: 36, color: '#e3242b' }} />
         </Box>
 
         <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', mb: 1 }}>
@@ -118,7 +118,7 @@ export default function ReviewReminderPopup() {
         <Button
           onClick={handleLeaveReview}
           sx={{
-            backgroundColor: '#E91E8C',
+            backgroundColor: '#e3242b',
             color: '#fff',
             borderRadius: '30px',
             px: 4,
@@ -127,7 +127,7 @@ export default function ReviewReminderPopup() {
             fontWeight: 700,
             fontSize: '0.88rem',
             textTransform: 'none',
-            '&:hover': { backgroundColor: '#C2185B' },
+            '&:hover': { backgroundColor: '#b81b21' },
           }}
         >
           Leave a Review

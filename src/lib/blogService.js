@@ -80,7 +80,7 @@ export async function addBlogPost(post) {
   await setDoc(ref, {
     title,
     category: sanitizeString(post.category, 100),
-    author: sanitizeString(post.author || 'Chizzy — Chizzystyles', 200),
+    author: sanitizeString(post.author || 'PerfectFooties', 200),
     date: sanitizeString(post.date, 50),
     readTime: sanitizeString(post.readTime, 20),
     image: sanitizeString(post.image, 500),

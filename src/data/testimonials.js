@@ -1,47 +1,46 @@
 export const testimonials = [
 	{
-		id: 2,
+		id: 1,
 		name: "Damilola",
-		occupation: "Marketer",
-		service: "Simple Gel-X Press-On Nails",
-		type: "appointment",
+		occupation: "Marketing Executive",
+		service: "Handcrafted Leather Loafers",
+		type: "purchase",
 		rating: 5,
 		review:
-			"I needed strong nails that could survive my busy lifestyle and Chizzy delivered. They look so good, from the cuticle work to the nailart which looks amazing on camera.She is definitely my new go to nail tech.",
+			"These loafers are honestly everything. The leather quality is top tier and the stitching is so clean. I get compliments every single time I wear them. PerfectFooties delivered exactly what they promised — quality you can feel.",
 		avatar: "D",
 	},
-	// {
-	// 	id: 3,
-	// 	name: "Tolu",
-	// 	occupation: "Fashion Designer",
-	// 	service: "Luxury Gel-X Press-On Nails",
-	// 	type: "purchase",
-	// 	rating: 4,
-	// 	review:
-	// 		"The luxury press-ons are stunning — the nail art detail is incredible. I used them for a photoshoot and they looked like I just left a high-end salon. Only wish delivery was a bit faster, but the quality more than makes up for it.",
-	// 	avatar: "T",
-	// },
-	// {
-	// 	id: 4,
-	// 	name: "Chidinma",
-	// 	occupation: "Nurse",
-	// 	service: "Spa Pedicure",
-	// 	type: "appointment",
-	// 	rating: 5,
-	// 	review:
-	// 		"The spa pedicure was such a treat after long hospital shifts. My feet felt brand new — the exfoliation and massage were heavenly. The gel polish on my toes lasted nearly a month. This is now my monthly self-care ritual!",
-	// 	avatar: "C",
-	// },
-
 	{
-		id: 9,
+		id: 2,
 		name: "Adaeze",
 		occupation: "Photographer",
-		service: "Ombré Gel X",
-		type: "appointment",
+		service: "Custom Leather Belt",
+		type: "purchase",
 		rating: 5,
 		review:
-			"The ombré blend was absolutely seamless — I could not stop staring at my nails! Chizzy has a real eye for colour transitions. The whole experience was relaxing and the results were picture-perfect. 10 out of 10!",
+			"I ordered a custom belt and the attention to detail was incredible. The leather is thick and rich, the buckle is perfectly set, and the edges are so cleanly finished. This is clearly made by someone who takes their craft seriously.",
 		avatar: "A",
+	},
+	{
+		id: 3,
+		name: "Tolu",
+		occupation: "Fashion Designer",
+		service: "Leather Tote Bag",
+		type: "purchase",
+		rating: 5,
+		review:
+			"I have bought bags from all over and this is genuinely one of the best I own. The leather is full-grain, the handles are sturdy, and after three months of daily use it is already developing such a beautiful patina. Worth every kobo.",
+		avatar: "T",
+	},
+	{
+		id: 4,
+		name: "Emeka",
+		occupation: "Architect",
+		service: "Oxford Leather Shoes",
+		type: "purchase",
+		rating: 5,
+		review:
+			"The craftsmanship is seriously impressive. The sole is well-attached, the leather is soft but structured, and they fit perfectly. I wore them to a client presentation and three people asked where I got them. PerfectFooties is the real deal.",
+		avatar: "E",
 	},
 ];

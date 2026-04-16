@@ -21,7 +21,6 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { NailLogo } from "../data/svg.jsx";
 import CartIcon from "./CartIcon";
 import WishlistIcon from "./WishlistIcon";
 import NotificationBell from "./NotificationBell";
@@ -31,7 +30,7 @@ import { useThemeMode } from "../context/ThemeContext";
 
 const navButtonSx = {
   color: 'var(--text-main)',
-  border: '1px solid #E91E8C',
+  border: '1px solid #e3242b',
   borderRadius: '25px',
   px: 2.5,
   py: 0.8,
@@ -41,18 +40,17 @@ const navButtonSx = {
   transition: 'all 0.3s ease',
   whiteSpace: 'nowrap',
   '&:hover': {
-    backgroundColor: '#E91E8C',
+    backgroundColor: '#e3242b',
     color: '#fff',
   },
 };
 
 const navItems = [
-	{ label: "Nail Services Menu", path: "/services" },
-	{ label: "Press-ons Menu", path: "/products" },
-	{ label: "Contact Us", path: "contact" },
-	{ label: "Testimonials", path: "/testimonials" },
-	{ label: "Our Story", path: "/our-story" },
-	// { label: 'Shop', path: '/shop' },
+  { label: "Shop", path: "/shop" },
+  { label: "Our Story", path: "/our-story" },
+  { label: "Gallery", path: "/gallery" },
+  { label: "Testimonials", path: "/testimonials" },
+  { label: "Contact Us", path: "contact" },
 ];
 
 export default function Navbar() {
@@ -99,7 +97,7 @@ export default function Navbar() {
 				onMouseLeave={() => setHovered(false)}
 				sx={{
 					backgroundColor: hovered || trigger
-						? (isDark ? '#2d0a3e' : '#FFC0CB')
+						? (isDark ? '#1a0505' : '#FFF8F0')
 						: 'transparent',
 					transition: "background-color 0.4s ease",
 					zIndex: 1200,
@@ -116,21 +114,17 @@ export default function Navbar() {
 						}}
 						onClick={() => navigate("/")}
 					>
-						<NailLogo sx={{ fontSize: { xs: 28, md: 32 } }} />
-						<Typography
-							variant="h6"
+						<Box
+							component="img"
+							src="/images/logo.png"
+							alt="PerfectFooties"
 							sx={{
-								fontFamily:
-									'"Dancing Script", "Pacifico", "Great Vibes", cursive',
-								fontWeight: 700,
-								color: "var(--text-main)",
-								letterSpacing: 1,
-								fontSize: { xs: "1.2rem", md: "1.5rem" },
-								fontStyle: "italic",
+								height: { xs: 38, md: 46 },
+								width: "auto",
+								objectFit: "contain",
+								display: "block",
 							}}
-						>
-							Chizzysstyles
-						</Typography>
+						/>
 					</Box>
 
 					{/* Center — Nav Buttons (desktop only) */}
@@ -154,10 +148,10 @@ export default function Navbar() {
 							<Button
 								sx={{
 									...navButtonSx,
-									borderColor: "#4A0E4E",
+									borderColor: "#006666",
 									color: "var(--text-purple)",
 									"&:hover": {
-										backgroundColor: "#4A0E4E",
+										backgroundColor: "#006666",
 										color: "#fff",
 									},
 								}}
@@ -172,7 +166,7 @@ export default function Navbar() {
 					{/* Right — Cart + User + Social Icons (desktop) + Hamburger (mobile) */}
 					<Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
 						<Tooltip title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
-							<IconButton onClick={toggleMode} sx={{ color: isDark ? '#f5e6f5' : '#4A0E4E' }}>
+							<IconButton onClick={toggleMode} sx={{ color: isDark ? '#f5f0f0' : '#006666' }}>
 								{isDark ? <Brightness7Icon sx={{ fontSize: 22 }} /> : <Brightness4Icon sx={{ fontSize: 22 }} />}
 							</IconButton>
 						</Tooltip>
@@ -186,7 +180,7 @@ export default function Navbar() {
 							onClick={() => setDrawerOpen(true)}
 							sx={{
 								display: { xs: "flex", lg: "none" },
-								color: "#E91E8C",
+								color: "#e3242b",
 							}}
 						>
 							<MenuIcon sx={{ fontSize: 28 }} />
@@ -203,7 +197,7 @@ export default function Navbar() {
 				PaperProps={{
 					sx: {
 						width: 280,
-						backgroundColor: isDark ? '#1c0530' : '#FFF0F5',
+						backgroundColor: isDark ? '#120404' : '#FFF8F0',
 						pt: 2,
 					},
 				}}
@@ -229,12 +223,12 @@ export default function Navbar() {
 					</Typography>
 					<IconButton
 						onClick={() => setDrawerOpen(false)}
-						sx={{ color: "#E91E8C" }}
+						sx={{ color: "#e3242b" }}
 					>
 						<CloseIcon />
 					</IconButton>
 				</Box>
-				<Divider sx={{ borderColor: "#F0C0D0" }} />
+				<Divider sx={{ borderColor: "#E8D5B0" }} />
 				{/* Account Section — shown first */}
 				<Box sx={{ px: 2, py: 1.5 }}>
 					{user ? (
@@ -255,7 +249,7 @@ export default function Navbar() {
 										width: 36,
 										height: 36,
 										borderRadius: "50%",
-										border: "2px solid #E91E8C",
+										border: "2px solid #e3242b",
 									}}
 								/>
 								<Box>
@@ -284,7 +278,7 @@ export default function Navbar() {
 								sx={{
 									py: 1,
 									borderRadius: 1,
-									"&:hover": { backgroundColor: "#FCE4EC" },
+									"&:hover": { backgroundColor: "#FFE8E8" },
 								}}
 							>
 								<ListItemText
@@ -292,7 +286,7 @@ export default function Navbar() {
 									primaryTypographyProps={{
 										fontFamily: '"Georgia", serif',
 										fontWeight: 600,
-										color: "#E91E8C",
+										color: "#e3242b",
 										fontSize: "0.9rem",
 									}}
 								/>
@@ -305,7 +299,7 @@ export default function Navbar() {
 								sx={{
 									py: 1,
 									borderRadius: 1,
-									"&:hover": { backgroundColor: "#FCE4EC" },
+									"&:hover": { backgroundColor: "#FFE8E8" },
 								}}
 							>
 								<ListItemText
@@ -328,10 +322,10 @@ export default function Navbar() {
 							sx={{
 								py: 1.5,
 								borderRadius: 1,
-								"&:hover": { backgroundColor: "#FCE4EC" },
+								"&:hover": { backgroundColor: "#FFE8E8" },
 							}}
 						>
-							<PersonOutlineIcon sx={{ color: "#E91E8C", mr: 1 }} />
+							<PersonOutlineIcon sx={{ color: "#e3242b", mr: 1 }} />
 							<ListItemText
 								primary="Sign In"
 								primaryTypographyProps={{
@@ -343,7 +337,7 @@ export default function Navbar() {
 						</ListItemButton>
 					)}
 				</Box>
-				<Divider sx={{ borderColor: "#F0C0D0", my: 1 }} />
+				<Divider sx={{ borderColor: "#E8D5B0", my: 1 }} />
 				{/* Navigation Items */}
 				<List>
 					{navItems.map((item) => (
@@ -352,7 +346,7 @@ export default function Navbar() {
 							onClick={() => handleNavClick(item)}
 							sx={{
 								py: 1.5,
-								"&:hover": { backgroundColor: "#FCE4EC" },
+								"&:hover": { backgroundColor: "#FFE8E8" },
 							}}
 						>
 							<ListItemText
@@ -372,7 +366,7 @@ export default function Navbar() {
 						}}
 						sx={{
 							py: 1.5,
-							"&:hover": { backgroundColor: "#FCE4EC" },
+							"&:hover": { backgroundColor: "#FFE8E8" },
 						}}
 					>
 						<ListItemText
@@ -391,7 +385,7 @@ export default function Navbar() {
 						}}
 						sx={{
 							py: 1.5,
-							"&:hover": { backgroundColor: "#FCE4EC" },
+							"&:hover": { backgroundColor: "#FFE8E8" },
 						}}
 					>
 						<ListItemText
@@ -411,7 +405,7 @@ export default function Navbar() {
 							}}
 							sx={{
 								py: 1.5,
-								"&:hover": { backgroundColor: "#FCE4EC" },
+								"&:hover": { backgroundColor: "#FFE8E8" },
 							}}
 						>
 							<ListItemText

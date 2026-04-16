@@ -3,9 +3,9 @@ import ScrollReveal from '../components/ScrollReveal';
 import { teamMembers, departments } from '../data/team';
 
 const departmentColors = {
-  Leadership: '#4A0E4E',
-  Stylists: '#E91E8C',
-  Design: '#C2185B',
+  Leadership: '#006666',
+  Stylists: '#e3242b',
+  Design: '#b81b21',
   Marketing: '#880E4F',
 };
 
@@ -79,7 +79,7 @@ export default function OurTeamPage() {
 								sx={{
 									backgroundColor:
 										departmentColors[teamMembers[0].department] ||
-										"#E91E8C",
+										"#e3242b",
 									color: "#fff",
 									fontWeight: 600,
 									fontFamily: '"Georgia", serif',
@@ -100,7 +100,7 @@ export default function OurTeamPage() {
 							</Typography>
 							<Typography
 								sx={{
-									color: "#E91E8C",
+									color: "#e3242b",
 									fontFamily: '"Georgia", serif',
 									fontWeight: 600,
 									fontSize: "1.05rem",
@@ -176,7 +176,7 @@ export default function OurTeamPage() {
 												sx={{
 													backgroundColor:
 														departmentColors[member.department] ||
-														"#E91E8C",
+														"#e3242b",
 													color: "#fff",
 													fontWeight: 600,
 													fontSize: "0.72rem",
@@ -199,7 +199,7 @@ export default function OurTeamPage() {
 										</Typography>
 										<Typography
 											sx={{
-												color: "#E91E8C",
+												color: "#e3242b",
 												fontFamily: '"Georgia", serif',
 												fontWeight: 600,
 												fontSize: "0.88rem",

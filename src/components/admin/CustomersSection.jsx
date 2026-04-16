@@ -42,10 +42,10 @@ function formatNaira(amount) {
 const CLIENT_TIERS = [
   { min: 5, label: 'Diamond Diva',  emoji: '💎', color: '#5E35B1', bg: '#EDE7F6', border: '#B39DDB' },
   { min: 4, label: 'Star Client',   emoji: '⭐', color: '#B8860B', bg: '#FFFDE7', border: '#FFD54F' },
-  { min: 3, label: 'Nail Lover',    emoji: '💅', color: '#C2185B', bg: '#FCE4EC', border: '#F48FB1' },
+  { min: 3, label: 'Nail Lover',    emoji: '💅', color: '#b81b21', bg: '#FFE8E8', border: '#F48FB1' },
   { min: 2, label: 'Glam Client',   emoji: '✨', color: '#6A1B9A', bg: '#EDE7F6', border: '#B39DDB' },
   { min: 1, label: 'Fresh Darling', emoji: '🌸', color: '#2E7D32', bg: '#F1F8E9', border: '#A5D6A7' },
-  { min: 0, label: 'New Member',    emoji: '🌟', color: '#E91E8C', bg: '#FFF0F5', border: '#F0C0D0' },
+  { min: 0, label: 'New Member',    emoji: '🌟', color: '#e3242b', bg: '#FFF8F0', border: '#E8D5B0' },
 ];
 
 const PERK_LABELS = {
@@ -214,7 +214,7 @@ export default function CustomersSection({ users, loading }) {
             title="Total Customers"
             value={totalCustomers}
             icon={<PeopleIcon />}
-            gradient="linear-gradient(135deg, #4A0E4E 0%, #7B1FA2 100%)"
+            gradient="linear-gradient(135deg, #006666 0%, #7B1FA2 100%)"
           />
         </Grid>
         <Grid item xs={6} sm={3}>
@@ -222,7 +222,7 @@ export default function CustomersSection({ users, loading }) {
             title="Regulars"
             value={regularCount}
             icon={<StarIcon />}
-            gradient="linear-gradient(135deg, #E91E8C 0%, #F48FB1 100%)"
+            gradient="linear-gradient(135deg, #e3242b 0%, #F48FB1 100%)"
           />
         </Grid>
         <Grid item xs={6} sm={3}>
@@ -266,8 +266,8 @@ export default function CustomersSection({ users, loading }) {
               checked={regularsOnly}
               onChange={(e) => setRegularsOnly(e.target.checked)}
               sx={{
-                '& .MuiSwitch-switchBase.Mui-checked': { color: '#E91E8C' },
-                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#E91E8C' },
+                '& .MuiSwitch-switchBase.Mui-checked': { color: '#e3242b' },
+                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#e3242b' },
               }}
             />
           }
@@ -283,7 +283,7 @@ export default function CustomersSection({ users, loading }) {
       <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
         <Table size="small">
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
+            <TableRow sx={{ backgroundColor: '#006666' }}>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 32 }}>#</TableCell>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 32 }} />
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
@@ -388,7 +388,7 @@ export default function CustomersSection({ users, loading }) {
                 <TableRow key={`${u.uid}-detail`}>
                   <TableCell colSpan={8} sx={{ p: 0, border: 0 }}>
                     <Collapse in={isExpanded}>
-                      <Box sx={{ p: 2.5, backgroundColor: '#fdf4ff', borderBottom: '1px solid #F0C0D0' }}>
+                      <Box sx={{ p: 2.5, backgroundColor: '#fdf4ff', borderBottom: '1px solid #E8D5B0' }}>
                         <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 2 }}>
                           {/* Tier info */}
                           <Box
@@ -436,15 +436,15 @@ export default function CustomersSection({ users, loading }) {
                                         {PERK_LABELS[key]}
                                       </Typography>
                                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                        {saving && <CircularProgress size={14} sx={{ color: '#E91E8C' }} />}
+                                        {saving && <CircularProgress size={14} sx={{ color: '#e3242b' }} />}
                                         <Switch
                                           size="small"
                                           checked={!!perks[key]}
                                           onChange={() => handlePerkToggle(u, key)}
                                           disabled={saving}
                                           sx={{
-                                            '& .MuiSwitch-switchBase.Mui-checked': { color: '#E91E8C' },
-                                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#E91E8C' },
+                                            '& .MuiSwitch-switchBase.Mui-checked': { color: '#e3242b' },
+                                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#e3242b' },
                                           }}
                                         />
                                       </Box>

@@ -27,7 +27,7 @@ function GalleryCarousel({ images }) {
         maxWidth: 720,
         mx: 'auto',
         '& .swiper-pagination-bullet': {
-          backgroundColor: '#E91E8C',
+          backgroundColor: '#e3242b',
           opacity: 0.4,
           width: 10,
           height: 10,
@@ -115,7 +115,7 @@ export default function GalleryPage() {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-        <CircularProgress sx={{ color: '#E91E8C' }} />
+        <CircularProgress sx={{ color: '#e3242b' }} />
       </Box>
     );
   }
@@ -127,7 +127,7 @@ export default function GalleryPage() {
         sx={{
           py: { xs: 8, md: 10 },
           textAlign: 'center',
-          background: 'linear-gradient(135deg, #FFF0F5 0%, #FCE4EC 100%)',
+          background: 'linear-gradient(135deg, #FFF8F0 0%, #FFE8E8 100%)',
         }}
       >
         <ScrollReveal direction="up" duration={0.8}>
@@ -182,7 +182,7 @@ export default function GalleryPage() {
       </Box>
 
       {/* Press-On Nails section */}
-      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#FFF0F5' }}>
+      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#FFF8F0' }}>
         <Container maxWidth="md">
           <ScrollReveal direction="up">
             <Typography

@@ -10,7 +10,7 @@ const { sendBackInStockEmail, sendAppointmentConfirmationEmail } = require("./li
 
 initializeApp();
 
-const SHOP_URL = "https://chizzystyles.com";
+const SHOP_URL = "https://perfectfooties.store";
 
 // ── Back-in-stock handler ─────────────────────────────────────────────────────
 async function handleCategoryUpdate(event) {
@@ -165,7 +165,7 @@ exports.onAppointmentConfirmed = onDocumentUpdated(
 
 // ── HTTP: Paystack webhook ─────────────────────────────────────────────────────
 // Configure this URL in Paystack dashboard → Settings → API Keys & Webhooks
-// URL will be: https://<region>-chizzystyles-shop.cloudfunctions.net/paystackWebhook
+// URL will be: https://<region>-perfectfooties-shop.cloudfunctions.net/paystackWebhook
 exports.paystackWebhook = onRequest({ rawBody: true }, async (req, res) => {
   if (req.method !== "POST") {
     res.status(405).send("Method Not Allowed");

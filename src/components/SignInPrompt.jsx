@@ -41,7 +41,7 @@ export default function SignInPrompt({ open, onClose }) {
       }}
     >
       <DialogTitle sx={{ pb: 0 }}>
-        <LoginIcon sx={{ fontSize: 48, color: '#E91E8C', mb: 1, display: 'block', mx: 'auto' }} />
+        <LoginIcon sx={{ fontSize: 48, color: '#e3242b', mb: 1, display: 'block', mx: 'auto' }} />
         <Typography
           variant="h6"
           sx={{ fontFamily: '"Georgia", serif', fontWeight: 700 }}
@@ -60,7 +60,7 @@ export default function SignInPrompt({ open, onClose }) {
           disabled={signingIn}
           startIcon={signingIn ? <CircularProgress size={18} sx={{ color: 'inherit' }} /> : <LoginIcon />}
           sx={{
-            backgroundColor: '#E91E8C',
+            backgroundColor: '#e3242b',
             color: '#fff',
             borderRadius: '30px',
             px: 4,
@@ -68,7 +68,7 @@ export default function SignInPrompt({ open, onClose }) {
             fontFamily: '"Georgia", serif',
             fontWeight: 600,
             fontSize: '0.95rem',
-            '&:hover': { backgroundColor: '#C2185B' },
+            '&:hover': { backgroundColor: '#b81b21' },
           }}
         >
           {signingIn ? 'Signing In\u2026' : 'Sign In with Google'}

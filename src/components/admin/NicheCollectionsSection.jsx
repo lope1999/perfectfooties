@@ -18,9 +18,6 @@ import {
   DialogActions,
   TextField,
   MenuItem,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
   Snackbar,
   Alert,
   Skeleton,
@@ -35,48 +32,40 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ImageUploadField from './ImageUploadField';
 import {
-  addNicheCollection,
-  updateNicheCollection,
-  deleteNicheCollection,
-} from '../../lib/nicheCollectionService';
+  addProduct,
+  updateProduct,
+  deleteProduct,
+} from '../../lib/productService';
+import { LEATHER_CATEGORIES, LEATHER_MATERIALS } from '../../data/products';
 
 const fontFamily = '"Georgia", serif';
 
-const ALL_SHAPES = ['Almond', 'Coffin', 'Stiletto', 'Square', 'Round', 'Oval', 'Ballerina'];
-const ALL_LENGTHS = [
-  'XS (Extra Short)',
-  'S (Short)',
-  'M (Medium)',
-  'L (Long)',
-  'XL (Extra Long)',
-];
-const SEASON_OPTIONS = ['Spring', 'Summer', 'Autumn', 'Winter', "Valentine's", 'Christmas', 'Custom'];
 const STATUS_OPTIONS = [
-  { value: 'upcoming', label: 'Upcoming' },
-  { value: 'open', label: 'Open for Orders' },
-  { value: 'closed', label: 'Closed' },
+  { value: 'upcoming', label: 'Coming Soon' },
+  { value: 'open',     label: 'Available' },
+  { value: 'closed',   label: 'Sold Out' },
 ];
 
 const STATUS_COLORS = {
-  open: { color: '#2e7d32', bg: '#e8f5e9' },
+  open:     { color: '#2e7d32', bg: '#e8f5e9' },
   upcoming: { color: '#e65100', bg: '#fff3e0' },
-  closed: { color: '#616161', bg: '#f5f5f5' },
+  closed:   { color: '#616161', bg: '#f5f5f5' },
 };
 
 const emptyForm = {
   name: '',
-  season: '',
-  customSeason: '',
+  material: '',
+  category: '',
   description: '',
   images: ['', '', ''],
   price: '',
-  availableShapes: [],
-  availableLengths: [],
-  lengthSurcharges: {},
+  sizes: '',      // comma-separated string → array on save
+  colours: '',    // comma-separated string → array on save
   status: 'upcoming',
   closesAt: '',
   maxOrders: '',
-  requiresMeasurements: false,
+  requiresSize: false,
+  allowEngraving: false,
   multiSetDiscount: false,
   multiSetDiscountPercent: '',
   hiddenFromStorefront: false,
@@ -105,6 +94,9 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
   const showSnack = (message, severity = 'success') =>
     setSnack({ open: true, message, severity });
 
+  const toFormSizes = (arr) => (Array.isArray(arr) ? arr.join(', ') : arr || '');
+  const toArray = (str) => str.split(',').map((s) => s.trim()).filter(Boolean);
+
   const openAdd = () => {
     setEditingId(null);
     setForm(emptyForm);
@@ -115,21 +107,20 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
     setEditingId(col.id);
     const imgs = Array.isArray(col.images) ? [...col.images] : [];
     while (imgs.length < 3) imgs.push('');
-    const isCustomSeason = col.season && !SEASON_OPTIONS.includes(col.season);
     setForm({
       name: col.name || '',
-      season: isCustomSeason ? 'Custom' : col.season || '',
-      customSeason: isCustomSeason ? col.season : '',
+      material: col.material || '',
+      category: col.category || '',
       description: col.description || '',
       images: imgs,
       price: col.price ?? '',
-      availableShapes: col.availableShapes || [],
-      availableLengths: col.availableLengths || [],
-      lengthSurcharges: col.lengthSurcharges || {},
+      sizes: toFormSizes(col.sizes),
+      colours: toFormSizes(col.colours),
       status: col.status || 'upcoming',
       closesAt: col.closesAt ? col.closesAt.toDate?.().toISOString().slice(0, 16) : '',
       maxOrders: col.maxOrders ?? '',
-      requiresMeasurements: Boolean(col.requiresMeasurements),
+      requiresSize: Boolean(col.requiresSize),
+      allowEngraving: Boolean(col.allowEngraving),
       multiSetDiscount: Boolean(col.multiSetDiscount),
       multiSetDiscountPercent: col.multiSetDiscountPercent ?? '',
       hiddenFromStorefront: Boolean(col.hiddenFromStorefront),
@@ -141,51 +132,25 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
     setEditingId(null);
     const imgs = Array.isArray(col.images) ? [...col.images] : [];
     while (imgs.length < 3) imgs.push('');
-    const isCustomSeason = col.season && !SEASON_OPTIONS.includes(col.season);
     setForm({
       name: `${col.name || ''} (Copy)`,
-      season: isCustomSeason ? 'Custom' : col.season || '',
-      customSeason: isCustomSeason ? col.season : '',
+      material: col.material || '',
+      category: col.category || '',
       description: col.description || '',
       images: imgs,
       price: col.price ?? '',
-      availableShapes: col.availableShapes || [],
-      availableLengths: col.availableLengths || [],
-      lengthSurcharges: col.lengthSurcharges || {},
+      sizes: toFormSizes(col.sizes),
+      colours: toFormSizes(col.colours),
       status: 'upcoming',
       closesAt: '',
       maxOrders: col.maxOrders ?? '',
-      requiresMeasurements: Boolean(col.requiresMeasurements),
+      requiresSize: Boolean(col.requiresSize),
+      allowEngraving: Boolean(col.allowEngraving),
       multiSetDiscount: Boolean(col.multiSetDiscount),
       multiSetDiscountPercent: col.multiSetDiscountPercent ?? '',
       hiddenFromStorefront: false,
     });
     setDialogOpen(true);
-  };
-
-  const handleShapeToggle = (shape) => {
-    setForm((f) => ({
-      ...f,
-      availableShapes: f.availableShapes.includes(shape)
-        ? f.availableShapes.filter((s) => s !== shape)
-        : [...f.availableShapes, shape],
-    }));
-  };
-
-  const handleLengthToggle = (length) => {
-    setForm((f) => ({
-      ...f,
-      availableLengths: f.availableLengths.includes(length)
-        ? f.availableLengths.filter((l) => l !== length)
-        : [...f.availableLengths, length],
-    }));
-  };
-
-  const handleSurchargeChange = (length, value) => {
-    setForm((f) => ({
-      ...f,
-      lengthSurcharges: { ...f.lengthSurcharges, [length]: value },
-    }));
   };
 
   const handleImageChange = (index, url) => {
@@ -199,38 +164,34 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
   const handleSave = async () => {
     if (!form.name.trim()) { showSnack('Name is required', 'error'); return; }
     if (!form.price || isNaN(Number(form.price))) { showSnack('Enter a valid price', 'error'); return; }
-    if (form.availableShapes.length === 0) { showSnack('Select at least one shape', 'error'); return; }
-    if (form.availableLengths.length === 0) { showSnack('Select at least one length', 'error'); return; }
 
     setBusy(true);
     try {
-      const resolvedSeason = form.season === 'Custom' ? form.customSeason.trim() : form.season;
       const payload = {
         name: form.name.trim(),
-        season: resolvedSeason,
+        material: form.material.trim(),
+        category: form.category,
         description: form.description.trim(),
         images: form.images.filter(Boolean),
         price: Number(form.price),
-        lengthSurcharges: Object.fromEntries(
-          form.availableLengths.map((l) => [l, Number(form.lengthSurcharges[l]) || 0])
-        ),
-        availableShapes: form.availableShapes,
-        availableLengths: form.availableLengths,
+        sizes: toArray(form.sizes),
+        colours: toArray(form.colours),
         status: form.status,
         closesAt: form.closesAt ? new Date(form.closesAt) : null,
         maxOrders: form.maxOrders ? Number(form.maxOrders) : null,
-        requiresMeasurements: form.requiresMeasurements,
+        requiresSize: form.requiresSize,
+        allowEngraving: form.allowEngraving,
         multiSetDiscount: form.multiSetDiscount,
         multiSetDiscountPercent: form.multiSetDiscount ? Number(form.multiSetDiscountPercent) || 0 : 0,
         hiddenFromStorefront: form.hiddenFromStorefront,
       };
 
       if (editingId) {
-        await updateNicheCollection(editingId, payload);
-        showSnack('Collection updated');
+        await updateProduct(editingId, payload);
+        showSnack('Product updated');
       } else {
-        await addNicheCollection(payload);
-        showSnack('Collection created');
+        await addProduct(payload);
+        showSnack('Product created');
       }
       setDialogOpen(false);
       onRefresh();
@@ -246,8 +207,8 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
     if (!deleteDialog) return;
     setBusy(true);
     try {
-      await deleteNicheCollection(deleteDialog.id);
-      showSnack('Collection deleted');
+      await deleteProduct(deleteDialog.id);
+      showSnack('Product deleted');
       setDeleteDialog(null);
       onRefresh();
     } catch {
@@ -260,8 +221,8 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
   const handleStatusToggle = async (col) => {
     const next = col.status === 'open' ? 'closed' : 'open';
     try {
-      await updateNicheCollection(col.id, { status: next });
-      showSnack(`Collection ${next === 'open' ? 'opened' : 'closed'}`);
+      await updateProduct(col.id, { status: next });
+      showSnack(`Product ${next === 'open' ? 'set to available' : 'set to sold out'}`);
       onRefresh();
     } catch {
       showSnack('Failed to update status', 'error');
@@ -271,7 +232,7 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
   const handleVisibilityToggle = async (col) => {
     const next = !col.hiddenFromStorefront;
     try {
-      await updateNicheCollection(col.id, { hiddenFromStorefront: next });
+      await updateProduct(col.id, { hiddenFromStorefront: next });
       showSnack(next ? 'Hidden from storefront' : 'Visible on storefront');
       onRefresh();
     } catch {
@@ -284,33 +245,28 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h5" sx={{ fontFamily, fontWeight: 700, color: 'var(--text-purple)' }}>
-          Niche Collections
+          Shop Products
         </Typography>
         <Button
           startIcon={<AddIcon />}
           onClick={openAdd}
           sx={{
-            backgroundColor: '#E91E8C',
-            color: '#fff',
-            borderRadius: '20px',
-            fontFamily,
-            fontWeight: 600,
-            textTransform: 'none',
-            px: 2.5,
-            '&:hover': { backgroundColor: '#C2185B' },
+            backgroundColor: '#e3242b', color: '#fff', borderRadius: '20px',
+            fontFamily, fontWeight: 600, textTransform: 'none', px: 2.5,
+            '&:hover': { backgroundColor: '#b81b21' },
           }}
         >
-          New Collection
+          New Product
         </Button>
       </Box>
 
       {/* Stats */}
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         {[
-          { label: 'Total', value: stats.total, color: '#4A0E4E' },
-          { label: 'Open', value: stats.open, color: '#2e7d32' },
-          { label: 'Upcoming', value: stats.upcoming, color: '#e65100' },
-          { label: 'Closed', value: stats.closed, color: '#616161' },
+          { label: 'Total',     value: stats.total,    color: '#006666' },
+          { label: 'Available', value: stats.open,     color: '#2e7d32' },
+          { label: 'Coming Soon', value: stats.upcoming, color: '#e65100' },
+          { label: 'Sold Out',  value: stats.closed,   color: '#616161' },
         ].map((s) => (
           <Paper key={s.label} sx={{ p: 2, borderRadius: 2, minWidth: 100, textAlign: 'center' }}>
             <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.4rem', color: s.color }}>{s.value}</Typography>
@@ -323,8 +279,8 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
       <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 'none', border: '1px solid #eee' }}>
         <Table>
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#FFF0F5' }}>
-              {['Collection', 'Season', 'Price', 'Status', 'Orders', 'Actions'].map((h) => (
+            <TableRow sx={{ backgroundColor: '#FFF8F0' }}>
+              {['Product', 'Category', 'Material', 'Price', 'Status', 'Orders', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ fontFamily, fontWeight: 700, fontSize: '0.8rem', color: '#888' }}>{h}</TableCell>
               ))}
             </TableRow>
@@ -333,39 +289,37 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
             {loading ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 6 }).map((__, j) => (
+                  {Array.from({ length: 7 }).map((__, j) => (
                     <TableCell key={j}><Skeleton /></TableCell>
                   ))}
                 </TableRow>
               ))
             ) : collections.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} sx={{ textAlign: 'center', py: 4, color: '#aaa', fontFamily }}>
-                  No collections yet — create your first one above.
+                <TableCell colSpan={7} sx={{ textAlign: 'center', py: 4, color: '#aaa', fontFamily }}>
+                  No products yet — create your first one above.
                 </TableCell>
               </TableRow>
             ) : (
               collections.map((col) => {
                 const scfg = STATUS_COLORS[col.status] || STATUS_COLORS.closed;
                 const cover = Array.isArray(col.images) && col.images[0] ? col.images[0] : null;
+                const catLabel = LEATHER_CATEGORIES.find((c) => c.id === col.category)?.label || col.category || '—';
                 return (
                   <TableRow key={col.id} sx={{ '&:hover': { backgroundColor: '#FFFAFA' } }}>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         {cover ? (
-                          <Box
-                            component="img"
-                            src={cover}
-                            alt={col.name}
-                            sx={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 1.5, flexShrink: 0 }}
-                          />
+                          <Box component="img" src={cover} alt={col.name}
+                            sx={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 1.5, flexShrink: 0 }} />
                         ) : (
-                          <Box sx={{ width: 40, height: 40, borderRadius: 1.5, backgroundColor: '#FFF0F5', flexShrink: 0 }} />
+                          <Box sx={{ width: 40, height: 40, borderRadius: 1.5, backgroundColor: '#FFF8F0', flexShrink: 0 }} />
                         )}
                         <Typography sx={{ fontFamily, fontWeight: 600, fontSize: '0.88rem' }}>{col.name}</Typography>
                       </Box>
                     </TableCell>
-                    <TableCell sx={{ fontFamily, fontSize: '0.85rem', color: '#666' }}>{col.season || '—'}</TableCell>
+                    <TableCell sx={{ fontFamily, fontSize: '0.85rem', color: '#666' }}>{catLabel}</TableCell>
+                    <TableCell sx={{ fontFamily, fontSize: '0.85rem', color: '#666' }}>{col.material || '—'}</TableCell>
                     <TableCell sx={{ fontFamily, fontWeight: 600, fontSize: '0.88rem' }}>{formatNaira(col.price)}</TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -375,18 +329,15 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
                           sx={{ backgroundColor: scfg.bg, color: scfg.color, fontWeight: 700, fontSize: '0.68rem', height: 20 }}
                         />
                         {col.hiddenFromStorefront && (
-                          <Chip
-                            label="Hidden"
-                            size="small"
-                            sx={{ backgroundColor: '#f5f5f5', color: '#888', fontWeight: 700, fontSize: '0.68rem', height: 20 }}
-                          />
+                          <Chip label="Hidden" size="small"
+                            sx={{ backgroundColor: '#f5f5f5', color: '#888', fontWeight: 700, fontSize: '0.68rem', height: 20 }} />
                         )}
-                        <Tooltip title={col.status === 'open' ? 'Close orders' : 'Open orders'}>
+                        <Tooltip title={col.status === 'open' ? 'Mark as sold out' : 'Mark as available'}>
                           <Switch
                             size="small"
                             checked={col.status === 'open'}
                             onChange={() => handleStatusToggle(col)}
-                            sx={{ '& .MuiSwitch-thumb': { backgroundColor: col.status === 'open' ? '#E91E8C' : '#bbb' } }}
+                            sx={{ '& .MuiSwitch-thumb': { backgroundColor: col.status === 'open' ? '#e3242b' : '#bbb' } }}
                           />
                         </Tooltip>
                       </Box>
@@ -397,12 +348,13 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 0.5 }}>
                         <Tooltip title={col.hiddenFromStorefront ? 'Show on storefront' : 'Hide from storefront'}>
-                          <IconButton size="small" onClick={() => handleVisibilityToggle(col)} sx={{ color: col.hiddenFromStorefront ? '#bbb' : '#4A0E4E' }}>
+                          <IconButton size="small" onClick={() => handleVisibilityToggle(col)}
+                            sx={{ color: col.hiddenFromStorefront ? '#bbb' : '#006666' }}>
                             {col.hiddenFromStorefront ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Edit">
-                          <IconButton size="small" onClick={() => openEdit(col)} sx={{ color: '#E91E8C' }}>
+                          <IconButton size="small" onClick={() => openEdit(col)} sx={{ color: '#e3242b' }}>
                             <EditIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -429,13 +381,12 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onClose={() => !busy && setDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ fontFamily, fontWeight: 700 }}>
-          {editingId ? 'Edit Collection' : 'New Niche Collection'}
+          {editingId ? 'Edit Product' : 'New Product'}
         </DialogTitle>
         <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 2 }}>
           <TextField
-            label="Collection Name *"
-            fullWidth
-            size="small"
+            label="Product Name *"
+            fullWidth size="small"
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             InputProps={{ sx: { fontFamily } }}
@@ -443,34 +394,31 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
 
           <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField
-              select
-              label="Season / Theme"
-              size="small"
-              value={form.season}
-              onChange={(e) => setForm((f) => ({ ...f, season: e.target.value }))}
+              select label="Category" size="small"
+              value={form.category}
+              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
               sx={{ flex: 1 }}
             >
               <MenuItem value="">— None —</MenuItem>
-              {SEASON_OPTIONS.map((s) => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+              {LEATHER_CATEGORIES.map((c) => (
+                <MenuItem key={c.id} value={c.id}>{c.label}</MenuItem>
+              ))}
             </TextField>
-            {form.season === 'Custom' && (
-              <TextField
-                label="Custom Season Name"
-                size="small"
-                value={form.customSeason}
-                onChange={(e) => setForm((f) => ({ ...f, customSeason: e.target.value }))}
-                sx={{ flex: 1 }}
-                InputProps={{ sx: { fontFamily } }}
-              />
-            )}
+            <TextField
+              select label="Material" size="small"
+              value={form.material}
+              onChange={(e) => setForm((f) => ({ ...f, material: e.target.value }))}
+              sx={{ flex: 1 }}
+            >
+              <MenuItem value="">— None —</MenuItem>
+              {LEATHER_MATERIALS.map((m) => (
+                <MenuItem key={m} value={m}>{m}</MenuItem>
+              ))}
+            </TextField>
           </Box>
 
           <TextField
-            label="Description"
-            fullWidth
-            size="small"
-            multiline
-            rows={3}
+            label="Description" fullWidth size="small" multiline rows={3}
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             InputProps={{ sx: { fontFamily } }}
@@ -479,7 +427,7 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
           {/* Images */}
           <Box>
             <Typography sx={{ fontFamily, fontWeight: 600, fontSize: '0.88rem', mb: 1, color: 'var(--text-purple)' }}>
-              Collection Images (up to 3)
+              Product Images (up to 3)
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {form.images.map((img, i) => (
@@ -488,7 +436,7 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
                   label={`Image ${i + 1}${i === 0 ? ' (Cover)' : ' (Optional)'}`}
                   value={img}
                   onChange={(url) => handleImageChange(i, url)}
-                  folder="niche-collections"
+                  folder="shop-products"
                 />
               ))}
             </Box>
@@ -496,18 +444,13 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
 
           <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField
-              label="Price (₦) *"
-              size="small"
-              type="number"
+              label="Price (₦) *" size="small" type="number"
               value={form.price}
               onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-              sx={{ flex: 1 }}
-              inputProps={{ min: 0 }}
+              sx={{ flex: 1 }} inputProps={{ min: 0 }}
             />
             <TextField
-              select
-              label="Status"
-              size="small"
+              select label="Status" size="small"
               value={form.status}
               onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
               sx={{ flex: 1 }}
@@ -516,92 +459,29 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
             </TextField>
           </Box>
 
-          {/* Available Shapes */}
-          <Box>
-            <Typography sx={{ fontFamily, fontWeight: 600, fontSize: '0.88rem', mb: 0.5, color: 'var(--text-purple)' }}>
-              Available Shapes * (select all that apply)
-            </Typography>
-            <FormGroup row>
-              {ALL_SHAPES.map((s) => (
-                <FormControlLabel
-                  key={s}
-                  control={
-                    <Checkbox
-                      size="small"
-                      checked={form.availableShapes.includes(s)}
-                      onChange={() => handleShapeToggle(s)}
-                      sx={{ color: '#E91E8C', '&.Mui-checked': { color: '#E91E8C' } }}
-                    />
-                  }
-                  label={<Typography sx={{ fontFamily, fontSize: '0.82rem' }}>{s}</Typography>}
-                />
-              ))}
-            </FormGroup>
-          </Box>
+          <TextField
+            label="Available Sizes"
+            fullWidth size="small"
+            value={form.sizes}
+            onChange={(e) => setForm((f) => ({ ...f, sizes: e.target.value }))}
+            placeholder="e.g. 39, 40, 41, 42  or  S (30-32&quot;), M (32-34&quot;)"
+            helperText="Comma-separated. Leave blank if size doesn't apply."
+            InputProps={{ sx: { fontFamily } }}
+          />
 
-          {/* Available Lengths */}
-          <Box>
-            <Typography sx={{ fontFamily, fontWeight: 600, fontSize: '0.88rem', mb: 0.5, color: 'var(--text-purple)' }}>
-              Available Lengths * (select all that apply)
-            </Typography>
-            <FormGroup row>
-              {ALL_LENGTHS.map((l) => (
-                <FormControlLabel
-                  key={l}
-                  control={
-                    <Checkbox
-                      size="small"
-                      checked={form.availableLengths.includes(l)}
-                      onChange={() => handleLengthToggle(l)}
-                      sx={{ color: '#E91E8C', '&.Mui-checked': { color: '#E91E8C' } }}
-                    />
-                  }
-                  label={<Typography sx={{ fontFamily, fontSize: '0.82rem' }}>{l}</Typography>}
-                />
-              ))}
-            </FormGroup>
-          </Box>
+          <TextField
+            label="Available Colours"
+            fullWidth size="small"
+            value={form.colours}
+            onChange={(e) => setForm((f) => ({ ...f, colours: e.target.value }))}
+            placeholder="e.g. Chocolate Brown, Tan, Black, Cognac"
+            helperText="Comma-separated. Leave blank if colour doesn't apply."
+            InputProps={{ sx: { fontFamily } }}
+          />
 
-          {/* Length Surcharges */}
-          {form.availableLengths.length > 0 && (
-            <Box>
-              <Typography sx={{ fontFamily, fontWeight: 600, fontSize: '0.88rem', mb: 0.5, color: 'var(--text-purple)' }}>
-                Length Surcharges (₦ added on top of base price)
-              </Typography>
-              <Typography sx={{ fontFamily, fontSize: '0.75rem', color: '#888', mb: 1.5 }}>
-                Leave 0 for the shortest length — that becomes the base price shown on the card.
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-                {form.availableLengths.map((l) => (
-                  <TextField
-                    key={l}
-                    label={l}
-                    size="small"
-                    type="number"
-                    value={form.lengthSurcharges[l] ?? ''}
-                    onChange={(e) => handleSurchargeChange(l, e.target.value)}
-                    inputProps={{ min: 0, step: 500 }}
-                    sx={{ width: 148 }}
-                    InputProps={{
-                      startAdornment: <Typography sx={{ fontSize: '0.8rem', color: '#888', mr: 0.3 }}>₦+</Typography>,
-                    }}
-                    helperText={
-                      Number(form.lengthSurcharges[l]) === 0 || !form.lengthSurcharges[l]
-                        ? 'Base price'
-                        : `Total: ${formatNaira((Number(form.price) || 0) + (Number(form.lengthSurcharges[l]) || 0))}`
-                    }
-                  />
-                ))}
-              </Box>
-            </Box>
-          )}
-
-          {/* Optional fields */}
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <TextField
-              label="Max Orders (optional)"
-              size="small"
-              type="number"
+              label="Max Orders (optional)" size="small" type="number"
               value={form.maxOrders}
               onChange={(e) => setForm((f) => ({ ...f, maxOrders: e.target.value }))}
               sx={{ flex: 1, minWidth: 160 }}
@@ -609,9 +489,7 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
               helperText="Leave blank for unlimited"
             />
             <TextField
-              label="Auto-Close Date (optional)"
-              size="small"
-              type="datetime-local"
+              label="Auto-Close Date (optional)" size="small" type="datetime-local"
               value={form.closesAt}
               onChange={(e) => setForm((f) => ({ ...f, closesAt: e.target.value }))}
               sx={{ flex: 1, minWidth: 200 }}
@@ -621,50 +499,27 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
 
           {/* Toggles */}
           <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-            <FormControlLabel
-              control={
+            {[
+              { key: 'requiresSize',     label: 'Require size selection' },
+              { key: 'allowEngraving',   label: 'Allow personalisation / engraving' },
+              { key: 'multiSetDiscount', label: 'Multi-item discount (2+)' },
+              { key: 'hiddenFromStorefront', label: 'Hide from storefront' },
+            ].map(({ key, label }) => (
+              <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Switch
-                  checked={form.requiresMeasurements}
-                  onChange={(e) => setForm((f) => ({ ...f, requiresMeasurements: e.target.checked }))}
-                  sx={{ '& .MuiSwitch-thumb': { backgroundColor: form.requiresMeasurements ? '#E91E8C' : '#bbb' } }}
+                  size="small"
+                  checked={Boolean(form[key])}
+                  onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.checked }))}
+                  sx={{ '& .MuiSwitch-thumb': { backgroundColor: form[key] ? '#e3242b' : '#bbb' } }}
                 />
-              }
-              label={<Typography sx={{ fontFamily, fontSize: '0.85rem' }}>Require nail measurements</Typography>}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={form.multiSetDiscount}
-                  onChange={(e) => setForm((f) => ({ ...f, multiSetDiscount: e.target.checked }))}
-                  sx={{ '& .MuiSwitch-thumb': { backgroundColor: form.multiSetDiscount ? '#E91E8C' : '#bbb' } }}
-                />
-              }
-              label={<Typography sx={{ fontFamily, fontSize: '0.85rem' }}>Multi-set discount (2+ sets)</Typography>}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={form.hiddenFromStorefront}
-                  onChange={(e) => setForm((f) => ({ ...f, hiddenFromStorefront: e.target.checked }))}
-                  sx={{ '& .MuiSwitch-thumb': { backgroundColor: form.hiddenFromStorefront ? '#888' : '#E91E8C' } }}
-                />
-              }
-              label={
-                <Box>
-                  <Typography sx={{ fontFamily, fontSize: '0.85rem' }}>Hide from storefront</Typography>
-                  <Typography sx={{ fontFamily, fontSize: '0.72rem', color: '#888' }}>
-                    Collection won't appear on the live site
-                  </Typography>
-                </Box>
-              }
-            />
+                <Typography sx={{ fontFamily, fontSize: '0.85rem' }}>{label}</Typography>
+              </Box>
+            ))}
           </Box>
 
           {form.multiSetDiscount && (
             <TextField
-              label="Discount % for 2+ sets *"
-              size="small"
-              type="number"
+              label="Discount % for 2+ items *" size="small" type="number"
               value={form.multiSetDiscountPercent}
               onChange={(e) => setForm((f) => ({ ...f, multiSetDiscountPercent: e.target.value }))}
               sx={{ maxWidth: 240 }}
@@ -673,31 +528,26 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
           )}
         </DialogContent>
         <DialogActions sx={{ p: 2, gap: 1 }}>
-          <Button onClick={() => setDialogOpen(false)} disabled={busy} sx={{ fontFamily, color: '#888', textTransform: 'none' }}>
+          <Button onClick={() => setDialogOpen(false)} disabled={busy}
+            sx={{ fontFamily, color: '#888', textTransform: 'none' }}>
             Cancel
           </Button>
           <Button
-            onClick={handleSave}
-            disabled={busy}
+            onClick={handleSave} disabled={busy}
             sx={{
-              fontFamily,
-              fontWeight: 700,
-              backgroundColor: '#E91E8C',
-              color: '#fff',
-              borderRadius: '20px',
-              textTransform: 'none',
-              px: 3,
-              '&:hover': { backgroundColor: '#C2185B' },
+              fontFamily, fontWeight: 700, backgroundColor: '#e3242b', color: '#fff',
+              borderRadius: '20px', textTransform: 'none', px: 3,
+              '&:hover': { backgroundColor: '#b81b21' },
             }}
           >
-            {busy ? 'Saving…' : editingId ? 'Save Changes' : 'Create Collection'}
+            {busy ? 'Saving…' : editingId ? 'Save Changes' : 'Create Product'}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Delete Confirm Dialog */}
       <Dialog open={Boolean(deleteDialog)} onClose={() => setDeleteDialog(null)} maxWidth="xs">
-        <DialogTitle sx={{ fontFamily, fontWeight: 700 }}>Delete Collection?</DialogTitle>
+        <DialogTitle sx={{ fontFamily, fontWeight: 700 }}>Delete Product?</DialogTitle>
         <DialogContent>
           <Typography sx={{ fontFamily, fontSize: '0.9rem' }}>
             Delete <strong>{deleteDialog?.name}</strong>? This cannot be undone.
@@ -708,8 +558,7 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
             Cancel
           </Button>
           <Button
-            onClick={handleDelete}
-            disabled={busy}
+            onClick={handleDelete} disabled={busy}
             sx={{ fontFamily, fontWeight: 700, backgroundColor: '#d32f2f', color: '#fff', borderRadius: '20px', textTransform: 'none', px: 2.5, '&:hover': { backgroundColor: '#b71c1c' } }}
           >
             {busy ? 'Deleting…' : 'Delete'}

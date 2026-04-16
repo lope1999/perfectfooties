@@ -66,7 +66,7 @@ function ServiceFormDialog({ open, onClose, onSave, service, discountData, busy 
             <TextField fullWidth label="Image URL" value={form.image} onChange={set('image')} size="small" sx={inputSx} InputLabelProps={{ sx: { fontFamily: ff } }} helperText="Paste the image path or URL" />
             {form.image && (
               <Box component="img" src={form.image} alt="preview"
-                sx={{ mt: 1, height: 90, width: '100%', objectFit: 'cover', borderRadius: 1.5, border: '1px solid #F0C0D0' }}
+                sx={{ mt: 1, height: 90, width: '100%', objectFit: 'cover', borderRadius: 1.5, border: '1px solid #E8D5B0' }}
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             )}
@@ -109,7 +109,7 @@ function ServiceFormDialog({ open, onClose, onSave, service, discountData, busy 
           onClick={() => onSave(form, disc)}
           variant="contained"
           disabled={busy || !form.name.trim() || !String(form.price).trim()}
-          sx={{ fontFamily: ff, backgroundColor: '#4A0E4E', borderRadius: '20px', px: 3, textTransform: 'none', '&:hover': { backgroundColor: '#3a0b3e' }, '&.Mui-disabled': { backgroundColor: '#ddd' } }}
+          sx={{ fontFamily: ff, backgroundColor: '#006666', borderRadius: '20px', px: 3, textTransform: 'none', '&:hover': { backgroundColor: '#3a0b3e' }, '&.Mui-disabled': { backgroundColor: '#ddd' } }}
         >
           {busy ? 'Saving…' : service ? 'Update Service' : 'Add Service'}
         </Button>
@@ -158,7 +158,7 @@ function CategoryFormDialog({ open, onClose, onSave, category, busy }) {
             <TextField fullWidth label="Cover Image URL" value={form.image} onChange={set('image')} size="small" sx={inputSx} InputLabelProps={{ sx: { fontFamily: ff } }} />
             {form.image && (
               <Box component="img" src={form.image} alt="preview"
-                sx={{ mt: 1, height: 90, width: '100%', objectFit: 'cover', borderRadius: 1.5, border: '1px solid #F0C0D0' }}
+                sx={{ mt: 1, height: 90, width: '100%', objectFit: 'cover', borderRadius: 1.5, border: '1px solid #E8D5B0' }}
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             )}
@@ -185,7 +185,7 @@ function CategoryFormDialog({ open, onClose, onSave, category, busy }) {
           onClick={() => onSave(form)}
           variant="contained"
           disabled={busy || !form.title.trim() || (!category && !form.id.trim())}
-          sx={{ fontFamily: ff, backgroundColor: '#4A0E4E', borderRadius: '20px', px: 3, textTransform: 'none', '&:hover': { backgroundColor: '#3a0b3e' }, '&.Mui-disabled': { backgroundColor: '#ddd' } }}
+          sx={{ fontFamily: ff, backgroundColor: '#006666', borderRadius: '20px', px: 3, textTransform: 'none', '&:hover': { backgroundColor: '#3a0b3e' }, '&.Mui-disabled': { backgroundColor: '#ddd' } }}
         >
           {busy ? 'Saving…' : category ? 'Update Category' : 'Add Category'}
         </Button>
@@ -330,7 +330,7 @@ export default function ServicesSection({ serviceCategories, serviceDiscounts, l
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => setCatDialog({ mode: 'add' })}
-          sx={{ fontFamily: ff, backgroundColor: '#4A0E4E', borderRadius: '20px', px: 3, textTransform: 'none', '&:hover': { backgroundColor: '#3a0b3e' } }}
+          sx={{ fontFamily: ff, backgroundColor: '#006666', borderRadius: '20px', px: 3, textTransform: 'none', '&:hover': { backgroundColor: '#3a0b3e' } }}
         >
           Add Category
         </Button>
@@ -340,16 +340,16 @@ export default function ServicesSection({ serviceCategories, serviceDiscounts, l
       {serviceCategories.map((cat) => (
         <Accordion
           key={cat.id}
-          sx={{ mb: 1.5, borderRadius: '12px !important', '&:before': { display: 'none' }, border: '1.5px solid #F0C0D0', boxShadow: 'none' }}
+          sx={{ mb: 1.5, borderRadius: '12px !important', '&:before': { display: 'none' }, border: '1.5px solid #E8D5B0', boxShadow: 'none' }}
         >
           <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 2.5, py: 0.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, mr: 1 }}>
               {cat.image ? (
                 <Box component="img" src={cat.image} alt={cat.title}
-                  sx={{ width: 44, height: 44, borderRadius: 1.5, objectFit: 'cover', flexShrink: 0, border: '1px solid #F0C0D0' }} />
+                  sx={{ width: 44, height: 44, borderRadius: 1.5, objectFit: 'cover', flexShrink: 0, border: '1px solid #E8D5B0' }} />
               ) : (
-                <Box sx={{ width: 44, height: 44, borderRadius: 1.5, backgroundColor: '#FCE4EC', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <ContentCutIcon sx={{ color: '#E91E8C', fontSize: 22 }} />
+                <Box sx={{ width: 44, height: 44, borderRadius: 1.5, backgroundColor: '#FFE8E8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ContentCutIcon sx={{ color: '#e3242b', fontSize: 22 }} />
                 </Box>
               )}
               <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -371,7 +371,7 @@ export default function ServicesSection({ serviceCategories, serviceDiscounts, l
               <Button
                 size="small" startIcon={<EditIcon sx={{ fontSize: 14 }} />}
                 onClick={() => setCatDialog({ mode: 'edit', cat })}
-                sx={{ fontFamily: ff, fontSize: '0.77rem', border: '1.5px solid #E91E8C', color: '#E91E8C', borderRadius: '20px', textTransform: 'none', px: 1.5, '&:hover': { backgroundColor: '#FFF0F5' } }}
+                sx={{ fontFamily: ff, fontSize: '0.77rem', border: '1.5px solid #e3242b', color: '#e3242b', borderRadius: '20px', textTransform: 'none', px: 1.5, '&:hover': { backgroundColor: '#FFF8F0' } }}
               >
                 Edit Category
               </Button>
@@ -385,12 +385,12 @@ export default function ServicesSection({ serviceCategories, serviceDiscounts, l
             </Box>
 
             {/* Services table */}
-            <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, mb: 1.5, border: '1px solid #F0C0D0' }}>
+            <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, mb: 1.5, border: '1px solid #E8D5B0' }}>
               <Table size="small">
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: '#FFF0F5' }}>
+                  <TableRow sx={{ backgroundColor: '#FFF8F0' }}>
                     {['', 'Service Name', 'Base Price', 'Discount', 'Actions'].map((h) => (
-                      <TableCell key={h} sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.78rem', color: 'var(--text-purple)', py: 1.2, borderBottom: '1.5px solid #F0C0D0' }}>{h}</TableCell>
+                      <TableCell key={h} sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.78rem', color: 'var(--text-purple)', py: 1.2, borderBottom: '1.5px solid #E8D5B0' }}>{h}</TableCell>
                     ))}
                   </TableRow>
                 </TableHead>
@@ -402,10 +402,10 @@ export default function ServicesSection({ serviceCategories, serviceDiscounts, l
                         <TableCell sx={{ width: 50, p: 1 }}>
                           {svc.image ? (
                             <Box component="img" src={svc.image} alt={svc.name}
-                              sx={{ width: 38, height: 38, objectFit: 'cover', borderRadius: 1, border: '1px solid #F0C0D0' }} />
+                              sx={{ width: 38, height: 38, objectFit: 'cover', borderRadius: 1, border: '1px solid #E8D5B0' }} />
                           ) : (
-                            <Box sx={{ width: 38, height: 38, borderRadius: 1, backgroundColor: '#FFF0F5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <ContentCutIcon sx={{ fontSize: 16, color: '#E91E8C' }} />
+                            <Box sx={{ width: 38, height: 38, borderRadius: 1, backgroundColor: '#FFF8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <ContentCutIcon sx={{ fontSize: 16, color: '#e3242b' }} />
                             </Box>
                           )}
                         </TableCell>

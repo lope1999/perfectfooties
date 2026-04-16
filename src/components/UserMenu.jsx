@@ -55,14 +55,14 @@ export default function UserMenu() {
   return (
     <>
       <Tooltip title={user ? 'Account' : 'Sign In'} arrow>
-        <IconButton onClick={handleClick} disabled={signingIn} sx={{ color: '#E91E8C', ml: 0.5 }}>
+        <IconButton onClick={handleClick} disabled={signingIn} sx={{ color: '#e3242b', ml: 0.5 }}>
           {signingIn ? (
-            <CircularProgress size={24} sx={{ color: '#E91E8C' }} />
+            <CircularProgress size={24} sx={{ color: '#e3242b' }} />
           ) : user ? (
             <Avatar
               src={user.photoURL}
               alt={user.displayName}
-              sx={{ width: 30, height: 30, border: '2px solid #E91E8C' }}
+              sx={{ width: 30, height: 30, border: '2px solid #e3242b' }}
             />
           ) : (
             <PersonOutlineIcon />
@@ -85,19 +85,19 @@ export default function UserMenu() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem onClick={() => goTo('/account#profile')}>
-          <ListItemIcon><AccountCircleOutlinedIcon sx={{ color: '#E91E8C' }} /></ListItemIcon>
+          <ListItemIcon><AccountCircleOutlinedIcon sx={{ color: '#e3242b' }} /></ListItemIcon>
           <ListItemText primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontSize: '0.9rem' }}>
             My Account
           </ListItemText>
         </MenuItem>
         <MenuItem onClick={() => goTo('/account#orders')}>
-          <ListItemIcon><ReceiptLongOutlinedIcon sx={{ color: '#E91E8C' }} /></ListItemIcon>
+          <ListItemIcon><ReceiptLongOutlinedIcon sx={{ color: '#e3242b' }} /></ListItemIcon>
           <ListItemText primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontSize: '0.9rem' }}>
             Order History
           </ListItemText>
         </MenuItem>
         <MenuItem onClick={() => goTo('/account#appointments')}>
-          <ListItemIcon><EventNoteIcon sx={{ color: '#E91E8C' }} /></ListItemIcon>
+          <ListItemIcon><EventNoteIcon sx={{ color: '#e3242b' }} /></ListItemIcon>
           <ListItemText primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontSize: '0.9rem' }}>
             Appointments
           </ListItemText>
@@ -112,7 +112,7 @@ export default function UserMenu() {
         )}
         <Divider />
         <MenuItem onClick={handleSignOut}>
-          <ListItemIcon><LogoutIcon sx={{ color: '#E91E8C' }} /></ListItemIcon>
+          <ListItemIcon><LogoutIcon sx={{ color: '#e3242b' }} /></ListItemIcon>
           <ListItemText primaryTypographyProps={{ fontFamily: '"Georgia", serif', fontSize: '0.9rem' }}>
             Sign Out
           </ListItemText>

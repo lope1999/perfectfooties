@@ -34,14 +34,10 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
-import {
-  pressOnNailShapes,
-  pressOnQuantities,
-} from '../data/products';
+const pressOnNailShapes = ['Almond', 'Coffin', 'Stiletto', 'Square', 'Round', 'Oval', 'Ballerina'];
+const pressOnQuantities = [1, 2, 3, 4, 5];
 import useProductCategories from '../hooks/useProductCategories';
 import ScrollReveal from '../components/ScrollReveal';
-import NailBedSizeInput from '../components/NailBedSizeInput';
-import PresetSizeGuide from '../components/PresetSizeGuide';
 import { useCart } from "../context/CartContext";
 import { useAuth } from '../context/AuthContext';
 import { saveNailBedSizes, fetchNailBedSizes } from '../lib/orderService';
@@ -54,7 +50,7 @@ function formatNaira(amount) {
 }
 
 const confirmButtonSx = {
-  border: '2px solid #E91E8C',
+  border: '2px solid #e3242b',
   borderRadius: '30px',
   color: 'var(--text-main)',
   backgroundColor: 'transparent',
@@ -65,18 +61,18 @@ const confirmButtonSx = {
   fontWeight: 600,
   transition: 'all 0.3s ease',
   '&:hover': {
-    backgroundColor: '#E91E8C',
+    backgroundColor: '#e3242b',
     color: '#fff',
-    borderColor: '#E91E8C',
+    borderColor: '#e3242b',
   },
 };
 
 const textFieldSx = {
   '& .MuiOutlinedInput-root': {
     borderRadius: 2,
-    '& fieldset': { borderColor: '#F0C0D0' },
-    '&:hover fieldset': { borderColor: '#E91E8C' },
-    '&.Mui-focused fieldset': { borderColor: '#E91E8C' },
+    '& fieldset': { borderColor: '#E8D5B0' },
+    '&:hover fieldset': { borderColor: '#e3242b' },
+    '&.Mui-focused fieldset': { borderColor: '#e3242b' },
   },
 };
 
@@ -154,7 +150,6 @@ export default function PlaceOrderPage() {
 
   const [selectedProducts, setSelectedProducts] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
-  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const { categories: productCategories, loading, error } = useProductCategories();
 
   const handleContactClick = () => {
@@ -354,7 +349,7 @@ export default function PlaceOrderPage() {
 
   return (
 		<Box sx={{ pt: { xs: 7, md: 8 } }}>
-			<Box sx={{ py: 8, backgroundColor: "#FFF0F5" }}>
+			<Box sx={{ py: 8, backgroundColor: "#FFF8F0" }}>
 				<Container maxWidth="md">
 					{/* Header */}
 					<ScrollReveal direction="up">
@@ -390,8 +385,8 @@ export default function PlaceOrderPage() {
 									maxWidth: 520,
 									p: 2,
 									borderRadius: 2,
-									backgroundColor: "#FCE4EC",
-									border: "1px solid #F0C0D0",
+									backgroundColor: "#FFE8E8",
+									border: "1px solid #E8D5B0",
 								}}
 							>
 								<Typography
@@ -414,7 +409,7 @@ export default function PlaceOrderPage() {
 							position: "sticky",
 							top: { xs: 56, md: 64 },
 							zIndex: 10,
-							backgroundColor: "#FFF0F5",
+							backgroundColor: "#FFF8F0",
 							pb: 2,
 							pt: 1,
 							mb: 2,
@@ -444,7 +439,7 @@ export default function PlaceOrderPage() {
 					{/* Loading / Error */}
 					{loading && (
 						<Box sx={{ textAlign: 'center', py: 10 }}>
-							<CircularProgress sx={{ color: '#E91E8C' }} />
+							<CircularProgress sx={{ color: '#e3242b' }} />
 							<Typography sx={{ mt: 2, color: '#999' }}>Loading products…</Typography>
 						</Box>
 					)}
@@ -498,13 +493,13 @@ export default function PlaceOrderPage() {
 										<Typography
 											onClick={() => setSizeGuideOpen(true)}
 											sx={{
-												color: "#E91E8C",
+												color: "#e3242b",
 												fontSize: "0.82rem",
 												fontWeight: 600,
 												cursor: "pointer",
 												textDecoration: "underline",
 												textUnderlineOffset: 2,
-												"&:hover": { color: "#C2185B" },
+												"&:hover": { color: "#b81b21" },
 											}}
 										>
 											What are preset sizes?
@@ -514,12 +509,12 @@ export default function PlaceOrderPage() {
 												onClick={handleContactClick}
 												size="small"
 												sx={{
-													color: "#E91E8C",
-													border: "1.5px solid #E91E8C",
+													color: "#e3242b",
+													border: "1.5px solid #e3242b",
 													width: 28,
 													height: 28,
 													"&:hover": {
-														backgroundColor: "#E91E8C",
+														backgroundColor: "#e3242b",
 														color: "#fff",
 													},
 												}}
@@ -544,12 +539,12 @@ export default function PlaceOrderPage() {
 												sx={{
 													borderRadius: 3,
 													border: isSelected
-														? "2px solid #E91E8C"
-														: "1px solid #F0C0D0",
+														? "2px solid #e3242b"
+														: "1px solid #E8D5B0",
 													transition: "all 0.3s ease",
 													cursor: "pointer",
 													"&:hover": {
-														borderColor: "#E91E8C",
+														borderColor: "#e3242b",
 														boxShadow:
 															"0 4px 16px rgba(233,30,140,0.1)",
 													},
@@ -571,9 +566,9 @@ export default function PlaceOrderPage() {
 																<Checkbox
 																	checked={isSelected}
 																	sx={{
-																		color: "#E91E8C",
+																		color: "#e3242b",
 																		"&.Mui-checked": {
-																			color: "#E91E8C",
+																			color: "#e3242b",
 																		},
 																	}}
 																/>
@@ -604,7 +599,7 @@ export default function PlaceOrderPage() {
 																				size="small"
 																				sx={{
 																					backgroundColor:
-																						"#4A0E4E",
+																						"#006666",
 																					color: "#fff",
 																					fontSize:
 																						"0.65rem",
@@ -656,7 +651,7 @@ export default function PlaceOrderPage() {
 																							color:
 																								product.stock <=
 																								2
-																									? "#E91E8C"
+																									? "#e3242b"
 																									: "#999",
 																							fontSize:
 																								"0.78rem",
@@ -718,7 +713,7 @@ export default function PlaceOrderPage() {
 																sx={{
 																	fontFamily: '"Georgia", serif',
 																	fontWeight: 700,
-																	color: "#E91E8C",
+																	color: "#e3242b",
 																	fontSize: "1.05rem",
 																	whiteSpace: "nowrap",
 																	ml: 2,
@@ -912,20 +907,6 @@ export default function PlaceOrderPage() {
 																		</Select>
 																	</FormControl>
 																</Grid>
-																<Grid item xs={12}>
-																	<NailBedSizeInput
-																		value={
-																			formData.nailBedSize
-																		}
-																		onChange={(val) =>
-																			handleNailBedChange(
-																				product.id,
-																				val,
-																			)
-																		}
-																		required
-																	/>
-																</Grid>
 
 																{/* Ordering for others toggle */}
 																<Grid item xs={12}>
@@ -937,10 +918,10 @@ export default function PlaceOrderPage() {
 																			p: 1.5,
 																			borderRadius: 2,
 																			border:
-																				"1px solid #F0C0D0",
+																				"1px solid #E8D5B0",
 																			backgroundColor:
 																				formData.orderingForOthers
-																					? "#FFF0F5"
+																					? "#FFF8F0"
 																					: "#fff",
 																		}}
 																	>
@@ -957,12 +938,12 @@ export default function PlaceOrderPage() {
 																			sx={{
 																				"& .MuiSwitch-switchBase.Mui-checked":
 																					{
-																						color: "#E91E8C",
+																						color: "#e3242b",
 																					},
 																				"& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
 																					{
 																						backgroundColor:
-																							"#E91E8C",
+																							"#e3242b",
 																					},
 																			}}
 																		/>
@@ -996,7 +977,7 @@ export default function PlaceOrderPage() {
 																							p: 2,
 																							borderRadius: 2,
 																							border:
-																								"1px solid #F0C0D0",
+																								"1px solid #E8D5B0",
 																							backgroundColor:
 																								"#FFF8FA",
 																						}}
@@ -1035,7 +1016,7 @@ export default function PlaceOrderPage() {
 																									)
 																								}
 																								sx={{
-																									color: "#E91E8C",
+																									color: "#e3242b",
 																									"&:hover":
 																										{
 																											backgroundColor:
@@ -1127,23 +1108,7 @@ export default function PlaceOrderPage() {
 																								)}
 																							</Select>
 																						</FormControl>
-																						<NailBedSizeInput
-																							value={
-																								person.nailBedSize
-																							}
-																							onChange={(
-																								val,
-																							) =>
-																								handleOtherPersonField(
-																									product.id,
-																									pIdx,
-																									"nailBedSize",
-																									val,
-																								)
-																							}
-																							required
-																						/>
-																					</Box>
+																						</Box>
 																				),
 																			)}
 																			<Button
@@ -1157,7 +1122,7 @@ export default function PlaceOrderPage() {
 																					)
 																				}
 																				sx={{
-																					color: "#E91E8C",
+																					color: "#e3242b",
 																					fontSize:
 																						"0.82rem",
 																					fontWeight: 600,
@@ -1188,22 +1153,22 @@ export default function PlaceOrderPage() {
 
 					{/* Discounts & Rewards */}
 					{isFormValid && (
-						<Box sx={{ mt: 4, p: 3, borderRadius: 3, backgroundColor: '#fff', border: '1px solid #F0C0D0' }}>
+						<Box sx={{ mt: 4, p: 3, borderRadius: 3, backgroundColor: '#fff', border: '1px solid #E8D5B0' }}>
 							<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 2, fontSize: '0.95rem' }}>
 								Discounts &amp; Rewards
 							</Typography>
 
 							{/* Referral code */}
 							<Box onClick={() => setShowRefField((v) => !v)} sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', mb: showRefField ? 1.5 : 0 }}>
-								<LocalOfferIcon sx={{ fontSize: 16, color: referralValid ? '#2e7d32' : '#E91E8C' }} />
-								<Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: referralValid ? '#2e7d32' : '#E91E8C', fontFamily: '"Georgia", serif' }}>
+								<LocalOfferIcon sx={{ fontSize: 16, color: referralValid ? '#2e7d32' : '#e3242b' }} />
+								<Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: referralValid ? '#2e7d32' : '#e3242b', fontFamily: '"Georgia", serif' }}>
 									{referralValid ? '₦1,000 off applied at checkout!' : 'Have a referral code?'}
 								</Typography>
 							</Box>
 							<Collapse in={showRefField}>
 								<Box sx={{ display: 'flex', gap: 1, mb: 0.5 }}>
-									<TextField size="small" placeholder="e.g. CHIZZYS-ABC123" value={refCodeInput} onChange={(e) => { setRefCodeInput(e.target.value.toUpperCase()); setReferralValid(false); setReferralMsg(''); }} sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#F0C0D0' }, '&.Mui-focused fieldset': { borderColor: '#E91E8C' } } }} inputProps={{ style: { fontFamily: 'monospace', letterSpacing: 1 } }} />
-									<Button onClick={handleApplyReferral} disabled={!refCodeInput.trim() || referralChecking} sx={{ backgroundColor: '#E91E8C', color: '#fff', borderRadius: 2, px: 2.5, fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.82rem', whiteSpace: 'nowrap', '&:hover': { backgroundColor: '#C2185B' }, '&.Mui-disabled': { backgroundColor: '#F0C0D0', color: '#fff' } }}>
+									<TextField size="small" placeholder="e.g. FOOTIES-ABC123" value={refCodeInput} onChange={(e) => { setRefCodeInput(e.target.value.toUpperCase()); setReferralValid(false); setReferralMsg(''); }} sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#E8D5B0' }, '&.Mui-focused fieldset': { borderColor: '#e3242b' } } }} inputProps={{ style: { fontFamily: 'monospace', letterSpacing: 1 } }} />
+									<Button onClick={handleApplyReferral} disabled={!refCodeInput.trim() || referralChecking} sx={{ backgroundColor: '#e3242b', color: '#fff', borderRadius: 2, px: 2.5, fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.82rem', whiteSpace: 'nowrap', '&:hover': { backgroundColor: '#b81b21' }, '&.Mui-disabled': { backgroundColor: '#E8D5B0', color: '#fff' } }}>
 										{referralChecking ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Apply'}
 									</Button>
 								</Box>
@@ -1223,7 +1188,7 @@ export default function PlaceOrderPage() {
 										      <Typography sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#B8860B" }}>🎁 ₦{pendingReward.naira.toLocaleString()} loyalty reward ready</Typography>
 										      <Typography sx={{ fontSize: "0.72rem", color: "#888" }}>{pendingReward.pts} pts saved — tap Apply to use</Typography>
 										    </Box>
-										    <Button size="small" onClick={() => setLoyaltyUnits(Math.min(pendingReward.units, maxLoyaltyUnits))} sx={{ border: "1.5px solid #E91E8C", borderRadius: "20px", color: "#E91E8C", px: 2, py: 0.4, fontSize: "0.78rem", fontWeight: 700, textTransform: "none", "&:hover": { backgroundColor: "#E91E8C", color: "#fff" } }}>Apply</Button>
+										    <Button size="small" onClick={() => setLoyaltyUnits(Math.min(pendingReward.units, maxLoyaltyUnits))} sx={{ border: "1.5px solid #e3242b", borderRadius: "20px", color: "#e3242b", px: 2, py: 0.4, fontSize: "0.78rem", fontWeight: 700, textTransform: "none", "&:hover": { backgroundColor: "#e3242b", color: "#fff" } }}>Apply</Button>
 										  </Box>
 										)}
 																				<Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#B8860B', fontFamily: '"Georgia", serif' }}>
@@ -1231,9 +1196,9 @@ export default function PlaceOrderPage() {
 										</Typography>
 									</Box>
 									<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-										<IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.max(0, u - 1))} disabled={loyaltyUnits === 0} sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 28, height: 28 }}><RemoveIcon sx={{ fontSize: 14 }} /></IconButton>
+										<IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.max(0, u - 1))} disabled={loyaltyUnits === 0} sx={{ border: '1.5px solid #E8D5B0', borderRadius: '50%', width: 28, height: 28 }}><RemoveIcon sx={{ fontSize: 14 }} /></IconButton>
 										<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, minWidth: 20, textAlign: 'center' }}>{loyaltyUnits}</Typography>
-										<IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))} disabled={loyaltyUnits >= maxLoyaltyUnits} sx={{ border: '1.5px solid #F0C0D0', borderRadius: '50%', width: 28, height: 28 }}><AddIcon sx={{ fontSize: 14 }} /></IconButton>
+										<IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))} disabled={loyaltyUnits >= maxLoyaltyUnits} sx={{ border: '1.5px solid #E8D5B0', borderRadius: '50%', width: 28, height: 28 }}><AddIcon sx={{ fontSize: 14 }} /></IconButton>
 										<Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>units × ₦1,000 = <strong style={{ color: '#B8860B' }}>-₦{(loyaltyUnits * REDEMPTION_VALUE).toLocaleString()} off</strong></Typography>
 									</Box>
 								</Box>
@@ -1263,7 +1228,7 @@ export default function PlaceOrderPage() {
 					zIndex: 1100,
 					backgroundColor: "rgba(255, 240, 245, 0.95)",
 					backdropFilter: "blur(8px)",
-					borderTop: "1px solid #F0C0D0",
+					borderTop: "1px solid #E8D5B0",
 					py: 2,
 					textAlign: "center",
 				}}
@@ -1272,7 +1237,7 @@ export default function PlaceOrderPage() {
 					<Typography
 						sx={{
 							fontSize: "0.8rem",
-							color: "#E91E8C",
+							color: "#e3242b",
 							fontWeight: 600,
 							mb: 0.5,
 						}}
@@ -1303,13 +1268,13 @@ export default function PlaceOrderPage() {
 						startIcon={<ShoppingCartOutlinedIcon />}
 						sx={{
 							...confirmButtonSx,
-							borderColor: "#4A0E4E",
+							borderColor: "#006666",
 							color: "var(--text-purple)",
 							opacity: isFormValid ? 1 : 0.5,
 							"&:hover": {
-								backgroundColor: "#4A0E4E",
+								backgroundColor: "#006666",
 								color: "#fff",
-								borderColor: "#4A0E4E",
+								borderColor: "#006666",
 							},
 						}}
 						onClick={handleAddToCart}
@@ -1336,7 +1301,7 @@ export default function PlaceOrderPage() {
 			>
 				<DialogTitle sx={{ pb: 0 }}>
 					<CheckCircleOutlineIcon
-						sx={{ fontSize: 60, color: "#E91E8C", mb: 1 }}
+						sx={{ fontSize: 60, color: "#e3242b", mb: 1 }}
 					/>
 					<Typography
 						variant="h5"
@@ -1386,7 +1351,7 @@ export default function PlaceOrderPage() {
 					<Button
 						onClick={handleCompleteOrder}
 						sx={{
-							backgroundColor: "#E91E8C",
+							backgroundColor: "#e3242b",
 							color: "#fff",
 							borderRadius: "30px",
 							px: 4,
@@ -1394,19 +1359,13 @@ export default function PlaceOrderPage() {
 							fontFamily: '"Georgia", serif',
 							fontWeight: 600,
 							fontSize: "0.95rem",
-							"&:hover": { backgroundColor: "#C2185B" },
+							"&:hover": { backgroundColor: "#b81b21" },
 						}}
 					>
 						Proceed to Checkout
 					</Button>
 				</DialogActions>
 			</Dialog>
-
-			{/* Preset Size Guide Modal */}
-			<PresetSizeGuide
-				open={sizeGuideOpen}
-				onClose={() => setSizeGuideOpen(false)}
-			/>
 
 			{/* Sign In Prompt */}
 			<SignInPrompt

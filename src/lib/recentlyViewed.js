@@ -1,4 +1,4 @@
-const KEY = 'chizzystyles-recently-viewed';
+const KEY = 'perfectfooties-recently-viewed';
 const MAX = 6;
 
 export function addRecentlyViewed({ id, categoryId, name, price, image, type }) {

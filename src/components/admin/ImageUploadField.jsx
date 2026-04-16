@@ -139,9 +139,9 @@ export default function ImageUploadField({ value, onChange, folder = 'images', l
             fontFamily,
             fontSize: '0.82rem',
             textTransform: 'none',
-            borderColor: '#E91E8C',
-            color: '#E91E8C',
-            '&:hover': { borderColor: '#C2185B', backgroundColor: '#FFF0F5' },
+            borderColor: '#e3242b',
+            color: '#e3242b',
+            '&:hover': { borderColor: '#b81b21', backgroundColor: '#FFF8F0' },
           }}
         >
           {uploading ? 'Uploading…' : 'Choose File'}
@@ -171,8 +171,8 @@ export default function ImageUploadField({ value, onChange, folder = 'images', l
             sx={{
               height: 6,
               borderRadius: 3,
-              backgroundColor: '#FCE4EC',
-              '& .MuiLinearProgress-bar': { backgroundColor: '#E91E8C' },
+              backgroundColor: '#FFE8E8',
+              '& .MuiLinearProgress-bar': { backgroundColor: '#e3242b' },
             }}
           />
           <Typography sx={{ fontFamily, fontSize: '0.72rem', color: '#999', mt: 0.3 }}>

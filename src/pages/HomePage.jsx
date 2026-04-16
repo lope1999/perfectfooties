@@ -9,23 +9,15 @@ import {
   Grid,
   IconButton,
   Collapse,
-  CircularProgress,
 } from '@mui/material';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
-import StraightenIcon from '@mui/icons-material/Straighten';
-import LoginIcon from '@mui/icons-material/Login';
+import RemoveIcon from "@mui/icons-material/Remove";
 import ScrollReveal from '../components/ScrollReveal';
-import Interstitial from '../components/Interstitial';
-import PresetSizeGuide from '../components/PresetSizeGuide';
-import { useAuth } from '../context/AuthContext';
 import { faqData } from '../data/faq';
-import { Opacity } from "@mui/icons-material";
-
 const ctaButtonBase = {
 	borderRadius: "30px",
 	px: 4,
@@ -39,54 +31,28 @@ const ctaButtonBase = {
 
 const bookBtnSx = {
 	...ctaButtonBase,
-	border: "1px solid #E91E8C",
-	backgroundColor: "#E91E8C",
+	border: "1px solid #e3242b",
+	backgroundColor: "#e3242b",
 	color: "#fff",
 	"&:hover": {
 		backgroundColor: "transparent",
-		color: "#E91E8C",
+		color: "#e3242b",
 	},
 };
 
-const viewServicesBtnSx = {
+const outlineBtnSx = {
 	...ctaButtonBase,
-	border: "1px solid #E91E8C",
-	backgroundColor: "#fff",
-	color: "var(--text-main)",
-	"&:hover": {
-		backgroundColor: "transparent",
-	},
-};
-
-const signInBtnSx = {
-	...ctaButtonBase,
-	border: "2px solid #4A0E4E",
+	border: "1px solid #fff",
 	backgroundColor: "transparent",
-	color: "var(--text-purple)",
+	color: "#fff",
 	"&:hover": {
-		backgroundColor: "#4A0E4E",
-		color: "#fff",
-		borderColor: "#4A0E4E",
+		backgroundColor: "rgba(255,255,255,0.15)",
 	},
 };
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { user, signInWithGoogle } = useAuth();
   const [openFaq, setOpenFaq] = useState(null);
-  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
-  const [signingIn, setSigningIn] = useState(false);
-
-  const handleSignIn = async () => {
-    setSigningIn(true);
-    try {
-      await signInWithGoogle();
-    } catch {
-      // user closed popup
-    } finally {
-      setSigningIn(false);
-    }
-  };
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -114,7 +80,7 @@ export default function HomePage() {
 					sx={{
 						position: "absolute",
 						inset: 0,
-						backgroundColor: "rgba(255, 226, 255, 0.55)",
+						backgroundColor: "rgba(0, 0, 0, 0.45)",
 					}}
 				/>
 
@@ -126,16 +92,13 @@ export default function HomePage() {
 								fontFamily: '"Georgia", serif',
 								fontWeight: 700,
 								fontSize: { xs: "2rem", sm: "2.5rem", md: "3.5rem" },
-								color: "#4e003f",
+								color: "#fff",
 								mb: 4,
 								maxWidth: 800,
 								lineHeight: 1.3,
 							}}
 						>
-							Chizzy's Nails is a refined nail brand rooted in Gloss and
-							Grace
-							{/* Welcome to Chizzy’s Nails, a signature nail experience
-							under the Chizzy'sStyles beauty brand. */}
+							Handcrafted leather goods built to last a lifetime.
 						</Typography>
 					</ScrollReveal>
 
@@ -148,38 +111,18 @@ export default function HomePage() {
 								flexWrap: "wrap",
 							}}
 						>
-							{" "}
-							<Button
-								sx={viewServicesBtnSx}
-								onClick={() => navigate("/services")}
-							>
-								View Nail Services
-							</Button>
 							<Button
 								sx={bookBtnSx}
-								onClick={() => navigate("/products")}
+								onClick={() => navigate("/shop")}
 							>
-								View Press-ons Menu
+								Shop Leather Goods
 							</Button>
-							{/* {!user && (
-								<Button
-									sx={signInBtnSx}
-									startIcon={
-										signingIn ? (
-											<CircularProgress
-												size={18}
-												sx={{ color: "inherit" }}
-											/>
-										) : (
-											<LoginIcon />
-										)
-									}
-									onClick={handleSignIn}
-									disabled={signingIn}
-								>
-									{signingIn ? "Signing In…" : "Sign In"}
-								</Button>
-							)} */}
+							<Button
+								sx={outlineBtnSx}
+								onClick={() => navigate("/our-story")}
+							>
+								Our Story
+							</Button>
 						</Box>
 					</ScrollReveal>
 				</Box>
@@ -196,7 +139,7 @@ export default function HomePage() {
       /> */}
 
 			{/* Contact / Hours / Location Section */}
-			<Box id="contact-section" sx={{ py: 8, backgroundColor: "#FFC0CB" }}>
+			<Box id="contact-section" sx={{ py: 8, backgroundColor: "#FFF8F0" }}>
 				<Container maxWidth="lg">
 					<Grid
 						container
@@ -208,7 +151,7 @@ export default function HomePage() {
 							<ScrollReveal direction="up" delay={0}>
 								<Box>
 									<PhoneIcon
-										sx={{ fontSize: 40, color: "#E91E8C", mb: 1 }}
+										sx={{ fontSize: 40, color: "#e3242b", mb: 1 }}
 									/>
 									<Typography
 										variant="h5"
@@ -231,9 +174,9 @@ export default function HomePage() {
 										}}
 									>
 										<PhoneIcon
-											sx={{ fontSize: 18, color: "#E91E8C" }}
+											sx={{ fontSize: 18, color: "#e3242b" }}
 										/>
-										<Typography>+234 905 371 419 7</Typography>
+										<Typography>+234 807 363 7911</Typography>
 									</Box>
 									<Box
 										sx={{
@@ -244,9 +187,9 @@ export default function HomePage() {
 										}}
 									>
 										<EmailIcon
-											sx={{ fontSize: 18, color: "#E91E8C" }}
+											sx={{ fontSize: 18, color: "#e3242b" }}
 										/>
-										<Typography>chizobaezeh338@gmail.com</Typography>
+										<Typography>perfect.footies@gmail.com</Typography>
 									</Box>
 								</Box>
 							</ScrollReveal>
@@ -256,7 +199,7 @@ export default function HomePage() {
 							<ScrollReveal direction="up" delay={0.15}>
 								<Box>
 									<AccessTimeIcon
-										sx={{ fontSize: 40, color: "#E91E8C", mb: 1 }}
+										sx={{ fontSize: 40, color: "#e3242b", mb: 1 }}
 									/>
 									<Typography
 										variant="h5"
@@ -267,13 +210,13 @@ export default function HomePage() {
 											color: "var(--text-purple)",
 										}}
 									>
-										Service Hours
+										Business Hours
 									</Typography>
 									<Typography>
-										Monday – Friday: 11:30 AM – 5:00 PM
+										Monday – Friday: 9:00 AM – 6:00 PM
 									</Typography>
 									<Typography>
-										Saturdays & Sundays: 12:00 PM – 6:00 PM
+										Saturday: 10:00 AM – 4:00 PM
 									</Typography>
 								</Box>
 							</ScrollReveal>
@@ -283,7 +226,7 @@ export default function HomePage() {
 							<ScrollReveal direction="up" delay={0.3}>
 								<Box>
 									<LocationOnIcon
-										sx={{ fontSize: 40, color: "#E91E8C", mb: 1 }}
+										sx={{ fontSize: 40, color: "#e3242b", mb: 1 }}
 									/>
 									<Typography
 										variant="h5"
@@ -345,7 +288,7 @@ export default function HomePage() {
 							<Box
 								sx={{
 									mb: 2,
-									border: "1px solid #F0C0D0",
+									border: "1px solid #E8D5B0",
 									borderRadius: 3,
 									overflow: "hidden",
 									transition: "box-shadow 0.3s ease",
@@ -365,10 +308,10 @@ export default function HomePage() {
 										py: 2.5,
 										cursor: "pointer",
 										backgroundColor:
-											openFaq === index ? "#FFF0F5" : "#fff",
+											openFaq === index ? "#FFF8F0" : "#fff",
 										transition: "background-color 0.3s ease",
 										"&:hover": {
-											backgroundColor: "#FFF0F5",
+											backgroundColor: "#FFF8F0",
 										},
 									}}
 								>
@@ -389,16 +332,16 @@ export default function HomePage() {
 										sx={{
 											backgroundColor:
 												openFaq === index
-													? "#E91E8C"
+													? "#e3242b"
 													: "transparent",
-											border: "2px solid #E91E8C",
-											color: openFaq === index ? "#fff" : "#E91E8C",
+											border: "2px solid #e3242b",
+											color: openFaq === index ? "#fff" : "#e3242b",
 											transition: "all 0.3s ease",
 											width: 36,
 											height: 36,
 											flexShrink: 0,
 											"&:hover": {
-												backgroundColor: "#E91E8C",
+												backgroundColor: "#e3242b",
 												color: "#fff",
 											},
 										}}
@@ -418,7 +361,7 @@ export default function HomePage() {
 											px: 3,
 											pb: 3,
 											pt: 1,
-											backgroundColor: "#FFF0F5",
+											backgroundColor: "#FFF8F0",
 										}}
 									>
 										<Typography
@@ -430,57 +373,6 @@ export default function HomePage() {
 										>
 											{item.answer}
 										</Typography>
-										{item.hasRescheduleButton && (
-											<Button
-												onClick={() => navigate("/reschedule")}
-												sx={{
-													mt: 2,
-													border: "2px solid #E91E8C",
-													borderRadius: "30px",
-													color: "var(--text-main)",
-													backgroundColor: "transparent",
-													px: 3,
-													py: 1,
-													fontSize: "0.85rem",
-													fontFamily: '"Georgia", serif',
-													fontWeight: 600,
-													transition: "all 0.3s ease",
-													"&:hover": {
-														backgroundColor: "#E91E8C",
-														color: "#fff",
-														borderColor: "#E91E8C",
-													},
-												}}
-											>
-												Reschedule Appointment
-											</Button>
-										)}
-										{item.hasSizeGuideButton && (
-											<Button
-												startIcon={<StraightenIcon />}
-												onClick={() => setSizeGuideOpen(true)}
-												sx={{
-													mt: 2,
-													border: "2px solid #E91E8C",
-													borderRadius: "30px",
-													color: "var(--text-main)",
-													backgroundColor: "transparent",
-													px: 3,
-													py: 1,
-													fontSize: "0.85rem",
-													fontFamily: '"Georgia", serif',
-													fontWeight: 600,
-													transition: "all 0.3s ease",
-													"&:hover": {
-														backgroundColor: "#E91E8C",
-														color: "#fff",
-														borderColor: "#E91E8C",
-													},
-												}}
-											>
-												View Preset Size Guide
-											</Button>
-										)}
 									</Box>
 								</Collapse>
 							</Box>
@@ -488,11 +380,6 @@ export default function HomePage() {
 					))}
 				</Container>
 			</Box>
-
-			<PresetSizeGuide
-				open={sizeGuideOpen}
-				onClose={() => setSizeGuideOpen(false)}
-			/>
 		</Box>
   );
 }

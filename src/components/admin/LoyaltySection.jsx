@@ -239,7 +239,7 @@ export default function LoyaltySection({ loading: pageLoading }) {
             value={totalRedeemed.toLocaleString()}
             sub={`≡ ₦${Math.floor(totalRedeemed / REDEMPTION_UNIT) * REDEMPTION_VALUE} in discounts`}
             icon={<EmojiEventsIcon />}
-            gradient="linear-gradient(135deg, #E91E8C 0%, #F48FB1 100%)"
+            gradient="linear-gradient(135deg, #e3242b 0%, #F48FB1 100%)"
           />
         </Grid>
         <Grid item xs={12} sm={4}>
@@ -248,7 +248,7 @@ export default function LoyaltySection({ loading: pageLoading }) {
             value={totalReferralUses}
             sub={`${referrals.length} active referrers`}
             icon={<GroupAddIcon />}
-            gradient="linear-gradient(135deg, #4A0E4E 0%, #7B1FA2 100%)"
+            gradient="linear-gradient(135deg, #006666 0%, #7B1FA2 100%)"
           />
         </Grid>
       </Grid>
@@ -271,9 +271,9 @@ export default function LoyaltySection({ loading: pageLoading }) {
               py: 0.8,
               fontSize: '0.85rem',
               border: tab === t.key ? 'none' : '1.5px solid #E0E0E0',
-              backgroundColor: tab === t.key ? '#4A0E4E' : 'transparent',
+              backgroundColor: tab === t.key ? '#006666' : 'transparent',
               color: tab === t.key ? '#fff' : '#555',
-              '&:hover': { backgroundColor: tab === t.key ? '#4A0E4E' : '#F5F5F5' },
+              '&:hover': { backgroundColor: tab === t.key ? '#006666' : '#F5F5F5' },
             }}
           >
             {t.label}
@@ -299,7 +299,7 @@ export default function LoyaltySection({ loading: pageLoading }) {
           <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
             <Table size="small">
               <TableHead>
-                <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
+                <TableRow sx={{ backgroundColor: '#006666' }}>
                   {['#', 'Customer', 'Points Balance', 'Earned (All-Time)', 'Redeemed', 'Actions'].map((h) => (
                     <TableCell key={h} sx={{ color: '#fff', fontFamily: ff, fontWeight: 700, py: 1.5 }}>
                       {h}
@@ -360,7 +360,7 @@ export default function LoyaltySection({ loading: pageLoading }) {
                             fontFamily: ff,
                             textTransform: 'none',
                             fontSize: '0.78rem',
-                            border: '1.5px solid #4A0E4E',
+                            border: '1.5px solid #006666',
                             color: 'var(--text-purple)',
                             borderRadius: 2,
                             px: 1.5,
@@ -384,7 +384,7 @@ export default function LoyaltySection({ loading: pageLoading }) {
         <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
           <Table size="small">
             <TableHead>
-              <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
+              <TableRow sx={{ backgroundColor: '#006666' }}>
                 {['#', 'Referral Code', 'Referrer UID', 'Total Uses', 'Points Earned'].map((h) => (
                   <TableCell key={h} sx={{ color: '#fff', fontFamily: ff, fontWeight: 700, py: 1.5 }}>
                     {h}
@@ -438,7 +438,7 @@ export default function LoyaltySection({ loading: pageLoading }) {
           </Typography>
           {[
             { label: 'Press-on order completed', value: `+${POINTS_PER_ORDER} pts`, color: 'var(--text-purple)' },
-            { label: 'Appointment completed', value: `+${POINTS_PER_APPOINTMENT} pts`, color: '#E91E8C' },
+            { label: 'Appointment completed', value: `+${POINTS_PER_APPOINTMENT} pts`, color: '#e3242b' },
             { label: 'Referral code used by a friend', value: `+${POINTS_PER_REFERRAL} pts (referrer)`, color: '#2e7d32' },
             { label: 'Referred friend discount', value: `₦${REFERRAL_DISCOUNT} off their first order`, color: '#e65100' },
             { label: 'Redemption rate', value: `${REDEMPTION_UNIT} pts = ₦1,000 discount`, color: '#B8860B' },

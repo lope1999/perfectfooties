@@ -81,7 +81,7 @@ function StatCard({ icon, label, value, color }) {
         p: 2,
         borderRadius: 2,
         backgroundColor: '#fff',
-        border: '1px solid #F0C0D0',
+        border: '1px solid #E8D5B0',
         display: 'flex',
         alignItems: 'center',
         gap: 1.5,
@@ -364,8 +364,8 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
     <Box>
       {/* Stats */}
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-        <StatCard icon={<EventNoteIcon fontSize="inherit" />} label="Total Appointments" value={stats.total} color="#4A0E4E" />
-        <StatCard icon={<PendingActionsIcon fontSize="inherit" />} label="Pending" value={stats.pending} color="#E91E8C" />
+        <StatCard icon={<EventNoteIcon fontSize="inherit" />} label="Total Appointments" value={stats.total} color="#006666" />
+        <StatCard icon={<PendingActionsIcon fontSize="inherit" />} label="Pending" value={stats.pending} color="#e3242b" />
         <StatCard icon={<CheckCircleOutlineIcon fontSize="inherit" />} label="Confirmed" value={stats.confirmed} color="#2e7d32" />
         <StatCard icon={<HomeIcon fontSize="inherit" />} label="Home Service" value={stats.homeCount} color="#1565C0" />
       </Box>
@@ -391,7 +391,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setAddDialog(true)}
-            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
           >
             Add Appointment
           </Button>
@@ -399,7 +399,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
             variant="outlined"
             startIcon={<FileDownloadIcon />}
             onClick={() => exportOrdersToCSV(filtered, 'appointments-export.csv')}
-            sx={{ fontFamily, borderColor: '#4A0E4E', color: 'var(--text-purple)', '&:hover': { backgroundColor: '#4A0E4E', color: '#fff' } }}
+            sx={{ fontFamily, borderColor: '#006666', color: 'var(--text-purple)', '&:hover': { backgroundColor: '#006666', color: '#fff' } }}
           >
             Export CSV
           </Button>
@@ -442,7 +442,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table size="small">
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#4A0E4E' }}>
+            <TableRow sx={{ backgroundColor: '#006666' }}>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 40 }} />
               {['#', 'ID', 'Customer', 'Service / Group', 'Location', 'Status', 'Price', 'Appointment Date', 'Time', 'Booked On', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>{h}</TableCell>
@@ -493,7 +493,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                             <Chip
                               label={`👥 Group (${o.items.length})`}
                               size="small"
-                              sx={{ backgroundColor: '#EDE7F6', color: '#4A0E4E', fontWeight: 700, fontSize: '0.72rem', mb: 0.5 }}
+                              sx={{ backgroundColor: '#EDE7F6', color: '#006666', fontWeight: 700, fontSize: '0.72rem', mb: 0.5 }}
                             />
                             {o.items.map((item, i) => (
                               <Typography key={i} sx={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -582,7 +582,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                           >
                             {sendingEmailId === o.id
                               ? <CircularProgress size={18} sx={{ color: 'var(--text-purple)' }} />
-                              : <MailOutlineIcon fontSize="small" sx={{ color: o.email ? '#4A0E4E' : '#ccc' }} />}
+                              : <MailOutlineIcon fontSize="small" sx={{ color: o.email ? '#006666' : '#ccc' }} />}
                           </IconButton>
                         </span>
                       </Tooltip>
@@ -631,7 +631,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                               </Typography>
                             )}
                             {o.items?.map((item, i) => (
-                              <Box key={i} sx={{ mt: 1, pl: 1.5, borderLeft: '3px solid #E91E8C' }}>
+                              <Box key={i} sx={{ mt: 1, pl: 1.5, borderLeft: '3px solid #e3242b' }}>
                                 <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-purple)' }}>
                                   {item.serviceName || item.name || 'Service'}
                                 </Typography>
@@ -769,7 +769,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                                   Admin Notes:
                                 </Typography>
                                 {o.adminNotes.map((n, i) => (
-                                  <Typography key={i} sx={{ fontFamily, fontSize: '0.78rem', color: 'var(--text-purple)', pl: 1, borderLeft: '2px solid #E91E8C', mb: 0.5 }}>
+                                  <Typography key={i} sx={{ fontFamily, fontSize: '0.78rem', color: 'var(--text-purple)', pl: 1, borderLeft: '2px solid #e3242b', mb: 0.5 }}>
                                     [{n.timestamp}] {n.text}
                                   </Typography>
                                 ))}
@@ -886,7 +886,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
             onClick={handleAddNote}
             variant="contained"
             disabled={busy || !noteText.trim()}
-            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
           >
             Save Note
           </Button>
@@ -947,15 +947,15 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                   key={value}
                   onClick={() => setAddForm((f) => ({ ...f, serviceType: value }))}
                   sx={{
-                    flex: 1, border: addForm.serviceType === value ? '2px solid #E91E8C' : '2px solid #F0C0D0',
+                    flex: 1, border: addForm.serviceType === value ? '2px solid #e3242b' : '2px solid #E8D5B0',
                     borderRadius: 2, px: 2, py: 1, cursor: 'pointer',
-                    backgroundColor: addForm.serviceType === value ? '#FFF0F5' : '#fff',
+                    backgroundColor: addForm.serviceType === value ? '#FFF8F0' : '#fff',
                     display: 'flex', alignItems: 'center', gap: 0.8, transition: 'all 0.2s ease',
-                    '&:hover': { borderColor: '#E91E8C' },
+                    '&:hover': { borderColor: '#e3242b' },
                   }}
                 >
-                  <Box sx={{ color: addForm.serviceType === value ? '#E91E8C' : '#777' }}>{icon}</Box>
-                  <Typography sx={{ fontFamily, fontSize: '0.88rem', fontWeight: 600, color: addForm.serviceType === value ? '#E91E8C' : '#555' }}>
+                  <Box sx={{ color: addForm.serviceType === value ? '#e3242b' : '#777' }}>{icon}</Box>
+                  <Typography sx={{ fontFamily, fontSize: '0.88rem', fontWeight: 600, color: addForm.serviceType === value ? '#e3242b' : '#555' }}>
                     {label}
                   </Typography>
                 </Box>
@@ -984,13 +984,13 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                     key={opt}
                     onClick={() => setAddForm((f) => ({ ...f, hasTableArea: opt }))}
                     sx={{
-                      flex: 1, border: addForm.hasTableArea === opt ? '2px solid #E91E8C' : '2px solid #F0C0D0',
+                      flex: 1, border: addForm.hasTableArea === opt ? '2px solid #e3242b' : '2px solid #E8D5B0',
                       borderRadius: 2, px: 2, py: 1, cursor: 'pointer', textAlign: 'center',
-                      backgroundColor: addForm.hasTableArea === opt ? '#FFF0F5' : '#fff',
-                      '&:hover': { borderColor: '#E91E8C' },
+                      backgroundColor: addForm.hasTableArea === opt ? '#FFF8F0' : '#fff',
+                      '&:hover': { borderColor: '#e3242b' },
                     }}
                   >
-                    <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 600, color: addForm.hasTableArea === opt ? '#E91E8C' : '#555' }}>
+                    <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 600, color: addForm.hasTableArea === opt ? '#e3242b' : '#555' }}>
                       Table Area: {opt}
                     </Typography>
                   </Box>
@@ -1020,7 +1020,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
             onClick={handleAddSave}
             variant="contained"
             disabled={busy || !addForm.customerName.trim() || !addForm.total || !addForm.serviceName.trim()}
-            sx={{ fontFamily, backgroundColor: '#4A0E4E', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
           >
             Save
           </Button>

@@ -48,8 +48,8 @@ function getClientTier(reviewCount) {
 		return {
 			label: "Nail Lover",
 			emoji: "💅",
-			color: "#C2185B",
-			bg: "#FCE4EC",
+			color: "#b81b21",
+			bg: "#FFE8E8",
 			border: "#F48FB1",
 		};
 	if (reviewCount >= 2)
@@ -74,9 +74,9 @@ function StarRating({ rating }) {
     <Box sx={{ display: 'flex', gap: 0.3 }}>
       {[1, 2, 3, 4, 5].map((star) =>
         star <= rating ? (
-          <StarIcon key={star} sx={{ color: '#E91E8C', fontSize: 22 }} />
+          <StarIcon key={star} sx={{ color: '#e3242b', fontSize: 22 }} />
         ) : (
-          <StarBorderIcon key={star} sx={{ color: '#E91E8C', fontSize: 22 }} />
+          <StarBorderIcon key={star} sx={{ color: '#e3242b', fontSize: 22 }} />
         )
       )}
     </Box>
@@ -112,7 +112,7 @@ function groupByName(items) {
 const swiperDotStyles = {
   '& .swiper-pagination': { position: 'static', mt: 1 },
   '& .swiper-pagination-bullet': {
-    backgroundColor: '#E91E8C',
+    backgroundColor: '#e3242b',
     opacity: 0.4,
     width: 7,
     height: 7,
@@ -176,9 +176,8 @@ export default function TestimonialsPage() {
 							mx: "auto",
 						}}
 					>
-						Real reviews from real clients — hear what they have to say
-						about their nail appointments and press-on purchases from
-						Chizzy's Nails.
+						Real reviews from real customers — hear what they have to say
+						about their handcrafted leather goods from PerfectFooties.
 					</Typography>
 				</ScrollReveal>
 			</Box>
@@ -211,13 +210,13 @@ export default function TestimonialsPage() {
 										<Box
 											sx={{
 												width: { xs: '100%', md: '40%' }, flexShrink: 0,
-												backgroundColor: '#FFF0F5',
+												backgroundColor: '#FFF8F0',
 												display: 'flex', flexDirection: 'column',
 												alignItems: 'center', justifyContent: 'center',
 												py: { xs: 4, md: 6 }, px: 3,
 											}}
 										>
-											<Avatar sx={{ width: 80, height: 80, backgroundColor: '#E91E8C', fontSize: '2rem', fontFamily: ff, fontWeight: 700, mb: 2 }}>
+											<Avatar sx={{ width: 80, height: 80, backgroundColor: '#e3242b', fontSize: '2rem', fontFamily: ff, fontWeight: 700, mb: 2 }}>
 												{featured.avatar}
 											</Avatar>
 											<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1.3rem', color: 'var(--text-main)' }}>
@@ -229,7 +228,7 @@ export default function TestimonialsPage() {
 											<Chip
 												label={featured.type === 'appointment' ? 'Appointment' : 'Purchase'}
 												size="small"
-												sx={{ backgroundColor: featured.type === 'appointment' ? '#4A0E4E' : '#E91E8C', color: '#fff', fontWeight: 600, fontFamily: ff, mb: 2 }}
+												sx={{ backgroundColor: featured.type === 'appointment' ? '#006666' : '#e3242b', color: '#fff', fontWeight: 600, fontFamily: ff, mb: 2 }}
 											/>
 											{featured.reviews.length === 1 && <StarRating rating={featured.reviews[0].rating} />}
 											{/* Tier badge */}
@@ -288,9 +287,9 @@ export default function TestimonialsPage() {
 									{/* Hover-reveal footer — full card width */}
 									<Box
 										className="view-btn"
-										sx={{ borderTop: '1px solid #F0C0D0', py: 1, textAlign: 'center' }}
+										sx={{ borderTop: '1px solid #E8D5B0', py: 1, textAlign: 'center' }}
 									>
-										<Typography sx={{ fontFamily: ff, fontSize: '0.72rem', fontWeight: 600, color: '#E91E8C', letterSpacing: 0.3 }}>
+										<Typography sx={{ fontFamily: ff, fontSize: '0.72rem', fontWeight: 600, color: '#e3242b', letterSpacing: 0.3 }}>
 											View full review →
 										</Typography>
 									</Box>
@@ -346,7 +345,7 @@ export default function TestimonialsPage() {
 										return (
 											<Box
 												sx={{
-													backgroundColor: "#FFF0F5",
+													backgroundColor: "#FFF8F0",
 													px: 3,
 													py: 2.5,
 													display: "flex",
@@ -358,7 +357,7 @@ export default function TestimonialsPage() {
 													sx={{
 														width: 48,
 														height: 48,
-														backgroundColor: "#E91E8C",
+														backgroundColor: "#e3242b",
 														fontFamily: ff,
 														fontWeight: 700,
 														fontSize: "1.1rem",
@@ -430,8 +429,8 @@ export default function TestimonialsPage() {
 													sx={{
 														backgroundColor:
 															group.type === "appointment"
-																? "#4A0E4E"
-																: "#E91E8C",
+																? "#006666"
+																: "#e3242b",
 														color: "#fff",
 														fontWeight: 600,
 														fontSize: "0.7rem",
@@ -540,7 +539,7 @@ export default function TestimonialsPage() {
 									<Box
 										className="view-btn"
 										sx={{
-											borderTop: "1px solid #F0C0D0",
+											borderTop: "1px solid #E8D5B0",
 											py: 1,
 											textAlign: "center",
 										}}
@@ -550,7 +549,7 @@ export default function TestimonialsPage() {
 												fontFamily: ff,
 												fontSize: "0.72rem",
 												fontWeight: 600,
-												color: "#E91E8C",
+												color: "#e3242b",
 												letterSpacing: 0.3,
 											}}
 										>
@@ -589,11 +588,11 @@ function ReviewDetailModal({ group, onClose }) {
 			{/* Header */}
 			<Box
 				sx={{
-					background: "linear-gradient(135deg, #FFF0F5 0%, #fff 100%)",
+					background: "linear-gradient(135deg, #FFF8F0 0%, #fff 100%)",
 					px: 3,
 					pt: 3,
 					pb: 2,
-					borderBottom: "1px solid #F0C0D0",
+					borderBottom: "1px solid #E8D5B0",
 					position: "relative",
 				}}
 			>
@@ -609,7 +608,7 @@ function ReviewDetailModal({ group, onClose }) {
 						sx={{
 							width: 56,
 							height: 56,
-							backgroundColor: "#E91E8C",
+							backgroundColor: "#e3242b",
 							fontFamily: ff,
 							fontWeight: 700,
 							fontSize: "1.3rem",
@@ -647,8 +646,8 @@ function ReviewDetailModal({ group, onClose }) {
 								sx={{
 									backgroundColor:
 										group.type === "appointment"
-											? "#4A0E4E"
-											: "#E91E8C",
+											? "#006666"
+											: "#e3242b",
 									color: "#fff",
 									fontWeight: 600,
 									fontSize: "0.72rem",
@@ -712,7 +711,7 @@ function ReviewDetailModal({ group, onClose }) {
 										fontFamily: ff,
 										fontSize: "0.7rem",
 										fontWeight: 700,
-										color: "#E91E8C",
+										color: "#e3242b",
 										textTransform: "uppercase",
 										letterSpacing: 0.8,
 									}}
@@ -723,7 +722,7 @@ function ReviewDetailModal({ group, onClose }) {
 									<Chip
 										label={rev.type === 'appointment' ? 'Appointment' : 'Purchase'}
 										size="small"
-										sx={{ backgroundColor: rev.type === 'appointment' ? '#4A0E4E' : '#E91E8C', color: '#fff', fontWeight: 600, fontSize: '0.62rem', fontFamily: ff, height: 18 }}
+										sx={{ backgroundColor: rev.type === 'appointment' ? '#006666' : '#e3242b', color: '#fff', fontWeight: 600, fontSize: '0.62rem', fontFamily: ff, height: 18 }}
 									/>
 								)}
 							</Box>
@@ -752,7 +751,7 @@ function ReviewDetailModal({ group, onClose }) {
 							"{rev.review}"
 						</Typography>
 						{i < group.reviews.length - 1 && (
-							<Box sx={{ mt: 2.5, borderBottom: "1px solid #F0C0D0" }} />
+							<Box sx={{ mt: 2.5, borderBottom: "1px solid #E8D5B0" }} />
 						)}
 					</Box>
 				))}

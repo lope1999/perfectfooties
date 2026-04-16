@@ -38,16 +38,16 @@ function formatNaira(amount) {
   return `\u20A6${Number(amount).toLocaleString()}`;
 }
 
-const WHATSAPP_NUMBER = '2349053714197';
+const WHATSAPP_NUMBER = '2348073637911';
 
 const textFieldSx = {
   '& .MuiOutlinedInput-root': {
     borderRadius: 2,
-    '& fieldset': { borderColor: '#F0C0D0' },
-    '&:hover fieldset': { borderColor: '#E91E8C' },
-    '&.Mui-focused fieldset': { borderColor: '#E91E8C' },
+    '& fieldset': { borderColor: '#E8D5B0' },
+    '&:hover fieldset': { borderColor: '#e3242b' },
+    '&.Mui-focused fieldset': { borderColor: '#e3242b' },
   },
-  '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+  '& .MuiInputLabel-root.Mui-focused': { color: '#e3242b' },
 };
 
 export default function CheckoutPage() {
@@ -401,10 +401,10 @@ export default function CheckoutPage() {
     if (!pk || !window.PaystackPop) { alert('Payment is required to confirm your booking. Please refresh the page and try again.'); return; }
     window.PaystackPop.setup({
       key: pk,
-      email: user?.email || 'guest@chizzys.com',
+      email: user?.email || 'guest@perfectfooties.com',
       amount: depositAmount * 100,
       currency: 'NGN',
-      ref: `CHIZZYS-CART-${Date.now()}`,
+      ref: `FOOTIES-CART-${Date.now()}`,
       metadata: { appointmentCount: services.length },
       callback: (response) => handleCompleteOrder(response.reference, pendingShipping),
       onClose: () => {},
@@ -414,7 +414,7 @@ export default function CheckoutPage() {
   if (!hasDeliverables) return null;
 
   return (
-    <Box sx={{ pt: { xs: 10, md: 12 }, pb: { xs: 16, md: 10 }, minHeight: '100vh', backgroundColor: '#FFF0F5' }}>
+    <Box sx={{ pt: { xs: 10, md: 12 }, pb: { xs: 16, md: 10 }, minHeight: '100vh', backgroundColor: '#FFF8F0' }}>
       <Container maxWidth="lg">
         {/* Header */}
         <Typography
@@ -439,9 +439,9 @@ export default function CheckoutPage() {
               sx={{
                 mb: 3,
                 p: 2,
-                backgroundColor: '#FCE4EC',
+                backgroundColor: '#FFE8E8',
                 borderRadius: 2,
-                border: '1px solid #F0C0D0',
+                border: '1px solid #E8D5B0',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1.5,
@@ -502,16 +502,16 @@ export default function CheckoutPage() {
             />
 
             <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-              <InputLabel sx={{ '&.Mui-focused': { color: '#E91E8C' } }}>State *</InputLabel>
+              <InputLabel sx={{ '&.Mui-focused': { color: '#e3242b' } }}>State *</InputLabel>
               <Select
                 value={form.state}
                 onChange={handleChange('state')}
                 label="State *"
                 sx={{
                   borderRadius: 2,
-                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#F0C0D0' },
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E8D5B0' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#e3242b' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#e3242b' },
                 }}
               >
                 {nigerianStates.map((s) => (
@@ -536,7 +536,7 @@ export default function CheckoutPage() {
               sx={{
                 backgroundColor: '#fff',
                 borderRadius: 3,
-                border: '1px solid #F0C0D0',
+                border: '1px solid #E8D5B0',
                 p: 3,
                 position: { md: 'sticky' },
                 top: { md: 90 },
@@ -562,7 +562,7 @@ export default function CheckoutPage() {
                   {services.map((s) => (
                     <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                       <Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)', flex: 1, mr: 1 }}>{s.name}</Typography>
-                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#E91E8C', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
+                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#e3242b', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
                     </Box>
                   ))}
                 </Box>
@@ -576,7 +576,7 @@ export default function CheckoutPage() {
                   {products.map((p) => (
                     <Box key={p.productId} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                       <Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)', flex: 1, mr: 1 }}>{p.name} ×{p.quantity}</Typography>
-                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#E91E8C', whiteSpace: 'nowrap' }}>{formatNaira(p.price * p.quantity)}</Typography>
+                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#e3242b', whiteSpace: 'nowrap' }}>{formatNaira(p.price * p.quantity)}</Typography>
                     </Box>
                   ))}
                 </Box>
@@ -592,7 +592,7 @@ export default function CheckoutPage() {
                       <Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)', flex: 1, mr: 1 }}>
                         {p.name}{p.quantity > 1 ? ` ×${p.quantity}` : ''}
                       </Typography>
-                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#E91E8C', whiteSpace: 'nowrap' }}>{formatNaira(p.price)}</Typography>
+                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#e3242b', whiteSpace: 'nowrap' }}>{formatNaira(p.price)}</Typography>
                     </Box>
                   ))}
                 </Box>
@@ -600,7 +600,7 @@ export default function CheckoutPage() {
 
               {/* Appointment Deposit Info */}
               {services.length > 0 && (
-                <Box sx={{ mb: 2, p: 2, borderRadius: 2, backgroundColor: '#FFF0F8', border: '1.5px solid #E91E8C' }}>
+                <Box sx={{ mb: 2, p: 2, borderRadius: 2, backgroundColor: '#FFF0F8', border: '1.5px solid #e3242b' }}>
                   <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', fontSize: '0.82rem', mb: 1 }}>
                     Appointment Deposit
                   </Typography>
@@ -610,14 +610,14 @@ export default function CheckoutPage() {
                       <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
                     </Box>
                   ))}
-                  <Divider sx={{ borderColor: '#F0C0D0', my: 1 }} />
+                  <Divider sx={{ borderColor: '#E8D5B0', my: 1 }} />
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.4 }}>
                     <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Appointment subtotal</Typography>
                     <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)' }}>{formatNaira(serviceSubtotal)}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.4 }}>
-                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#E91E8C' }}>50% deposit due now</Typography>
-                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#E91E8C' }}>{formatNaira(depositAmount)}</Typography>
+                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#e3242b' }}>50% deposit due now</Typography>
+                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#e3242b' }}>{formatNaira(depositAmount)}</Typography>
                   </Box>
                   <Typography sx={{ fontSize: '0.75rem', color: '#999' }}>
                     Balance {formatNaira(serviceSubtotal - depositAmount)} due on appointment day
@@ -625,25 +625,25 @@ export default function CheckoutPage() {
                 </Box>
               )}
 
-              <Divider sx={{ borderColor: '#F0C0D0', my: 2 }} />
+              <Divider sx={{ borderColor: '#E8D5B0', my: 2 }} />
 
               {/* Referral code input */}
               <Box sx={{ mb: 1.5 }}>
                 <Box onClick={() => setShowRefField((v) => !v)} sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', mb: showRefField ? 1 : 0 }}>
-                  <LocalOfferIcon sx={{ fontSize: 15, color: referralValid ? '#2e7d32' : '#E91E8C' }} />
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: referralValid ? '#2e7d32' : '#E91E8C', fontFamily: '"Georgia", serif' }}>
+                  <LocalOfferIcon sx={{ fontSize: 15, color: referralValid ? '#2e7d32' : '#e3242b' }} />
+                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: referralValid ? '#2e7d32' : '#e3242b', fontFamily: '"Georgia", serif' }}>
                     {referralValid ? '\u20a6500 off applied!' : 'Have a referral code?'}
                   </Typography>
                 </Box>
                 <Collapse in={showRefField}>
                   <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
-                    <TextField size="small" placeholder="e.g. CHIZZYS-ABC123" value={pendingReferralCode}
+                    <TextField size="small" placeholder="e.g. FOOTIES-ABC123" value={pendingReferralCode}
                       onChange={(e) => { setPendingReferralCode(e.target.value.toUpperCase()); setReferralValid(false); setReferralMsg(''); }}
-                      sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#F0C0D0' }, '&.Mui-focused fieldset': { borderColor: '#E91E8C' } } }}
+                      sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#E8D5B0' }, '&.Mui-focused fieldset': { borderColor: '#e3242b' } } }}
                       inputProps={{ style: { fontFamily: 'monospace', fontSize: '0.82rem' } }}
                     />
                     <Button onClick={handleApplyReferral} disabled={!pendingReferralCode.trim() || referralChecking}
-                      sx={{ backgroundColor: '#E91E8C', color: '#fff', borderRadius: 2, px: 2, fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.78rem', whiteSpace: 'nowrap', '&:hover': { backgroundColor: '#C2185B' }, '&.Mui-disabled': { backgroundColor: '#F0C0D0', color: '#fff' } }}>
+                      sx={{ backgroundColor: '#e3242b', color: '#fff', borderRadius: 2, px: 2, fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.78rem', whiteSpace: 'nowrap', '&:hover': { backgroundColor: '#b81b21' }, '&.Mui-disabled': { backgroundColor: '#E8D5B0', color: '#fff' } }}>
                       {referralChecking ? <CircularProgress size={14} sx={{ color: '#fff' }} /> : 'Apply'}
                     </Button>
                   </Box>
@@ -684,7 +684,7 @@ export default function CheckoutPage() {
                         <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#B8860B' }}>🎁 ₦{pendingReward.naira.toLocaleString()} loyalty reward ready</Typography>
                         <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>{pendingReward.pts} pts saved — tap Apply to use</Typography>
                       </Box>
-                      <Button size="small" onClick={() => setLoyaltyUnits(Math.min(pendingReward.units, maxLoyaltyUnits))} sx={{ border: '1.5px solid #E91E8C', borderRadius: '20px', color: '#E91E8C', px: 2, py: 0.4, fontSize: '0.78rem', fontWeight: 700, textTransform: 'none', '&:hover': { backgroundColor: '#E91E8C', color: '#fff' } }}>Apply</Button>
+                      <Button size="small" onClick={() => setLoyaltyUnits(Math.min(pendingReward.units, maxLoyaltyUnits))} sx={{ border: '1.5px solid #e3242b', borderRadius: '20px', color: '#e3242b', px: 2, py: 0.4, fontSize: '0.78rem', fontWeight: 700, textTransform: 'none', '&:hover': { backgroundColor: '#e3242b', color: '#fff' } }}>Apply</Button>
                     </Box>
                   )}
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -744,7 +744,7 @@ export default function CheckoutPage() {
                 <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.05rem' }}>
                   Total
                 </Typography>
-                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.05rem', color: '#E91E8C' }}>
+                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.05rem', color: '#e3242b' }}>
                   {formatNaira(finalTotal)}
                 </Typography>
               </Box>
@@ -758,7 +758,7 @@ export default function CheckoutPage() {
             onClick={handleSubmit}
             disabled={!isFormValid || submitting}
             sx={{
-              backgroundColor: '#E91E8C',
+              backgroundColor: '#e3242b',
               color: '#fff',
               borderRadius: '30px',
               px: 6,
@@ -766,8 +766,8 @@ export default function CheckoutPage() {
               fontFamily: '"Georgia", serif',
               fontWeight: 600,
               fontSize: '1rem',
-              '&:hover': { backgroundColor: '#C2185B' },
-              '&.Mui-disabled': { backgroundColor: '#F0C0D0', color: '#fff' },
+              '&:hover': { backgroundColor: '#b81b21' },
+              '&.Mui-disabled': { backgroundColor: '#E8D5B0', color: '#fff' },
             }}
           >
             {submitting
@@ -790,27 +790,27 @@ export default function CheckoutPage() {
         </DialogTitle>
         <DialogContent>
           {/* Service list */}
-          <Box sx={{ mb: 2, p: 2, borderRadius: 2, backgroundColor: '#FFF0F8', border: '1px solid #F0C0D0' }}>
+          <Box sx={{ mb: 2, p: 2, borderRadius: 2, backgroundColor: '#FFF0F8', border: '1px solid #E8D5B0' }}>
             {services.map((s) => (
               <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
                 <Box sx={{ flex: 1, mr: 1 }}>
                   <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-main)' }}>{s.name}</Typography>
                   <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>{s.date}</Typography>
                 </Box>
-                <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#E91E8C', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
+                <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#e3242b', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
               </Box>
             ))}
           </Box>
 
-          <Divider sx={{ borderColor: '#F0C0D0', mb: 2 }} />
+          <Divider sx={{ borderColor: '#E8D5B0', mb: 2 }} />
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
             <Typography sx={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Appointment total</Typography>
             <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-muted)' }}>{formatNaira(serviceSubtotal)}</Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
-            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#E91E8C' }}>Deposit (50%)</Typography>
-            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#E91E8C' }}>{formatNaira(depositAmount)}</Typography>
+            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#e3242b' }}>Deposit (50%)</Typography>
+            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#e3242b' }}>{formatNaira(depositAmount)}</Typography>
           </Box>
           <Typography sx={{ fontSize: '0.78rem', color: '#999', mb: 1.5 }}>
             Balance {formatNaira(serviceSubtotal - depositAmount)} due on appointment day
@@ -830,7 +830,7 @@ export default function CheckoutPage() {
           <Button
             onClick={payWithPaystack}
             sx={{
-              backgroundColor: '#E91E8C',
+              backgroundColor: '#e3242b',
               color: '#fff',
               borderRadius: '30px',
               px: 3,
@@ -839,7 +839,7 @@ export default function CheckoutPage() {
               fontWeight: 600,
               fontSize: '0.88rem',
               whiteSpace: 'nowrap',
-              '&:hover': { backgroundColor: '#C2185B' },
+              '&:hover': { backgroundColor: '#b81b21' },
             }}
           >
             Pay {formatNaira(depositAmount)} Deposit

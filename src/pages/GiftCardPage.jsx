@@ -32,8 +32,8 @@ const giftCardTypes = [
 		subtitle: "Instant digital delivery",
 		description:
 			"A digital gift card sent directly via WhatsApp or email. Perfect for last-minute gifts — delivered instantly with a personalized message.",
-		icon: <EmailIcon sx={{ fontSize: 40, color: "#E91E8C" }} />,
-		image: "/images/gift-cards/ChizzysstylesGiftCard.jpg",
+		icon: <EmailIcon sx={{ fontSize: 40, color: "#e3242b" }} />,
+		image: "/images/gift-cards/gift-voucher.jpg",
 		features: [
 			"Instant delivery",
 			"Sent via WhatsApp or email",
@@ -46,9 +46,9 @@ const giftCardTypes = [
 		title: "Physical Gift Card",
 		subtitle: "Beautifully packaged & delivered",
 		description:
-			"A beautifully designed physical card packaged in a Chizzystyles branded envelope. Ideal for special occasions.",
-		icon: <LocalShippingIcon sx={{ fontSize: 40, color: "#E91E8C" }} />,
-		image: "/images/gift-cards/ChizzysstylesGiftCard.jpg",
+			"A beautifully designed physical card packaged in a PerfectFooties branded envelope. Ideal for special occasions.",
+		icon: <LocalShippingIcon sx={{ fontSize: 40, color: "#e3242b" }} />,
+		image: "/images/gift-cards/gift-voucher.jpg",
 		features: [
 			"Premium card design",
 			"Branded packaging",
@@ -59,7 +59,7 @@ const giftCardTypes = [
 ];
 
 const buttonSx = {
-  border: '2px solid #E91E8C',
+  border: '2px solid #e3242b',
   borderRadius: '30px',
   color: 'var(--text-main)',
   backgroundColor: 'transparent',
@@ -70,18 +70,18 @@ const buttonSx = {
   fontWeight: 600,
   transition: 'all 0.3s ease',
   '&:hover': {
-    backgroundColor: '#E91E8C',
+    backgroundColor: '#e3242b',
     color: '#fff',
-    borderColor: '#E91E8C',
+    borderColor: '#e3242b',
   },
 };
 
 const textFieldSx = {
   '& .MuiOutlinedInput-root': {
     borderRadius: 2,
-    '& fieldset': { borderColor: '#F0C0D0' },
-    '&:hover fieldset': { borderColor: '#E91E8C' },
-    '&.Mui-focused fieldset': { borderColor: '#E91E8C' },
+    '& fieldset': { borderColor: '#E8D5B0' },
+    '&:hover fieldset': { borderColor: '#e3242b' },
+    '&.Mui-focused fieldset': { borderColor: '#e3242b' },
   },
 };
 
@@ -141,10 +141,10 @@ export default function GiftCardPage() {
     const typeLabel = selectedType?.id === 'electronic' ? 'E-Gift Card (Digital)' : 'Physical Gift Card';
     const personalMsg = formData.message.trim();
 		const senderLabel = formData.senderName.trim() || 'Guest';
-		const message = `Hi! I'd like to purchase a Chizzystyles Gift Card.\n\nFrom: ${senderLabel}\nType: ${typeLabel}\nGifted To: ${formData.giftedTo}\nAmount: ${formatNaira(formData.amount)}\nGift Card Code: ${generatedCode}\nValidity: 1 year from purchase date${personalMsg ? `\nPersonal Message: "${personalMsg}"` : ""}\n\nPlease confirm and process this gift card order. Thank you!`;
+		const message = `Hi! I'd like to purchase a PerfectFooties Gift Card.\n\nFrom: ${senderLabel}\nType: ${typeLabel}\nGifted To: ${formData.giftedTo}\nAmount: ${formatNaira(formData.amount)}\nGift Card Code: ${generatedCode}\nValidity: 1 year from purchase date${personalMsg ? `\nPersonal Message: "${personalMsg}"` : ""}\n\nPlease confirm and process this gift card order. Thank you!`;
     const encoded = encodeURIComponent(message);
     window.open(
-			`https://api.whatsapp.com/send?phone=2349053714197&text=${encoded}`,
+			`https://api.whatsapp.com/send?phone=2348073637911&text=${encoded}`,
 			"_blank",
 		);
   };
@@ -180,7 +180,7 @@ export default function GiftCardPage() {
 			<Box sx={{ textAlign: "center", py: 6, backgroundColor: "#fff" }}>
 				<ScrollReveal direction="up">
 					<CardGiftcardIcon
-						sx={{ fontSize: 50, color: "#E91E8C", mb: 1 }}
+						sx={{ fontSize: 50, color: "#e3242b", mb: 1 }}
 					/>
 					<Typography
 						variant="h3"
@@ -206,9 +206,7 @@ export default function GiftCardPage() {
 							px: 2,
 						}}
 					>
-						Give the gift of beautiful nails. Our gift cards let your
-						loved ones choose any service or press-on set from our menu —
-						the perfect present for any occasion.
+						Give the gift of handcrafted quality. Our gift cards let your loved ones choose any leather goods from our collection — the perfect present for any occasion.
 					</Typography>
 				</ScrollReveal>
 			</Box>
@@ -289,8 +287,8 @@ export default function GiftCardPage() {
 								sx={{
 									p: 3,
 									borderRadius: 3,
-									border: "1px solid #F0C0D0",
-									backgroundColor: "#FFF0F5",
+									border: "1px solid #E8D5B0",
+									backgroundColor: "#FFF8F0",
 									textAlign: "center",
 								}}
 							>
@@ -310,7 +308,7 @@ export default function GiftCardPage() {
 										fontFamily: '"Georgia", serif',
 										fontWeight: 700,
 										fontSize: "2rem",
-										color: "#E91E8C",
+										color: "#e3242b",
 										mb: 1,
 									}}
 								>
@@ -332,7 +330,7 @@ export default function GiftCardPage() {
 											color:
 												balanceResult.card.status === "active"
 													? "#2e7d32"
-													: "#E91E8C",
+													: "#e3242b",
 										}}
 									>
 										{balanceResult.card.status.replace("_", " ")}
@@ -360,7 +358,7 @@ export default function GiftCardPage() {
 			</Box>
 
 			{/* How It Works */}
-			<Box sx={{ py: 6, backgroundColor: "#FFF0F5" }}>
+			<Box sx={{ py: 6, backgroundColor: "#FFF8F0" }}>
 				<Container maxWidth="md">
 					<ScrollReveal direction="up">
 						<Typography
@@ -407,7 +405,7 @@ export default function GiftCardPage() {
 												fontFamily: '"Georgia", serif',
 												fontWeight: 700,
 												fontSize: "2rem",
-												color: "#E91E8C",
+												color: "#e3242b",
 												mb: 1,
 											}}
 										>
@@ -480,7 +478,7 @@ export default function GiftCardPage() {
 										onClick={() => handleBuyClick(type)}
 										sx={{
 											borderRadius: 4,
-											border: "1px solid #F0C0D0",
+											border: "1px solid #E8D5B0",
 											overflow: "hidden",
 											height: "100%",
 											display: "flex",
@@ -574,7 +572,7 @@ export default function GiftCardPage() {
 													</Typography>
 													<Typography
 														sx={{
-															color: "#E91E8C",
+															color: "#e3242b",
 															fontSize: "0.85rem",
 															fontWeight: 600,
 														}}
@@ -596,7 +594,7 @@ export default function GiftCardPage() {
 											</Typography>
 
 											<Divider
-												sx={{ borderColor: "#F0C0D0", mb: 2 }}
+												sx={{ borderColor: "#E8D5B0", mb: 2 }}
 											/>
 
 											{/* Features */}
@@ -616,7 +614,7 @@ export default function GiftCardPage() {
 																width: 6,
 																height: 6,
 																borderRadius: "50%",
-																backgroundColor: "#E91E8C",
+																backgroundColor: "#e3242b",
 																flexShrink: 0,
 															}}
 														/>
@@ -649,7 +647,7 @@ export default function GiftCardPage() {
 			</Box>
 
 			{/* What Can They Use It For */}
-			<Box sx={{ py: 6, backgroundColor: "#FCE4EC" }}>
+			<Box sx={{ py: 6, backgroundColor: "#FFE8E8" }}>
 				<Container maxWidth="md">
 					<ScrollReveal direction="up">
 						<Typography
@@ -684,11 +682,11 @@ export default function GiftCardPage() {
 											p: 2,
 											backgroundColor: "#fff",
 											borderRadius: 2,
-											border: "1px solid #F0C0D0",
+											border: "1px solid #E8D5B0",
 										}}
 									>
 										<CardGiftcardIcon
-											sx={{ color: "#E91E8C", fontSize: 22 }}
+											sx={{ color: "#e3242b", fontSize: 22 }}
 										/>
 										<Typography
 											sx={{
@@ -725,7 +723,7 @@ export default function GiftCardPage() {
 						<Box
 							sx={{
 								background:
-									"linear-gradient(135deg, #E91E8C 0%, #4A0E4E 100%)",
+									"linear-gradient(135deg, #e3242b 0%, #006666 100%)",
 								p: 3,
 								textAlign: "center",
 							}}
@@ -866,7 +864,7 @@ export default function GiftCardPage() {
 										...textFieldSx,
 										"& .MuiOutlinedInput-root.Mui-disabled": {
 											backgroundColor: "#F9F0F3",
-											"& fieldset": { borderColor: "#F0C0D0" },
+											"& fieldset": { borderColor: "#E8D5B0" },
 										},
 									}}
 								/>
@@ -950,7 +948,7 @@ export default function GiftCardPage() {
 			>
 				<DialogTitle sx={{ pb: 0 }}>
 					<CheckCircleOutlineIcon
-						sx={{ fontSize: 60, color: "#E91E8C", mb: 1 }}
+						sx={{ fontSize: 60, color: "#e3242b", mb: 1 }}
 					/>
 					<Typography
 						variant="h5"
@@ -963,11 +961,11 @@ export default function GiftCardPage() {
 					{generatedCode && (
 						<Box
 							sx={{
-								backgroundColor: "#FFF0F5",
+								backgroundColor: "#FFF8F0",
 								borderRadius: 2,
 								p: 2,
 								my: 2,
-								border: "1px dashed #E91E8C",
+								border: "1px dashed #e3242b",
 							}}
 						>
 							<Typography
@@ -980,7 +978,7 @@ export default function GiftCardPage() {
 									fontFamily: "monospace",
 									fontWeight: 700,
 									fontSize: "1.5rem",
-									color: "#E91E8C",
+									color: "#e3242b",
 									letterSpacing: "3px",
 								}}
 							>
@@ -1002,7 +1000,7 @@ export default function GiftCardPage() {
 					<Button
 						onClick={handleCompleteOrder}
 						sx={{
-							backgroundColor: "#E91E8C",
+							backgroundColor: "#e3242b",
 							color: "#fff",
 							borderRadius: "30px",
 							px: 4,
@@ -1011,7 +1009,7 @@ export default function GiftCardPage() {
 							fontWeight: 600,
 							fontSize: "0.95rem",
 							"&:hover": {
-								backgroundColor: "#C2185B",
+								backgroundColor: "#b81b21",
 							},
 						}}
 					>

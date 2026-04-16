@@ -14,9 +14,9 @@ import { lookupGiftCard, validateCardForRedemption } from '../lib/giftCardServic
 const textFieldSx = {
   '& .MuiOutlinedInput-root': {
     borderRadius: 2,
-    '& fieldset': { borderColor: '#F0C0D0' },
-    '&:hover fieldset': { borderColor: '#E91E8C' },
-    '&.Mui-focused fieldset': { borderColor: '#E91E8C' },
+    '& fieldset': { borderColor: '#E8D5B0' },
+    '&:hover fieldset': { borderColor: '#e3242b' },
+    '&.Mui-focused fieldset': { borderColor: '#e3242b' },
   },
 };
 
@@ -66,14 +66,14 @@ export default function GiftCardRedeemInput({ onApplied, onRemoved, appliedCard 
         mb: 3,
         p: 2,
         borderRadius: 2,
-        border: '1px solid #F0C0D0',
+        border: '1px solid #E8D5B0',
         backgroundColor: '#fff',
       }}
     >
       {appliedCard ? (
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <CardGiftcardIcon sx={{ color: '#E91E8C', fontSize: 20 }} />
+            <CardGiftcardIcon sx={{ color: '#e3242b', fontSize: 20 }} />
             <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.9rem' }}>
               Gift Card Applied: <span style={{ letterSpacing: '1px' }}>{maskedCode}</span>
             </Typography>
@@ -109,13 +109,13 @@ export default function GiftCardRedeemInput({ onApplied, onRemoved, appliedCard 
               '&:hover': { opacity: 0.8 },
             }}
           >
-            <CardGiftcardIcon sx={{ color: '#E91E8C', fontSize: 20 }} />
+            <CardGiftcardIcon sx={{ color: '#e3242b', fontSize: 20 }} />
             <Typography
               sx={{
                 fontFamily: '"Georgia", serif',
                 fontWeight: 600,
                 fontSize: '0.9rem',
-                color: '#E91E8C',
+                color: '#e3242b',
               }}
             >
               Have a gift card?
@@ -140,15 +140,15 @@ export default function GiftCardRedeemInput({ onApplied, onRemoved, appliedCard 
                   onClick={handleApply}
                   disabled={!code.trim() || loading}
                   sx={{
-                    border: '2px solid #E91E8C',
+                    border: '2px solid #e3242b',
                     borderRadius: 2,
-                    color: '#E91E8C',
+                    color: '#e3242b',
                     fontFamily: '"Georgia", serif',
                     fontWeight: 600,
                     fontSize: '0.85rem',
                     px: 3,
                     whiteSpace: 'nowrap',
-                    '&:hover': { backgroundColor: '#E91E8C', color: '#fff' },
+                    '&:hover': { backgroundColor: '#e3242b', color: '#fff' },
                   }}
                 >
                   {loading ? <CircularProgress size={20} /> : 'Apply'}
