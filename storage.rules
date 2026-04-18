@@ -5,7 +5,8 @@ service firebase.storage {
     function isAdmin() {
       return request.auth != null && (
         request.auth.token.email == 'chizobaezeh338@gmail.com' ||
-        request.auth.token.email == 'perfectfooties@gmail.com' || praiseolusegun19@gmail.com
+        request.auth.token.email == 'perfectfooties@gmail.com' ||
+        request.auth.token.email == 'praiseolusegun19@gmail.com'
       );
     }
 
