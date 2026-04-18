@@ -28,18 +28,24 @@ import HandymanIcon from '@mui/icons-material/Handyman';
 const ff = '"Georgia", serif';
 
 const HERO_IMAGES = [
-  '/images/products/heirloom-regal-12.jpg',
-  '/images/products/heirloom-regal-5.jpg',
-  '/images/products/heirloom-royal-1.jpg',
-  '/images/products/heirloom-tmt-1.jpg',
-  '/images/products/male-low-slides-1.jpeg',
+	"/images/products/heirloom-regal-12.jpg",
+	"/images/products/heirloom-regal-5.jpg",
+	"/images/products/heirloom-royal-1.jpg",
+	"/images/products/heirloom-tmt-1.jpg",
+	"/images/products/heirloom-regal-1.jpg",
+	"/images/products/heirloom-regal-2.jpg",
+	"/images/products/heirloom-regal-3.jpg",
+	"/images/products/heirloom-regal-4.jpg",
+	"/images/products/heirloom-royal-5.jpg",
+	"/images/products/heirloom-royal-3.jpg",
+	"/images/products/heirloom-royal-2.jpg",
 ];
 
 const HOME_COLLECTIONS = [
 	{
 		id: "female-footwear",
 		name: "Female Handmade Footwear",
-		coverImage: "/images/products/marble-luxe.jpg",
+		coverImage: "/images/products/male-low-slides-1.jpeg",
 		description:
 			"Elegantly crafted footwear for women — made to measure, made to last.",
 	},
@@ -154,7 +160,18 @@ export default function HomePage() {
 					}}
 				/>
 				{/* Dot indicators */}
-				<Box sx={{ position: "absolute", bottom: 28, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 1, zIndex: 2 }}>
+				<Box
+					sx={{
+						position: "absolute",
+						bottom: 28,
+						left: 0,
+						right: 0,
+						display: "flex",
+						justifyContent: "center",
+						gap: 1,
+						zIndex: 2,
+					}}
+				>
 					{HERO_IMAGES.map((_, i) => (
 						<Box
 							key={i}
@@ -163,7 +180,10 @@ export default function HomePage() {
 								width: i === heroIndex ? 22 : 8,
 								height: 8,
 								borderRadius: 4,
-								backgroundColor: i === heroIndex ? "#e3242b" : "rgba(255,255,255,0.5)",
+								backgroundColor:
+									i === heroIndex
+										? "#e3242b"
+										: "rgba(255,255,255,0.5)",
 								cursor: "pointer",
 								transition: "all 0.3s ease",
 							}}
@@ -191,15 +211,64 @@ export default function HomePage() {
 					</ScrollReveal>
 
 					<ScrollReveal direction="up" delay={0.18} duration={0.7}>
-						<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2, mb: 3.5 }}>
-							<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
-								<CalendarMonthIcon sx={{ fontSize: 13, color: 'rgba(255,255,255,0.55)' }} />
-								<Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', fontFamily: '"Georgia", serif', letterSpacing: 1.2, textTransform: 'uppercase' }}>Est. 2020</Typography>
+						<Box
+							sx={{
+								display: "flex",
+								justifyContent: "center",
+								alignItems: "center",
+								gap: 2,
+								mb: 3.5,
+							}}
+						>
+							<Box
+								sx={{ display: "flex", alignItems: "center", gap: 0.6 }}
+							>
+								<CalendarMonthIcon
+									sx={{
+										fontSize: 13,
+										color: "rgba(255,255,255,0.55)",
+									}}
+								/>
+								<Typography
+									sx={{
+										fontSize: "0.72rem",
+										color: "rgba(255,255,255,0.55)",
+										fontFamily: '"Georgia", serif',
+										letterSpacing: 1.2,
+										textTransform: "uppercase",
+									}}
+								>
+									Est. 2020
+								</Typography>
 							</Box>
-							<Typography sx={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.85rem' }}>|</Typography>
-							<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
-								<HandymanIcon sx={{ fontSize: 13, color: 'rgba(255,255,255,0.55)' }} />
-								<Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', fontFamily: '"Georgia", serif', letterSpacing: 1.2, textTransform: 'uppercase' }}>Made to Order</Typography>
+							<Typography
+								sx={{
+									color: "rgba(255,255,255,0.25)",
+									fontSize: "0.85rem",
+								}}
+							>
+								|
+							</Typography>
+							<Box
+								sx={{ display: "flex", alignItems: "center", gap: 0.6 }}
+							>
+								<HandymanIcon
+									sx={{
+										fontSize: 13,
+										color: "rgba(255,255,255,0.55)",
+									}}
+								/>
+								<Typography
+									sx={{
+										fontSize: "0.72rem",
+										color: "rgba(255,255,255,0.55)",
+										fontFamily: '"Georgia", serif',
+										letterSpacing: 1.2,
+										textTransform: "uppercase",
+									}}
+								>
+									Made to Order
+								</Typography>
 							</Box>
 						</Box>
 					</ScrollReveal>
@@ -267,14 +336,14 @@ export default function HomePage() {
 									mx: "auto",
 								}}
 							>
-								Each piece is made to order by hand in Gbagada, Lagos — cut,
-								stitched, and finished to your preference.
+								Each piece is made to order by hand in Gbagada, Lagos —
+								cut, stitched, and finished to your preference.
 							</Typography>
 							<Box
 								sx={{
 									width: 48,
 									height: 3,
-									backgroundColor: "var(--accent-cyan)",
+									backgroundColor: "#e3242b",
 									mx: "auto",
 									mt: 2,
 									borderRadius: 2,
@@ -299,8 +368,8 @@ export default function HomePage() {
 											"&:hover": {
 												transform: "translateY(-5px)",
 												boxShadow:
-													"0 8px 32px rgba(0,255,255,0.15)",
-												borderColor: "var(--accent-cyan)",
+													"0 8px 32px rgba(227,36,43,0.12)",
+												borderColor: "#e3242b",
 											},
 										}}
 									>
@@ -337,7 +406,7 @@ export default function HomePage() {
 													display: "flex",
 													alignItems: "center",
 													gap: 0.5,
-													color: "var(--accent-cyan)",
+													color: "#e3242b",
 													fontFamily: ff,
 													fontWeight: 700,
 													fontSize: "0.88rem",

@@ -44,5 +44,15 @@ service firebase.storage {
       allow write: if isAdmin() && isValidImage();
     }
 
+    // Custom order reference photos — any authenticated user
+    match /custom-orders/{userId}/{fileName} {
+      allow write: if request.auth != null && isValidImage();
+    }
+
+    // Newsletter campaign images — admin only
+    match /newsletters/{fileName} {
+      allow write: if isAdmin() && isValidImage();
+    }
+
   }
 }

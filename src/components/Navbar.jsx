@@ -28,22 +28,39 @@ import UserMenu from "./UserMenu";
 import { useAuth } from "../context/AuthContext";
 import { useThemeMode } from "../context/ThemeContext";
 
-const navButtonSx = {
-  color: 'var(--text-main)',
-  border: '1px solid #e3242b',
-  borderRadius: '25px',
-  px: 2.5,
-  py: 0.8,
-  fontSize: '0.85rem',
+const navLinkSx = (isActive) => ({
+  color: isActive ? '#e3242b' : 'var(--text-main)',
+  px: 1.5,
+  py: 0.5,
+  fontSize: '0.87rem',
   fontFamily: '"Georgia", serif',
+  fontWeight: 600,
   backgroundColor: 'transparent',
-  transition: 'all 0.3s ease',
+  border: 'none',
+  borderRadius: 0,
   whiteSpace: 'nowrap',
-  '&:hover': {
-    backgroundColor: '#e3242b',
-    color: '#fff',
+  minWidth: 0,
+  position: 'relative',
+  transition: 'color 0.2s ease',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    bottom: 0,
+    left: '10%',
+    width: isActive ? '80%' : '0%',
+    height: '2px',
+    background: '#e3242b',
+    transition: 'width 0.25s ease',
+    borderRadius: '2px',
   },
-};
+  '&:hover': {
+    color: '#e3242b',
+    backgroundColor: 'transparent',
+  },
+  '&:hover::after': {
+    width: '80%',
+  },
+});
 
 const navItems = [
   { label: "Shop", path: "/shop" },
@@ -130,9 +147,8 @@ export default function Navbar() {
 						/>
 						<Typography
 							sx={{
-								display: { xs: "none", md: "block" },
 								fontFamily: '"Dancing Script", "Pacifico", cursive',
-								fontSize: { md: "1.3rem", lg: "1.5rem" },
+								fontSize: { xs: "1.15rem", md: "1.3rem", lg: "1.5rem" },
 								fontWeight: 700,
 								color: "#e3242b",
 								lineHeight: 1,
@@ -140,7 +156,8 @@ export default function Navbar() {
 								userSelect: "none",
 							}}
 						>
-							PerfectFooties
+							<Box component="span" sx={{ display: { xs: "inline", md: "none" } }}>PF</Box>
+							<Box component="span" sx={{ display: { xs: "none", md: "inline" } }}>PerfectFooties</Box>
 						</Typography>
 					</Box>
 
@@ -152,25 +169,31 @@ export default function Navbar() {
 							alignItems: "center",
 						}}
 					>
-						{navItems.map((item) => (
-							<Button
-								key={item.label}
-								sx={navButtonSx}
-								onClick={() => handleNavClick(item)}
-							>
-								{item.label}
-							</Button>
-						))}
+						{navItems.map((item) => {
+							const isActive = item.path !== 'contact' && location.pathname === item.path;
+							return (
+								<Button
+									key={item.label}
+									sx={navLinkSx(isActive)}
+									onClick={() => handleNavClick(item)}
+								>
+									{item.label}
+								</Button>
+							);
+						})}
 						{isAdmin && (
 							<Button
 								sx={{
-									...navButtonSx,
-									borderColor: "#007a7a",
-									color: "var(--text-purple)",
-									"&:hover": {
-										backgroundColor: "#007a7a",
-										color: "#fff",
-									},
+									color: '#fff',
+									backgroundColor: '#007a7a',
+									borderRadius: '20px',
+									px: 2,
+									py: 0.6,
+									fontSize: '0.85rem',
+									fontFamily: '"Georgia", serif',
+									fontWeight: 600,
+									whiteSpace: 'nowrap',
+									'&:hover': { backgroundColor: '#005f5f' },
 								}}
 								startIcon={<AdminPanelSettingsIcon />}
 								onClick={() => navigate("/admin")}

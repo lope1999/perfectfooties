@@ -1,4 +1,5 @@
 const SHOP_URL = 'https://perfectfooties.com';
+const LOGO_URL = 'https://perfectfooties.com/images/logo.png';
 const INSTAGRAM_URL = 'https://www.instagram.com/perfect.footies';
 const FROM_EMAIL = 'noreply@perfectfooties.com';
 const FROM_NAME = 'PerfectFooties';
@@ -15,6 +16,7 @@ function baseHtml(body, footerNote) {
 <body style="margin:0;padding:24px 0;background:#f4f4f4;font-family:Arial,sans-serif">
   <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.08)">
     <div style="background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%);padding:36px 32px 28px;text-align:center">
+      <img src="${LOGO_URL}" alt="PerfectFooties" style="width:72px;height:72px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,0.1);padding:8px;margin-bottom:12px;display:block;margin-left:auto;margin-right:auto"/>
       <p style="font-family:Georgia,serif;font-size:26px;font-weight:bold;color:#ffffff;letter-spacing:1px;margin:0 0 4px">PerfectFooties</p>
       <p style="font-family:Georgia,serif;font-size:13px;color:#e3242b;margin:0;font-style:italic">Handcrafted leather goods, built to last</p>
     </div>
@@ -112,8 +114,7 @@ async function sendOrderConfirmationEmail({ token, email, customerName, orderId,
   const html = baseHtml(`
     <p style="font-family:Georgia,serif;font-size:20px;font-weight:bold;color:#1a1a1a;margin:0 0 12px">Hey ${customerName}!</p>
     <p style="font-family:Arial,sans-serif;font-size:15px;color:#444;line-height:1.7;margin:0 0 20px">
-      We've received your order and it's now in our queue. Every piece is handcrafted with care — please allow
-      <strong>5–10 business days</strong> for production before your order is shipped out. We'll keep you updated every step of the way!
+      We've received your order and it's now in our queue. Every piece is handcrafted with care — please allow <strong>10–14 days</strong> for production, plus <strong>2–5 days for shipping</strong> depending on your location. We'll keep you updated every step of the way!
     </p>
 
     <div style="background:#FFF8F0;border:1px solid #E8D5B0;border-radius:8px;padding:20px 24px;margin:20px 0">
@@ -139,7 +140,7 @@ async function sendOrderConfirmationEmail({ token, email, customerName, orderId,
     '',
     `Hey ${customerName}!`,
     '',
-    `We've received your order and it's now in our queue. Production takes 5–10 business days.`,
+    `We've received your order and it's now in our queue. Production takes 10–14 days, plus 2–5 days for shipping depending on your location.`,
     '',
     'Items:',
     ...items.map((i) => `  - ${i.name}${i.selectedColor ? ` (${i.selectedColor})` : ''} — ${fmt(i.price)}`),
@@ -165,13 +166,13 @@ async function sendProductionEmail({ token, email, customerName, orderId, itemNa
     <p style="font-family:Georgia,serif;font-size:20px;font-weight:bold;color:#1a1a1a;margin:0 0 12px">Your order is being crafted, ${customerName}!</p>
     <p style="font-family:Arial,sans-serif;font-size:15px;color:#444;line-height:1.7;margin:0 0 20px">
       Great news — our artisans have started handcrafting your order. Every stitch and cut is done by hand using
-      premium full-grain leather. This stage typically takes <strong>5–10 business days</strong>.
+      premium full-grain leather. This stage typically takes <strong>10–14 days</strong>, after which your order ships within 2–5 days depending on your location.
     </p>
 
     ${infoBox('Production Details', [
       ['Order ID',   `#${orderId}`],
       ['Item',       itemName || 'Your leather piece'],
-      ['Est. Time',  '5–10 business days'],
+      ['Est. Time',  '10–14 days (+ 2–5 days shipping)'],
       ['Crafted in', 'Gbagada, Lagos, Nigeria'],
     ])}
 
@@ -185,7 +186,7 @@ async function sendProductionEmail({ token, email, customerName, orderId, itemNa
     `Hey ${customerName}!`,
     '',
     `Our artisans have started handcrafting your order: ${itemName || 'your leather piece'}.`,
-    `Production takes 5–10 business days. We'll email you when it ships.`,
+    `Production takes 10–14 days, after which shipping takes 2–5 days depending on your location. We'll email you when it ships.`,
     '',
     `Track your order: ${SHOP_URL}/account`,
     '',
@@ -343,10 +344,47 @@ async function sendWelcomeEmail({ token, email, customerName }) {
   });
 }
 
+// ── Template: Newsletter broadcast ───────────────────────────────────────────
+
+async function sendNewsletterEmail({ token, email, subject, previewText, headline, bodyText, imageUrl, ctaText, ctaUrl }) {
+  const previewEl = previewText
+    ? `<p style="font-family:Arial,sans-serif;font-size:13px;color:#888;margin:0 0 20px;font-style:italic;padding-bottom:16px;border-bottom:1px solid #E8D5B0">${previewText}</p>`
+    : '';
+
+  const headlineEl = headline
+    ? `<p style="font-family:Georgia,serif;font-size:22px;font-weight:bold;color:#1a1a1a;margin:0 0 20px;line-height:1.4">${headline}</p>`
+    : '';
+
+  const imageEl = imageUrl
+    ? `<div style="margin:0 0 24px"><img src="${imageUrl}" alt="" style="width:100%;max-width:100%;border-radius:10px;display:block"/></div>`
+    : '';
+
+  const bodyEl = (bodyText || '')
+    .split('\n\n')
+    .filter(Boolean)
+    .map((para) => `<p style="font-family:Arial,sans-serif;font-size:15px;color:#444;line-height:1.8;margin:0 0 16px">${para.replace(/\n/g, '<br/>')}</p>`)
+    .join('');
+
+  const ctaEl = ctaText && ctaUrl ? ctaBtn(ctaText, ctaUrl) : '';
+
+  const html = baseHtml(
+    `${previewEl}${headlineEl}${imageEl}${bodyEl}${ctaEl}`,
+    "You're receiving this because you subscribed to PerfectFooties updates. To unsubscribe, reply to this email."
+  );
+
+  const textLines = [];
+  if (headline) textLines.push(headline, '');
+  if (bodyText) textLines.push(bodyText);
+  if (ctaText && ctaUrl) textLines.push('', `${ctaText}: ${ctaUrl}`);
+
+  return sendMail({ token, to: email, subject, html, text: textLines.join('\n') || subject });
+}
+
 module.exports = {
   sendOrderConfirmationEmail,
   sendProductionEmail,
   sendShippedEmail,
   sendDeliveredEmail,
   sendWelcomeEmail,
+  sendNewsletterEmail,
 };

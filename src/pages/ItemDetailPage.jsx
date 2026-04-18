@@ -645,10 +645,10 @@ export default function ItemDetailPage() {
             })()}
 
             {/* Made-to-order note */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, p: 1.5, borderRadius: 2, backgroundColor: 'rgba(0,255,255,0.06)', border: '1px solid rgba(0,255,255,0.2)' }}>
-              <CheckCircleOutlineIcon sx={{ color: 'var(--accent-cyan)', fontSize: 18 }} />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, p: 1.5, borderRadius: 2, backgroundColor: 'rgba(227,36,43,0.05)', border: '1px solid rgba(227,36,43,0.18)' }}>
+              <CheckCircleOutlineIcon sx={{ color: '#e3242b', fontSize: 18 }} />
               <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                Made to order — 10–14 days production time
+                Made to order — 10–14 days production + 2–5 days shipping
               </Typography>
             </Box>
 

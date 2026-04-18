@@ -12,7 +12,7 @@ import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturi
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import { collection, collectionGroup, query, where, getDocs } from 'firebase/firestore';
+import { collectionGroup, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { updateOrderStatus } from '../../lib/adminService';
 
@@ -47,17 +47,15 @@ export default function ProductionTrackerSection() {
   const load = async () => {
     setLoading(true);
     try {
-      const q = query(
-        collectionGroup(db, 'orders'),
-        where('status', 'in', ['confirmed', 'production']),
-      );
-      const snap = await getDocs(q);
-      const docs = snap.docs.map((d) => {
-        const data = d.data();
-        const pathParts = d.ref.path.split('/');
-        const uid = pathParts[1];
-        return { id: d.id, uid, ...data };
-      });
+      // No where() on collectionGroup — filter client-side to avoid needing a composite index
+      const snap = await getDocs(collectionGroup(db, 'orders'));
+      const docs = snap.docs
+        .map((d) => {
+          const pathParts = d.ref.path.split('/');
+          const uid = pathParts[1];
+          return { id: d.id, uid, ...d.data() };
+        })
+        .filter((o) => o.status === 'confirmed' || o.status === 'production');
       // Sort: overdue first, then due-soon, then on-track; within each group, least days first
       docs.sort((a, b) => {
         const da = getDaysRemaining(a);

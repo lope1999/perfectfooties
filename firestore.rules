@@ -184,6 +184,20 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // --- Newsletters / Campaigns (admin only) ---
+    match /newsletters/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // --- Newsletter Subscribers (anyone can subscribe; admin can read/delete) ---
+    match /subscribers/{docId} {
+      allow read: if isAdmin();
+      allow create: if request.resource.data.keys().hasAll(['email'])
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() <= 300;
+      allow delete: if isAdmin();
+    }
+
     // --- Collection group query for admin to fetch all orders ---
     match /{path=**}/orders/{orderId} {
       allow read: if isAdmin();

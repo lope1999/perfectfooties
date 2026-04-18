@@ -14,6 +14,7 @@ import LoyaltySection from '../components/admin/LoyaltySection';
 import CollectionsSection from '../components/admin/CollectionsSection';
 import AnnouncementsSection from '../components/admin/AnnouncementsSection';
 import ProductionTrackerSection from '../components/admin/ProductionTrackerSection';
+import NewsletterSection from '../components/admin/NewsletterSection';
 import { fetchAllOrders, fetchAllUsers, computeUserStats } from '../lib/adminService';
 import { fetchProducts } from '../lib/productService';
 import { fetchGalleryImages } from '../lib/galleryService';
@@ -123,6 +124,8 @@ export default function AdminPage() {
         return <LoyaltySection loading={loading} />;
       case 'announcements':
         return <AnnouncementsSection />;
+      case 'subscribers':
+        return <NewsletterSection />;
       default:
         return null;
     }

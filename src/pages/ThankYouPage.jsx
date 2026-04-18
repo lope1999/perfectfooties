@@ -50,7 +50,7 @@ function SuggestedItem({ item, collectionId, navigate }) {
         flex: '0 0 160px', width: 160, borderRadius: 2, overflow: 'hidden',
         border: '1px solid #E8D5B0', backgroundColor: '#fff', cursor: 'pointer',
         transition: 'box-shadow 0.2s, transform 0.2s',
-        '&:hover': { boxShadow: '0 4px 16px rgba(0,255,255,0.2)', transform: 'translateY(-2px)' },
+        '&:hover': { boxShadow: '0 4px 16px rgba(227,36,43,0.18)', transform: 'translateY(-2px)' },
       }}
     >
       <Box sx={{ height: 110, backgroundColor: '#f5f5f5', overflow: 'hidden' }}>
@@ -196,7 +196,7 @@ export default function ThankYouPage() {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(160deg, #f0fffe 0%, #f8f0ff 50%, #fff8f0 100%)',
+        background: 'linear-gradient(160deg, #fff8f0 0%, #f8f0ff 50%, #fff8f0 100%)',
         pt: { xs: 10, md: 12 },
         pb: { xs: 12, md: 8 },
       }}
@@ -215,19 +215,19 @@ export default function ThankYouPage() {
           <Box
             sx={{
               width: 90, height: 90, borderRadius: '50%',
-              background: 'linear-gradient(135deg, rgba(0,255,255,0.15), rgba(0,122,122,0.1))',
-              border: '2.5px solid rgba(0,255,255,0.4)',
+              background: 'linear-gradient(135deg, rgba(227,36,43,0.1), rgba(184,27,33,0.06))',
+              border: '2.5px solid rgba(227,36,43,0.5)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               mx: 'auto', mb: 2,
-              boxShadow: '0 8px 32px rgba(0,255,255,0.2)',
+              boxShadow: '0 8px 32px rgba(227,36,43,0.2)',
               animation: show ? 'pulse 2.5s ease-in-out infinite' : 'none',
               '@keyframes pulse': {
-                '0%, 100%': { boxShadow: '0 8px 32px rgba(0,255,255,0.2)' },
-                '50%': { boxShadow: '0 8px 48px rgba(0,255,255,0.4)' },
+                '0%, 100%': { boxShadow: '0 8px 32px rgba(227,36,43,0.2)' },
+                '50%': { boxShadow: '0 8px 48px rgba(227,36,43,0.4)' },
               },
             }}
           >
-            <CheckCircleOutlineIcon sx={{ fontSize: 52, color: 'var(--accent-cyan)' }} />
+            <CheckCircleOutlineIcon sx={{ fontSize: 52, color: '#e3242b' }} />
           </Box>
 
           <Typography
@@ -235,7 +235,7 @@ export default function ThankYouPage() {
             sx={{
               fontWeight: 800, fontFamily: ff,
               fontSize: { xs: '1.6rem', md: '2rem' },
-              color: 'var(--text-purple)',
+              color: '#e3242b',
               mb: 0.5,
             }}
           >
@@ -253,15 +253,15 @@ export default function ThankYouPage() {
           sx={{
             background: '#fff', borderRadius: 4,
             border: '1.5px solid #E8D5B0',
-            boxShadow: '0 4px 24px rgba(0,255,255,0.08)',
+            boxShadow: '0 4px 24px rgba(227,36,43,0.08)',
             overflow: 'hidden', mb: 2.5,
             opacity: show ? 1 : 0,
             transform: show ? 'translateY(0)' : 'translateY(24px)',
             transition: 'all 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.1s',
           }}
         >
-          <Box sx={{ px: 2.5, py: 1.5, background: 'linear-gradient(135deg, rgba(0,255,255,0.08), rgba(0,122,122,0.05))', borderBottom: '1px solid #E8D5B0', display: 'flex', alignItems: 'center', gap: 1 }}>
-            <ShoppingBagOutlinedIcon sx={{ fontSize: 20, color: 'var(--accent-cyan)' }} />
+          <Box sx={{ px: 2.5, py: 1.5, background: 'linear-gradient(135deg, rgba(227,36,43,0.06), rgba(184,27,33,0.03))', borderBottom: '1px solid #E8D5B0', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ShoppingBagOutlinedIcon sx={{ fontSize: 20, color: '#e3242b' }} />
             <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-purple)', fontFamily: ff }}>
               Order Summary
             </Typography>
@@ -294,7 +294,7 @@ export default function ThankYouPage() {
                         )}
                         {item.date && (
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.3 }}>
-                            <AccessTimeIcon sx={{ fontSize: 13, color: 'var(--accent-cyan)' }} />
+                            <AccessTimeIcon sx={{ fontSize: 13, color: '#e3242b' }} />
                             <Typography sx={{ fontSize: '0.75rem', color: 'var(--text-purple)', fontWeight: 600 }}>{item.date}</Typography>
                           </Box>
                         )}
@@ -315,7 +315,7 @@ export default function ThankYouPage() {
                 </Box>
                 {appointmentDate && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.4 }}>
-                    <AccessTimeIcon sx={{ fontSize: 13, color: 'var(--accent-cyan)' }} />
+                    <AccessTimeIcon sx={{ fontSize: 13, color: '#e3242b' }} />
                     <Typography sx={{ fontSize: '0.75rem', color: 'var(--text-purple)', fontWeight: 600 }}>{appointmentDate}</Typography>
                   </Box>
                 )}
@@ -365,22 +365,22 @@ export default function ThankYouPage() {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     {steps.map((step, idx) => (
                       <Box key={step.key} sx={{ display: 'flex', alignItems: 'center', flex: idx < steps.length - 1 ? 1 : 0 }}>
-                        <Box sx={{ width: idx === activeIdx ? 14 : 10, height: idx === activeIdx ? 14 : 10, borderRadius: '50%', backgroundColor: idx <= activeIdx ? 'var(--accent-cyan)' : '#e0e0e0', border: idx === activeIdx ? '2px solid var(--accent-cyan-dark)' : 'none', flexShrink: 0 }} />
-                        {idx < steps.length - 1 && <Box sx={{ flex: 1, height: 2, backgroundColor: idx < activeIdx ? 'var(--accent-cyan)' : '#e0e0e0', mx: 0.3 }} />}
+                        <Box sx={{ width: idx === activeIdx ? 14 : 10, height: idx === activeIdx ? 14 : 10, borderRadius: '50%', backgroundColor: idx <= activeIdx ? '#e3242b' : '#e0e0e0', border: idx === activeIdx ? '2px solid #b81b21' : 'none', flexShrink: 0 }} />
+                        {idx < steps.length - 1 && <Box sx={{ flex: 1, height: 2, backgroundColor: idx < activeIdx ? '#e3242b' : '#e0e0e0', mx: 0.3 }} />}
                       </Box>
                     ))}
                   </Box>
                   <Box sx={{ display: 'flex', mt: 0.8 }}>
                     {steps.map((step, idx) => (
                       <Box key={step.key} sx={{ flex: idx < steps.length - 1 ? 1 : 0, textAlign: idx === 0 ? 'left' : idx === steps.length - 1 ? 'right' : 'center' }}>
-                        <Typography sx={{ fontSize: '0.62rem', fontWeight: idx === activeIdx ? 700 : 400, color: idx <= activeIdx ? 'var(--accent-cyan-dark)' : '#aaa', lineHeight: 1.2, whiteSpace: 'nowrap', fontFamily: ff }}>
+                        <Typography sx={{ fontSize: '0.62rem', fontWeight: idx === activeIdx ? 700 : 400, color: idx <= activeIdx ? '#e3242b' : '#aaa', lineHeight: 1.2, whiteSpace: 'nowrap', fontFamily: ff }}>
                           {step.label}
                         </Typography>
                       </Box>
                     ))}
                   </Box>
                   <Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 1, textAlign: 'center', fontFamily: ff }}>
-                    {isLeather ? 'Handmade to order — 10–14 days production time' : 'We\'ll update your order as we prepare and dispatch your items.'}
+                    {isLeather ? 'Handmade to order — 10–14 days production + 2–5 days shipping depending on location' : 'We\'ll update your order as we prepare and dispatch your items.'}
                   </Typography>
                 </>
               );
@@ -390,7 +390,7 @@ export default function ThankYouPage() {
 
         {/* WhatsApp action section */}
         {whatsappUrl && (
-          <Box sx={{ ...cardSx(0.2), background: 'linear-gradient(135deg, #e8fff8, #f0fff8)', border: '1.5px solid rgba(0,255,255,0.3)' }}>
+          <Box sx={{ ...cardSx(0.2), background: 'linear-gradient(135deg, #e8fff8, #f0fff8)', border: '1.5px solid rgba(37,211,102,0.35)' }}>
             <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-purple)', mb: 0.5, fontFamily: ff }}>
               Send your order details to us on WhatsApp
             </Typography>
@@ -431,8 +431,8 @@ export default function ThankYouPage() {
                 : 'You\'ll receive a WhatsApp message from us to confirm your order details.',
             },
             {
-              icon: <AccessTimeIcon sx={{ fontSize: 18, color: 'var(--accent-cyan)' }} />,
-              text: 'Your handmade leather piece goes into production (10–14 days). We\'ll update your order status at each stage.',
+              icon: <AccessTimeIcon sx={{ fontSize: 18, color: '#e3242b' }} />,
+              text: 'Your handmade leather piece goes into production (10–14 days), then ships within 2–5 days depending on your location. We\'ll update your order status at each stage.',
             },
             {
               icon: <StarOutlineIcon sx={{ fontSize: 18, color: '#FFB300' }} />,
@@ -440,7 +440,7 @@ export default function ThankYouPage() {
             },
           ].map((step, i) => (
             <Box key={i} sx={{ display: 'flex', gap: 1.5, mb: i < 2 ? 1.2 : 0, alignItems: 'flex-start' }}>
-              <Box sx={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(0,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.1 }}>
+              <Box sx={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(227,36,43,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.1 }}>
                 {step.icon}
               </Box>
               <Typography sx={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5, pt: 0.5, fontFamily: ff }}>
@@ -467,13 +467,13 @@ export default function ThankYouPage() {
             <Button
               onClick={handleEmailReceipt}
               disabled={emailSending}
-              startIcon={emailSending ? <CircularProgress size={14} sx={{ color: 'var(--accent-cyan)' }} /> : <EmailOutlinedIcon />}
+              startIcon={emailSending ? <CircularProgress size={14} sx={{ color: '#e3242b' }} /> : <EmailOutlinedIcon />}
               sx={{
                 flex: 1, minWidth: 130, py: 1, borderRadius: '50px',
-                border: '1.5px solid var(--accent-cyan)', color: 'var(--text-purple)',
+                border: '1.5px solid #e3242b', color: '#e3242b',
                 fontFamily: ff, fontWeight: 600, fontSize: '0.8rem',
-                backgroundColor: 'rgba(0,255,255,0.05)',
-                '&:hover': { backgroundColor: 'rgba(0,255,255,0.12)' },
+                backgroundColor: 'rgba(227,36,43,0.05)',
+                '&:hover': { backgroundColor: 'rgba(227,36,43,0.12)' },
               }}
             >
               {emailSending ? 'Sending…' : 'Email Receipt'}
@@ -485,7 +485,7 @@ export default function ThankYouPage() {
                 flex: 1, minWidth: 130, py: 1, borderRadius: '50px',
                 border: '1.5px solid #E8D5B0', color: '#555',
                 fontFamily: ff, fontWeight: 600, fontSize: '0.8rem',
-                '&:hover': { borderColor: 'var(--accent-cyan)', color: 'var(--text-purple)' },
+                '&:hover': { borderColor: '#e3242b', color: '#e3242b' },
               }}
             >
               Download Receipt
@@ -523,10 +523,10 @@ export default function ThankYouPage() {
             onClick={() => navigate('/shop')}
             sx={{
               py: 1.4, borderRadius: '50px',
-              background: 'linear-gradient(135deg, var(--accent-cyan-dark), var(--accent-cyan-hover))',
+              background: 'linear-gradient(135deg, #e3242b, #b81b21)',
               color: '#fff', fontWeight: 700, fontSize: '0.9rem', fontFamily: ff,
-              boxShadow: '0 4px 16px rgba(0,122,122,0.3)',
-              '&:hover': { background: 'linear-gradient(135deg, var(--accent-cyan-hover), #003a3a)', boxShadow: '0 6px 20px rgba(0,122,122,0.4)' },
+              boxShadow: '0 4px 16px rgba(227,36,43,0.3)',
+              '&:hover': { background: 'linear-gradient(135deg, #c0181e, #8f1117)', boxShadow: '0 6px 20px rgba(227,36,43,0.4)' },
             }}
           >
             Continue Shopping
@@ -539,7 +539,7 @@ export default function ThankYouPage() {
               background: 'transparent', color: '#888',
               fontWeight: 500, fontSize: '0.84rem', fontFamily: ff,
               border: '1.5px solid #E0E0E0',
-              '&:hover': { background: '#FAFAFA', borderColor: 'var(--accent-cyan)' },
+              '&:hover': { background: '#FAFAFA', borderColor: '#e3242b' },
             }}
           >
             View My Account &amp; Orders

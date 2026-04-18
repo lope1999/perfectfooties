@@ -14,7 +14,7 @@ function deliveryEstimate(type, shipping) {
   const isIntl = shipping?.method === 'international' ||
     (shipping?.country && shipping?.country !== 'Nigeria') ||
     shipping?.zone;
-  if (isLeather) return isIntl ? '14–21 business days (production + shipping)' : '10–14 business days (handmade to order)';
+  if (isLeather) return isIntl ? '10–14 days production + 5–10 days international shipping' : '10–14 days production + 2–5 days local shipping';
   if (isIntl) return '5–10 business days';
   return '2–5 business days';
 }

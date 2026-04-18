@@ -653,12 +653,33 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                         )}
                         {o.email && (
                           <Typography sx={{ fontFamily, fontSize: '0.85rem', mb: 1 }}>
-                            <strong>Email:</strong> {o.email}
+                            <strong>Email:</strong>{' '}
+                            {o.type === 'custom' ? (
+                              <Box
+                                component="a"
+                                href={`mailto:${o.email}?subject=Your%20Custom%20Order%20–%20PerfectFooties&body=Hi%20${encodeURIComponent(o.customerName || 'there')}%2C%0A%0AI%E2%80%99m%20a%20specialist%20from%20PerfectFooties%20reaching%20out%20to%20finalise%20your%20custom%20order%20(Ref%3A%20${encodeURIComponent(o.id)})%20placed%20on%20our%20website.%0A%0AKindly%20reply%20so%20we%20can%20discuss%20measurements%2C%20final%20details%2C%20and%20payment.%0A%0AThank%20you!`}
+                                sx={{ color: '#e3242b', textDecoration: 'underline', cursor: 'pointer', fontFamily }}
+                              >
+                                {o.email}
+                              </Box>
+                            ) : o.email}
                           </Typography>
                         )}
                         {o.phone && (
                           <Typography sx={{ fontFamily, fontSize: '0.85rem', mb: 1 }}>
-                            <strong>Phone:</strong> {o.phone}
+                            <strong>Phone:</strong>{' '}
+                            {o.type === 'custom' ? (
+                              <Box
+                                component="a"
+                                href={`https://wa.me/${o.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${o.customerName || 'there'}, I'm a specialist from PerfectFooties getting in touch with you to finalise your custom order (Ref: ${o.id}) placed on our website. Kindly reply so we can discuss measurements, final details, and payment. Thank you!`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                sx={{ color: '#25D366', textDecoration: 'underline', cursor: 'pointer', fontFamily, display: 'inline-flex', alignItems: 'center', gap: 0.4 }}
+                              >
+                                {o.phone}
+                                <Box component="span" sx={{ fontSize: '0.72rem', color: '#25D366', fontWeight: 700 }}>(WhatsApp)</Box>
+                              </Box>
+                            ) : o.phone}
                           </Typography>
                         )}
                         {o.items?.length > 0 && (
@@ -741,6 +762,29 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                           <Typography sx={{ fontFamily, fontSize: '0.85rem', mb: 1 }}>
                             <strong>Customer Notes:</strong> {o.notes}
                           </Typography>
+                        )}
+                        {o.photoUrls?.length > 0 && (
+                          <Box sx={{ mb: 2 }}>
+                            <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Reference Photos:</Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                              {o.photoUrls.map((url, i) => (
+                                <Box
+                                  key={i}
+                                  component="a"
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  sx={{
+                                    display: 'block', width: 72, height: 72, borderRadius: 2,
+                                    overflow: 'hidden', border: '2px solid #E8D5B0',
+                                    '&:hover': { borderColor: '#e3242b' }, flexShrink: 0,
+                                  }}
+                                >
+                                  <Box component="img" src={url} alt={`ref ${i + 1}`} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                </Box>
+                              ))}
+                            </Box>
+                          </Box>
                         )}
                         {o.adminNotes?.length > 0 && (
                           <Box sx={{ mt: 1 }}>

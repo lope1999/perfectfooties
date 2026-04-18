@@ -12,6 +12,7 @@ const {
   sendShippedEmail,
   sendDeliveredEmail,
   sendWelcomeEmail,
+  sendNewsletterEmail,
 } = require("./lib/emailSender");
 
 initializeApp();
@@ -289,6 +290,72 @@ exports.onFirstOrderWelcome = onDocumentUpdated(
       logger.error("sendWelcomeEmail failed:", err);
     }
   },
+);
+
+// ── Callable: admin broadcasts newsletter to all subscribers ─────────────────
+const ADMIN_EMAILS = ["chizobaezeh338@gmail.com", "perfect.footies@gmail.com"];
+
+exports.sendNewsletter = onCall(
+  { secrets: [MAILTRAP_TOKEN] },
+  async (request) => {
+    if (!request.auth) throw new HttpsError("unauthenticated", "Must be signed in");
+    if (!ADMIN_EMAILS.includes(request.auth.token.email)) {
+      throw new HttpsError("permission-denied", "Admin only");
+    }
+
+    const { newsletterId } = request.data;
+    if (!newsletterId) throw new HttpsError("invalid-argument", "newsletterId is required");
+
+    const db = getFirestore();
+    const newsletterRef = db.collection("newsletters").doc(newsletterId);
+    const newsletterSnap = await newsletterRef.get();
+    if (!newsletterSnap.exists) throw new HttpsError("not-found", "Newsletter not found");
+
+    const newsletter = newsletterSnap.data();
+    if (newsletter.status === "sent") throw new HttpsError("failed-precondition", "Newsletter already sent");
+
+    const subscribersSnap = await db.collection("subscribers").get();
+    const subscribers = subscribersSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+    const token = MAILTRAP_TOKEN.value();
+    if (!token) throw new HttpsError("internal", "Email service not configured");
+
+    let sentCount = 0;
+    const BATCH_SIZE = 50;
+
+    for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
+      const batch = subscribers.slice(i, i + BATCH_SIZE);
+      await Promise.allSettled(
+        batch.map((sub) =>
+          sendNewsletterEmail({
+            token,
+            email: sub.email,
+            subject: newsletter.subject,
+            previewText: newsletter.previewText || "",
+            headline: newsletter.headline || "",
+            bodyText: newsletter.bodyText || "",
+            imageUrl: newsletter.imageUrl || "",
+            ctaText: newsletter.ctaText || "",
+            ctaUrl: newsletter.ctaUrl || "",
+          })
+            .then(() => { sentCount++; })
+            .catch((err) => logger.error(`Newsletter failed for ${sub.email}:`, err))
+        )
+      );
+      if (i + BATCH_SIZE < subscribers.length) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+    }
+
+    await newsletterRef.update({
+      status: "sent",
+      sentAt: FieldValue.serverTimestamp(),
+      sentCount,
+    });
+
+    logger.info(`Newsletter ${newsletterId} sent to ${sentCount}/${subscribers.length} subscribers`);
+    return { success: true, sentCount };
+  }
 );
 
 // ── Callable: admin sends confirmation email manually ─────────────────────────

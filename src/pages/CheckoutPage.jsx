@@ -267,7 +267,7 @@ export default function CheckoutPage() {
         if (p.setIncludes?.length > 0) detail += `\n   Set Includes: ${p.setIncludes.join(', ')}`;
         if (p.inspirationTags?.length > 0) detail += `\n   Inspiration: ${p.inspirationTags.join(', ')}`;
         if (p.nailNotes) detail += `\n   Notes: ${p.nailNotes}`;
-        if (p.specialRequest) detail += `\n   [!] SPECIAL REQUEST — Made to Order (production: 4–7 days)`;
+        if (p.specialRequest) detail += `\n   [!] SPECIAL REQUEST — Made to Order (production: 10–14 days)`;
         if (p.orderingForOthers && p.otherPeople?.length > 0) {
           p.otherPeople.forEach((o) => {
             detail += `\n   Also for: ${o.name || 'N/A'} \u2014 Shape: ${o.nailShape || 'Same'} \u2014 Nail Bed: ${o.nailBedSize || 'N/A'}`;
@@ -830,14 +830,14 @@ export default function CheckoutPage() {
                 const latest = addBusinessDays(new Date(), 14);
                 return (
                   <Box sx={{ mt: 2, p: 1.5, borderRadius: 2, backgroundColor: 'rgba(0,255,255,0.06)', border: '1px solid rgba(0,255,255,0.2)', display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                    <LocalShippingOutlinedIcon sx={{ fontSize: 16, color: 'var(--accent-cyan)', flexShrink: 0, mt: 0.2 }} />
+                    <LocalShippingOutlinedIcon sx={{ fontSize: 16, color: '#007a7a', flexShrink: 0, mt: 0.2 }} />
                     <Box>
                       <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)' }}>Estimated Dispatch</Typography>
                       <Typography sx={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                        Production: 10–14 days after confirmation.<br />
+                        Production: 10–14 days + shipping: 2–5 days (local) after confirmation.<br />
                         {isDomestic
                           ? <>Delivered via <strong>Fez Delivery</strong> approx. <strong>{formatDeliveryDate(earliest)} – {formatDeliveryDate(latest)}</strong>.</>
-                          : <strong style={{ color: 'var(--accent-cyan)' }}>International shipping cost will be confirmed via WhatsApp.</strong>
+                          : <strong style={{ color: '#e3242b' }}>International shipping cost will be confirmed via WhatsApp.</strong>
                         }
                       </Typography>
                     </Box>

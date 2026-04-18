@@ -353,8 +353,9 @@ export function computeDashboardStats(orders) {
     .reduce((sum, o) => sum + (o.total || 0) + (o.extraCharge || 0), 0);
   const pending = orders.filter((o) => o.status === 'pending').length;
   const confirmed = orders.filter((o) => o.status === 'confirmed').length;
+  const production = orders.filter((o) => o.status === 'production').length;
   const received = orders.filter((o) => o.status === 'received').length;
-  return { total, revenue, pending, confirmed, received };
+  return { total, revenue, pending, confirmed, production, received };
 }
 
 export function findLowStockProducts(categories, threshold = 5) {

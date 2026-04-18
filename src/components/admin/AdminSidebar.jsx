@@ -27,6 +27,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CollectionsIcon from '@mui/icons-material/CollectionsBookmark';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 
 const SIDEBAR_WIDTH = 250;
 const SIDEBAR_COLLAPSED_WIDTH = 68;
@@ -42,6 +43,7 @@ const sections = [
   { key: 'giftcards',        label: 'Gift Cards',            icon: <CardGiftcardIcon /> },
   { key: 'gallery',          label: 'Gallery',               icon: <PhotoLibraryIcon /> },
   { key: 'announcements',    label: 'Announcements',         icon: <CampaignIcon /> },
+  { key: 'subscribers',      label: 'Newsletter',            icon: <MailOutlineIcon /> },
 ];
 
 export default function AdminSidebar({ active, onSelect, mobileOpen, onMobileClose, collapsed, onToggleCollapse }) {

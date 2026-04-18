@@ -518,7 +518,7 @@ export default function DashboardSection({
 		},
 		{
 			title: "Production Queue",
-			value: lowStock.length,
+			value: stats.production,
 			icon: <WarningAmberIcon />,
 			gradient: "linear-gradient(135deg, #c62828 0%, #ef5350 100%)",
 			section: "production",
