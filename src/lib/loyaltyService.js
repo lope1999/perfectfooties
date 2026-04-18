@@ -17,8 +17,19 @@ export const POINTS_PER_REFERRAL = 50;   // referrer bonus when their code is us
 export const REFERRAL_DISCOUNT = 1000;   // ₦1,000 off for the person using a referral code
 export const REDEMPTION_UNIT = 50;       // every 50 pts = ₦1,000 redeemable
 export const REDEMPTION_VALUE = 1000;    // ₦ value per REDEMPTION_UNIT points
-export const PRESSONS_TIER_MIN = 4;      // min reviews to unlock 5% press-on discount (Star Client)
-export const PRESSONS_TIER_DISCOUNT = 0.05; // 5% off press-ons for Glam Client+
+// ── Customer Tiers (based on number of completed orders) ──────
+export const TIERS = [
+  { key: 'fresh',         label: 'Fresh',         minOrders: 0, color: '#78909C', bg: '#ECEFF1', perk: 'Welcome to PerfectFooties — your journey begins here.' },
+  { key: 'star-client',   label: 'Star Client',   minOrders: 2, color: '#007a7a', bg: '#E0F7FA', perk: '5% loyalty discount on all orders + priority production queue.' },
+  { key: 'master-patron', label: 'Master Patron', minOrders: 4, color: '#B8860B', bg: '#FFF8E1', perk: '10% loyalty discount + free custom engraving on every order.' },
+];
+
+export function getCustomerTier(orderCount) {
+  for (let i = TIERS.length - 1; i >= 0; i--) {
+    if (orderCount >= TIERS[i].minOrders) return TIERS[i];
+  }
+  return TIERS[0];
+}
 
 // ── Pending Loyalty Reward (saved from AccountPage, applied at checkout) ──────
 const LOYALTY_REWARD_KEY = 'pendingLoyaltyReward';

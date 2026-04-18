@@ -20,10 +20,7 @@ const STATUS_LABELS = {
 };
 
 function getOrderLabel(order) {
-  if (order.type === 'service') {
-    return order.items?.[0]?.serviceName || 'your appointment';
-  }
-  return order.items?.[0]?.name || 'your press-on order';
+  return order.items?.[0]?.name || 'your order';
 }
 
 function getDismissed() {
@@ -160,8 +157,8 @@ export function NotificationProvider({ children }) {
         const oldStatus = statusMapRef.current[orderId];
         const newStatus = docData.status;
 
-        // Only notify for pressOn and service order types
-        if (docData.type !== 'pressOn' && docData.type !== 'service') {
+        // Only notify for leather orders
+        if (!['leather', 'mixed', 'nicheCollection', 'product'].includes(docData.type)) {
           statusMapRef.current[orderId] = newStatus;
           continue;
         }

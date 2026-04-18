@@ -139,7 +139,7 @@ export default function ProductsSection({ collectionName, categories, loading, o
             setCatForm({ id: '', title: '' });
             setCatDialog({ mode: 'add' });
           }}
-          sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+          sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
         >
           Add Category
         </Button>
@@ -250,7 +250,7 @@ export default function ProductsSection({ collectionName, categories, loading, o
                         setOptionInput((prev) => ({ ...prev, [cat.id]: { ...prev[cat.id], setIncludes: '' } }));
                         onRefresh();
                       }}
-                      sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+                      sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
                     >
                       Add
                     </Button>
@@ -500,7 +500,7 @@ export default function ProductsSection({ collectionName, categories, loading, o
             onClick={handleSaveCategory}
             variant="contained"
             disabled={busy || !catForm.title.trim() || (catDialog?.mode === 'add' && !catForm.id.trim())}
-            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
           >
             {catDialog?.mode === 'add' ? 'Create' : 'Update'}
           </Button>

@@ -31,14 +31,15 @@ import ImageUploadField from './ImageUploadField';
 const fontFamily = '"Georgia", serif';
 
 const categoryOptions = [
-  { value: 'nails', label: 'Nails' },
-  { value: 'pressOn', label: 'Press-On Nails' },
+  { value: 'footwear', label: 'Footwear' },
+  { value: 'bags', label: 'Bags & Accessories' },
+  { value: 'lifestyle', label: 'Lifestyle' },
 ];
 
 const emptyForm = {
   imageUrl: '',
   caption: '',
-  category: 'nails',
+  category: 'footwear',
   order: 0,
 };
 
@@ -60,9 +61,9 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
 
   const stats = useMemo(() => {
     const total = galleryImages.length;
-    const nails = galleryImages.filter((i) => i.category === 'nails').length;
-    const pressOn = galleryImages.filter((i) => i.category === 'pressOn').length;
-    return { total, nails, pressOn };
+    const footwear = galleryImages.filter((i) => i.category === 'footwear').length;
+    const bags = galleryImages.filter((i) => i.category === 'bags').length;
+    return { total, footwear, bags };
   }, [galleryImages]);
 
   const showSnack = (message, severity = 'success') => {
@@ -80,7 +81,7 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
     setForm({
       imageUrl: img.imageUrl || '',
       caption: img.caption || '',
-      category: img.category || 'nails',
+      category: img.category || 'footwear',
       order: img.order ?? 0,
     });
     setDialogOpen(true);
@@ -133,14 +134,8 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
   };
 
   const handleSeedFromLocal = async () => {
-    const nailFiles = [
-      'builder-gel.jpg', 'chrome-nails.jpg.jpg', 'classic-gel.png', 'complex-overlay.JPG',
-      'custom-art.jpg.jpg', 'freehand-art.jpg.jpg', 'french-tip.PNG', 'gel-extensions.jpg.jpg',
-      'glossy-red.jpg.jpg', 'hardgel-extension.PNG', 'ombre-nails.jpg.jpg', 'overlay-nails.jpg.jpg', 'toes.PNG',
-    ];
-    const pressOnFiles = [
-      'presson-1.jpg', 'presson-2.jpg', 'presson-3.jpg', 'presson-4.JPG',
-      'custom-long.jpg.jpg', 'marble-luxe.jpg', 'nude-set.jpg.jpg', 'redenedg.jpg', 'redenedg2.jpg',
+    const footwearFiles = [
+      'male-low-slides-1.jpeg',
     ];
     const toLabel = (f) => f.replace(/\.(jpg|jpeg|png|webp|JPG|JPEG|PNG)(\.(jpg|jpeg|png|webp|JPG|JPEG|PNG))?$/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
     const existingUrls = new Set(galleryImages.map((i) => i.imageUrl));
@@ -148,16 +143,10 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
     let added = 0;
     let order = galleryImages.length;
     try {
-      for (const file of nailFiles) {
-        const url = `/images/services/${file}`;
-        if (existingUrls.has(url)) continue;
-        await addGalleryImage({ imageUrl: url, caption: toLabel(file), category: 'nails', order: order++ });
-        added++;
-      }
-      for (const file of pressOnFiles) {
+      for (const file of footwearFiles) {
         const url = `/images/products/${file}`;
         if (existingUrls.has(url)) continue;
-        await addGalleryImage({ imageUrl: url, caption: toLabel(file), category: 'pressOn', order: order++ });
+        await addGalleryImage({ imageUrl: url, caption: toLabel(file), category: 'footwear', order: order++ });
         added++;
       }
       showSnack(`Added ${added} gallery images`);
@@ -200,7 +189,7 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={openAddDialog}
-            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
         >
           Add Image
         </Button>
@@ -214,12 +203,12 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
           <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-purple)' }}>{stats.total}</Typography>
         </Paper>
         <Paper sx={{ px: 3, py: 2, borderRadius: 2, flex: '1 1 140px', minWidth: 140 }}>
-          <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>Nails</Typography>
-          <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-purple)' }}>{stats.nails}</Typography>
+          <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>Footwear</Typography>
+          <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-purple)' }}>{stats.footwear}</Typography>
         </Paper>
         <Paper sx={{ px: 3, py: 2, borderRadius: 2, flex: '1 1 140px', minWidth: 140 }}>
-          <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>Press-On Nails</Typography>
-          <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-purple)' }}>{stats.pressOn}</Typography>
+          <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>Bags & Accessories</Typography>
+          <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-purple)' }}>{stats.bags}</Typography>
         </Paper>
       </Box>
 
@@ -242,7 +231,7 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table size="small">
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#006666' }}>
+            <TableRow sx={{ backgroundColor: '#007a7a' }}>
               {['Preview', 'Caption', 'Category', 'Order', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
                   {h}
@@ -265,7 +254,7 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
                   {img.caption || '—'}
                 </TableCell>
                 <TableCell sx={{ fontFamily, fontSize: '0.85rem' }}>
-                  {img.category === 'pressOn' ? 'Press-On Nails' : 'Nails'}
+                  {categoryOptions.find((c) => c.value === img.category)?.label || img.category}
                 </TableCell>
                 <TableCell sx={{ fontFamily, fontSize: '0.85rem' }}>
                   {img.order}
@@ -342,7 +331,7 @@ export default function GallerySection({ galleryImages, loading, onRefresh }) {
             onClick={handleSave}
             variant="contained"
             disabled={busy}
-            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
           >
             {editingImage ? 'Update' : 'Add'}
           </Button>

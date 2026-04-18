@@ -1,8 +1,20 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git clone:*)",
-      "Bash(mv .claude_backup:*)"
+      "Bash(git clone *)",
+      "Bash(cp -r /tmp/perfectfooties_tmp/. /Users/apple/pfshoplive/)",
+      "Bash(rm -rf /tmp/perfectfooties_tmp)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(firebase *)",
+      "Bash(xargs sed *)",
+      "Bash(find . -type f \\\\\\( -name \"*.js\" -o -name \"*.jsx\" \\\\\\) ! -path \"./node_modules/*\" -exec grep -l \"press[Oo]n\\\\|nailShape\\\\|nailLength\\\\|nailNotes\\\\|Appointment\\\\|appointment\" {} \\\\;)",
+      "Bash(python3 *)",
+      "Bash(unzip -o \"Bag Regal-20260417T124248Z-3-001.zip\" -d extracted/regal)",
+      "Bash(unzip -o \"Bag Royal-20260417T124415Z-3-001.zip\" -d extracted/royal)",
+      "Bash(unzip -o \"The Majesty Tote \\(TMT\\)-20260417T124438Z-3-001.zip\" -d extracted/tmt)",
+      "Bash(node *)"
     ]
   }
 }

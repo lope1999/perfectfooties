@@ -194,7 +194,7 @@ export default function BlogPostsSection({ blogPosts, loading, onRefresh }) {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={openAddDialog}
-          sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+          sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
         >
           Add Blog Post
         </Button>
@@ -240,7 +240,7 @@ export default function BlogPostsSection({ blogPosts, loading, onRefresh }) {
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table size="small">
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#006666' }}>
+            <TableRow sx={{ backgroundColor: '#007a7a' }}>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 40 }} />
               {['Title', 'Category', 'Author', 'Date', 'Read Time', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
@@ -433,7 +433,7 @@ export default function BlogPostsSection({ blogPosts, loading, onRefresh }) {
             onClick={handleSave}
             variant="contained"
             disabled={busy}
-            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
           >
             {editingPost ? 'Update' : 'Create'}
           </Button>

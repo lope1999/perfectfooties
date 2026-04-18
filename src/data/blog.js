@@ -41,7 +41,7 @@ export const blogPosts = [
 			"Stitching is where the craft truly shows. Saddle stitching — the technique used in quality handcrafted leather goods — involves two needles and a single thread worked simultaneously through pre-punched holes. Unlike machine stitching, saddle stitching does not unravel from a single broken thread. It is stronger, more durable, and visually superior.",
 			"Edge finishing is often underestimated by those outside the craft. The edges of each piece are bevelled, burnished, and treated to prevent fraying and moisture damage. A well-finished edge is the mark of a skilled craftsman.",
 			"Finally, the piece is conditioned and inspected. We apply a leather balm before any product leaves our workshop, ensuring the leather starts its life in the best condition. Every piece is inspected by hand before packaging.",
-			"This process cannot be rushed. That is why production takes 5–10 business days — because quality handcrafted leather goods take time, and time is what makes them worth having.",
+			"This process cannot be rushed. That is why production takes 10–14 days — because quality handcrafted leather goods take time, and time is what makes them worth having.",
 		],
 		sources: [
 			"The Cordwainer — Traditional Shoemaking Techniques",

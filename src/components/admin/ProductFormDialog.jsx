@@ -220,7 +220,7 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
               onDragOver={(e) => e.preventDefault()}
               sx={{
                 border: '2px dashed',
-                borderColor: uploading ? '#e3242b' : form.image ? '#006666' : '#E8D5B0',
+                borderColor: uploading ? '#e3242b' : form.image ? '#007a7a' : '#E8D5B0',
                 borderRadius: 2,
                 p: 2,
                 textAlign: 'center',
@@ -448,7 +448,7 @@ export default function ProductFormDialog({ open, onClose, onSave, product, type
           onClick={handleSubmit}
           variant="contained"
           disabled={busy || uploading || !form.name || !form.price}
-          sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+          sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
         >
           {product ? 'Update' : 'Add'}
         </Button>

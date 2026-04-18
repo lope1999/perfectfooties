@@ -29,7 +29,7 @@ function formatDate(ts) {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-const TYPE_LABEL = { service: 'Appointment', pressOn: 'Press-On', retail: 'Retail', mixed: 'Mixed' };
+const TYPE_LABEL = { service: 'Appointment', leather: 'Leather Goods', retail: 'Retail', mixed: 'Mixed' };
 
 export default function CancellationsSection() {
   const [requests, setRequests] = useState([]);

@@ -1,242 +1,329 @@
 const { onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
+const { defineSecret } = require("firebase-functions/params");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { initializeApp } = require("firebase-admin/app");
 const { logger } = require("firebase-functions");
 const crypto = require("crypto");
 
-const { findRestockedProducts } = require("./lib/stockDiff");
-const { sendBackInStockEmail, sendAppointmentConfirmationEmail } = require("./lib/emailSender");
+const {
+  sendOrderConfirmationEmail,
+  sendProductionEmail,
+  sendShippedEmail,
+  sendDeliveredEmail,
+  sendWelcomeEmail,
+} = require("./lib/emailSender");
 
 initializeApp();
 
-const SHOP_URL = "https://perfectfooties.store";
+// ── Secrets (set via: firebase functions:secrets:set SECRET_NAME) ─────────────
+const PAYSTACK_SECRET = defineSecret("PAYSTACK_SECRET_KEY");
+const MAILTRAP_TOKEN  = defineSecret("MAILTRAP_TOKEN");
 
-// ── Back-in-stock handler ─────────────────────────────────────────────────────
-async function handleCategoryUpdate(event) {
-  const beforeProducts = event.data.before.data().products || [];
-  const afterProducts = event.data.after.data().products || [];
+const SHOP_URL = "https://perfectfooties.com";
 
-  const restocked = findRestockedProducts(beforeProducts, afterProducts);
-  if (restocked.length === 0) return;
-
-  logger.info(`Restocked products detected: ${restocked.map((p) => p.name).join(", ")}`);
-
-  const db = getFirestore();
-  const serviceId = process.env.EMAILJS_SERVICE_ID;
-  const publicKey = process.env.EMAILJS_PUBLIC_KEY;
-  const privateKey = process.env.EMAILJS_PRIVATE_KEY;
-  const templateId = process.env.EMAILJS_STOCK_TEMPLATE_ID;
-
-  for (const product of restocked) {
-    const snap = await db
-      .collection("stockNotifications")
-      .where("productId", "==", product.id)
-      .get();
-
-    if (snap.empty) {
-      logger.info(`No subscribers for "${product.name}" (${product.id})`);
-      continue;
-    }
-
-    logger.info(`Sending back-in-stock email to ${snap.size} subscriber(s) for "${product.name}"`);
-
-    for (const doc of snap.docs) {
-      const { email } = doc.data();
-      try {
-        await sendBackInStockEmail({
-          serviceId,
-          templateId,
-          publicKey,
-          privateKey,
-          templateParams: {
-            to_email: email,
-            product_name: product.name,
-            shop_url: SHOP_URL,
-          },
-        });
-        logger.info(`Email sent to ${email} for "${product.name}"`);
-        await doc.ref.delete();
-      } catch (err) {
-        logger.error(`Failed to send email to ${email} for "${product.name}":`, err);
-      }
-    }
-  }
-}
-
-// ── Triggers: product restocking ──────────────────────────────────────────────
-exports.onProductCategoryUpdated = onDocumentUpdated(
-  "productCategories/{categoryId}",
-  handleCategoryUpdate,
-);
-
-exports.onRetailCategoryUpdated = onDocumentUpdated(
-  "retailCategories/{categoryId}",
-  handleCategoryUpdate,
-);
-
-// ── Callable: verify Paystack deposit ─────────────────────────────────────────
-exports.verifyPaystackDeposit = onCall(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError("unauthenticated", "Must be signed in to verify payment");
-  }
-
-  const uid = request.auth.uid;
-  const { reference, orderId, expectedAmountKobo } = request.data;
-
-  if (!reference || !orderId) {
-    throw new HttpsError("invalid-argument", "reference and orderId are required");
-  }
-
-  const secretKey = process.env.PAYSTACK_SECRET_KEY;
-  if (!secretKey) {
-    throw new HttpsError("internal", "Paystack secret key not configured");
-  }
-
-  // Verify with Paystack
-  const res = await fetch(
-    `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
-    { headers: { Authorization: `Bearer ${secretKey}` } },
-  );
-  const json = await res.json();
-
-  if (!json.status || json.data?.status !== "success") {
-    throw new HttpsError("failed-precondition", "Paystack payment not successful");
-  }
-
-  if (expectedAmountKobo && json.data.amount < expectedAmountKobo) {
-    throw new HttpsError("failed-precondition", "Payment amount is less than expected");
-  }
-
-  // Mark order confirmed — triggers onAppointmentConfirmed → sends email
-  const db = getFirestore();
-  await db.doc(`users/${uid}/orders/${orderId}`).update({
-    status: "confirmed",
-    depositVerified: true,
-    depositPaidAt: FieldValue.serverTimestamp(),
-  });
-
-  logger.info(`Deposit verified for order ${orderId} (ref: ${reference})`);
-  return { verified: true };
-});
-
-// ── Trigger: send confirmation email when appointment is confirmed ─────────────
-exports.onAppointmentConfirmed = onDocumentUpdated(
-  "users/{uid}/orders/{orderId}",
-  async (event) => {
-    const before = event.data.before.data();
-    const after = event.data.after.data();
-
-    // Only fire for service orders transitioning to confirmed
-    if (
-      after.type !== "service" ||
-      before.status === "confirmed" ||
-      after.status !== "confirmed"
-    ) return;
-
-    if (!after.email) {
-      logger.warn(`No email on order ${event.params.orderId} — skipping confirmation email`);
+// ── HTTP: Paystack webhook ─────────────────────────────────────────────────────
+// Add this URL in Paystack Dashboard → Settings → API Keys & Webhooks
+// URL: https://us-central1-perfect-footies.cloudfunctions.net/paystackWebhook
+exports.paystackWebhook = onRequest(
+  { rawBody: true, secrets: [PAYSTACK_SECRET, MAILTRAP_TOKEN] },
+  async (req, res) => {
+    if (req.method !== "POST") {
+      res.status(405).send("Method Not Allowed");
       return;
     }
 
-    const depositStr = `₦${Math.round((after.total || 0) * 0.5).toLocaleString()}`;
+    const secretKey = PAYSTACK_SECRET.value();
+    if (!secretKey) {
+      logger.error("PAYSTACK_SECRET_KEY not configured");
+      res.status(500).send("Server misconfiguration");
+      return;
+    }
 
-    try {
-      await sendAppointmentConfirmationEmail({
-        serviceId: process.env.EMAILJS_SERVICE_ID,
-        templateId: process.env.EMAILJS_APPOINTMENT_TEMPLATE_ID,
-        publicKey: process.env.EMAILJS_PUBLIC_KEY,
-        privateKey: process.env.EMAILJS_PRIVATE_KEY,
-        templateParams: {
-          to_email: after.email,
-          customer_name: after.customerName || "Customer",
-          order_id: event.params.orderId,
-          status: "confirmed",
-          appointment_date: after.appointmentDate || after.items?.[0]?.date || "TBD",
-          deposit: depositStr,
-        },
-      });
-      logger.info(`Confirmation email sent to ${after.email} for order ${event.params.orderId}`);
-    } catch (err) {
-      logger.error(`Failed to send confirmation email for order ${event.params.orderId}:`, err);
+    // Validate Paystack HMAC-SHA512 signature
+    const signature = req.headers["x-paystack-signature"];
+    const hash = crypto
+      .createHmac("sha512", secretKey)
+      .update(req.rawBody)
+      .digest("hex");
+
+    if (hash !== signature) {
+      logger.warn("Invalid Paystack webhook signature");
+      res.status(401).send("Invalid signature");
+      return;
+    }
+
+    const event = req.body;
+    logger.info(`Paystack event: ${event.event}`, { reference: event.data?.reference });
+
+    if (event.event !== "charge.success") {
+      res.status(200).send("OK");
+      return;
+    }
+
+    const reference = event.data?.reference;
+    if (!reference) {
+      res.status(200).send("OK");
+      return;
+    }
+
+    const db = getFirestore();
+    const snap = await db
+      .collectionGroup("orders")
+      .where("paymentReference", "==", reference)
+      .limit(1)
+      .get();
+
+    if (snap.empty) {
+      logger.info(`Webhook: no order found for reference ${reference}`);
+      res.status(200).send("OK");
+      return;
+    }
+
+    const orderDoc = snap.docs[0];
+    const order = orderDoc.data();
+
+    if (order.depositVerified) {
+      logger.info(`Webhook: order ${orderDoc.id} already verified, skipping`);
+      res.status(200).send("OK");
+      return;
+    }
+
+    await orderDoc.ref.update({
+      status: "confirmed",
+      depositVerified: true,
+      depositPaidAt: FieldValue.serverTimestamp(),
+      webhookVerified: true,
+      statusHistory: FieldValue.arrayUnion({ status: "confirmed", at: new Date().toISOString() }),
+    });
+
+    logger.info(`Webhook: order ${orderDoc.id} confirmed (ref: ${reference})`);
+
+    // Send confirmation email
+    const token = MAILTRAP_TOKEN.value();
+    if (token && order.email) {
+      try {
+        await sendOrderConfirmationEmail({
+          token,
+          email: order.email,
+          customerName: order.customerName || "Customer",
+          orderId: orderDoc.id,
+          items: order.items || [],
+          total: order.finalTotal ?? order.total ?? 0,
+          shipping: order.shipping || null,
+        });
+        logger.info(`Confirmation email sent to ${order.email}`);
+      } catch (err) {
+        logger.error("Failed to send confirmation email:", err);
+      }
+    }
+
+    res.status(200).send("OK");
+  },
+);
+
+// ── Callable: verify Paystack deposit (manual payment verification fallback) ───
+exports.verifyPaystackDeposit = onCall(
+  { secrets: [PAYSTACK_SECRET] },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
+    }
+
+    const uid = request.auth.uid;
+    const { reference, orderId, expectedAmountKobo } = request.data;
+
+    if (!reference || !orderId) {
+      throw new HttpsError("invalid-argument", "reference and orderId are required");
+    }
+
+    const secretKey = PAYSTACK_SECRET.value();
+    if (!secretKey) {
+      throw new HttpsError("internal", "Paystack secret key not configured");
+    }
+
+    const res = await fetch(
+      `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
+      { headers: { Authorization: `Bearer ${secretKey}` } },
+    );
+    const json = await res.json();
+
+    if (!json.status || json.data?.status !== "success") {
+      throw new HttpsError("failed-precondition", "Paystack payment not successful");
+    }
+
+    if (expectedAmountKobo && json.data.amount < expectedAmountKobo) {
+      throw new HttpsError("failed-precondition", "Payment amount less than expected");
+    }
+
+    const db = getFirestore();
+    await db.doc(`users/${uid}/orders/${orderId}`).update({
+      status: "confirmed",
+      depositVerified: true,
+      depositPaidAt: FieldValue.serverTimestamp(),
+    });
+
+    logger.info(`Deposit verified for order ${orderId} (ref: ${reference})`);
+    return { verified: true };
+  },
+);
+
+// ── Trigger: order status changes → route to correct email template ───────────
+exports.onOrderStatusChanged = onDocumentUpdated(
+  { document: "users/{uid}/orders/{orderId}", secrets: [MAILTRAP_TOKEN] },
+  async (event) => {
+    const before = event.data.before.data();
+    const after  = event.data.after.data();
+
+    // Only fire when status actually changes
+    if (before.status === after.status) return;
+
+    if (!after.email) return;
+
+    const token = MAILTRAP_TOKEN.value();
+    if (!token) {
+      logger.error("MAILTRAP_TOKEN not configured");
+      return;
+    }
+
+    const orderId     = event.params.orderId;
+    const customerName = after.customerName || "Customer";
+    const itemName    = after.items?.[0]?.name || "";
+    const items       = after.items || [];
+    const total       = after.finalTotal ?? after.total ?? 0;
+
+    switch (after.status) {
+      // Template 1 — Order confirmed (webhook already sent this; trigger catches admin-confirmed orders)
+      case "confirmed": {
+        if (before.depositVerified) return; // already emailed by webhook
+        try {
+          await sendOrderConfirmationEmail({
+            token, email: after.email, customerName, orderId,
+            items, total, shipping: after.shipping || null,
+          });
+          logger.info(`[confirmed] confirmation email → ${after.email}`);
+        } catch (err) {
+          logger.error("sendOrderConfirmationEmail failed:", err);
+        }
+        break;
+      }
+
+      // In Production template
+      case "production": {
+        try {
+          await sendProductionEmail({ token, email: after.email, customerName, orderId, itemName });
+          logger.info(`[production] email → ${after.email}`);
+        } catch (err) {
+          logger.error("sendProductionEmail failed:", err);
+        }
+        break;
+      }
+
+      // Template 2 — Shipped
+      case "shipped":
+      case "shipping": {
+        try {
+          await sendShippedEmail({
+            token, email: after.email, customerName, orderId,
+            itemName, trackingLink: after.trackingLink || null,
+          });
+          logger.info(`[shipped] email → ${after.email}`);
+        } catch (err) {
+          logger.error("sendShippedEmail failed:", err);
+        }
+        break;
+      }
+
+      // Template 4 — Delivered / Received
+      case "received":
+      case "delivered": {
+        try {
+          await sendDeliveredEmail({ token, email: after.email, customerName, orderId, items, total });
+          logger.info(`[received] email → ${after.email}`);
+        } catch (err) {
+          logger.error("sendDeliveredEmail failed:", err);
+        }
+        break;
+      }
+
+      default:
+        break;
     }
   },
 );
 
-// ── HTTP: Paystack webhook ─────────────────────────────────────────────────────
-// Configure this URL in Paystack dashboard → Settings → API Keys & Webhooks
-// URL will be: https://<region>-perfectfooties-shop.cloudfunctions.net/paystackWebhook
-exports.paystackWebhook = onRequest({ rawBody: true }, async (req, res) => {
-  if (req.method !== "POST") {
-    res.status(405).send("Method Not Allowed");
-    return;
-  }
+// ── Trigger: first confirmed order → send welcome email ───────────────────────
+exports.onFirstOrderWelcome = onDocumentUpdated(
+  { document: "users/{uid}/orders/{orderId}", secrets: [MAILTRAP_TOKEN] },
+  async (event) => {
+    const before = event.data.before.data();
+    const after  = event.data.after.data();
 
-  const secretKey = process.env.PAYSTACK_SECRET_KEY;
-  if (!secretKey) {
-    logger.error("PAYSTACK_SECRET_KEY not configured");
-    res.status(500).send("Server misconfiguration");
-    return;
-  }
+    // Only fire when newly confirmed
+    if (before.status === after.status) return;
+    if (after.status !== "confirmed") return;
+    if (!after.email || !after.welcomeEmailSent === false) return;
 
-  // Validate Paystack signature to confirm the request is genuine
-  const signature = req.headers["x-paystack-signature"];
-  const hash = crypto
-    .createHmac("sha512", secretKey)
-    .update(req.rawBody)
-    .digest("hex");
+    // Check if this is their first ever confirmed order
+    const db = getFirestore();
+    const uid = event.params.uid;
+    const snap = await db
+      .collection("users").doc(uid).collection("orders")
+      .where("status", "in", ["confirmed", "production", "shipped", "received", "delivered"])
+      .limit(2)
+      .get();
 
-  if (hash !== signature) {
-    logger.warn("Invalid Paystack webhook signature");
-    res.status(401).send("Invalid signature");
-    return;
-  }
+    if (snap.size > 1) return; // not their first order
 
-  const event = req.body;
-  logger.info(`Paystack webhook event: ${event.event}`, { reference: event.data?.reference });
+    const token = MAILTRAP_TOKEN.value();
+    if (!token) return;
 
-  // Only handle successful charge events
-  if (event.event !== "charge.success") {
-    res.status(200).send("OK");
-    return;
-  }
+    try {
+      await sendWelcomeEmail({
+        token,
+        email: after.email,
+        customerName: after.customerName || "Customer",
+      });
+      logger.info(`[welcome] email → ${after.email}`);
+    } catch (err) {
+      logger.error("sendWelcomeEmail failed:", err);
+    }
+  },
+);
 
-  const reference = event.data?.reference;
-  if (!reference) {
-    res.status(200).send("OK");
-    return;
-  }
+// ── Callable: admin sends confirmation email manually ─────────────────────────
+exports.sendAdminEmail = onCall(
+  { secrets: [MAILTRAP_TOKEN] },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
+    }
 
-  // Find the matching order by paymentReference field
-  const db = getFirestore();
-  const snap = await db
-    .collectionGroup("orders")
-    .where("paymentReference", "==", reference)
-    .limit(1)
-    .get();
+    const { order } = request.data;
+    if (!order?.email) {
+      throw new HttpsError("invalid-argument", "Order must have an email address");
+    }
 
-  if (snap.empty) {
-    logger.info(`Webhook: no order found for reference ${reference}`);
-    res.status(200).send("OK");
-    return;
-  }
+    const token = MAILTRAP_TOKEN.value();
+    if (!token) {
+      throw new HttpsError("internal", "Email service not configured");
+    }
 
-  const orderDoc = snap.docs[0];
-  const order = orderDoc.data();
-
-  if (order.depositVerified) {
-    logger.info(`Webhook: order ${orderDoc.id} already verified, skipping`);
-    res.status(200).send("OK");
-    return;
-  }
-
-  await orderDoc.ref.update({
-    status: "confirmed",
-    depositVerified: true,
-    depositPaidAt: FieldValue.serverTimestamp(),
-    webhookVerified: true,
-  });
-
-  logger.info(`Webhook: order ${orderDoc.id} confirmed via webhook (ref: ${reference})`);
-  res.status(200).send("OK");
-});
+    try {
+      await sendOrderConfirmationEmail({
+        token,
+        email: order.email,
+        customerName: order.customerName || "Customer",
+        orderId: order.id || "—",
+        items: order.items || [],
+        total: order.finalTotal ?? order.total ?? 0,
+        shipping: order.shipping || null,
+      });
+      logger.info(`Admin-triggered confirmation email sent to ${order.email}`);
+      return { success: true };
+    } catch (err) {
+      logger.error("sendAdminEmail failed:", err);
+      throw new HttpsError("internal", err.message || "Failed to send email");
+    }
+  },
+);

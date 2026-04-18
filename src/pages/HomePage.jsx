@@ -1,15 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AnnouncementBanner from '../components/AnnouncementBanner';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Typography,
-  Button,
-  Container,
-  Grid,
-  IconButton,
-  Collapse,
-} from '@mui/material';
+	Box,
+	Typography,
+	Button,
+	Container,
+	Grid,
+	IconButton,
+	Collapse,
+	Card,
+	CardMedia,
+	CardContent,
+} from "@mui/material";
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -18,6 +21,51 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from "@mui/icons-material/Remove";
 import ScrollReveal from '../components/ScrollReveal';
 import { faqData } from '../data/faq';
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import HandymanIcon from '@mui/icons-material/Handyman';
+
+const ff = '"Georgia", serif';
+
+const HERO_IMAGES = [
+  '/images/products/heirloom-regal-12.jpg',
+  '/images/products/heirloom-regal-5.jpg',
+  '/images/products/heirloom-royal-1.jpg',
+  '/images/products/heirloom-tmt-1.jpg',
+  '/images/products/male-low-slides-1.jpeg',
+];
+
+const HOME_COLLECTIONS = [
+	{
+		id: "female-footwear",
+		name: "Female Handmade Footwear",
+		coverImage: "/images/products/marble-luxe.jpg",
+		description:
+			"Elegantly crafted footwear for women — made to measure, made to last.",
+	},
+	{
+		id: "male-footwear",
+		name: "Male Handmade Footwear",
+		coverImage: "/images/products/male-low-slides-1.jpeg",
+		description:
+			"Handcrafted leather footwear for men — built with precision and pride.",
+	},
+	{
+		id: "heirloom",
+		name: "Heirloom Collection",
+		coverImage: "/images/products/heirloom-regal-1.jpg",
+		description:
+			"Timeless pieces designed to be passed down through generations.",
+	},
+	{
+		id: "bags-belts",
+		name: "Handmade Bags & Belts",
+		coverImage: "/images/products/heirloom-tmt-1.jpg",
+		description:
+			"Full-grain leather bags and belts, finished by hand in Gbagada, Lagos.",
+	},
+];
+
 const ctaButtonBase = {
 	borderRadius: "30px",
 	px: 4,
@@ -53,10 +101,18 @@ const outlineBtnSx = {
 export default function HomePage() {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(null);
+  const [heroIndex, setHeroIndex] = useState(0);
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
   };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
 		<Box>
@@ -64,9 +120,6 @@ export default function HomePage() {
 			<Box
 				sx={{
 					minHeight: "100vh",
-					backgroundImage: 'url("/images/hero/hero-bg.jpg.jpg")',
-					backgroundSize: "cover",
-					backgroundPosition: "center",
 					display: "flex",
 					flexDirection: "column",
 					justifyContent: "center",
@@ -74,17 +127,51 @@ export default function HomePage() {
 					textAlign: "center",
 					position: "relative",
 					px: 2,
+					overflow: "hidden",
 				}}
 			>
+				{/* Slideshow backgrounds */}
+				{HERO_IMAGES.map((img, i) => (
+					<Box
+						key={img}
+						sx={{
+							position: "absolute",
+							inset: 0,
+							backgroundImage: `url("${img}")`,
+							backgroundSize: "cover",
+							backgroundPosition: "center",
+							opacity: i === heroIndex ? 1 : 0,
+							transition: "opacity 1.2s ease-in-out",
+						}}
+					/>
+				))}
 				<Box
 					sx={{
 						position: "absolute",
 						inset: 0,
-						backgroundColor: "rgba(0, 0, 0, 0.45)",
+						backgroundColor: "rgba(109, 109, 109, 0.45)",
+						zIndex: 1,
 					}}
 				/>
+				{/* Dot indicators */}
+				<Box sx={{ position: "absolute", bottom: 28, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 1, zIndex: 2 }}>
+					{HERO_IMAGES.map((_, i) => (
+						<Box
+							key={i}
+							onClick={() => setHeroIndex(i)}
+							sx={{
+								width: i === heroIndex ? 22 : 8,
+								height: 8,
+								borderRadius: 4,
+								backgroundColor: i === heroIndex ? "#e3242b" : "rgba(255,255,255,0.5)",
+								cursor: "pointer",
+								transition: "all 0.3s ease",
+							}}
+						/>
+					))}
+				</Box>
 
-				<Box sx={{ position: "relative", zIndex: 1 }}>
+				<Box sx={{ position: "relative", zIndex: 2 }}>
 					<ScrollReveal direction="up" duration={0.8}>
 						<Typography
 							variant="h2"
@@ -92,14 +179,29 @@ export default function HomePage() {
 								fontFamily: '"Georgia", serif',
 								fontWeight: 700,
 								fontSize: { xs: "2rem", sm: "2.5rem", md: "3.5rem" },
-								color: "#fff",
-								mb: 4,
+								color: "#ededed",
+								mb: 2,
 								maxWidth: 800,
 								lineHeight: 1.3,
 							}}
 						>
-							Handcrafted leather goods built to last a lifetime.
+							Handmade footwears, bags and belts, built to last a
+							lifetime.
 						</Typography>
+					</ScrollReveal>
+
+					<ScrollReveal direction="up" delay={0.18} duration={0.7}>
+						<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2, mb: 3.5 }}>
+							<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+								<CalendarMonthIcon sx={{ fontSize: 13, color: 'rgba(255,255,255,0.55)' }} />
+								<Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', fontFamily: '"Georgia", serif', letterSpacing: 1.2, textTransform: 'uppercase' }}>Est. 2020</Typography>
+							</Box>
+							<Typography sx={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.85rem' }}>|</Typography>
+							<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+								<HandymanIcon sx={{ fontSize: 13, color: 'rgba(255,255,255,0.55)' }} />
+								<Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', fontFamily: '"Georgia", serif', letterSpacing: 1.2, textTransform: 'uppercase' }}>Made to Order</Typography>
+							</Box>
+						</Box>
 					</ScrollReveal>
 
 					<ScrollReveal direction="up" delay={0.3} duration={0.8}>
@@ -111,10 +213,7 @@ export default function HomePage() {
 								flexWrap: "wrap",
 							}}
 						>
-							<Button
-								sx={bookBtnSx}
-								onClick={() => navigate("/shop")}
-							>
+							<Button sx={bookBtnSx} onClick={() => navigate("/shop")}>
 								Shop Leather Goods
 							</Button>
 							<Button
@@ -137,6 +236,148 @@ export default function HomePage() {
         text="Hope it's great so far"
         overlayColor="rgba(74, 14, 78, 0.6)"
       /> */}
+
+			{/* Shop by Collection */}
+			<Box sx={{ py: 8, backgroundColor: "var(--bg-soft)" }}>
+				<Container maxWidth="lg">
+					<ScrollReveal direction="up">
+						<Box sx={{ textAlign: "center", mb: 6 }}>
+							<Typography
+								variant="h3"
+								sx={{
+									fontFamily: ff,
+									fontWeight: 700,
+									color: "var(--text-main)",
+									mb: 1.5,
+									fontSize: {
+										xs: "1.6rem",
+										sm: "2.2rem",
+										md: "2.8rem",
+									},
+								}}
+							>
+								Shop by Collection
+							</Typography>
+							<Typography
+								sx={{
+									color: "var(--text-muted)",
+									fontSize: "1.05rem",
+									lineHeight: 1.7,
+									maxWidth: 520,
+									mx: "auto",
+								}}
+							>
+								Each piece is made to order by hand in Gbagada, Lagos — cut,
+								stitched, and finished to your preference.
+							</Typography>
+							<Box
+								sx={{
+									width: 48,
+									height: 3,
+									backgroundColor: "var(--accent-cyan)",
+									mx: "auto",
+									mt: 2,
+									borderRadius: 2,
+								}}
+							/>
+						</Box>
+					</ScrollReveal>
+
+					<Grid container spacing={4}>
+						{HOME_COLLECTIONS.map((col, i) => (
+							<Grid item xs={12} sm={6} key={col.id}>
+								<ScrollReveal direction="up" delay={i * 0.08}>
+									<Card
+										onClick={() => navigate(`/shop/${col.id}`)}
+										sx={{
+											borderRadius: 4,
+											overflow: "hidden",
+											cursor: "pointer",
+											border: "1px solid #E8D5B0",
+											boxShadow: "0 2px 14px rgba(0,0,0,0.06)",
+											transition: "all 0.3s ease",
+											"&:hover": {
+												transform: "translateY(-5px)",
+												boxShadow:
+													"0 8px 32px rgba(0,255,255,0.15)",
+												borderColor: "var(--accent-cyan)",
+											},
+										}}
+									>
+										<CardMedia
+											component="img"
+											image={col.coverImage}
+											alt={col.name}
+											sx={{ height: 280, objectFit: "cover" }}
+										/>
+										<CardContent sx={{ p: 3 }}>
+											<Typography
+												sx={{
+													fontFamily: ff,
+													fontWeight: 700,
+													fontSize: "1.2rem",
+													color: "var(--text-main)",
+													mb: 0.8,
+												}}
+											>
+												{col.name}
+											</Typography>
+											<Typography
+												sx={{
+													fontSize: "0.87rem",
+													color: "var(--text-muted)",
+													lineHeight: 1.6,
+													mb: 2,
+												}}
+											>
+												{col.description}
+											</Typography>
+											<Box
+												sx={{
+													display: "flex",
+													alignItems: "center",
+													gap: 0.5,
+													color: "var(--accent-cyan)",
+													fontFamily: ff,
+													fontWeight: 700,
+													fontSize: "0.88rem",
+												}}
+											>
+												Explore{" "}
+												<ArrowForwardIosIcon
+													sx={{ fontSize: 12 }}
+												/>
+											</Box>
+										</CardContent>
+									</Card>
+								</ScrollReveal>
+							</Grid>
+						))}
+					</Grid>
+
+					<ScrollReveal direction="up">
+						<Box sx={{ textAlign: "center", mt: 5 }}>
+							<Button
+								onClick={() => navigate("/shop")}
+								sx={{
+									fontFamily: ff,
+									fontWeight: 600,
+									fontSize: "1rem",
+									color: "#fff",
+									backgroundColor: "#e3242b",
+									borderRadius: "30px",
+									px: 5,
+									py: 1.4,
+									textTransform: "none",
+									"&:hover": { backgroundColor: "#c0181e" },
+								}}
+							>
+								Browse All Collections
+							</Button>
+						</Box>
+					</ScrollReveal>
+				</Container>
+			</Box>
 
 			{/* Contact / Hours / Location Section */}
 			<Box id="contact-section" sx={{ py: 8, backgroundColor: "#FFF8F0" }}>
@@ -212,12 +453,7 @@ export default function HomePage() {
 									>
 										Business Hours
 									</Typography>
-									<Typography>
-										Monday – Friday: 9:00 AM – 6:00 PM
-									</Typography>
-									<Typography>
-										Saturday: 10:00 AM – 4:00 PM
-									</Typography>
+									<Typography>Open 24 Hours, 7 Days a Week</Typography>
 								</Box>
 							</ScrollReveal>
 						</Grid>
@@ -239,9 +475,8 @@ export default function HomePage() {
 									>
 										Location
 									</Typography>
-									<Typography>Cornerstone A</Typography>
-									<Typography>Labak Estate, Abule-egba,</Typography>
-									<Typography>Lagos, Nigeria</Typography>
+									<Typography>Gbagada, Lagos</Typography>
+									<Typography>Nigeria</Typography>
 								</Box>
 							</ScrollReveal>
 						</Grid>

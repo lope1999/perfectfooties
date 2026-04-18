@@ -27,6 +27,7 @@ import {
   InputLabel,
   FormControl,
   MenuItem,
+  ListSubheader,
   Divider,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -41,7 +42,7 @@ import {
   updateAnnouncement,
   deleteAnnouncement,
 } from '../../lib/announcementService';
-import { fetchProducts } from '../../lib/productService';
+import { fetchCollections, fetchItems } from '../../lib/collectionService';
 import ImageUploadField from './ImageUploadField';
 
 const fontFamily = '"Georgia", serif';
@@ -66,8 +67,8 @@ export default function AnnouncementsSection() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
-  const [products, setProducts] = useState([]);
-  const [selectedCollectionId, setSelectedCollectionId] = useState('');
+  const [collectionsWithItems, setCollectionsWithItems] = useState([]);
+  const [selectedLinkId, setSelectedLinkId] = useState('');
 
   const loadAnnouncements = () => {
     setLoading(true);
@@ -83,13 +84,23 @@ export default function AnnouncementsSection() {
     setSnack({ open: true, message, severity });
 
   const openDialog = () => {
-    fetchProducts().then(setProducts).catch(() => setProducts([]));
+    fetchCollections()
+      .then(async (cols) => {
+        const withItems = await Promise.all(
+          cols.map(async (col) => {
+            const items = await fetchItems(col.id).catch(() => []);
+            return { ...col, items };
+          })
+        );
+        setCollectionsWithItems(withItems);
+      })
+      .catch(() => setCollectionsWithItems([]));
   };
 
   const openAdd = () => {
     setEditingId(null);
     setForm(emptyForm);
-    setSelectedCollectionId('');
+    setSelectedLinkId('');
     openDialog();
     setDialogOpen(true);
   };
@@ -105,9 +116,12 @@ export default function AnnouncementsSection() {
       active: Boolean(a.active),
       expiresAt: a.expiresAt ? a.expiresAt.toDate?.().toISOString().slice(0, 16) : '',
     });
-    // Pre-select product if ctaLink matches /shop/:id
-    const match = (a.ctaLink || '').match(/^\/shop\/(.+)$/);
-    setSelectedCollectionId(match ? match[1] : '');
+    // Pre-select the linked target if ctaLink matches a known path
+    const itemMatch = (a.ctaLink || '').match(/^\/shop\/([^/]+)\/([^/]+)$/);
+    const colMatch = (a.ctaLink || '').match(/^\/shop\/([^/]+)$/);
+    if (itemMatch) setSelectedLinkId(`item:${itemMatch[1]}:${itemMatch[2]}`);
+    else if (colMatch) setSelectedLinkId(`col:${colMatch[1]}`);
+    else setSelectedLinkId('');
     openDialog();
     setDialogOpen(true);
   };
@@ -301,7 +315,7 @@ export default function AnnouncementsSection() {
       </TableContainer>
 
       {/* Create / Edit Dialog */}
-      <Dialog open={dialogOpen} onClose={() => { if (!busy) { setDialogOpen(false); setSelectedCollectionId(''); } }} maxWidth="sm" fullWidth>
+      <Dialog open={dialogOpen} onClose={() => { if (!busy) { setDialogOpen(false); setSelectedLinkId(''); } }} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontFamily, fontWeight: 700 }}>
           {editingId ? 'Edit Announcement' : 'New Announcement'}
         </DialogTitle>
@@ -312,7 +326,7 @@ export default function AnnouncementsSection() {
               <Typography sx={{ fontFamily, fontSize: '0.72rem', color: '#aaa', mb: 0.5 }}>BANNER PREVIEW</Typography>
               <Box
                 sx={{
-                  background: 'linear-gradient(135deg, #2D0845 0%, #6B1050 55%, #B5145E 100%)',
+                  background: 'linear-gradient(135deg, #1a0000 0%, #3d0000 50%, #e3242b 100%)',
                   color: '#fff',
                   borderRadius: 2,
                   overflow: 'hidden',
@@ -400,70 +414,98 @@ export default function AnnouncementsSection() {
             />
           </Box>
 
-          {/* Collection Picker */}
+          {/* Link Picker — collections and their items */}
           <Box>
             <Divider sx={{ mb: 2 }}>
               <Typography sx={{ fontSize: '0.72rem', color: '#aaa', fontFamily, px: 1 }}>
-                LINK TO A COLLECTION (optional)
+                LINK TO A PRODUCT OR COLLECTION (optional)
               </Typography>
             </Divider>
             <FormControl fullWidth size="small">
-              <InputLabel sx={{ fontFamily }}>Link to Product</InputLabel>
+              <InputLabel sx={{ fontFamily }}>Link to…</InputLabel>
               <Select
-                value={selectedCollectionId}
-                label="Link to Product"
+                value={selectedLinkId}
+                label="Link to…"
                 onChange={(e) => {
-                  const colId = e.target.value;
-                  setSelectedCollectionId(colId);
-                  if (!colId) return;
-                  const col = products.find((c) => c.id === colId);
-                  if (!col) return;
-                  setForm((f) => ({
-                    ...f,
-                    ctaLink: `/shop/${col.id}`,
-                    ctaLabel: f.ctaLabel.trim() ? f.ctaLabel : 'Shop Now',
-                  }));
+                  const val = e.target.value;
+                  setSelectedLinkId(val);
+                  if (!val) return;
+                  if (val.startsWith('col:')) {
+                    const colId = val.slice(4);
+                    setForm((f) => ({ ...f, ctaLink: `/shop/${colId}`, ctaLabel: f.ctaLabel.trim() ? f.ctaLabel : 'Shop Now' }));
+                  } else if (val.startsWith('item:')) {
+                    const [colId, itemId] = val.slice(5).split(':');
+                    setForm((f) => ({ ...f, ctaLink: `/shop/${colId}/${itemId}`, ctaLabel: f.ctaLabel.trim() ? f.ctaLabel : 'Shop Now' }));
+                  }
                 }}
                 sx={{ fontFamily }}
                 renderValue={(val) => {
                   if (!val) return <em style={{ color: '#aaa' }}>None — manual link below</em>;
-                  const col = products.find((c) => c.id === val);
-                  return col ? (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <AutoAwesomeIcon sx={{ fontSize: 14, color: '#e3242b' }} />
-                      {col.name}
-                      {col.material && <Typography component="span" sx={{ fontSize: '0.72rem', color: '#e3242b', ml: 0.5 }}>({col.material})</Typography>}
-                    </Box>
-                  ) : val;
+                  if (val.startsWith('col:')) {
+                    const col = collectionsWithItems.find((c) => c.id === val.slice(4));
+                    return col ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <AutoAwesomeIcon sx={{ fontSize: 14, color: '#e3242b' }} />
+                        <span style={{ fontFamily }}>{col.name}</span>
+                        <Typography component="span" sx={{ fontSize: '0.72rem', color: '#888', fontFamily }}>(Collection page)</Typography>
+                      </Box>
+                    ) : val;
+                  }
+                  if (val.startsWith('item:')) {
+                    const [colId, itemId] = val.slice(5).split(':');
+                    const col = collectionsWithItems.find((c) => c.id === colId);
+                    const item = col?.items.find((it) => it.id === itemId);
+                    return item ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {item.images?.[0] && (
+                          <Box component="img" src={item.images[0]} alt="" sx={{ width: 22, height: 22, objectFit: 'cover', borderRadius: 0.5, border: '1px solid #eee', flexShrink: 0 }} />
+                        )}
+                        <span style={{ fontFamily }}>{item.name}</span>
+                        <Typography component="span" sx={{ fontSize: '0.72rem', color: '#e3242b', fontFamily }}>({col.name})</Typography>
+                      </Box>
+                    ) : val;
+                  }
+                  return val;
                 }}
               >
                 <MenuItem value=""><em>None — manual link below</em></MenuItem>
-                {products.map((col) => (
-                  <MenuItem key={col.id} value={col.id}>
+                {collectionsWithItems.map((col) => [
+                  <ListSubheader key={`hdr-${col.id}`} sx={{ fontFamily, fontSize: '0.68rem', color: '#e3242b', fontWeight: 700, lineHeight: '28px', backgroundColor: '#FFF8F0' }}>
+                    {col.name.toUpperCase()}
+                  </ListSubheader>,
+                  <MenuItem key={`col-${col.id}`} value={`col:${col.id}`}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <AutoAwesomeIcon sx={{ fontSize: 14, color: '#e3242b' }} />
-                      <Typography sx={{ fontFamily, fontSize: '0.88rem' }}>{col.name}</Typography>
-                      {col.material && (
-                        <Typography sx={{ fontSize: '0.72rem', color: '#e3242b' }}>({col.material})</Typography>
-                      )}
-                      <Chip
-                        label={col.status}
-                        size="small"
-                        sx={{
-                          ml: 'auto',
-                          height: 18,
-                          fontSize: '0.6rem',
-                          backgroundColor: col.status === 'open' ? '#e8f5e9' : col.status === 'upcoming' ? '#fff3e0' : '#f5f5f5',
-                          color: col.status === 'open' ? '#2e7d32' : col.status === 'upcoming' ? '#e65100' : '#616161',
-                          fontWeight: 700,
-                        }}
-                      />
+                      <AutoAwesomeIcon sx={{ fontSize: 13, color: '#e3242b' }} />
+                      <Typography sx={{ fontFamily, fontSize: '0.85rem', fontStyle: 'italic', color: '#555' }}>
+                        → Collection page
+                      </Typography>
                     </Box>
-                  </MenuItem>
-                ))}
+                  </MenuItem>,
+                  ...col.items.map((item) => (
+                    <MenuItem key={`item-${item.id}`} value={`item:${col.id}:${item.id}`} sx={{ pl: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, width: '100%' }}>
+                        {item.images?.[0] ? (
+                          <Box component="img" src={item.images[0]} alt="" sx={{ width: 30, height: 30, objectFit: 'cover', borderRadius: 1, border: '1px solid #eee', flexShrink: 0 }} />
+                        ) : (
+                          <Box sx={{ width: 30, height: 30, borderRadius: 1, border: '1px solid #eee', backgroundColor: '#f5f5f5', flexShrink: 0 }} />
+                        )}
+                        <Typography sx={{ fontFamily, fontSize: '0.88rem', flex: 1 }}>{item.name}</Typography>
+                        <Chip
+                          label={item.status || 'open'}
+                          size="small"
+                          sx={{
+                            height: 18, fontSize: '0.6rem', fontWeight: 700,
+                            backgroundColor: item.status === 'open' ? '#e8f5e9' : item.status === 'upcoming' ? '#fff3e0' : '#f5f5f5',
+                            color: item.status === 'open' ? '#2e7d32' : item.status === 'upcoming' ? '#e65100' : '#616161',
+                          }}
+                        />
+                      </Box>
+                    </MenuItem>
+                  )),
+                ])}
               </Select>
             </FormControl>
-            {selectedCollectionId && (
+            {selectedLinkId && (
               <Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 0.5, fontFamily }}>
                 CTA link auto-filled below — you can still edit it manually.
               </Typography>
@@ -513,7 +555,7 @@ export default function AnnouncementsSection() {
           />
         </DialogContent>
         <DialogActions sx={{ p: 2, gap: 1 }}>
-          <Button onClick={() => { setDialogOpen(false); setSelectedCollectionId(''); }} disabled={busy} sx={{ fontFamily, color: '#888', textTransform: 'none' }}>
+          <Button onClick={() => { setDialogOpen(false); setSelectedLinkId(''); }} disabled={busy} sx={{ fontFamily, color: '#888', textTransform: 'none' }}>
             Cancel
           </Button>
           <Button

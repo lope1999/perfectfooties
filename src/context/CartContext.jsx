@@ -8,6 +8,7 @@ const initialState = {
     services: [],
     products: [],
     pressOns: [],
+    leatherGoods: [],
   },
 };
 
@@ -22,6 +23,7 @@ function loadFromStorage() {
           services: parsed.items?.services || [],
           products: parsed.items?.products || [],
           pressOns: parsed.items?.pressOns || [],
+          leatherGoods: parsed.items?.leatherGoods || [],
         },
       };
     }
@@ -128,6 +130,47 @@ function cartReducer(state, action) {
 					),
 				},
 			};
+		case 'ADD_LEATHER_GOOD': {
+			const existing = state.items.leatherGoods.find(
+				(p) => p.itemId === action.payload.itemId && p.selectedColor === action.payload.selectedColor && p.footLength === action.payload.footLength
+			);
+			if (existing) {
+				return {
+					...state,
+					items: {
+						...state.items,
+						leatherGoods: state.items.leatherGoods.map((p) =>
+							p.cartId === existing.cartId ? { ...p, quantity: p.quantity + action.payload.quantity } : p
+						),
+					},
+				};
+			}
+			return {
+				...state,
+				items: {
+					...state.items,
+					leatherGoods: [...state.items.leatherGoods, { ...action.payload, cartId: crypto.randomUUID() }],
+				},
+			};
+		}
+		case 'REMOVE_LEATHER_GOOD':
+			return {
+				...state,
+				items: {
+					...state.items,
+					leatherGoods: state.items.leatherGoods.filter((p) => p.cartId !== action.payload),
+				},
+			};
+		case 'UPDATE_LEATHER_GOOD_QTY':
+			return {
+				...state,
+				items: {
+					...state.items,
+					leatherGoods: state.items.leatherGoods.map((p) =>
+						p.cartId === action.payload.cartId ? { ...p, quantity: Math.max(1, action.payload.quantity) } : p
+					),
+				},
+			};
 		case "SET_CUSTOMER_NAME":
 			return { ...state, customerName: action.payload };
 		case "CLEAR_CART":
@@ -161,6 +204,15 @@ export function CartProvider({ children }) {
   const updateProductQty = (productId, quantity) =>
     dispatch({ type: 'UPDATE_PRODUCT_QTY', payload: { productId, quantity } });
 
+  const addLeatherGood = (good) =>
+    dispatch({ type: 'ADD_LEATHER_GOOD', payload: good });
+
+  const removeLeatherGood = (cartId) =>
+    dispatch({ type: 'REMOVE_LEATHER_GOOD', payload: cartId });
+
+  const updateLeatherGoodQty = (cartId, quantity) =>
+    dispatch({ type: 'UPDATE_LEATHER_GOOD_QTY', payload: { cartId, quantity } });
+
   const addPressOn = (pressOn) =>
     dispatch({ type: 'ADD_PRESSON', payload: { ...pressOn, id: crypto.randomUUID() } });
 
@@ -174,20 +226,22 @@ export function CartProvider({ children }) {
     dispatch({ type: 'CLEAR_CART' });
 
   const getCartCount = () => {
-    const { services, products, pressOns } = state.items;
+    const { services, products, pressOns, leatherGoods } = state.items;
     return (
       services.length +
       products.reduce((sum, p) => sum + p.quantity, 0) +
-      pressOns.length
+      pressOns.length +
+      leatherGoods.reduce((sum, g) => sum + g.quantity, 0)
     );
   };
 
   const getCartTotal = () => {
-    const { services, products, pressOns } = state.items;
+    const { services, products, pressOns, leatherGoods } = state.items;
     const serviceTotal = services.reduce((sum, s) => sum + s.price, 0);
     const productTotal = products.reduce((sum, p) => sum + p.price * p.quantity, 0);
     const pressOnTotal = pressOns.reduce((sum, p) => sum + p.price * (p.quantity || 1), 0);
-    return serviceTotal + productTotal + pressOnTotal;
+    const leatherTotal = leatherGoods.reduce((sum, g) => sum + g.price * g.quantity, 0);
+    return serviceTotal + productTotal + pressOnTotal + leatherTotal;
   };
 
   return (
@@ -199,6 +253,9 @@ export function CartProvider({ children }) {
         addProduct,
         removeProduct,
         updateProductQty,
+        addLeatherGood,
+        removeLeatherGood,
+        updateLeatherGoodQty,
         addPressOn,
         removePressOn,
         setCustomerName,

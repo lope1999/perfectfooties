@@ -1,10 +1,34 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Box, Typography, Container, Grid, Link as MuiLink, IconButton } from '@mui/material';
+import {
+	Box,
+	Typography,
+	Container,
+	Grid,
+	Link as MuiLink,
+	IconButton,
+	TextField,
+	Button,
+	CircularProgress,
+	Snackbar,
+	Alert,
+} from "@mui/material";
 import InstagramIcon from '@mui/icons-material/Instagram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import TermsModal from './TermsModal';
+import { db } from "../lib/firebase";
+import {
+	collection,
+	addDoc,
+	serverTimestamp,
+	query,
+	where,
+	getDocs,
+} from "firebase/firestore";
+import { sendNewsletterWelcome } from "../lib/emailService";
 
 const linkSx = {
   color: 'var(--text-purple)',
@@ -19,10 +43,42 @@ const linkSx = {
   },
 };
 
+const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
 export default function Footer() {
   const navigate = useNavigate();
   const location = useLocation();
   const [termsOpen, setTermsOpen] = useState(false);
+  const [nlEmail, setNlEmail] = useState("");
+  const [nlStatus, setNlStatus] = useState("idle"); // idle | loading | success | error | duplicate
+  const [snackOpen, setSnackOpen] = useState(false);
+
+  const handleSubscribe = async () => {
+		if (!isValidEmail(nlEmail)) return;
+		setNlStatus("loading");
+		try {
+			const subsRef = collection(db, "subscribers");
+			const dup = await getDocs(
+				query(subsRef, where("email", "==", nlEmail.toLowerCase())),
+			);
+			if (!dup.empty) {
+				setNlStatus("duplicate");
+				setSnackOpen(true);
+				return;
+			}
+			await addDoc(subsRef, {
+				email: nlEmail.toLowerCase(),
+				subscribedAt: serverTimestamp(),
+			});
+			sendNewsletterWelcome(nlEmail).catch(() => {});
+			setNlStatus("success");
+			setNlEmail("");
+			setSnackOpen(true);
+		} catch {
+			setNlStatus("error");
+			setSnackOpen(true);
+		}
+  };
 
   const handleContactClick = () => {
     if (location.pathname !== '/') {
@@ -48,23 +104,51 @@ export default function Footer() {
 
   return (
 		<>
-			<Box sx={{ backgroundColor: "#FFF8F0", borderTop: "1px solid #E8D5B0", py: 6 }}>
+			<Box
+				sx={{
+					backgroundColor: "#FFF8F0",
+					borderTop: "1px solid #E8D5B0",
+					py: 6,
+				}}
+			>
 				<Container maxWidth="lg">
 					<Grid container spacing={4}>
 						{/* Column 1 — Brand */}
 						<Grid item xs={12} sm={6} md={3}>
 							<Box
-								component="img"
-								src="/images/logo.png"
-								alt="PerfectFooties"
 								sx={{
-									height: 48,
-									width: "auto",
-									objectFit: "contain",
+									display: "flex",
+									alignItems: "center",
+									gap: 1,
 									mb: 2,
-									display: "block",
 								}}
-							/>
+							>
+								<Box
+									component="img"
+									src="/images/logo.png"
+									alt="PerfectFooties"
+									sx={{
+										height: 48,
+										width: "auto",
+										objectFit: "contain",
+										display: "block",
+									}}
+								/>
+								<Typography
+									sx={{
+										fontFamily:
+											'"Dancing Script", "Pacifico", cursive',
+										fontSize: "1.5rem",
+										fontWeight: 700,
+										color: "#e3242b",
+										lineHeight: 1,
+										letterSpacing: "0.02em",
+										userSelect: "none",
+									}}
+								>
+									PerfectFooties
+								</Typography>
+							</Box>
 							<Typography
 								sx={{
 									color: "var(--text-muted)",
@@ -72,9 +156,10 @@ export default function Footer() {
 									lineHeight: 1.7,
 								}}
 							>
-								PerfectFooties crafts handmade leather goods built to last.
-								From shoes to bags and accessories — every piece is made
-								with care, precision, and a passion for quality craftsmanship.
+								PerfectFooties crafts handmade leather goods built to
+								last. From shoes to bags and accessories — every piece
+								is made with care, precision, and a passion for quality
+								craftsmanship.
 							</Typography>
 						</Grid>
 
@@ -151,7 +236,7 @@ export default function Footer() {
 							<MuiLink sx={linkSx} onClick={handleFaqClick}>
 								FAQ
 							</MuiLink>
-<MuiLink sx={linkSx} onClick={() => setTermsOpen(true)}>
+							<MuiLink sx={linkSx} onClick={() => setTermsOpen(true)}>
 								T&C
 							</MuiLink>
 						</Grid>
@@ -182,11 +267,142 @@ export default function Footer() {
 						</Grid>
 					</Grid>
 
+					{/* Newsletter */}
+					<Box sx={{ borderTop: "1px solid #E8D5B0", mt: 5, pt: 4 }}>
+						<Box
+							sx={{
+								maxWidth: 480,
+								mx: "auto",
+								textAlign: "center",
+								mb: 3,
+							}}
+						>
+							<Box
+								sx={{
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+									gap: 1,
+									mb: 0.8,
+								}}
+							>
+								<EmailOutlinedIcon
+									sx={{ color: "var(--text-purple)", fontSize: 20 }}
+								/>
+								<Typography
+									sx={{
+										fontFamily: '"Georgia", serif',
+										fontWeight: 700,
+										fontSize: "1rem",
+										color: "#0e0e0e",
+									}}
+								>
+									Stay in the loop
+								</Typography>
+							</Box>
+							<Typography
+								sx={{
+									color: "var(--text-muted)",
+									fontSize: "0.85rem",
+									mb: 2,
+									lineHeight: 1.6,
+								}}
+							>
+								New collections, exclusive deals, and behind-the-scenes
+								stories — delivered to your inbox.
+							</Typography>
+							{nlStatus !== "success" ? (
+								<Box
+									sx={{
+										display: "flex",
+										gap: 1,
+										maxWidth: 400,
+										mx: "auto",
+									}}
+								>
+									<TextField
+										size="small"
+										fullWidth
+										placeholder="Your email address"
+										value={nlEmail}
+										onChange={(e) => setNlEmail(e.target.value)}
+										onKeyDown={(e) =>
+											e.key === "Enter" && handleSubscribe()
+										}
+										sx={{
+											"& .MuiOutlinedInput-root": {
+												borderRadius: "50px",
+												fontSize: "0.85rem",
+												"& fieldset": { borderColor: "#E8D5B0" },
+												"&:hover fieldset": {
+													borderColor: "var(--accent-cyan)",
+												},
+												"&.Mui-focused fieldset": {
+													borderColor: "var(--accent-cyan)",
+												},
+											},
+										}}
+									/>
+									<Button
+										onClick={handleSubscribe}
+										disabled={
+											nlStatus === "loading" ||
+											!isValidEmail(nlEmail)
+										}
+										sx={{
+											borderRadius: "50px",
+											px: 2.5,
+											py: 1,
+											backgroundColor: "var(--text-purple)",
+											color: "#fff",
+											fontFamily: '"Georgia", serif',
+											fontWeight: 700,
+											fontSize: "0.82rem",
+											whiteSpace: "nowrap",
+											"&:hover": {
+												backgroundColor: "var(--accent-cyan-hover)",
+											},
+											"&.Mui-disabled": {
+												backgroundColor: "#E8D5B0",
+												color: "#fff",
+											},
+										}}
+									>
+										{nlStatus === "loading" ? (
+											<CircularProgress
+												size={16}
+												sx={{ color: "#fff" }}
+											/>
+										) : (
+											"Subscribe"
+										)}
+									</Button>
+								</Box>
+							) : (
+								<Typography
+									sx={{
+										color: "var(--text-purple)",
+										fontWeight: 700,
+										fontSize: "0.88rem",
+										fontFamily: '"Georgia", serif',
+										display: "flex",
+										alignItems: "center",
+										gap: 0.5,
+									}}
+								>
+									<CheckCircleOutlineIcon sx={{ fontSize: "1rem" }} />
+									You're subscribed! Welcome to the PerfectFooties
+									family.
+								</Typography>
+							)}
+						</Box>
+					</Box>
+
 					{/* Social Icons + Copyright */}
 					<Box
 						sx={{
 							borderTop: "1px solid rgba(0, 102, 102, 0.25)",
-							mt: 5,
+							mt: 2,
 							pt: 3,
 							textAlign: "center",
 						}}
@@ -230,14 +446,43 @@ export default function Footer() {
 								<YouTubeIcon />
 							</IconButton>
 						</Box>
-						<Typography sx={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+						<Typography
+							sx={{ color: "var(--text-muted)", fontSize: "0.85rem" }}
+						>
 							&copy; 2026 PerfectFooties. All rights reserved.
+						</Typography>
+						<Typography sx={{ color: "#5e5e5e", fontSize: "0.70rem" }}>
+							Designed with ♥ by Chizzy's Styles
 						</Typography>
 					</Box>
 				</Container>
 			</Box>
 
 			<TermsModal open={termsOpen} onClose={() => setTermsOpen(false)} />
+
+			<Snackbar
+				open={snackOpen}
+				autoHideDuration={4000}
+				onClose={() => setSnackOpen(false)}
+				anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+			>
+				<Alert
+					severity={
+						nlStatus === "success"
+							? "success"
+							: nlStatus === "duplicate"
+								? "info"
+								: "error"
+					}
+					onClose={() => setSnackOpen(false)}
+				>
+					{nlStatus === "success"
+						? "You're subscribed! Check your inbox."
+						: nlStatus === "duplicate"
+							? "This email is already subscribed."
+							: "Something went wrong. Please try again."}
+				</Alert>
+			</Snackbar>
 		</>
   );
 }

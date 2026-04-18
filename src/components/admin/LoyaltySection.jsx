@@ -25,6 +25,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import {
@@ -32,10 +33,11 @@ import {
   adminAdjustPoints,
   fetchReferralLeaderboard,
   POINTS_PER_ORDER,
-  POINTS_PER_APPOINTMENT,
   POINTS_PER_REFERRAL,
   REDEMPTION_UNIT, REDEMPTION_VALUE,
   REFERRAL_DISCOUNT,
+  TIERS,
+  getCustomerTier,
 } from '../../lib/loyaltyService';
 
 const ff = '"Georgia", serif';
@@ -248,7 +250,7 @@ export default function LoyaltySection({ loading: pageLoading }) {
             value={totalReferralUses}
             sub={`${referrals.length} active referrers`}
             icon={<GroupAddIcon />}
-            gradient="linear-gradient(135deg, #006666 0%, #7B1FA2 100%)"
+            gradient="linear-gradient(135deg, #007a7a 0%, #7B1FA2 100%)"
           />
         </Grid>
       </Grid>
@@ -256,13 +258,14 @@ export default function LoyaltySection({ loading: pageLoading }) {
       {/* Tab buttons */}
       <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
         {[
-          { key: 'points', label: '🏆 Points Ledger' },
-          { key: 'referrals', label: '🎀 Referral Leaderboard' },
-          { key: 'rules', label: '📋 Earn Rules' },
+          { key: 'points', label: 'Points Ledger', Icon: EmojiEventsIcon },
+          { key: 'referrals', label: 'Referral Leaderboard', Icon: GroupAddIcon },
+          { key: 'rules', label: 'Earn Rules', Icon: AssignmentIcon },
         ].map((t) => (
           <Button
             key={t.key}
             onClick={() => setTab(t.key)}
+            startIcon={<t.Icon sx={{ fontSize: '1rem !important' }} />}
             sx={{
               fontFamily: ff,
               textTransform: 'none',
@@ -271,9 +274,9 @@ export default function LoyaltySection({ loading: pageLoading }) {
               py: 0.8,
               fontSize: '0.85rem',
               border: tab === t.key ? 'none' : '1.5px solid #E0E0E0',
-              backgroundColor: tab === t.key ? '#006666' : 'transparent',
+              backgroundColor: tab === t.key ? '#007a7a' : 'transparent',
               color: tab === t.key ? '#fff' : '#555',
-              '&:hover': { backgroundColor: tab === t.key ? '#006666' : '#F5F5F5' },
+              '&:hover': { backgroundColor: tab === t.key ? '#007a7a' : '#F5F5F5' },
             }}
           >
             {t.label}
@@ -299,8 +302,8 @@ export default function LoyaltySection({ loading: pageLoading }) {
           <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
             <Table size="small">
               <TableHead>
-                <TableRow sx={{ backgroundColor: '#006666' }}>
-                  {['#', 'Customer', 'Points Balance', 'Earned (All-Time)', 'Redeemed', 'Actions'].map((h) => (
+                <TableRow sx={{ backgroundColor: '#007a7a' }}>
+                  {['#', 'Customer', 'Tier', 'Points Balance', 'Earned (All-Time)', 'Redeemed', 'Actions'].map((h) => (
                     <TableCell key={h} sx={{ color: '#fff', fontFamily: ff, fontWeight: 700, py: 1.5 }}>
                       {h}
                     </TableCell>
@@ -310,7 +313,7 @@ export default function LoyaltySection({ loading: pageLoading }) {
               <TableBody>
                 {filtered.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} sx={{ textAlign: 'center', py: 4, color: '#999', fontFamily: ff }}>
+                    <TableCell colSpan={7} sx={{ textAlign: 'center', py: 4, color: '#999', fontFamily: ff }}>
                       {search ? 'No customers match your search' : 'No loyalty data yet'}
                     </TableCell>
                   </TableRow>
@@ -318,8 +321,10 @@ export default function LoyaltySection({ loading: pageLoading }) {
                 {filtered.map((p, idx) => {
                   const initials = (p.displayName || p.email || '?').split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
                   const redeemable = Math.floor(p.loyaltyPoints / REDEMPTION_UNIT) * REDEMPTION_VALUE;
+                  const estimatedOrders = Math.floor((p.loyaltyPointsEarned || 0) / POINTS_PER_ORDER);
+                  const tier = getCustomerTier(estimatedOrders);
                   return (
-                    <TableRow key={p.uid} sx={{ '&:hover': { bgcolor: '#f3e5f5' } }}>
+                    <TableRow key={p.uid} sx={{ '&:hover': { bgcolor: '#f5fafa' } }}>
                       <TableCell sx={{ fontFamily: ff, fontSize: '0.78rem', color: '#999', width: 32 }}>{idx + 1}</TableCell>
                       <TableCell sx={{ fontFamily: ff }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -335,6 +340,13 @@ export default function LoyaltySection({ loading: pageLoading }) {
                             </Typography>
                           </Box>
                         </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={tier.label}
+                          size="small"
+                          sx={{ backgroundColor: tier.bg, color: tier.color, fontFamily: ff, fontWeight: 700, fontSize: '0.7rem' }}
+                        />
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -360,7 +372,7 @@ export default function LoyaltySection({ loading: pageLoading }) {
                             fontFamily: ff,
                             textTransform: 'none',
                             fontSize: '0.78rem',
-                            border: '1.5px solid #006666',
+                            border: '1.5px solid #007a7a',
                             color: 'var(--text-purple)',
                             borderRadius: 2,
                             px: 1.5,
@@ -384,7 +396,7 @@ export default function LoyaltySection({ loading: pageLoading }) {
         <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
           <Table size="small">
             <TableHead>
-              <TableRow sx={{ backgroundColor: '#006666' }}>
+              <TableRow sx={{ backgroundColor: '#007a7a' }}>
                 {['#', 'Referral Code', 'Referrer UID', 'Total Uses', 'Points Earned'].map((h) => (
                   <TableCell key={h} sx={{ color: '#fff', fontFamily: ff, fontWeight: 700, py: 1.5 }}>
                     {h}
@@ -432,41 +444,52 @@ export default function LoyaltySection({ loading: pageLoading }) {
 
       {/* Earn Rules */}
       {tab === 'rules' && (
-        <Paper sx={{ p: 3, borderRadius: 3 }}>
-          <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1rem', mb: 2, color: 'var(--text-purple)' }}>
-            Current Earn & Redeem Rules
-          </Typography>
-          {[
-            { label: 'Press-on order completed', value: `+${POINTS_PER_ORDER} pts`, color: 'var(--text-purple)' },
-            { label: 'Appointment completed', value: `+${POINTS_PER_APPOINTMENT} pts`, color: '#e3242b' },
-            { label: 'Referral code used by a friend', value: `+${POINTS_PER_REFERRAL} pts (referrer)`, color: '#2e7d32' },
-            { label: 'Referred friend discount', value: `₦${REFERRAL_DISCOUNT} off their first order`, color: '#e65100' },
-            { label: 'Redemption rate', value: `${REDEMPTION_UNIT} pts = ₦1,000 discount`, color: '#B8860B' },
-          ].map((r) => (
-            <Box
-              key={r.label}
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                py: 1.5,
-                borderBottom: '1px solid #F5F5F5',
-              }}
-            >
-              <Typography sx={{ fontFamily: ff, fontSize: '0.88rem', color: 'var(--text-main)' }}>{r.label}</Typography>
-              <Chip
-                label={r.value}
-                size="small"
-                sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.78rem', bgcolor: `${r.color}18`, color: r.color }}
-              />
-            </Box>
-          ))}
-          <Box sx={{ mt: 2.5, p: 2, borderRadius: 2, bgcolor: '#FFF8E1', border: '1px solid #FFD54F' }}>
-            <Typography sx={{ fontFamily: ff, fontSize: '0.82rem', color: '#5D4037', lineHeight: 1.8 }}>
-              <strong>Note:</strong> Points are awarded automatically when you mark an order as <em>received</em> in the Orders or Appointments section. Referral points are awarded to the referrer when the referred user places their first order with the code. You can manually adjust any customer&apos;s balance using the Points Ledger tab.
+        <Box>
+          {/* Tiers */}
+          <Paper sx={{ p: 3, borderRadius: 3, mb: 3 }}>
+            <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1rem', mb: 2.5, color: 'var(--text-purple)' }}>
+              Customer Tiers
             </Typography>
-          </Box>
-        </Paper>
+            <Grid container spacing={2}>
+              {TIERS.map((t, i) => (
+                <Grid item xs={12} sm={4} key={t.key}>
+                  <Box sx={{ p: 2.5, borderRadius: 3, border: `2px solid ${t.color}`, backgroundColor: t.bg, height: '100%' }}>
+                    <Chip label={t.label} size="small" sx={{ backgroundColor: t.color, color: '#fff', fontFamily: ff, fontWeight: 700, fontSize: '0.78rem', mb: 1.5 }} />
+                    <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: t.color, mb: 0.5 }}>
+                      {i === 0 ? '0 – 1 orders' : i === 1 ? '2 – 3 orders' : '4+ orders'}
+                    </Typography>
+                    <Typography sx={{ fontFamily: ff, fontSize: '0.82rem', color: '#555', lineHeight: 1.6 }}>
+                      {t.perk}
+                    </Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+          </Paper>
+
+          {/* Earn & Redeem rules */}
+          <Paper sx={{ p: 3, borderRadius: 3 }}>
+            <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1rem', mb: 2, color: 'var(--text-purple)' }}>
+              Points Earn & Redeem Rules
+            </Typography>
+            {[
+              { label: 'Product order completed', value: `+${POINTS_PER_ORDER} pts`, color: 'var(--text-purple)' },
+              { label: 'Referral code used by a friend', value: `+${POINTS_PER_REFERRAL} pts (referrer)`, color: '#2e7d32' },
+              { label: 'Referred friend discount', value: `₦${REFERRAL_DISCOUNT.toLocaleString()} off their first order`, color: '#e65100' },
+              { label: 'Redemption rate', value: `${REDEMPTION_UNIT} pts = ₦${REDEMPTION_VALUE.toLocaleString()} discount`, color: '#B8860B' },
+            ].map((r) => (
+              <Box key={r.label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: '1px solid #F5F5F5' }}>
+                <Typography sx={{ fontFamily: ff, fontSize: '0.88rem', color: 'var(--text-main)' }}>{r.label}</Typography>
+                <Chip label={r.value} size="small" sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.78rem', bgcolor: `${r.color}18`, color: r.color }} />
+              </Box>
+            ))}
+            <Box sx={{ mt: 2.5, p: 2, borderRadius: 2, bgcolor: '#E0F7FA', border: '1px solid var(--accent-cyan)' }}>
+              <Typography sx={{ fontFamily: ff, fontSize: '0.82rem', color: '#004D40', lineHeight: 1.8 }}>
+                <strong>Note:</strong> Points are awarded automatically when you mark an order as <em>delivered</em> in the Orders section. Tier upgrades are based on total completed orders. You can manually adjust any customer&apos;s balance in the Points Ledger tab.
+              </Typography>
+            </Box>
+          </Paper>
+        </Box>
       )}
 
       <AdjustDialog

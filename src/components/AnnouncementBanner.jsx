@@ -104,7 +104,7 @@ export default function AnnouncementBanner() {
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         sx={{
-          background: 'linear-gradient(135deg, #FF6BB5 0%, #e3242b 55%, #b81b21 100%)',
+          background: 'linear-gradient(135deg, #1a0000 0%, #3d0000 50%, #e3242b 100%)',
           color: '#fff',
           position: 'relative',
           overflow: 'hidden',
@@ -263,8 +263,8 @@ export default function AnnouncementBanner() {
                     zIndex: 2,
                     pointerEvents: 'none',
                   },
-                  '&::before': { left: 0, background: 'linear-gradient(to right, #FF6BB5, transparent)' },
-                  '&::after': { right: 0, background: 'linear-gradient(to left, #b81b21, transparent)' },
+                  '&::before': { left: 0, background: 'linear-gradient(to right, #1a0000, transparent)' },
+                  '&::after': { right: 0, background: 'linear-gradient(to left, #e3242b, transparent)' },
                 }}
               >
                 <Box

@@ -48,7 +48,7 @@ const STATUS_CONFIG = {
 // ── Post-Payment Contact Dialog ───────────────────────────
 function PostPaymentDialog({ open, onClose, productName, customerName, orderId }) {
   const waMessage = encodeURIComponent(
-    `Hi PerfectFooties! 👋\n\nI just paid for my order and wanted to confirm the details.\n\nProduct: ${productName}\nOrder ID: ${orderId}\nName: ${customerName}\n\nPlease confirm my order. Thank you!`
+    `Hi PerfectFooties!\n\nI just paid for my order and wanted to confirm the details.\n\nProduct: ${productName}\nOrder ID: ${orderId}\nName: ${customerName}\n\nPlease confirm my order. Thank you!`
   );
   const emailSubject = encodeURIComponent(`Order Confirmation — ${orderId}`);
   const emailBody = encodeURIComponent(
@@ -85,9 +85,9 @@ function PostPaymentDialog({ open, onClose, productName, customerName, orderId }
             startIcon={<EmailOutlinedIcon />}
             href={`mailto:${BUSINESS_EMAIL}?subject=${emailSubject}&body=${emailBody}`}
             sx={{
-              backgroundColor: '#006666', color: '#fff', borderRadius: '30px', py: 1.2,
+              backgroundColor: '#007a7a', color: '#fff', borderRadius: '30px', py: 1.2,
               fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', textTransform: 'none',
-              '&:hover': { backgroundColor: '#3a0b3e' },
+              '&:hover': { backgroundColor: '#005a5a' },
             }}
           >
             Confirm via Email
@@ -426,7 +426,7 @@ export default function CategoryPage() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, p: 1.5, backgroundColor: '#FFF8F0', borderRadius: 2, border: '1px solid #E8D5B0' }}>
               <AccessTimeIcon sx={{ color: '#e3242b', fontSize: 18, flexShrink: 0 }} />
               <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                <strong>Made to order</strong> — crafted fresh, ready in <strong>5–10 business days</strong> after payment confirmation.
+                <strong>Made to order</strong> — crafted fresh, ready in <strong>10–14 days</strong> after payment confirmation.
               </Typography>
             </Box>
 

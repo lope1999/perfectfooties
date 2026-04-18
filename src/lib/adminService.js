@@ -11,6 +11,7 @@ import {
   query,
   runTransaction,
   serverTimestamp,
+  arrayUnion,
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -69,12 +70,16 @@ export async function createAdminOrder(data) {
 
 const APPOINTMENT_ONLY_STATUSES = new Set(['no-show', 'rescheduled', 'in progress']);
 
-export async function updateOrderStatus(uid, orderId, status) {
+export async function updateOrderStatus(uid, orderId, status, extra = {}) {
   const kind = APPOINTMENT_ONLY_STATUSES.has(status) ? 'appointment' : 'order';
   validateOrderStatus(status, kind);
   const ref = doc(db, 'users', uid, 'orders', orderId);
   updateBookedSlotStatus(orderId, status).catch(() => {});
-  await updateDoc(ref, { status });
+  await updateDoc(ref, {
+    status,
+    ...extra,
+    statusHistory: arrayUnion({ status, at: new Date().toISOString() }),
+  });
   // Award loyalty points: retail/press-on orders on 'received', service appointments on 'completed'
   if (status === 'received' || status === 'completed') {
     const snap = await getDoc(ref).catch(() => null);

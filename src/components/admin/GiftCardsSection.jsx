@@ -229,7 +229,7 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table size="small">
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#006666' }}>
+            <TableRow sx={{ backgroundColor: '#007a7a' }}>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 40 }} />
               {['#', 'Code', 'Type', 'Recipient', 'Amount', 'Balance', 'Status', 'Created', 'Expires', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
@@ -425,7 +425,7 @@ export default function GiftCardsSection({ giftCards, loading, onRefresh }) {
             onClick={handleDeduct}
             variant="contained"
             disabled={busy || !deductAmount || Number(deductAmount) <= 0}
-            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
           >
             {deductAmount && Number(deductAmount) === deductCard?.balance ? 'Fully Redeem' : 'Deduct'}
           </Button>

@@ -52,7 +52,7 @@ const giftCardTypes = [
 		features: [
 			"Premium card design",
 			"Branded packaging",
-			"Delivered within Lagos",
+			"Worldwide delivery",
 			"Perfect for gifting in person",
 		],
 	},
@@ -389,12 +389,12 @@ export default function GiftCardPage() {
 							{
 								step: "03",
 								title: "We Deliver It",
-								text: "Digital cards are sent instantly. Physical cards are delivered within Nigeria.",
+								text: "Digital cards are sent instantly. Physical cards are delivered worldwide.",
 							},
 							{
 								step: "04",
 								title: "They Enjoy",
-								text: "The recipient books their appointment or shops press-ons using their gift card balance.",
+								text: "The recipient shops PerfectFooties leather goods, bags, and accessories using their gift card balance.",
 							},
 						].map((item, i) => (
 							<Grid item xs={6} md={3} key={i}>
@@ -665,12 +665,12 @@ export default function GiftCardPage() {
 					</ScrollReveal>
 					<Grid container spacing={2}>
 						{[
-							"Gel-X appointments",
-							"Hard gel appointments",
-							"Pedicure treatments",
-							"Press-on nail sets (any style)",
-							"Custom nail art add-ons",
-							"Any future service we offer",
+							"Handmade footwear (female & male)",
+							"Heirloom collection pieces",
+							"Handmade bags & belts",
+							"The Majesty Tote Bag (TMT)",
+							"Any item across all collections",
+							"Any future product we launch",
 						].map((item, i) => (
 							<Grid item xs={12} sm={6} key={i}>
 								<ScrollReveal direction="up" delay={i * 0.08}>
@@ -723,7 +723,7 @@ export default function GiftCardPage() {
 						<Box
 							sx={{
 								background:
-									"linear-gradient(135deg, #e3242b 0%, #006666 100%)",
+									"linear-gradient(135deg, #e3242b 0%, #007a7a 100%)",
 								p: 3,
 								textAlign: "center",
 							}}
@@ -888,7 +888,7 @@ export default function GiftCardPage() {
 										multiline
 										minRows={2}
 										maxRows={4}
-										placeholder="e.g. Happy Birthday! Treat yourself to some beautiful nails"
+										placeholder="e.g. Happy Birthday! Treat yourself to something beautiful from PerfectFooties"
 										value={formData.message}
 										onChange={(e) =>
 											setFormData((prev) => ({

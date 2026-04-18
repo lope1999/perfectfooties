@@ -30,6 +30,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import StarIcon from '@mui/icons-material/Star';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
@@ -397,7 +398,13 @@ export default function PlaceOrderPage() {
 										lineHeight: 1.6,
 									}}
 								>
-									Order Policy: Full payment is required to confirm your press-on order. Production begins immediately after confirmation, so refunds are not available. Please review your selections carefully before placing your order. Processing time is 4–7 business days, depending on customization and stock. We will keep you updated throughout the process.
+									Order Policy: Full payment is required to confirm
+									your handcrafted order. Production begins immediately
+									after confirmation, so refunds are not available.
+									Please review your selections carefully before
+									placing your order. Processing time is 10–14 days,
+									depending on customization and stock. We will keep
+									you updated throughout the process.
 								</Typography>
 							</Box>
 						</Box>
@@ -438,774 +445,1108 @@ export default function PlaceOrderPage() {
 
 					{/* Loading / Error */}
 					{loading && (
-						<Box sx={{ textAlign: 'center', py: 10 }}>
-							<CircularProgress sx={{ color: '#e3242b' }} />
-							<Typography sx={{ mt: 2, color: '#999' }}>Loading products…</Typography>
+						<Box sx={{ textAlign: "center", py: 10 }}>
+							<CircularProgress sx={{ color: "#e3242b" }} />
+							<Typography sx={{ mt: 2, color: "#999" }}>
+								Loading products…
+							</Typography>
 						</Box>
 					)}
 					{error && !loading && (
-						<Box sx={{ textAlign: 'center', py: 4 }}>
-							<Typography sx={{ color: '#d32f2f', fontSize: '0.9rem' }}>
-								Could not load products from the server. Showing cached data.
+						<Box sx={{ textAlign: "center", py: 4 }}>
+							<Typography sx={{ color: "#d32f2f", fontSize: "0.9rem" }}>
+								Could not load products from the server. Showing cached
+								data.
 							</Typography>
 						</Box>
 					)}
 
 					{/* Product Selection */}
-					{productCategories.filter(cat => cat.products.some(p => !p.hidden && (p.stock === undefined || p.stock > 0))).map((category, catIdx) => (
-						<ScrollReveal
-							key={category.id}
-							direction="up"
-							delay={catIdx * 0.1}
-						>
-							<Box id={category.id} sx={{ mb: 4 }}>
-								<Typography
-									variant="h5"
-									sx={{
-										fontFamily: '"Georgia", serif',
-										fontWeight: 700,
-										color: "var(--text-purple)",
-										mb: 2,
-									}}
-								>
-									{category.title}
-								</Typography>
-
-								{category.readyMade && (
-									<Box
+					{productCategories
+						.filter((cat) =>
+							cat.products.some(
+								(p) =>
+									!p.hidden && (p.stock === undefined || p.stock > 0),
+							),
+						)
+						.map((category, catIdx) => (
+							<ScrollReveal
+								key={category.id}
+								direction="up"
+								delay={catIdx * 0.1}
+							>
+								<Box id={category.id} sx={{ mb: 4 }}>
+									<Typography
+										variant="h5"
 										sx={{
-											display: "flex",
-											alignItems: "center",
-											gap: 1,
-											mb: 1.5,
-											flexWrap: "wrap",
+											fontFamily: '"Georgia", serif',
+											fontWeight: 700,
+											color: "var(--text-purple)",
+											mb: 2,
 										}}
 									>
-										<Typography
+										{category.title}
+									</Typography>
+
+									{category.readyMade && (
+										<Box
 											sx={{
-												color: "var(--text-purple)",
-												fontSize: "0.85rem",
-												fontWeight: 600,
+												display: "flex",
+												alignItems: "center",
+												gap: 1,
+												mb: 1.5,
+												flexWrap: "wrap",
 											}}
 										>
-											XS, S, M & L preset sizes available
-										</Typography>
-										<Typography
-											onClick={() => setSizeGuideOpen(true)}
-											sx={{
-												color: "#e3242b",
-												fontSize: "0.82rem",
-												fontWeight: 600,
-												cursor: "pointer",
-												textDecoration: "underline",
-												textUnderlineOffset: 2,
-												"&:hover": { color: "#b81b21" },
-											}}
-										>
-											What are preset sizes?
-										</Typography>
-										<Tooltip title="Contact us for help" arrow>
-											<IconButton
-												onClick={handleContactClick}
-												size="small"
+											<Typography
+												sx={{
+													color: "var(--text-purple)",
+													fontSize: "0.85rem",
+													fontWeight: 600,
+												}}
+											>
+												XS, S, M & L preset sizes available
+											</Typography>
+											<Typography
+												onClick={() => setSizeGuideOpen(true)}
 												sx={{
 													color: "#e3242b",
-													border: "1.5px solid #e3242b",
-													width: 28,
-													height: 28,
-													"&:hover": {
-														backgroundColor: "#e3242b",
-														color: "#fff",
-													},
-												}}
-											>
-												<PhoneOutlinedIcon sx={{ fontSize: 14 }} />
-											</IconButton>
-										</Tooltip>
-									</Box>
-								)}
-
-								{category.products.filter(p => !p.hidden && (p.stock === undefined || p.stock > 0)).map((product) => {
-									const isSelected = !!selectedProducts[product.id];
-									const formData =
-										selectedProducts[product.id] ||
-										(category.readyMade ? readyMadeForm : emptyForm);
-									const isReady = !!category.readyMade;
-
-									return (
-										<Box key={product.id} sx={{ mb: 2 }}>
-											<Card
-												elevation={0}
-												sx={{
-													borderRadius: 3,
-													border: isSelected
-														? "2px solid #e3242b"
-														: "1px solid #E8D5B0",
-													transition: "all 0.3s ease",
+													fontSize: "0.82rem",
+													fontWeight: 600,
 													cursor: "pointer",
-													"&:hover": {
-														borderColor: "#e3242b",
-														boxShadow:
-															"0 4px 16px rgba(233,30,140,0.1)",
-													},
+													textDecoration: "underline",
+													textUnderlineOffset: 2,
+													"&:hover": { color: "#b81b21" },
 												}}
-												onClick={() =>
-													handleToggleProduct(product.id)
-												}
 											>
-												<CardContent sx={{ p: 2.5 }}>
-													<Box
+												What are preset sizes?
+											</Typography>
+											<Tooltip title="Contact us for help" arrow>
+												<IconButton
+													onClick={handleContactClick}
+													size="small"
+													sx={{
+														color: "#e3242b",
+														border: "1.5px solid #e3242b",
+														width: 28,
+														height: 28,
+														"&:hover": {
+															backgroundColor: "#e3242b",
+															color: "#fff",
+														},
+													}}
+												>
+													<PhoneOutlinedIcon
+														sx={{ fontSize: 14 }}
+													/>
+												</IconButton>
+											</Tooltip>
+										</Box>
+									)}
+
+									{category.products
+										.filter(
+											(p) =>
+												!p.hidden &&
+												(p.stock === undefined || p.stock > 0),
+										)
+										.map((product) => {
+											const isSelected =
+												!!selectedProducts[product.id];
+											const formData =
+												selectedProducts[product.id] ||
+												(category.readyMade
+													? readyMadeForm
+													: emptyForm);
+											const isReady = !!category.readyMade;
+
+											return (
+												<Box key={product.id} sx={{ mb: 2 }}>
+													<Card
+														elevation={0}
 														sx={{
-															display: "flex",
-															alignItems: "center",
-															justifyContent: "space-between",
+															borderRadius: 3,
+															border: isSelected
+																? "2px solid #e3242b"
+																: "1px solid #E8D5B0",
+															transition: "all 0.3s ease",
+															cursor: "pointer",
+															"&:hover": {
+																borderColor: "#e3242b",
+																boxShadow:
+																	"0 4px 16px rgba(233,30,140,0.1)",
+															},
 														}}
+														onClick={() =>
+															handleToggleProduct(product.id)
+														}
 													>
-														<FormControlLabel
-															control={
-																<Checkbox
-																	checked={isSelected}
-																	sx={{
-																		color: "#e3242b",
-																		"&.Mui-checked": {
-																			color: "#e3242b",
-																		},
-																	}}
+														<CardContent sx={{ p: 2.5 }}>
+															<Box
+																sx={{
+																	display: "flex",
+																	alignItems: "center",
+																	justifyContent:
+																		"space-between",
+																}}
+															>
+																<FormControlLabel
+																	control={
+																		<Checkbox
+																			checked={isSelected}
+																			sx={{
+																				color: "#e3242b",
+																				"&.Mui-checked": {
+																					color: "#e3242b",
+																				},
+																			}}
+																		/>
+																	}
+																	label={
+																		<Box>
+																			<Box
+																				sx={{
+																					display: "flex",
+																					alignItems:
+																						"center",
+																					gap: 1,
+																					flexWrap: "wrap",
+																				}}
+																			>
+																				<Typography
+																					sx={{
+																						fontFamily:
+																							'"Georgia", serif',
+																						fontWeight: 600,
+																						fontSize:
+																							"1rem",
+																					}}
+																				>
+																					{product.name}
+																				</Typography>
+																				{product.type && (
+																					<Chip
+																						label={
+																							product.type
+																						}
+																						size="small"
+																						sx={{
+																							backgroundColor:
+																								"#007a7a",
+																							color: "#fff",
+																							fontSize:
+																								"0.65rem",
+																							fontWeight: 700,
+																							height: 20,
+																						}}
+																					/>
+																				)}
+																				{hasDiscount(
+																					product,
+																				) && (
+																					<Chip
+																						label={getDiscountLabel(
+																							product,
+																						)}
+																						size="small"
+																						sx={{
+																							backgroundColor:
+																								"#e8f5e9",
+																							color: "#2e7d32",
+																							fontSize:
+																								"0.65rem",
+																							fontWeight: 700,
+																							height: 20,
+																						}}
+																					/>
+																				)}
+																			</Box>
+																			<Typography
+																				sx={{
+																					color: "#777",
+																					fontSize:
+																						"0.85rem",
+																				}}
+																			>
+																				{
+																					product.description
+																				}
+																			</Typography>
+																			{isReady &&
+																				product.shape &&
+																				product.length && (
+																					<Typography
+																						sx={{
+																							color: "#999",
+																							fontSize:
+																								"0.78rem",
+																							mt: 0.3,
+																						}}
+																					>
+																						{
+																							product.shape
+																						}{" "}
+																						·{" "}
+																						{
+																							product.length
+																						}
+																						{product.stock !==
+																							undefined && (
+																							<Typography
+																								component="span"
+																								sx={{
+																									color:
+																										product.stock <=
+																										2
+																											? "#e3242b"
+																											: "#999",
+																									fontSize:
+																										"0.78rem",
+																									fontWeight:
+																										product.stock <=
+																										2
+																											? 600
+																											: 400,
+																									fontStyle:
+																										"italic",
+																									ml: 1.5,
+																								}}
+																							>
+																								{
+																									product.stock
+																								}{" "}
+																								in stock
+																							</Typography>
+																						)}
+																					</Typography>
+																				)}
+																		</Box>
+																	}
+																	sx={{ flex: 1, m: 0 }}
+																	onClick={(e) =>
+																		e.stopPropagation()
+																	}
+																	onChange={() =>
+																		handleToggleProduct(
+																			product.id,
+																		)
+																	}
 																/>
-															}
-															label={
-																<Box>
+																{hasDiscount(product) ? (
 																	<Box
 																		sx={{
-																			display: "flex",
-																			alignItems: "center",
-																			gap: 1,
-																			flexWrap: "wrap",
+																			textAlign: "right",
+																			ml: 2,
 																		}}
 																	>
 																		<Typography
 																			sx={{
 																				fontFamily:
 																					'"Georgia", serif',
-																				fontWeight: 600,
-																				fontSize: "1rem",
+																				fontWeight: 700,
+																				color: "#2e7d32",
+																				fontSize: "1.05rem",
+																				whiteSpace:
+																					"nowrap",
 																			}}
 																		>
-																			{product.name}
+																			{formatNaira(
+																				getEffectivePrice(
+																					product,
+																				),
+																			)}
 																		</Typography>
-																		{product.type && (
-																			<Chip
-																				label={product.type}
-																				size="small"
-																				sx={{
-																					backgroundColor:
-																						"#006666",
-																					color: "#fff",
-																					fontSize:
-																						"0.65rem",
-																					fontWeight: 700,
-																					height: 20,
-																				}}
-																			/>
-																		)}
-																		{hasDiscount(product) && (
-																			<Chip
-																				label={getDiscountLabel(product)}
-																				size="small"
-																				sx={{
-																					backgroundColor: "#e8f5e9",
-																					color: "#2e7d32",
-																					fontSize: "0.65rem",
-																					fontWeight: 700,
-																					height: 20,
-																				}}
-																			/>
-																		)}
+																		<Typography
+																			sx={{
+																				fontFamily:
+																					'"Georgia", serif',
+																				color: "#999",
+																				fontSize: "0.78rem",
+																				textDecoration:
+																					"line-through",
+																				whiteSpace:
+																					"nowrap",
+																			}}
+																		>
+																			{formatNaira(
+																				product.price,
+																			)}
+																		</Typography>
 																	</Box>
+																) : (
 																	<Typography
 																		sx={{
-																			color: "#777",
-																			fontSize: "0.85rem",
+																			fontFamily:
+																				'"Georgia", serif',
+																			fontWeight: 700,
+																			color: "#e3242b",
+																			fontSize: "1.05rem",
+																			whiteSpace: "nowrap",
+																			ml: 2,
 																		}}
 																	>
-																		{product.description}
+																		{formatNaira(
+																			product.price,
+																		)}
 																	</Typography>
-																	{isReady &&
-																		product.shape &&
-																		product.length && (
-																			<Typography
+																)}
+															</Box>
+														</CardContent>
+
+														{/* Customization Form */}
+														<Collapse in={isSelected}>
+															<Box
+																sx={{ px: 3, pb: 3, pt: 1 }}
+																onClick={(e) =>
+																	e.stopPropagation()
+																}
+															>
+																{isReady ? (
+																	/* Ready-made: quantity + preset size */
+																	<Grid container spacing={2}>
+																		<Grid item xs={12} sm={4}>
+																			<FormControl
+																				fullWidth
+																				size="small"
+																			>
+																				<InputLabel>
+																					Quantity
+																				</InputLabel>
+																				<Select
+																					value={
+																						formData.quantity
+																					}
+																					label="Quantity"
+																					onChange={handleFieldChange(
+																						product.id,
+																						"quantity",
+																					)}
+																					sx={{
+																						borderRadius: 2,
+																					}}
+																				>
+																					{Array.from(
+																						{
+																							length:
+																								product.stock ||
+																								5,
+																						},
+																						(_, i) =>
+																							i + 1,
+																					).map((q) => (
+																						<MenuItem
+																							key={q}
+																							value={q}
+																						>
+																							{q} set
+																							{q > 1
+																								? "s"
+																								: ""}
+																						</MenuItem>
+																					))}
+																				</Select>
+																			</FormControl>
+																		</Grid>
+																		<Grid item xs={12} sm={4}>
+																			<FormControl
+																				fullWidth
+																				size="small"
+																			>
+																				<InputLabel>
+																					Preset Size
+																				</InputLabel>
+																				<Select
+																					value={
+																						formData.presetSize
+																					}
+																					label="Preset Size"
+																					onChange={handleFieldChange(
+																						product.id,
+																						"presetSize",
+																					)}
+																					sx={{
+																						borderRadius: 2,
+																					}}
+																				>
+																					{presetSizes.map(
+																						(size) => (
+																							<MenuItem
+																								key={
+																									size
+																								}
+																								value={
+																									size
+																								}
+																							>
+																								{size}
+																							</MenuItem>
+																						),
+																					)}
+																				</Select>
+																			</FormControl>
+																		</Grid>
+																		<Grid item xs={12} sm={4}>
+																			<Box
 																				sx={{
-																					color: "#999",
-																					fontSize:
-																						"0.78rem",
-																					mt: 0.3,
+																					display: "flex",
+																					alignItems:
+																						"center",
+																					height: "100%",
+																					px: 1,
 																				}}
 																			>
-																				{product.shape} ·{" "}
-																				{product.length}
-																				{product.stock !==
-																					undefined && (
-																					<Typography
-																						component="span"
-																						sx={{
-																							color:
-																								product.stock <=
-																								2
-																									? "#e3242b"
-																									: "#999",
-																							fontSize:
-																								"0.78rem",
-																							fontWeight:
-																								product.stock <=
-																								2
-																									? 600
-																									: 400,
-																							fontStyle:
-																								"italic",
-																							ml: 1.5,
-																						}}
-																					>
-																						{
-																							product.stock
-																						}{" "}
-																						in stock
-																					</Typography>
-																				)}
-																			</Typography>
-																		)}
-																</Box>
-															}
-															sx={{ flex: 1, m: 0 }}
-															onClick={(e) =>
-																e.stopPropagation()
-															}
-															onChange={() =>
-																handleToggleProduct(product.id)
-															}
-														/>
-														{hasDiscount(product) ? (
-															<Box sx={{ textAlign: 'right', ml: 2 }}>
-																<Typography
-																	sx={{
-																		fontFamily: '"Georgia", serif',
-																		fontWeight: 700,
-																		color: "#2e7d32",
-																		fontSize: "1.05rem",
-																		whiteSpace: "nowrap",
-																	}}
-																>
-																	{formatNaira(getEffectivePrice(product))}
-																</Typography>
-																<Typography
-																	sx={{
-																		fontFamily: '"Georgia", serif',
-																		color: "#999",
-																		fontSize: "0.78rem",
-																		textDecoration: 'line-through',
-																		whiteSpace: "nowrap",
-																	}}
-																>
-																	{formatNaira(product.price)}
-																</Typography>
-															</Box>
-														) : (
-															<Typography
-																sx={{
-																	fontFamily: '"Georgia", serif',
-																	fontWeight: 700,
-																	color: "#e3242b",
-																	fontSize: "1.05rem",
-																	whiteSpace: "nowrap",
-																	ml: 2,
-																}}
-															>
-																{formatNaira(product.price)}
-															</Typography>
-														)}
-													</Box>
-												</CardContent>
-
-												{/* Customization Form */}
-												<Collapse in={isSelected}>
-													<Box
-														sx={{ px: 3, pb: 3, pt: 1 }}
-														onClick={(e) => e.stopPropagation()}
-													>
-														{isReady ? (
-															/* Ready-made: quantity + preset size */
-															<Grid container spacing={2}>
-																<Grid item xs={12} sm={4}>
-																	<FormControl
-																		fullWidth
-																		size="small"
-																	>
-																		<InputLabel>
-																			Quantity
-																		</InputLabel>
-																		<Select
-																			value={
-																				formData.quantity
-																			}
-																			label="Quantity"
-																			onChange={handleFieldChange(
-																				product.id,
-																				"quantity",
-																			)}
-																			sx={{
-																				borderRadius: 2,
-																			}}
-																		>
-																			{Array.from(
-																				{
-																					length:
-																						product.stock ||
-																						5,
-																				},
-																				(_, i) => i + 1,
-																			).map((q) => (
-																				<MenuItem
-																					key={q}
-																					value={q}
+																				<Typography
+																					sx={{
+																						color: "#999",
+																						fontSize:
+																							"0.85rem",
+																						fontStyle:
+																							"italic",
+																					}}
 																				>
-																					{q} set
-																					{q > 1
-																						? "s"
-																						: ""}
-																				</MenuItem>
-																			))}
-																		</Select>
-																	</FormControl>
-																</Grid>
-																<Grid item xs={12} sm={4}>
-																	<FormControl
-																		fullWidth
-																		size="small"
-																	>
-																		<InputLabel>
-																			Preset Size
-																		</InputLabel>
-																		<Select
-																			value={
-																				formData.presetSize
-																			}
-																			label="Preset Size"
-																			onChange={handleFieldChange(
-																				product.id,
-																				"presetSize",
-																			)}
-																			sx={{
-																				borderRadius: 2,
-																			}}
-																		>
-																			{presetSizes.map(
-																				(size) => (
-																					<MenuItem
-																						key={size}
-																						value={size}
-																					>
-																						{size}
-																					</MenuItem>
-																				),
-																			)}
-																		</Select>
-																	</FormControl>
-																</Grid>
-																<Grid item xs={12} sm={4}>
-																	<Box
-																		sx={{
-																			display: "flex",
-																			alignItems: "center",
-																			height: "100%",
-																			px: 1,
-																		}}
-																	>
-																		<Typography
-																			sx={{
-																				color: "#999",
-																				fontSize: "0.85rem",
-																				fontStyle: "italic",
-																			}}
-																		>
-																			Pre-made set — shape,
-																			length & design are as
-																			shown.
-																		</Typography>
-																	</Box>
-																</Grid>
-															</Grid>
-														) : (
-															/* Custom: full form */
-															<Grid container spacing={2}>
-																<Grid item xs={12} sm={6}>
-																	<FormControl
-																		fullWidth
-																		size="small"
-																	>
-																		<InputLabel>
-																			Nail Shape
-																		</InputLabel>
-																		<Select
-																			value={
-																				formData.nailShape
-																			}
-																			label="Nail Shape"
-																			onChange={handleFieldChange(
-																				product.id,
-																				"nailShape",
-																			)}
-																			sx={{
-																				borderRadius: 2,
-																			}}
-																		>
-																			{pressOnNailShapes.map(
-																				(shape) => (
-																					<MenuItem
-																						key={shape}
-																						value={shape}
-																					>
-																						{shape}
-																					</MenuItem>
-																				),
-																			)}
-																		</Select>
-																	</FormControl>
-																</Grid>
-																<Grid item xs={12} sm={6}>
-																	<FormControl
-																		fullWidth
-																		size="small"
-																	>
-																		<InputLabel>
-																			Quantity
-																		</InputLabel>
-																		<Select
-																			value={
-																				formData.quantity
-																			}
-																			label="Quantity"
-																			onChange={handleFieldChange(
-																				product.id,
-																				"quantity",
-																			)}
-																			sx={{
-																				borderRadius: 2,
-																			}}
-																		>
-																			{pressOnQuantities.map(
-																				(q) => (
-																					<MenuItem
-																						key={q}
-																						value={q}
-																					>
-																						{q} set
-																						{q > 1
-																							? "s"
-																							: ""}
-																					</MenuItem>
-																				),
-																			)}
-																		</Select>
-																	</FormControl>
-																</Grid>
-
-																{/* Ordering for others toggle */}
-																<Grid item xs={12}>
-																	<Box
-																		sx={{
-																			display: "flex",
-																			alignItems: "center",
-																			mt: 1,
-																			p: 1.5,
-																			borderRadius: 2,
-																			border:
-																				"1px solid #E8D5B0",
-																			backgroundColor:
-																				formData.orderingForOthers
-																					? "#FFF8F0"
-																					: "#fff",
-																		}}
-																	>
-																		<Switch
-																			checked={
-																				formData.orderingForOthers ||
-																				false
-																			}
-																			onChange={() =>
-																				handleToggleOthers(
-																					product.id,
-																				)
-																			}
-																			sx={{
-																				"& .MuiSwitch-switchBase.Mui-checked":
-																					{
-																						color: "#e3242b",
-																					},
-																				"& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
-																					{
-																						backgroundColor:
-																							"#e3242b",
-																					},
-																			}}
-																		/>
-																		<Typography
-																			sx={{
-																				fontSize: "0.88rem",
-																				color: "var(--text-purple)",
-																				fontWeight: 600,
-																			}}
-																		>
-																			Also ordering for
-																			another person
-																		</Typography>
-																	</Box>
-
-																	<Collapse
-																		in={
-																			formData.orderingForOthers
-																		}
-																	>
-																		<Box sx={{ mt: 2 }}>
-																			{(
-																				formData.otherPeople ||
-																				[]
-																			).map(
-																				(person, pIdx) => (
-																					<Box
-																						key={pIdx}
-																						sx={{
-																							mb: 2,
-																							p: 2,
-																							borderRadius: 2,
-																							border:
-																								"1px solid #E8D5B0",
-																							backgroundColor:
-																								"#FFF8FA",
-																						}}
-																					>
-																						<Box
-																							sx={{
-																								display:
-																									"flex",
-																								alignItems:
-																									"center",
-																								justifyContent:
-																									"space-between",
-																								mb: 1.5,
-																							}}
-																						>
-																							<Typography
-																								sx={{
-																									fontSize:
-																										"0.85rem",
-																									fontWeight: 700,
-																									color: "var(--text-purple)",
-																									fontFamily:
-																										'"Georgia", serif',
-																								}}
+																					Pre-made set —
+																					shape, length &
+																					design are as
+																					shown.
+																				</Typography>
+																			</Box>
+																		</Grid>
+																	</Grid>
+																) : (
+																	/* Custom: full form */
+																	<Grid container spacing={2}>
+																		<Grid item xs={12} sm={6}>
+																			<FormControl
+																				fullWidth
+																				size="small"
+																			>
+																				<InputLabel>
+																					Nail Shape
+																				</InputLabel>
+																				<Select
+																					value={
+																						formData.nailShape
+																					}
+																					label="Nail Shape"
+																					onChange={handleFieldChange(
+																						product.id,
+																						"nailShape",
+																					)}
+																					sx={{
+																						borderRadius: 2,
+																					}}
+																				>
+																					{pressOnNailShapes.map(
+																						(shape) => (
+																							<MenuItem
+																								key={
+																									shape
+																								}
+																								value={
+																									shape
+																								}
 																							>
-																								Person{" "}
-																								{pIdx +
-																									2}
-																							</Typography>
-																							<IconButton
-																								size="small"
-																								onClick={() =>
-																									handleRemovePerson(
-																										product.id,
-																										pIdx,
-																									)
+																								{shape}
+																							</MenuItem>
+																						),
+																					)}
+																				</Select>
+																			</FormControl>
+																		</Grid>
+																		<Grid item xs={12} sm={6}>
+																			<FormControl
+																				fullWidth
+																				size="small"
+																			>
+																				<InputLabel>
+																					Quantity
+																				</InputLabel>
+																				<Select
+																					value={
+																						formData.quantity
+																					}
+																					label="Quantity"
+																					onChange={handleFieldChange(
+																						product.id,
+																						"quantity",
+																					)}
+																					sx={{
+																						borderRadius: 2,
+																					}}
+																				>
+																					{pressOnQuantities.map(
+																						(q) => (
+																							<MenuItem
+																								key={q}
+																								value={
+																									q
+																								}
+																							>
+																								{q} set
+																								{q > 1
+																									? "s"
+																									: ""}
+																							</MenuItem>
+																						),
+																					)}
+																				</Select>
+																			</FormControl>
+																		</Grid>
+
+																		{/* Ordering for others toggle */}
+																		<Grid item xs={12}>
+																			<Box
+																				sx={{
+																					display: "flex",
+																					alignItems:
+																						"center",
+																					mt: 1,
+																					p: 1.5,
+																					borderRadius: 2,
+																					border:
+																						"1px solid #E8D5B0",
+																					backgroundColor:
+																						formData.orderingForOthers
+																							? "#FFF8F0"
+																							: "#fff",
+																				}}
+																			>
+																				<Switch
+																					checked={
+																						formData.orderingForOthers ||
+																						false
+																					}
+																					onChange={() =>
+																						handleToggleOthers(
+																							product.id,
+																						)
+																					}
+																					sx={{
+																						"& .MuiSwitch-switchBase.Mui-checked":
+																							{
+																								color: "#e3242b",
+																							},
+																						"& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
+																							{
+																								backgroundColor:
+																									"#e3242b",
+																							},
+																					}}
+																				/>
+																				<Typography
+																					sx={{
+																						fontSize:
+																							"0.88rem",
+																						color: "var(--text-purple)",
+																						fontWeight: 600,
+																					}}
+																				>
+																					Also ordering for
+																					another person
+																				</Typography>
+																			</Box>
+
+																			<Collapse
+																				in={
+																					formData.orderingForOthers
+																				}
+																			>
+																				<Box sx={{ mt: 2 }}>
+																					{(
+																						formData.otherPeople ||
+																						[]
+																					).map(
+																						(
+																							person,
+																							pIdx,
+																						) => (
+																							<Box
+																								key={
+																									pIdx
 																								}
 																								sx={{
-																									color: "#e3242b",
-																									"&:hover":
-																										{
-																											backgroundColor:
-																												"rgba(233,30,140,0.08)",
-																										},
+																									mb: 2,
+																									p: 2,
+																									borderRadius: 2,
+																									border:
+																										"1px solid #E8D5B0",
+																									backgroundColor:
+																										"#FFF8FA",
 																								}}
 																							>
-																								<DeleteOutlineIcon
+																								<Box
 																									sx={{
-																										fontSize: 18,
+																										display:
+																											"flex",
+																										alignItems:
+																											"center",
+																										justifyContent:
+																											"space-between",
+																										mb: 1.5,
+																									}}
+																								>
+																									<Typography
+																										sx={{
+																											fontSize:
+																												"0.85rem",
+																											fontWeight: 700,
+																											color: "var(--text-purple)",
+																											fontFamily:
+																												'"Georgia", serif',
+																										}}
+																									>
+																										Person{" "}
+																										{pIdx +
+																											2}
+																									</Typography>
+																									<IconButton
+																										size="small"
+																										onClick={() =>
+																											handleRemovePerson(
+																												product.id,
+																												pIdx,
+																											)
+																										}
+																										sx={{
+																											color: "#e3242b",
+																											"&:hover":
+																												{
+																													backgroundColor:
+																														"rgba(233,30,140,0.08)",
+																												},
+																										}}
+																									>
+																										<DeleteOutlineIcon
+																											sx={{
+																												fontSize: 18,
+																											}}
+																										/>
+																									</IconButton>
+																								</Box>
+																								<TextField
+																									fullWidth
+																									size="small"
+																									placeholder="Their full name"
+																									value={
+																										person.name
+																									}
+																									onChange={(
+																										e,
+																									) =>
+																										handleOtherPersonField(
+																											product.id,
+																											pIdx,
+																											"name",
+																											e
+																												.target
+																												.value,
+																										)
+																									}
+																									sx={{
+																										...textFieldSx,
+																										mb: 1.5,
 																									}}
 																								/>
-																							</IconButton>
-																						</Box>
-																						<TextField
-																							fullWidth
-																							size="small"
-																							placeholder="Their full name"
-																							value={
-																								person.name
-																							}
-																							onChange={(
-																								e,
-																							) =>
-																								handleOtherPersonField(
-																									product.id,
-																									pIdx,
-																									"name",
-																									e
-																										.target
-																										.value,
-																								)
-																							}
-																							sx={{
-																								...textFieldSx,
-																								mb: 1.5,
-																							}}
-																						/>
-																						<FormControl
-																							fullWidth
-																							size="small"
-																							sx={{
-																								mb: 1.5,
-																							}}
-																						>
-																							<InputLabel>
-																								Nail
-																								Shape
-																							</InputLabel>
-																							<Select
-																								value={
-																									person.nailShape ||
-																									""
-																								}
-																								label="Nail Shape"
-																								onChange={(
-																									e,
-																								) =>
-																									handleOtherPersonField(
-																										product.id,
-																										pIdx,
-																										"nailShape",
-																										e
-																											.target
-																											.value,
-																									)
-																								}
-																								sx={{
-																									borderRadius: 2,
-																								}}
-																							>
-																								{pressOnNailShapes.map(
-																									(
-																										shape,
-																									) => (
-																										<MenuItem
-																											key={
-																												shape
-																											}
-																											value={
-																												shape
-																											}
-																										>
-																											{
-																												shape
-																											}
-																										</MenuItem>
-																									),
-																								)}
-																							</Select>
-																						</FormControl>
-																						</Box>
-																				),
-																			)}
-																			<Button
-																				size="small"
-																				startIcon={
-																					<AddIcon />
-																				}
-																				onClick={() =>
-																					handleAddPerson(
-																						product.id,
-																					)
-																				}
-																				sx={{
-																					color: "#e3242b",
-																					fontSize:
-																						"0.82rem",
-																					fontWeight: 600,
-																					textTransform:
-																						"none",
-																					"&:hover": {
-																						backgroundColor:
-																							"rgba(233,30,140,0.06)",
-																					},
-																				}}
-																			>
-																				Add another person
-																			</Button>
-																		</Box>
-																	</Collapse>
-																</Grid>
-															</Grid>
-														)}
-													</Box>
-												</Collapse>
-											</Card>
-										</Box>
-									);
-								})}
-							</Box>
-						</ScrollReveal>
-					))}
+																								<FormControl
+																									fullWidth
+																									size="small"
+																									sx={{
+																										mb: 1.5,
+																									}}
+																								>
+																									<InputLabel>
+																										Nail
+																										Shape
+																									</InputLabel>
+																									<Select
+																										value={
+																											person.nailShape ||
+																											""
+																										}
+																										label="Nail Shape"
+																										onChange={(
+																											e,
+																										) =>
+																											handleOtherPersonField(
+																												product.id,
+																												pIdx,
+																												"nailShape",
+																												e
+																													.target
+																													.value,
+																											)
+																										}
+																										sx={{
+																											borderRadius: 2,
+																										}}
+																									>
+																										{pressOnNailShapes.map(
+																											(
+																												shape,
+																											) => (
+																												<MenuItem
+																													key={
+																														shape
+																													}
+																													value={
+																														shape
+																													}
+																												>
+																													{
+																														shape
+																													}
+																												</MenuItem>
+																											),
+																										)}
+																									</Select>
+																								</FormControl>
+																							</Box>
+																						),
+																					)}
+																					<Button
+																						size="small"
+																						startIcon={
+																							<AddIcon />
+																						}
+																						onClick={() =>
+																							handleAddPerson(
+																								product.id,
+																							)
+																						}
+																						sx={{
+																							color: "#e3242b",
+																							fontSize:
+																								"0.82rem",
+																							fontWeight: 600,
+																							textTransform:
+																								"none",
+																							"&:hover":
+																								{
+																									backgroundColor:
+																										"rgba(233,30,140,0.06)",
+																								},
+																						}}
+																					>
+																						Add another
+																						person
+																					</Button>
+																				</Box>
+																			</Collapse>
+																		</Grid>
+																	</Grid>
+																)}
+															</Box>
+														</Collapse>
+													</Card>
+												</Box>
+											);
+										})}
+								</Box>
+							</ScrollReveal>
+						))}
 
 					{/* Discounts & Rewards */}
 					{isFormValid && (
-						<Box sx={{ mt: 4, p: 3, borderRadius: 3, backgroundColor: '#fff', border: '1px solid #E8D5B0' }}>
-							<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', mb: 2, fontSize: '0.95rem' }}>
+						<Box
+							sx={{
+								mt: 4,
+								p: 3,
+								borderRadius: 3,
+								backgroundColor: "#fff",
+								border: "1px solid #E8D5B0",
+							}}
+						>
+							<Typography
+								sx={{
+									fontFamily: '"Georgia", serif',
+									fontWeight: 700,
+									color: "var(--text-purple)",
+									mb: 2,
+									fontSize: "0.95rem",
+								}}
+							>
 								Discounts &amp; Rewards
 							</Typography>
 
 							{/* Referral code */}
-							<Box onClick={() => setShowRefField((v) => !v)} sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', mb: showRefField ? 1.5 : 0 }}>
-								<LocalOfferIcon sx={{ fontSize: 16, color: referralValid ? '#2e7d32' : '#e3242b' }} />
-								<Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: referralValid ? '#2e7d32' : '#e3242b', fontFamily: '"Georgia", serif' }}>
-									{referralValid ? '₦1,000 off applied at checkout!' : 'Have a referral code?'}
+							<Box
+								onClick={() => setShowRefField((v) => !v)}
+								sx={{
+									display: "flex",
+									alignItems: "center",
+									gap: 1,
+									cursor: "pointer",
+									mb: showRefField ? 1.5 : 0,
+								}}
+							>
+								<LocalOfferIcon
+									sx={{
+										fontSize: 16,
+										color: referralValid ? "#2e7d32" : "#e3242b",
+									}}
+								/>
+								<Typography
+									sx={{
+										fontSize: "0.85rem",
+										fontWeight: 600,
+										color: referralValid ? "#2e7d32" : "#e3242b",
+										fontFamily: '"Georgia", serif',
+									}}
+								>
+									{referralValid
+										? "₦1,000 off applied at checkout!"
+										: "Have a referral code?"}
 								</Typography>
 							</Box>
 							<Collapse in={showRefField}>
-								<Box sx={{ display: 'flex', gap: 1, mb: 0.5 }}>
-									<TextField size="small" placeholder="e.g. FOOTIES-ABC123" value={refCodeInput} onChange={(e) => { setRefCodeInput(e.target.value.toUpperCase()); setReferralValid(false); setReferralMsg(''); }} sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#E8D5B0' }, '&.Mui-focused fieldset': { borderColor: '#e3242b' } } }} inputProps={{ style: { fontFamily: 'monospace', letterSpacing: 1 } }} />
-									<Button onClick={handleApplyReferral} disabled={!refCodeInput.trim() || referralChecking} sx={{ backgroundColor: '#e3242b', color: '#fff', borderRadius: 2, px: 2.5, fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.82rem', whiteSpace: 'nowrap', '&:hover': { backgroundColor: '#b81b21' }, '&.Mui-disabled': { backgroundColor: '#E8D5B0', color: '#fff' } }}>
-										{referralChecking ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Apply'}
+								<Box sx={{ display: "flex", gap: 1, mb: 0.5 }}>
+									<TextField
+										size="small"
+										placeholder="e.g. FOOTIES-ABC123"
+										value={refCodeInput}
+										onChange={(e) => {
+											setRefCodeInput(e.target.value.toUpperCase());
+											setReferralValid(false);
+											setReferralMsg("");
+										}}
+										sx={{
+											flex: 1,
+											"& .MuiOutlinedInput-root": {
+												borderRadius: 2,
+												"& fieldset": { borderColor: "#E8D5B0" },
+												"&.Mui-focused fieldset": {
+													borderColor: "#e3242b",
+												},
+											},
+										}}
+										inputProps={{
+											style: {
+												fontFamily: "monospace",
+												letterSpacing: 1,
+											},
+										}}
+									/>
+									<Button
+										onClick={handleApplyReferral}
+										disabled={
+											!refCodeInput.trim() || referralChecking
+										}
+										sx={{
+											backgroundColor: "#e3242b",
+											color: "#fff",
+											borderRadius: 2,
+											px: 2.5,
+											fontFamily: '"Georgia", serif',
+											fontWeight: 600,
+											fontSize: "0.82rem",
+											whiteSpace: "nowrap",
+											"&:hover": { backgroundColor: "#b81b21" },
+											"&.Mui-disabled": {
+												backgroundColor: "#E8D5B0",
+												color: "#fff",
+											},
+										}}
+									>
+										{referralChecking ? (
+											<CircularProgress
+												size={16}
+												sx={{ color: "#fff" }}
+											/>
+										) : (
+											"Apply"
+										)}
 									</Button>
 								</Box>
-								{referralMsg && <Typography sx={{ fontSize: '0.78rem', color: referralValid ? '#2e7d32' : '#d32f2f', mt: 0.3 }}>{referralMsg}</Typography>}
+								{referralMsg && (
+									<Typography
+										sx={{
+											fontSize: "0.78rem",
+											color: referralValid ? "#2e7d32" : "#d32f2f",
+											mt: 0.3,
+										}}
+									>
+										{referralMsg}
+									</Typography>
+								)}
 							</Collapse>
 
 							{/* Loyalty points */}
 							{user && maxLoyaltyUnits > 0 && (
 								<Box sx={{ mt: 2 }}>
-									<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-										<StarIcon sx={{ fontSize: 16, color: '#B8860B' }} />
+									<Box
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											gap: 1,
+											mb: 1,
+										}}
+									>
+										<StarIcon
+											sx={{ fontSize: 16, color: "#B8860B" }}
+										/>
 										{/* Pending loyalty reward banner */}
 										{/* Pending loyalty reward banner */}
 										{pendingReward && loyaltyUnits === 0 && (
-										  <Box sx={{ mb: 1.5, p: 1.2, borderRadius: 2, background: "linear-gradient(135deg, #FFF8E1, #FFF3E0)", border: "1.5px solid #FFD54F", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
-										    <Box>
-										      <Typography sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#B8860B" }}>🎁 ₦{pendingReward.naira.toLocaleString()} loyalty reward ready</Typography>
-										      <Typography sx={{ fontSize: "0.72rem", color: "#888" }}>{pendingReward.pts} pts saved — tap Apply to use</Typography>
-										    </Box>
-										    <Button size="small" onClick={() => setLoyaltyUnits(Math.min(pendingReward.units, maxLoyaltyUnits))} sx={{ border: "1.5px solid #e3242b", borderRadius: "20px", color: "#e3242b", px: 2, py: 0.4, fontSize: "0.78rem", fontWeight: 700, textTransform: "none", "&:hover": { backgroundColor: "#e3242b", color: "#fff" } }}>Apply</Button>
-										  </Box>
+											<Box
+												sx={{
+													mb: 1.5,
+													p: 1.2,
+													borderRadius: 2,
+													background:
+														"linear-gradient(135deg, #FFF8E1, #FFF3E0)",
+													border: "1.5px solid #FFD54F",
+													display: "flex",
+													alignItems: "center",
+													justifyContent: "space-between",
+													gap: 1,
+												}}
+											>
+												<Box>
+													<Typography
+														sx={{
+															fontWeight: 700,
+															fontSize: "0.82rem",
+															color: "#B8860B",
+															display: "flex",
+															alignItems: "center",
+															gap: 0.5,
+														}}
+													>
+														<CardGiftcardIcon
+															sx={{ fontSize: "0.95rem" }}
+														/>{" "}
+														₦
+														{pendingReward.naira.toLocaleString()}{" "}
+														loyalty reward ready
+													</Typography>
+													<Typography
+														sx={{
+															fontSize: "0.72rem",
+															color: "#888",
+														}}
+													>
+														{pendingReward.pts} pts saved — tap
+														Apply to use
+													</Typography>
+												</Box>
+												<Button
+													size="small"
+													onClick={() =>
+														setLoyaltyUnits(
+															Math.min(
+																pendingReward.units,
+																maxLoyaltyUnits,
+															),
+														)
+													}
+													sx={{
+														border: "1.5px solid #e3242b",
+														borderRadius: "20px",
+														color: "#e3242b",
+														px: 2,
+														py: 0.4,
+														fontSize: "0.78rem",
+														fontWeight: 700,
+														textTransform: "none",
+														"&:hover": {
+															backgroundColor: "#e3242b",
+															color: "#fff",
+														},
+													}}
+												>
+													Apply
+												</Button>
+											</Box>
 										)}
-																				<Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#B8860B', fontFamily: '"Georgia", serif' }}>
-											Loyalty — {loyaltyBalance} pts (redeemable at checkout)
+										<Typography
+											sx={{
+												fontSize: "0.85rem",
+												fontWeight: 600,
+												color: "#B8860B",
+												fontFamily: '"Georgia", serif',
+											}}
+										>
+											Loyalty — {loyaltyBalance} pts (redeemable at
+											checkout)
 										</Typography>
 									</Box>
-									<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-										<IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.max(0, u - 1))} disabled={loyaltyUnits === 0} sx={{ border: '1.5px solid #E8D5B0', borderRadius: '50%', width: 28, height: 28 }}><RemoveIcon sx={{ fontSize: 14 }} /></IconButton>
-										<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, minWidth: 20, textAlign: 'center' }}>{loyaltyUnits}</Typography>
-										<IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))} disabled={loyaltyUnits >= maxLoyaltyUnits} sx={{ border: '1.5px solid #E8D5B0', borderRadius: '50%', width: 28, height: 28 }}><AddIcon sx={{ fontSize: 14 }} /></IconButton>
-										<Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>units × ₦1,000 = <strong style={{ color: '#B8860B' }}>-₦{(loyaltyUnits * REDEMPTION_VALUE).toLocaleString()} off</strong></Typography>
+									<Box
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											gap: 1.5,
+										}}
+									>
+										<IconButton
+											size="small"
+											onClick={() =>
+												setLoyaltyUnits((u) => Math.max(0, u - 1))
+											}
+											disabled={loyaltyUnits === 0}
+											sx={{
+												border: "1.5px solid #E8D5B0",
+												borderRadius: "50%",
+												width: 28,
+												height: 28,
+											}}
+										>
+											<RemoveIcon sx={{ fontSize: 14 }} />
+										</IconButton>
+										<Typography
+											sx={{
+												fontFamily: '"Georgia", serif',
+												fontWeight: 700,
+												minWidth: 20,
+												textAlign: "center",
+											}}
+										>
+											{loyaltyUnits}
+										</Typography>
+										<IconButton
+											size="small"
+											onClick={() =>
+												setLoyaltyUnits((u) =>
+													Math.min(maxLoyaltyUnits, u + 1),
+												)
+											}
+											disabled={loyaltyUnits >= maxLoyaltyUnits}
+											sx={{
+												border: "1.5px solid #E8D5B0",
+												borderRadius: "50%",
+												width: 28,
+												height: 28,
+											}}
+										>
+											<AddIcon sx={{ fontSize: 14 }} />
+										</IconButton>
+										<Typography
+											sx={{
+												fontSize: "0.82rem",
+												color: "var(--text-muted)",
+											}}
+										>
+											units × ₦1,000 ={" "}
+											<strong style={{ color: "#B8860B" }}>
+												-₦
+												{(
+													loyaltyUnits * REDEMPTION_VALUE
+												).toLocaleString()}{" "}
+												off
+											</strong>
+										</Typography>
 									</Box>
 								</Box>
 							)}
 
 							{(referralValid || loyaltyUnits > 0) && (
-								<Typography sx={{ mt: 2, fontSize: '0.8rem', color: '#888', fontStyle: 'italic' }}>
+								<Typography
+									sx={{
+										mt: 2,
+										fontSize: "0.8rem",
+										color: "#888",
+										fontStyle: "italic",
+									}}
+								>
 									Discounts will be applied to your total at checkout.
 								</Typography>
 							)}
@@ -1213,77 +1554,79 @@ export default function PlaceOrderPage() {
 					)}
 
 					{/* spacer so content doesn't hide behind sticky button */}
-					{allProducts.length > 0 && <Box sx={{ height: { xs: 130, md: 80 } }} />}
+					{allProducts.length > 0 && (
+						<Box sx={{ height: { xs: 130, md: 80 } }} />
+					)}
 				</Container>
 			</Box>
 
 			{/* Sticky Confirm Button */}
 			{allProducts.length > 0 && (
-			<Box
-				sx={{
-					position: "fixed",
-					bottom: { xs: "64px", md: 0 },
-					left: 0,
-					right: 0,
-					zIndex: 1100,
-					backgroundColor: "rgba(255, 240, 245, 0.95)",
-					backdropFilter: "blur(8px)",
-					borderTop: "1px solid #E8D5B0",
-					py: 2,
-					textAlign: "center",
-				}}
-			>
-				{selectedIds.length > 0 && (
-					<Typography
-						sx={{
-							fontSize: "0.8rem",
-							color: "#e3242b",
-							fontWeight: 600,
-							mb: 0.5,
-						}}
-					>
-						{selectedIds.length} product
-						{selectedIds.length > 1 ? "s" : ""} selected
-					</Typography>
-				)}
 				<Box
 					sx={{
-						display: "flex",
-						justifyContent: "center",
-						gap: 2,
-						flexWrap: "wrap",
+						position: "fixed",
+						bottom: { xs: "64px", md: 0 },
+						left: 0,
+						right: 0,
+						zIndex: 1100,
+						backgroundColor: "rgba(255, 240, 245, 0.95)",
+						backdropFilter: "blur(8px)",
+						borderTop: "1px solid #E8D5B0",
+						py: 2,
+						textAlign: "center",
 					}}
 				>
-					<Button
+					{selectedIds.length > 0 && (
+						<Typography
+							sx={{
+								fontSize: "0.8rem",
+								color: "#e3242b",
+								fontWeight: 600,
+								mb: 0.5,
+							}}
+						>
+							{selectedIds.length} product
+							{selectedIds.length > 1 ? "s" : ""} selected
+						</Typography>
+					)}
+					<Box
 						sx={{
-							...confirmButtonSx,
-							opacity: isFormValid ? 1 : 0.5,
+							display: "flex",
+							justifyContent: "center",
+							gap: 2,
+							flexWrap: "wrap",
 						}}
-						onClick={handleConfirmOrder}
-						disabled={!isFormValid}
 					>
-						Confirm Order
-					</Button>
-					<Button
-						startIcon={<ShoppingCartOutlinedIcon />}
-						sx={{
-							...confirmButtonSx,
-							borderColor: "#006666",
-							color: "var(--text-purple)",
-							opacity: isFormValid ? 1 : 0.5,
-							"&:hover": {
-								backgroundColor: "#006666",
-								color: "#fff",
-								borderColor: "#006666",
-							},
-						}}
-						onClick={handleAddToCart}
-						disabled={!isFormValid}
-					>
-						Add to Cart
-					</Button>
+						<Button
+							sx={{
+								...confirmButtonSx,
+								opacity: isFormValid ? 1 : 0.5,
+							}}
+							onClick={handleConfirmOrder}
+							disabled={!isFormValid}
+						>
+							Confirm Order
+						</Button>
+						<Button
+							startIcon={<ShoppingCartOutlinedIcon />}
+							sx={{
+								...confirmButtonSx,
+								borderColor: "#007a7a",
+								color: "var(--text-purple)",
+								opacity: isFormValid ? 1 : 0.5,
+								"&:hover": {
+									backgroundColor: "#007a7a",
+									color: "#fff",
+									borderColor: "#007a7a",
+								},
+							}}
+							onClick={handleAddToCart}
+							disabled={!isFormValid}
+						>
+							Add to Cart
+						</Button>
+					</Box>
 				</Box>
-			</Box>
 			)}
 
 			{/* Success Modal */}
@@ -1311,9 +1654,11 @@ export default function PlaceOrderPage() {
 					</Typography>
 				</DialogTitle>
 				<DialogContent>
-					<Typography sx={{ color: "var(--text-muted)", mt: 1, lineHeight: 1.7 }}>
-						Next, you'll enter your shipping details to complete your order.
-						We deliver within Nigeria only.
+					<Typography
+						sx={{ color: "var(--text-muted)", mt: 1, lineHeight: 1.7 }}
+					>
+						Next, you'll enter your shipping details to complete your
+						order. We deliver worldwide.
 					</Typography>
 					{selectedIds.length > 0 && (
 						<Box sx={{ mt: 2, textAlign: "left" }}>
@@ -1332,12 +1677,26 @@ export default function PlaceOrderPage() {
 								return (
 									<Typography
 										key={id}
-										sx={{ color: "var(--text-muted)", fontSize: "0.9rem", pl: 1 }}
+										sx={{
+											color: "var(--text-muted)",
+											fontSize: "0.9rem",
+											pl: 1,
+										}}
 									>
 										• {product?.name || "Product"} —{" "}
-										{product ? formatNaira(getEffectivePrice(product)) : ""}
+										{product
+											? formatNaira(getEffectivePrice(product))
+											: ""}
 										{product && hasDiscount(product) && (
-											<Typography component="span" sx={{ ml: 1, fontSize: '0.8rem', color: '#999', textDecoration: 'line-through' }}>
+											<Typography
+												component="span"
+												sx={{
+													ml: 1,
+													fontSize: "0.8rem",
+													color: "#999",
+													textDecoration: "line-through",
+												}}
+											>
 												{formatNaira(product.price)}
 											</Typography>
 										)}

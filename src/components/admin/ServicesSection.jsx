@@ -109,7 +109,7 @@ function ServiceFormDialog({ open, onClose, onSave, service, discountData, busy 
           onClick={() => onSave(form, disc)}
           variant="contained"
           disabled={busy || !form.name.trim() || !String(form.price).trim()}
-          sx={{ fontFamily: ff, backgroundColor: '#006666', borderRadius: '20px', px: 3, textTransform: 'none', '&:hover': { backgroundColor: '#3a0b3e' }, '&.Mui-disabled': { backgroundColor: '#ddd' } }}
+          sx={{ fontFamily: ff, backgroundColor: '#007a7a', borderRadius: '20px', px: 3, textTransform: 'none', '&:hover': { backgroundColor: '#005a5a' }, '&.Mui-disabled': { backgroundColor: '#ddd' } }}
         >
           {busy ? 'Saving…' : service ? 'Update Service' : 'Add Service'}
         </Button>
@@ -185,7 +185,7 @@ function CategoryFormDialog({ open, onClose, onSave, category, busy }) {
           onClick={() => onSave(form)}
           variant="contained"
           disabled={busy || !form.title.trim() || (!category && !form.id.trim())}
-          sx={{ fontFamily: ff, backgroundColor: '#006666', borderRadius: '20px', px: 3, textTransform: 'none', '&:hover': { backgroundColor: '#3a0b3e' }, '&.Mui-disabled': { backgroundColor: '#ddd' } }}
+          sx={{ fontFamily: ff, backgroundColor: '#007a7a', borderRadius: '20px', px: 3, textTransform: 'none', '&:hover': { backgroundColor: '#005a5a' }, '&.Mui-disabled': { backgroundColor: '#ddd' } }}
         >
           {busy ? 'Saving…' : category ? 'Update Category' : 'Add Category'}
         </Button>
@@ -330,7 +330,7 @@ export default function ServicesSection({ serviceCategories, serviceDiscounts, l
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => setCatDialog({ mode: 'add' })}
-          sx={{ fontFamily: ff, backgroundColor: '#006666', borderRadius: '20px', px: 3, textTransform: 'none', '&:hover': { backgroundColor: '#3a0b3e' } }}
+          sx={{ fontFamily: ff, backgroundColor: '#007a7a', borderRadius: '20px', px: 3, textTransform: 'none', '&:hover': { backgroundColor: '#005a5a' } }}
         >
           Add Category
         </Button>

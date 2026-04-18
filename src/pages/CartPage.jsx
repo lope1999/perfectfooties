@@ -21,9 +21,11 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import StarIcon from '@mui/icons-material/Star';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { decrementStockBatch } from '../lib/stockService';
 import { saveOrder } from '../lib/orderService';
 import { redeemGiftCard } from '../lib/giftCardService';
@@ -47,7 +49,8 @@ const sectionTitleSx = {
 export default function CartPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const { showToast } = useNotifications();
+  const [checkoutLoading] = useState(false);
   const [appliedGiftCard, setAppliedGiftCard] = useState(null);
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const [showRefField, setShowRefField] = useState(false);
@@ -58,28 +61,23 @@ export default function CartPage() {
   const [loyaltyBalance, setLoyaltyBalance] = useState(0);
   const [loyaltyUnits, setLoyaltyUnits] = useState(0);
   const [pendingReward] = useState(() => getPendingLoyaltyReward());
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [recentlyViewed] = useState(() => getRecentlyViewed());
   const {
     cart,
-    removeService,
-    removeProduct,
-    updateProductQty,
-    removePressOn,
+    removeLeatherGood,
+    updateLeatherGoodQty,
     clearCart,
     getCartTotal,
   } = useCart();
 
-  const { services, products, pressOns } = cart.items;
-  const hasItems = services.length > 0 || products.length > 0 || pressOns.length > 0;
+  const { leatherGoods } = cart.items;
+  const hasItems = leatherGoods.length > 0;
   const total = getCartTotal();
   const giftCardDiscount = appliedGiftCard ? Math.min(appliedGiftCard.balance, total) : 0;
   const maxLoyaltyUnits = Math.floor(loyaltyBalance / REDEMPTION_UNIT);
   const referralDiscount = referralValid ? Math.min(REFERRAL_DISCOUNT, total) : 0;
   const loyaltyDiscount = Math.min(loyaltyUnits * REDEMPTION_VALUE, Math.max(0, total - giftCardDiscount - referralDiscount));
   const finalTotal = Math.max(0, total - giftCardDiscount - referralDiscount - loyaltyDiscount);
-  const serviceSubtotal = services.reduce((sum, s) => sum + s.price, 0);
-  const depositAmount = services.length > 0 ? Math.round(serviceSubtotal * 0.5) : 0;
 
   useEffect(() => {
     if (!user) return;
@@ -102,25 +100,30 @@ export default function CartPage() {
     setReferralMsg('');
     try {
       const referrerUid = await validateReferralCode(refCodeInput.trim());
-      if (!referrerUid) { setReferralValid(false); setReferralMsg('Invalid code.'); }
-      else if (referrerUid === user?.uid) { setReferralValid(false); setReferralMsg("You can't use your own referral code."); }
-      else { setReferralValid(true); setReferralMsg('\u20a6500 off applied!'); }
-    } catch { setReferralValid(false); setReferralMsg('Could not verify code.'); }
+      if (!referrerUid) {
+        setReferralValid(false);
+        setReferralMsg('Invalid code.');
+        showToast('Invalid referral code. Please check and try again.', 'error');
+      } else if (referrerUid === user?.uid) {
+        setReferralValid(false);
+        setReferralMsg("You can't use your own referral code.");
+        showToast("You can't apply your own referral code.", 'warning');
+      } else {
+        setReferralValid(true);
+        setReferralMsg('\u20a6500 off applied!');
+        showToast('Referral code applied! ₦500 discount added.', 'success');
+      }
+    } catch {
+      setReferralValid(false);
+      setReferralMsg('Could not verify code.');
+      showToast('Could not verify referral code. Please try again.', 'error');
+    }
     setReferralChecking(false);
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!user) { setSignInPromptOpen(true); return; }
-
-    // Any product/press-on items need shipping details — go to checkout page
-    if (products.length > 0 || pressOns.length > 0) {
-      navigate('/checkout', { state: { appliedGiftCard, referralCode: referralValid ? refCodeInput : null, presetLoyaltyUnits: loyaltyUnits } });
-      return;
-    }
-
-    // Services-only: show payment modal
-    setPaymentModalOpen(true);
-    return;
+    navigate('/checkout', { state: { appliedGiftCard, referralCode: referralValid ? refCodeInput : null, presetLoyaltyUnits: loyaltyUnits } });
   };
 
   const handleCompleteServiceOrder = async (paymentReference = '') => {
@@ -358,348 +361,52 @@ export default function CartPage() {
           </Box>
         ) : (
           <>
-            {/* Service Appointments */}
-            {services.length > 0 && (
+            {/* Leather Goods */}
+            {leatherGoods.length > 0 && (
               <Box sx={{ mb: 4 }}>
-                <Typography sx={sectionTitleSx}>Service Appointments</Typography>
-                {services.map((s) => (
-                  <Box
-                    key={s.id}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'space-between',
-                      p: 2,
-                      mb: 1.5,
-                      borderRadius: 2,
-                      border: '1px solid #E8D5B0',
-                      backgroundColor: '#fff',
-                    }}
-                  >
-                    <Box sx={{ flex: 1 }}>
-                      <Typography
-                        sx={{
-                          fontFamily: '"Georgia", serif',
-                          fontWeight: 600,
-                          fontSize: '0.95rem',
-                        }}
-                      >
-                        {s.name}
-                      </Typography>
-                      {s.customerName && (
-                        <Typography sx={{ color: 'var(--text-purple)', fontSize: '0.82rem', fontWeight: 600 }}>
-                          {s.customerName}
-                        </Typography>
-                      )}
-                      {s.isHomeService && (
-                        <Typography sx={{ color: '#7a0064', fontSize: '0.78rem', fontWeight: 600, mt: 0.2 }}>
-                          Home Service &middot; {s.homeLocation}
-                        </Typography>
-                      )}
-                      <Typography sx={{ color: '#777', fontSize: '0.82rem' }}>
-                        {s.date} &middot; {s.nailShape} &middot; {s.nailLength}
-                      </Typography>
-                      {s.isHomeService && s.homeAddress && (
-                        <Typography sx={{ color: '#777', fontSize: '0.78rem' }}>
-                          {s.homeAddress}
-                        </Typography>
-                      )}
-                      {s.isHomeService && s.hasTableArea && (
-                        <Typography sx={{ color: '#777', fontSize: '0.78rem' }}>
-                          Table area: {s.hasTableArea}
-                        </Typography>
-                      )}
-                      {s.isHomeService && s.transportRange && (
-                        <Typography sx={{ color: '#e3242b', fontSize: '0.78rem', fontWeight: 600 }}>
-                          + {s.transportRange} est. transport (confirmed on booking)
-                        </Typography>
-                      )}
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
-                      <Box>
-                        {s.originalPrice && (
-                          <Typography
-                            sx={{
-                              fontFamily: '"Georgia", serif',
-                              fontSize: '0.75rem',
-                              color: '#999',
-                              textDecoration: 'line-through',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {formatNaira(s.originalPrice)}
-                          </Typography>
-                        )}
-                        <Typography
-                          sx={{
-                            fontFamily: '"Georgia", serif',
-                            fontWeight: 700,
-                            color: s.originalPrice ? '#2e7d32' : '#e3242b',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {formatNaira(s.price)}
-                        </Typography>
+                <Typography sx={sectionTitleSx}>Your Order</Typography>
+                {leatherGoods.map((g) => (
+                  <Box key={g.cartId} sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', p: 2, mb: 1.5, borderRadius: 2, border: '1px solid #E8D5B0', backgroundColor: '#fff' }}>
+                    {/* Thumbnail */}
+                    {g.image ? (
+                      <Box component="img" src={g.image} alt={g.name} sx={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0', mr: 2, flexShrink: 0 }} />
+                    ) : (
+                      <Box sx={{ width: 64, height: 64, borderRadius: 2, border: '1px dashed #E8D5B0', mr: 2, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9f9f9' }}>
+                        <ShoppingCartOutlinedIcon sx={{ color: '#ddd', fontSize: 28 }} />
                       </Box>
-                      <IconButton
-                        size="small"
-                        onClick={() => removeService(s.id)}
-                        sx={{ color: '#e3242b' }}
-                      >
-                        <DeleteOutlineIcon sx={{ fontSize: 20 }} />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                ))}
-                <Divider sx={{ borderColor: '#E8D5B0', mt: 2 }} />
-              </Box>
-            )}
-
-            {/* Nail Care Products */}
-            {products.length > 0 && (
-              <Box sx={{ mb: 4 }}>
-                <Typography sx={sectionTitleSx}>Nail Care Products</Typography>
-                {products.map((p) => (
-                  <Box
-                    key={p.productId}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      p: 2,
-                      mb: 1.5,
-                      borderRadius: 2,
-                      border: '1px solid #E8D5B0',
-                      backgroundColor: '#fff',
-                    }}
-                  >
+                    )}
                     <Box sx={{ flex: 1 }}>
-                      <Typography
-                        sx={{
-                          fontFamily: '"Georgia", serif',
-                          fontWeight: 600,
-                          fontSize: '0.95rem',
-                        }}
-                      >
-                        {p.name}
+                      <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.95rem' }}>{g.name}</Typography>
+                      <Typography sx={{ color: '#777', fontSize: '0.82rem', mt: 0.3 }}>
+                        Colour: {g.selectedColor}{g.footLength ? ` · Foot Length: ${g.footLength}cm` : ''}
                       </Typography>
-                      {p.customerName && (
-                        <Typography sx={{ color: 'var(--text-purple)', fontSize: '0.78rem', fontWeight: 600 }}>
-                          {p.customerName}
-                        </Typography>
+                      {g.collectionName && (
+                        <Typography sx={{ color: '#aaa', fontSize: '0.75rem', mt: 0.2 }}>{g.collectionName}</Typography>
                       )}
-                      <Typography sx={{ color: '#999', fontSize: '0.78rem' }}>
-                        {p.originalPrice ? (
-                          <>
-                            <span style={{ textDecoration: 'line-through' }}>{formatNaira(p.originalPrice)}</span>
-                            {' '}{formatNaira(p.price)} each
-                          </>
-                        ) : (
-                          `${formatNaira(p.price)} each`
-                        )}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
-                      <IconButton
-                        size="small"
-                        onClick={() => updateProductQty(p.productId, p.quantity - 1)}
-                        disabled={p.quantity <= 1}
-                        sx={{
-                          color: '#e3242b',
-                          border: '1.5px solid #e3242b',
-                          width: 28,
-                          height: 28,
-                          '&:hover': { backgroundColor: '#e3242b', color: '#fff' },
-                          '&.Mui-disabled': { borderColor: '#ddd', color: '#ddd' },
-                        }}
-                      >
-                        <RemoveIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                      <Typography
-                        sx={{
-                          fontFamily: '"Georgia", serif',
-                          fontWeight: 700,
-                          minWidth: 24,
-                          textAlign: 'center',
-                          color: '#e3242b',
-                        }}
-                      >
-                        {p.quantity}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={() => updateProductQty(p.productId, p.quantity + 1)}
-                        disabled={p.quantity >= p.stock}
-                        sx={{
-                          color: '#e3242b',
-                          border: '1.5px solid #e3242b',
-                          width: 28,
-                          height: 28,
-                          '&:hover': { backgroundColor: '#e3242b', color: '#fff' },
-                          '&.Mui-disabled': { borderColor: '#ddd', color: '#ddd' },
-                        }}
-                      >
-                        <AddIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                      <Typography
-                        sx={{
-                          fontFamily: '"Georgia", serif',
-                          fontWeight: 700,
-                          color: '#e3242b',
-                          minWidth: 70,
-                          textAlign: 'right',
-                        }}
-                      >
-                        {formatNaira(p.price * p.quantity)}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={() => removeProduct(p.productId)}
-                        sx={{ color: '#e3242b' }}
-                      >
-                        <DeleteOutlineIcon sx={{ fontSize: 20 }} />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                ))}
-                <Divider sx={{ borderColor: '#E8D5B0', mt: 2 }} />
-              </Box>
-            )}
-
-            {/* Press-On Orders */}
-            {pressOns.length > 0 && (
-              <Box sx={{ mb: 4 }}>
-                <Typography sx={sectionTitleSx}>Press-On Orders</Typography>
-                {pressOns.map((p) => (
-                  <Box
-                    key={p.id}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'space-between',
-                      p: 2,
-                      mb: 1.5,
-                      borderRadius: 2,
-                      border: '1px solid #E8D5B0',
-                      backgroundColor: '#fff',
-                    }}
-                  >
-                    <Box sx={{ flex: 1 }}>
-                      <Typography
-                        sx={{
-                          fontFamily: '"Georgia", serif',
-                          fontWeight: 600,
-                          fontSize: '0.95rem',
-                        }}
-                      >
-                        {p.name}
-                      </Typography>
-                      {p.customerName && (
-                        <Typography sx={{ color: 'var(--text-purple)', fontSize: '0.78rem', fontWeight: 600 }}>
-                          {p.customerName}
-                        </Typography>
-                      )}
-                      <Typography sx={{ color: '#777', fontSize: '0.82rem' }}>
-                        {p.nailShape && `Shape: ${p.nailShape}`}
-                        {p.quantity && ` \u00B7 ${p.quantity} set(s)`}
-                        {p.presetSize && ` \u00B7 Size: ${p.presetSize}`}
-                        {p.nailBedSize && ` \u00B7 Bed: ${p.nailBedSize}`}
-                      </Typography>
-                      {p.selectedLength && (
-                        <Typography sx={{ color: '#777', fontSize: '0.82rem', mt: 0.2 }}>
-                          Length: {p.selectedLength}
-                        </Typography>
-                      )}
-                      {p.setIncludes?.length > 0 && (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                          {p.setIncludes.map((tag) => (
-                            <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.68rem', height: 20, backgroundColor: '#FFE8E8', color: '#b81b21', fontWeight: 600 }} />
-                          ))}
-                        </Box>
-                      )}
-                      {p.inspirationTags?.length > 0 && (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                          {p.inspirationTags.map((tag) => (
-                            <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.68rem', height: 20, backgroundColor: '#EDE7F6', color: '#5E35B1', fontWeight: 600 }} />
-                          ))}
-                        </Box>
-                      )}
-                      {p.nailNotes && (
-                        <Typography sx={{ color: '#888', fontSize: '0.78rem', mt: 0.4, fontStyle: 'italic' }}>
-                          &ldquo;{p.nailNotes}&rdquo;
-                        </Typography>
-                      )}
-                      {p.specialRequest && (
-                        <Chip
-                          label="Made to Order — 4–7 days"
-                          size="small"
-                          sx={{ mt: 0.5, fontSize: '0.68rem', height: 20, backgroundColor: '#FFF8E1', color: '#B8860B', fontWeight: 700, border: '1px solid #FFD54F' }}
-                        />
-                      )}
-                      {p.orderingForOthers && p.otherPeople?.length > 0 && (
-                        <Typography sx={{ color: '#999', fontSize: '0.78rem', mt: 0.3 }}>
-                          +{p.otherPeople.length} other person(s)
-                        </Typography>
-                      )}
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
-                      <Box>
-                        {p.originalPrice && (
-                          <Typography
-                            sx={{
-                              fontFamily: '"Georgia", serif',
-                              fontSize: '0.75rem',
-                              color: '#999',
-                              textDecoration: 'line-through',
-                              whiteSpace: 'nowrap',
-                              textAlign: 'right',
-                            }}
-                          >
-                            {formatNaira(p.originalPrice)}
-                          </Typography>
-                        )}
-                        <Typography
-                          sx={{
-                            fontFamily: '"Georgia", serif',
-                            fontWeight: 700,
-                            color: p.originalPrice ? '#2e7d32' : '#e3242b',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {formatNaira(p.price)}
-                        </Typography>
+                      {/* Quantity stepper */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                        <IconButton size="small" onClick={() => updateLeatherGoodQty(g.cartId, g.quantity - 1)} disabled={g.quantity <= 1}
+                          sx={{ color: 'var(--text-purple)', border: '1.5px solid #E8D5B0', width: 26, height: 26, '&:hover': { borderColor: 'var(--accent-cyan)' }, '&.Mui-disabled': { borderColor: '#eee', color: '#ccc' } }}>
+                          <RemoveIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
+                        <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, minWidth: 22, textAlign: 'center', fontSize: '0.9rem' }}>{g.quantity}</Typography>
+                        <IconButton size="small" onClick={() => updateLeatherGoodQty(g.cartId, g.quantity + 1)}
+                          sx={{ color: 'var(--text-purple)', border: '1.5px solid #E8D5B0', width: 26, height: 26, '&:hover': { borderColor: 'var(--accent-cyan)' } }}>
+                          <AddIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
                       </Box>
-                      <IconButton
-                        size="small"
-                        onClick={() => removePressOn(p.id)}
-                        sx={{ color: '#e3242b' }}
-                      >
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5, ml: 2 }}>
+                      <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', whiteSpace: 'nowrap' }}>
+                        {formatNaira(g.price * g.quantity)}
+                      </Typography>
+                      <IconButton size="small" onClick={() => { removeLeatherGood(g.cartId); showToast(`${g.name} removed from cart.`, 'info'); }} sx={{ color: '#e3242b' }}>
                         <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                       </IconButton>
                     </Box>
                   </Box>
                 ))}
                 <Divider sx={{ borderColor: '#E8D5B0', mt: 2 }} />
-              </Box>
-            )}
-
-            {/* Appointment Deposit Info */}
-            {services.length > 0 && (
-              <Box sx={{ mb: 3, p: 2.5, borderRadius: 3, border: '1.5px solid #e3242b', backgroundColor: '#FFF0F8' }}>
-                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', fontSize: '0.95rem', mb: 1.5 }}>
-                  Appointment Deposit Required
-                </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                  <Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Appointment subtotal</Typography>
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-muted)' }}>{formatNaira(serviceSubtotal)}</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#e3242b' }}>50% deposit to secure slot</Typography>
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#e3242b' }}>{formatNaira(depositAmount)}</Typography>
-                </Box>
-                <Typography sx={{ fontSize: '0.78rem', color: '#999' }}>
-                  Remaining {formatNaira(serviceSubtotal - depositAmount)} is due on the day of your appointment
-                </Typography>
               </Box>
             )}
 
@@ -738,10 +445,10 @@ export default function CartPage() {
                   {pendingReward && loyaltyUnits === 0 && (
                     <Box sx={{ mb: 1.5, p: 1.2, borderRadius: 2, background: 'linear-gradient(135deg, #FFF8E1, #FFF3E0)', border: '1.5px solid #FFD54F', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
                       <Box>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#B8860B' }}>🎁 ₦{pendingReward.naira.toLocaleString()} loyalty reward ready</Typography>
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#B8860B', display: 'flex', alignItems: 'center', gap: 0.5 }}><CardGiftcardIcon sx={{ fontSize: '0.95rem' }} /> ₦{pendingReward.naira.toLocaleString()} loyalty reward ready</Typography>
                         <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>{pendingReward.pts} pts saved — tap Apply to use</Typography>
                       </Box>
-                      <Button size="small" onClick={() => setLoyaltyUnits(Math.min(pendingReward.units, maxLoyaltyUnits))} sx={{ border: '1.5px solid #e3242b', borderRadius: '20px', color: '#e3242b', px: 2, py: 0.4, fontSize: '0.78rem', fontWeight: 700, textTransform: 'none', '&:hover': { backgroundColor: '#e3242b', color: '#fff' } }}>Apply</Button>
+                      <Button size="small" onClick={() => { const u = Math.min(pendingReward.units, maxLoyaltyUnits); setLoyaltyUnits(u); showToast(`Loyalty reward applied! ₦${(u * REDEMPTION_VALUE).toLocaleString()} off your order.`, 'success'); }} sx={{ border: '1.5px solid #e3242b', borderRadius: '20px', color: '#e3242b', px: 2, py: 0.4, fontSize: '0.78rem', fontWeight: 700, textTransform: 'none', '&:hover': { backgroundColor: '#e3242b', color: '#fff' } }}>Apply</Button>
                     </Box>
                   )}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -797,8 +504,8 @@ export default function CartPage() {
                   {item.image ? (
                     <Box component="img" src={item.image} alt={item.name} sx={{ width: '100%', height: 95, objectFit: 'cover', display: 'block' }} />
                   ) : (
-                    <Box sx={{ width: '100%', height: 95, backgroundColor: '#FFF0F8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Typography sx={{ fontSize: '1.8rem' }}>💅</Typography>
+                    <Box sx={{ width: '100%', height: 95, backgroundColor: '#FFF8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <ShoppingCartOutlinedIcon sx={{ fontSize: 32, color: '#E8D5B0' }} />
                     </Box>
                   )}
                   <Box sx={{ p: 1 }}>
@@ -879,75 +586,11 @@ export default function CartPage() {
                 },
               }}
             >
-              {checkoutLoading ? <CircularProgress size={22} sx={{ color: '#fff' }} /> : 'Checkout via WhatsApp'}
+              {checkoutLoading ? <CircularProgress size={22} sx={{ color: '#fff' }} /> : 'Proceed to Checkout'}
             </Button>
           </Box>
         </Box>
       )}
-
-      {/* Payment Modal */}
-      <Dialog
-        open={paymentModalOpen}
-        onClose={() => setPaymentModalOpen(false)}
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: 3 } }}
-      >
-        <DialogTitle sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', pb: 1 }}>
-          Secure Your Appointment{services.length > 1 ? 's' : ''}
-        </DialogTitle>
-        <DialogContent>
-          {/* Appointment list */}
-          <Box sx={{ mb: 2, p: 2, borderRadius: 2, backgroundColor: '#FFF0F8', border: '1px solid #E8D5B0' }}>
-            {services.map((s) => (
-              <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
-                <Box sx={{ flex: 1, mr: 1 }}>
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-main)' }}>{s.name}</Typography>
-                  <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>{s.date}</Typography>
-                </Box>
-                <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#e3242b', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
-              </Box>
-            ))}
-          </Box>
-
-          <Divider sx={{ borderColor: '#E8D5B0', mb: 2 }} />
-
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-            <Typography sx={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Appointment total</Typography>
-            <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-muted)' }}>{formatNaira(serviceSubtotal)}</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
-            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#e3242b' }}>Deposit (50%)</Typography>
-            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#e3242b' }}>{formatNaira(depositAmount)}</Typography>
-          </Box>
-          <Typography sx={{ fontSize: '0.78rem', color: '#999', mb: 2 }}>
-            Balance {formatNaira(serviceSubtotal - depositAmount)} due on appointment day
-          </Typography>
-
-          <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Pay the 50% deposit via Paystack to confirm your booking.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          <Button
-            onClick={payWithPaystackCart}
-            sx={{
-              backgroundColor: '#e3242b',
-              color: '#fff',
-              borderRadius: '30px',
-              px: 3,
-              py: 1,
-              fontFamily: '"Georgia", serif',
-              fontWeight: 600,
-              fontSize: '0.88rem',
-              whiteSpace: 'nowrap',
-              '&:hover': { backgroundColor: '#b81b21' },
-            }}
-          >
-            Pay {formatNaira(depositAmount)} Deposit
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Sign In Prompt */}
       <SignInPrompt

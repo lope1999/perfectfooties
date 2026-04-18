@@ -21,7 +21,10 @@ import AccountPage from './pages/AccountPage';
 import GalleryPage from './pages/GalleryPage';
 import ThankYouPage from './pages/ThankYouPage';
 import ShopPage from './pages/ShopPage';
-import CategoryPage from './pages/CategoryPage';
+import CollectionPage from './pages/CollectionPage';
+import ItemDetailPage from './pages/ItemDetailPage';
+import CustomOrderPage from './pages/CustomOrderPage';
+import OrderDetailPage from './pages/OrderDetailPage';
 
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 
@@ -61,7 +64,10 @@ function App() {
 					<Route path="/gallery" element={<GalleryPage />} />
 					<Route path="/thank-you" element={<ThankYouPage />} />
 					<Route path="/shop" element={<ShopPage />} />
-					<Route path="/shop/:categoryId" element={<CategoryPage />} />
+					<Route path="/shop/:collectionId" element={<CollectionPage />} />
+					<Route path="/shop/:collectionId/:itemId" element={<ItemDetailPage />} />
+					<Route path="/account/orders/:orderId" element={<OrderDetailPage />} />
+					<Route path="/custom-order" element={<CustomOrderPage />} />
 					<Route
 						path="/admin"
 						element={

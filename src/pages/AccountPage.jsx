@@ -50,6 +50,12 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import ReplayIcon from "@mui/icons-material/Replay";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import AdjustIcon from "@mui/icons-material/Adjust";
+import CelebrationIcon from "@mui/icons-material/Celebration";
+import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
+import RedeemIcon from "@mui/icons-material/Redeem";
+import LockIcon from "@mui/icons-material/Lock";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
@@ -63,6 +69,7 @@ import { useNotifications } from "../context/NotificationContext";
 import {
 	saveTestimonial,
 	getReviewedOrderIds,
+	uploadReviewPhoto,
 } from "../lib/testimonialService";
 import {
 	getLoyaltyData,
@@ -71,6 +78,8 @@ import {
 	incrementUserReviewCount,
 	POINTS_PER_REFERRAL,
 	REDEMPTION_UNIT, REDEMPTION_VALUE,
+	TIERS,
+	getCustomerTier,
 } from "../lib/loyaltyService";
 
 const TABS = ["profile", "orders", "wishlist"];
@@ -94,23 +103,14 @@ function memberSince(ts) {
 	return d.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
 }
 
-// Client loyalty tiers — review-based, brand-aligned
-const CLIENT_TIERS = [
-	{ min: 5, label: 'Master Patron',  emoji: '🏆', color: 'var(--text-purple)', bg: '#F3E5F5', border: '#CE93D8', desc: 'The absolute elite — our most loyal customer!',    perk: 'Free delivery on all orders' },
-	{ min: 4, label: 'Star Client',    emoji: '⭐', color: '#B8860B', bg: '#FFFDE7', border: '#FFD54F', desc: 'Proven loyal — a true PerfectFooties star!',           perk: '5% off all orders' },
-	{ min: 3, label: 'Craft Lover',    emoji: '🎨', color: '#b81b21', bg: '#FFE8E8', border: '#F48FB1', desc: 'Three orders strong — dedicated to quality craft!',    perk: 'Early access to new collections' },
-	{ min: 2, label: 'Glam Client',    emoji: '✨', color: '#6A1B9A', bg: '#EDE7F6', border: '#B39DDB', desc: "You came back — we love your loyalty!",                perk: 'Priority ordering + exclusive member deals' },
-	{ min: 1, label: 'Fresh Patron',   emoji: '🌟', color: '#2E7D32', bg: '#F1F8E9', border: '#A5D6A7', desc: 'Welcome to PerfectFooties — first order placed!',      perk: 'Free personalised style consultation' },
-	{ min: 0, label: 'New Member',     emoji: '🎯', color: '#e3242b', bg: '#FFF8F0', border: '#E8D5B0', desc: 'Welcome! Leave your first review to start your loyalty journey.', perk: null },
-];
+const TIER_META = {
+	'fresh':         { Icon: AdjustIcon,      border: '#90A4AE', desc: 'Welcome! Place your first order to begin your loyalty journey.' },
+	'star-client':   { Icon: StarIcon,        border: '#4DB6AC', desc: 'Proven loyal — a true PerfectFooties star!' },
+	'master-patron': { Icon: EmojiEventsIcon, border: '#F5BE00', desc: 'The absolute elite — our most loyal customer!' },
+};
 
-function getClientTier(reviewCount) {
-	return CLIENT_TIERS.find((t) => reviewCount >= t.min) || CLIENT_TIERS[CLIENT_TIERS.length - 1];
-}
-
-function getNextTier(reviewCount) {
-	// CLIENT_TIERS is ordered high→low; next tier is the one whose min is just above current count
-	return [...CLIENT_TIERS].reverse().find((t) => t.min > reviewCount) || null;
+function getNextTier(orderCount) {
+	return TIERS.find((t) => t.minOrders > orderCount) || null;
 }
 
 const inputSx = {
@@ -232,9 +232,9 @@ export default function AccountPage() {
 
 	const handleRedeem = () => {
 		if (!user) return;
-		// Save reward to localStorage — actual Firestore deduction happens when the order is placed
 		savePendingLoyaltyReward(redeemAmount);
 		setRedeemSuccess(true);
+		showToast(`Loyalty reward saved! ₦${(redeemAmount * REDEMPTION_VALUE / REDEMPTION_UNIT).toLocaleString()} will apply at checkout.`, "success");
 	};
 
 	// Load saved profile from localStorage
@@ -330,6 +330,7 @@ export default function AccountPage() {
 	};
 
 	const reviewCount = Object.keys(ratedOrders).length;
+	const orderCount = orders.filter((o) => o.status === 'received' || o.status === 'completed').length;
 	const giftCardOrders = orders.filter((o) =>
 		o.items?.some((i) =>
 			(i.name || "").toLowerCase().includes("gift card"),
@@ -414,6 +415,12 @@ export default function AccountPage() {
 			JSON.stringify({ ...existing, ...updated }),
 		);
 		setEditOpen(false);
+		showToast("Profile updated successfully.", "success");
+	};
+
+	const handleSignOut = () => {
+		showToast("You've been signed out. See you soon!", "info");
+		setTimeout(() => signOut(), 300);
 	};
 
 	if (authLoading) {
@@ -595,7 +602,7 @@ export default function AccountPage() {
 						<Box
 							sx={{ display: "flex", gap: 1.5, mb: 3, flexWrap: "wrap" }}
 						>
-							<Box sx={statBtnSx}>
+							<Box sx={statBtnSx} onClick={() => navigate('/account#orders')}>
 								<ShoppingBagIcon
 									sx={{
 										fontSize: 24,
@@ -698,170 +705,167 @@ export default function AccountPage() {
 						</Box>
 
 						{/* Client Status */}
-						{reviewCount > 0 &&
-							(() => {
-								const tier = getClientTier(reviewCount);
-								const next = getNextTier(reviewCount);
-								return (
+						{(() => {
+							const tier = getCustomerTier(orderCount);
+							const meta = TIER_META[tier.key];
+							const next = getNextTier(orderCount);
+							return (
+								<Box
+									sx={{
+										mb: 3,
+										p: 2.5,
+										borderRadius: 3,
+										background: `linear-gradient(135deg, ${tier.bg} 0%, #fff 100%)`,
+										border: `1.5px solid ${meta.border}`,
+									}}
+								>
 									<Box
 										sx={{
-											mb: 3,
-											p: 2.5,
-											borderRadius: 3,
-											background: `linear-gradient(135deg, ${tier.bg} 0%, #fff 100%)`,
-											border: `1.5px solid ${tier.border}`,
+											display: "flex",
+											alignItems: "center",
+											gap: 1.5,
 										}}
 									>
-										<Box
-											sx={{
-												display: "flex",
-												alignItems: "center",
-												gap: 1.5,
-											}}
-										>
+										<meta.Icon sx={{ fontSize: '2.2rem', color: tier.color }} />
+										<Box sx={{ flex: 1 }}>
 											<Typography
-												sx={{ fontSize: "2rem", lineHeight: 1 }}
+												sx={{
+													fontFamily: ff,
+													fontWeight: 700,
+													fontSize: "1rem",
+													color: tier.color,
+												}}
 											>
-												{tier.emoji}
+												{tier.label}
 											</Typography>
-											<Box sx={{ flex: 1 }}>
-												<Typography
-													sx={{
-														fontFamily: ff,
-														fontWeight: 700,
-														fontSize: "1rem",
-														color: tier.color,
-													}}
-												>
-													{tier.label}
-												</Typography>
-												<Typography
-													sx={{
-														fontSize: "0.78rem",
-														color: "var(--text-muted)",
-														mt: 0.2,
-													}}
-												>
-													{tier.desc}
-												</Typography>
-												{tier.perk && (
-													<Box
-														sx={{
-															mt: 0.8,
-															display: "inline-flex",
-															alignItems: "center",
-															gap: 0.5,
-															px: 1,
-															py: 0.3,
-															borderRadius: "20px",
-															backgroundColor: tier.bg,
-															border: `1px solid ${tier.border}`,
-														}}
-													>
-														<Typography
-															sx={{
-																fontSize: "0.7rem",
-																fontWeight: 700,
-																color: tier.color,
-															}}
-														>
-															🎁 {tier.perk}
-														</Typography>
-													</Box>
-												)}
-											</Box>
-											<Box sx={{ textAlign: "right" }}>
-												<Typography
-													sx={{
-														fontFamily: ff,
-														fontWeight: 700,
-														fontSize: "1.3rem",
-														color: tier.color,
-														lineHeight: 1,
-													}}
-												>
-													{reviewCount}
-												</Typography>
-												<Typography
-													sx={{
-														fontSize: "0.68rem",
-														color: "#999",
-													}}
-												>
-													{reviewCount === 1
-														? "review"
-														: "reviews"}
-												</Typography>
-											</Box>
-										</Box>
-										{next && (
-											<Box sx={{ mt: 1.8 }}>
+											<Typography
+												sx={{
+													fontSize: "0.78rem",
+													color: "var(--text-muted)",
+													mt: 0.2,
+												}}
+											>
+												{meta.desc}
+											</Typography>
+											{tier.perk && (
 												<Box
 													sx={{
-														display: "flex",
-														justifyContent: "space-between",
-														mb: 0.5,
+														mt: 0.8,
+														display: "inline-flex",
+														alignItems: "center",
+														gap: 0.5,
+														px: 1,
+														py: 0.3,
+														borderRadius: "20px",
+														backgroundColor: tier.bg,
+														border: `1px solid ${meta.border}`,
 													}}
 												>
-													<Typography
-														sx={{
-															fontSize: "0.7rem",
-															color: "#999",
-														}}
-													>
-														{next.min - reviewCount} more{" "}
-														{next.min - reviewCount === 1
-															? "review"
-															: "reviews"}{" "}
-														to reach
-													</Typography>
 													<Typography
 														sx={{
 															fontSize: "0.7rem",
 															fontWeight: 700,
-															color: next.color,
+															color: tier.color,
+															display: 'flex',
+															alignItems: 'center',
+															gap: 0.5,
 														}}
 													>
-														{next.emoji} {next.label}
+														<CardGiftcardIcon sx={{ fontSize: '0.85rem' }} />
+														{tier.perk}
 													</Typography>
 												</Box>
-												<Box
-													sx={{
-														height: 5,
-														borderRadius: 10,
-														backgroundColor: "#eee",
-														overflow: "hidden",
-													}}
-												>
-													<Box
-														sx={{
-															height: "100%",
-															borderRadius: 10,
-															width: `${(reviewCount / next.min) * 100}%`,
-															background: `linear-gradient(90deg, ${tier.border}, ${tier.color})`,
-															transition: "width 0.6s ease",
-														}}
-													/>
-												</Box>
-											</Box>
-										)}
-										{!next && (
+											)}
+										</Box>
+										<Box sx={{ textAlign: "right" }}>
 											<Typography
 												sx={{
-													mt: 1.2,
-													fontSize: "0.75rem",
+													fontFamily: ff,
+													fontWeight: 700,
+													fontSize: "1.3rem",
 													color: tier.color,
-													fontWeight: 600,
-													textAlign: "center",
+													lineHeight: 1,
 												}}
 											>
-												🎉 Maximum tier reached — you&apos;re a
-												PerfectFooties legend!
+												{orderCount}
 											</Typography>
-										)}
+											<Typography
+												sx={{
+													fontSize: "0.68rem",
+													color: "#999",
+												}}
+											>
+												{orderCount === 1
+													? "order"
+													: "orders"}
+											</Typography>
+										</Box>
 									</Box>
-								);
-							})()}
+									{next && (
+										<Box sx={{ mt: 1.8 }}>
+											<Box
+												sx={{
+													display: "flex",
+													justifyContent: "space-between",
+													mb: 0.5,
+												}}
+											>
+												<Typography
+													sx={{
+														fontSize: "0.7rem",
+														color: "#999",
+													}}
+												>
+													{next.minOrders - orderCount} more{" "}
+													{next.minOrders - orderCount === 1
+														? "order"
+														: "orders"}{" "}
+													to reach
+												</Typography>
+												<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+													{(() => { const nm = TIER_META[next.key]; return <nm.Icon sx={{ fontSize: '0.85rem', color: next.color }} />; })()}
+													<Typography sx={{ fontSize: "0.7rem", fontWeight: 700, color: next.color }}>
+														{next.label}
+													</Typography>
+												</Box>
+											</Box>
+											<Box
+												sx={{
+													height: 5,
+													borderRadius: 10,
+													backgroundColor: "#eee",
+													overflow: "hidden",
+												}}
+											>
+												<Box
+													sx={{
+														height: "100%",
+														borderRadius: 10,
+														width: `${Math.min((orderCount / next.minOrders) * 100, 100)}%`,
+														background: `linear-gradient(90deg, ${meta.border}, ${tier.color})`,
+														transition: "width 0.6s ease",
+													}}
+												/>
+											</Box>
+										</Box>
+									)}
+									{!next && (
+										<Typography
+											sx={{
+												mt: 1.2,
+												fontSize: "0.75rem",
+												color: tier.color,
+												fontWeight: 600,
+												textAlign: "center",
+											}}
+										>
+											<CelebrationIcon sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} />
+											Maximum tier reached — you're a PerfectFooties legend!
+										</Typography>
+									)}
+								</Box>
+							);
+						})()}
 
 						{/* Tier Perks Ladder */}
 						<Box
@@ -888,83 +892,64 @@ export default function AccountPage() {
 										color: "#e3242b",
 									}}
 								>
-									🎁 Loyalty Tier Perks
+									<CardGiftcardIcon sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} />
+													Loyalty Tier Perks
 								</Typography>
 							</Box>
-							{[...CLIENT_TIERS]
-								.filter((t) => t.min > 0)
-								.reverse()
-								.map((t) => {
-									const unlocked = reviewCount >= t.min;
-									return (
-										<Box
-											key={t.min}
-											sx={{
-												px: 2,
-												py: 1.2,
-												display: "flex",
-												alignItems: "center",
-												gap: 1.5,
-												borderTop: "1px solid #F9E4EF",
-												backgroundColor: unlocked
-													? t.bg
-													: "transparent",
-												opacity: unlocked ? 1 : 0.55,
-											}}
-										>
+							{[...TIERS].reverse().map((t) => {
+								const unlocked = orderCount >= t.minOrders;
+								const meta = TIER_META[t.key];
+								return (
+									<Box
+										key={t.key}
+										sx={{
+											px: 2,
+											py: 1.2,
+											display: "flex",
+											alignItems: "center",
+											gap: 1.5,
+											borderTop: "1px solid #F9E4EF",
+											backgroundColor: unlocked ? t.bg : "transparent",
+											opacity: unlocked ? 1 : 0.55,
+										}}
+									>
+										{unlocked
+											? <meta.Icon sx={{ fontSize: '1.3rem', color: t.color, flexShrink: 0 }} />
+											: <LockIcon sx={{ fontSize: '1.3rem', color: '#bbb', flexShrink: 0 }} />}
+										<Box sx={{ flex: 1, minWidth: 0 }}>
 											<Typography
 												sx={{
-													fontSize: "1.3rem",
-													lineHeight: 1,
-													flexShrink: 0,
+													fontFamily: ff,
+													fontSize: "0.78rem",
+													fontWeight: 700,
+													color: unlocked ? t.color : "#bbb",
 												}}
 											>
-												{unlocked ? t.emoji : "🔒"}
+												{t.label}
 											</Typography>
-											<Box sx={{ flex: 1, minWidth: 0 }}>
-												<Typography
-													sx={{
-														fontFamily: ff,
-														fontSize: "0.78rem",
-														fontWeight: 700,
-														color: unlocked ? t.color : "#bbb",
-													}}
-												>
-													{t.label}
-												</Typography>
-												<Typography
-													sx={{
-														fontFamily: ff,
-														fontSize: "0.72rem",
-														color: unlocked
-															? "var(--text-muted)"
-															: "#ccc",
-														lineHeight: 1.3,
-													}}
-												>
-													{t.perk}
-												</Typography>
-											</Box>
-											{unlocked ? (
-												<CheckCircleOutlineIcon
-													sx={{
-														fontSize: "1rem",
-														color: t.color,
-														flexShrink: 0,
-													}}
-												/>
-											) : (
-												<LockOutlinedIcon
-													sx={{
-														fontSize: "0.9rem",
-														color: "#ddd",
-														flexShrink: 0,
-													}}
-												/>
-											)}
+											<Typography
+												sx={{
+													fontFamily: ff,
+													fontSize: "0.72rem",
+													color: unlocked ? "var(--text-muted)" : "#ccc",
+													lineHeight: 1.3,
+												}}
+											>
+												{t.perk}
+											</Typography>
 										</Box>
-									);
-								})}
+										{unlocked ? (
+											<CheckCircleOutlineIcon
+												sx={{ fontSize: "1rem", color: t.color, flexShrink: 0 }}
+											/>
+										) : (
+											<LockOutlinedIcon
+												sx={{ fontSize: "0.9rem", color: "#ddd", flexShrink: 0 }}
+											/>
+										)}
+									</Box>
+								);
+							})}
 						</Box>
 
 						{/* Loyalty Points Card */}
@@ -993,11 +978,7 @@ export default function AccountPage() {
 										gap: 1,
 									}}
 								>
-									<Typography
-										sx={{ fontSize: "1.4rem", lineHeight: 1 }}
-									>
-										🏆
-									</Typography>
+									<EmojiEventsIcon sx={{ fontSize: '1.6rem', color: '#B8860B' }} />
 									<Box>
 										<Typography
 											sx={{
@@ -1107,7 +1088,8 @@ export default function AccountPage() {
 										"&:hover": { backgroundColor: "#996600" },
 									}}
 								>
-									🎁 Redeem {formatNaira(redeemableNaira)} in Rewards
+									<CardGiftcardIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
+												Redeem {formatNaira(redeemableNaira)} in Rewards
 								</Button>
 							)}
 							<Box
@@ -1124,7 +1106,8 @@ export default function AccountPage() {
 										lineHeight: 1.8,
 									}}
 								>
-									🏅 <strong>15 pts</strong> per completed order · <strong>50 pts = ₦1,000 off</strong>
+									<MilitaryTechIcon sx={{ fontSize: '0.9rem', mr: 0.4, verticalAlign: 'middle' }} />
+															<strong>15 pts</strong> per completed order · <strong>50 pts = ₦1,000 off</strong>
 								</Typography>
 							</Box>
 						</Box>
@@ -1155,11 +1138,7 @@ export default function AccountPage() {
 										gap: 1,
 									}}
 								>
-									<Typography
-										sx={{ fontSize: "1.4rem", lineHeight: 1 }}
-									>
-										🎀
-									</Typography>
+									<RedeemIcon sx={{ fontSize: '1.6rem', color: 'var(--text-purple)' }} />
 									<Box>
 										<Typography
 											sx={{
@@ -1221,8 +1200,8 @@ export default function AccountPage() {
 												color: "#6A1B9A",
 											}}
 										>
-											🏆 {referralUses * POINTS_PER_REFERRAL} pts
-											earned from referrals
+											<EmojiEventsIcon sx={{ fontSize: '0.9rem', mr: 0.4, verticalAlign: 'middle', color: '#B8860B' }} />
+											{referralUses * POINTS_PER_REFERRAL} pts earned from referrals
 										</Typography>
 										<Typography
 											sx={{ fontSize: "0.7rem", color: "#888" }}
@@ -1279,7 +1258,8 @@ export default function AccountPage() {
 									onClick={() =>
 										navigator.clipboard
 											.writeText(referralCode)
-											.catch(() => {})
+											.then(() => showToast("Referral code copied to clipboard!", "success"))
+											.catch(() => showToast("Could not copy — try selecting manually.", "warning"))
 									}
 									sx={{
 										color: "#6A1B9A",
@@ -1320,7 +1300,7 @@ export default function AccountPage() {
 									"&:hover": { backgroundColor: "#1da851" },
 								}}
 							>
-								💬 Share via WhatsApp
+								Share via WhatsApp
 							</Button>
 							<Typography
 								sx={{
@@ -1367,7 +1347,7 @@ export default function AccountPage() {
 								sx={{
 									flex: 1,
 									minWidth: 140,
-									border: "1.5px solid #006666",
+									border: "1.5px solid #007a7a",
 									borderRadius: "20px",
 									color: "var(--text-purple)",
 									py: 1,
@@ -1376,7 +1356,7 @@ export default function AccountPage() {
 									fontSize: "0.85rem",
 									textTransform: "none",
 									"&:hover": {
-										backgroundColor: "#006666",
+										backgroundColor: "#007a7a",
 										color: "#fff",
 									},
 								}}
@@ -1486,7 +1466,7 @@ export default function AccountPage() {
 						<Box sx={{ textAlign: "center" }}>
 							<Button
 								startIcon={<LogoutIcon />}
-								onClick={signOut}
+								onClick={handleSignOut}
 								sx={{
 									border: "2px solid #e3242b",
 									borderRadius: "30px",
@@ -1556,6 +1536,7 @@ export default function AccountPage() {
 									onRate={() => setRateDialog(order)}
 									onCancel={() => setCancelDialog(order)}
 									onEdit={() => handleOpenEditOrder(order)}
+									onViewDetail={(id) => navigate(`/account/orders/${id}`)}
 								/>
 							))
 						)}
@@ -1716,9 +1697,10 @@ export default function AccountPage() {
 									</Tooltip>
 									<Tooltip title="Remove from wishlist">
 										<IconButton
-											onClick={() =>
-												removeFromWishlist(item.productId)
-											}
+											onClick={() => {
+												removeFromWishlist(item.productId);
+												showToast(`${item.name} removed from wishlist.`, "info");
+											}}
 											sx={{
 												color: "#ccc",
 												"&:hover": { color: "#e3242b" },
@@ -1937,9 +1919,7 @@ export default function AccountPage() {
 					<DialogContent sx={{ pt: "12px !important" }}>
 						{redeemSuccess ? (
 							<Box sx={{ textAlign: "center", py: 2 }}>
-								<Typography sx={{ fontSize: "2.5rem", mb: 1 }}>
-									🎉
-								</Typography>
+								<CelebrationIcon sx={{ fontSize: '3rem', color: '#2e7d32', display: 'block', mx: 'auto', mb: 1 }} />
 								<Typography
 									sx={{
 										fontFamily: ff,
@@ -1982,7 +1962,7 @@ export default function AccountPage() {
 											fontWeight: 600,
 										}}
 									>
-										🎁{" "}
+										<CardGiftcardIcon sx={{ fontSize: '0.85rem', mr: 0.5, verticalAlign: 'middle' }} />
 										{formatNaira(
 											Math.floor(redeemAmount / REDEMPTION_UNIT) *
 												REDEMPTION_VALUE,
@@ -2263,6 +2243,8 @@ export default function AccountPage() {
 					open={!!rateDialog}
 					order={rateDialog}
 					userName={user?.displayName || ""}
+					uid={user?.uid || ''}
+					userEmail={user?.email || ''}
 					onClose={() => setRateDialog(null)}
 					onSubmitted={(orderId) => {
 						setRatedOrders((prev) => ({ ...prev, [orderId]: true }));
@@ -2355,6 +2337,8 @@ export default function AccountPage() {
 					open={!!rateDialog}
 					order={rateDialog}
 					userName={user?.displayName || ""}
+					uid={user?.uid || ''}
+					userEmail={user?.email || ''}
 					onClose={() => setRateDialog(null)}
 					onSubmitted={(orderId) => {
 						setRatedOrders((prev) => ({ ...prev, [orderId]: true }));
@@ -2448,28 +2432,67 @@ export default function AccountPage() {
 }
 
 // ─── Rate Dialog ──────────────────────────────────────────────────────────────
-function RateDialog({ open, onClose, order, onSubmit }) {
+function RateDialog({ open, onClose, order, userName, uid, userEmail, onSubmitted }) {
 	const [rating, setRating] = React.useState(0);
 	const [comment, setComment] = React.useState('');
+	const [photos, setPhotos] = React.useState([]);
+	const [photoPreviews, setPhotoPreviews] = React.useState([]);
 	const [submitting, setSubmitting] = React.useState(false);
+	const [submitError, setSubmitError] = React.useState('');
 
 	React.useEffect(() => {
-		if (open) { setRating(0); setComment(''); }
+		if (open) { setRating(0); setComment(''); setPhotos([]); setPhotoPreviews([]); setSubmitError(''); }
 	}, [open]);
+
+	const handlePhotoChange = (e) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		if (photos.length >= 2) { setSubmitError('Maximum 2 photos allowed.'); return; }
+		if (file.size > 5 * 1024 * 1024) { setSubmitError('Each photo must be under 5 MB.'); return; }
+		setPhotos((prev) => [...prev, file]);
+		setPhotoPreviews((prev) => [...prev, URL.createObjectURL(file)]);
+		setSubmitError('');
+		e.target.value = '';
+	};
+
+	const removePhoto = (idx) => {
+		setPhotos((prev) => prev.filter((_, i) => i !== idx));
+		setPhotoPreviews((prev) => prev.filter((_, i) => i !== idx));
+	};
 
 	const handleSubmit = async () => {
 		if (!rating) return;
 		setSubmitting(true);
-		await onSubmit({ orderId: order?.id, rating, comment, type: 'purchase' });
-		setSubmitting(false);
-		onClose();
+		setSubmitError('');
+		try {
+			const photoURLs = [];
+			for (const photo of photos) {
+				if (uid) {
+					try { photoURLs.push(await uploadReviewPhoto(uid, photo)); } catch { /* skip */ }
+				}
+			}
+			await saveTestimonial({
+				orderId: order?.id,
+				rating,
+				testimonial: comment,
+				name: userName,
+				email: userEmail || '',
+				type: 'purchase',
+				...(photoURLs.length > 0 && { photoURLs }),
+			});
+			onSubmitted?.(order?.id);
+		} catch {
+			setSubmitError('Could not submit review. Please try again.');
+		} finally {
+			setSubmitting(false);
+		}
 	};
 
 	return (
 		<Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth
 			PaperProps={{ sx: { borderRadius: 4, p: 1 } }}>
 			<DialogTitle sx={{ fontFamily: '"Georgia", serif', fontWeight: 700 }}>
-				Product Order Review
+				Leave a Review
 			</DialogTitle>
 			<DialogContent>
 				<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
@@ -2486,7 +2509,40 @@ function RateDialog({ open, onClose, order, onSubmit }) {
 						value={comment}
 						onChange={(e) => setComment(e.target.value)}
 						fullWidth
+						sx={{ '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: '#e3242b' } }}
 					/>
+					{/* Photo upload — max 2 */}
+					<Box>
+						<Typography sx={{ fontFamily: 'Georgia, serif', fontSize: '0.82rem', color: '#777', mb: 1 }}>
+							Add up to 2 photos of your purchase (optional, max 5 MB each)
+						</Typography>
+						<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+							{photoPreviews.map((src, i) => (
+								<Box key={i} sx={{ position: 'relative' }}>
+									<Box component="img" src={src} alt={`preview ${i + 1}`}
+										sx={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0', display: 'block' }} />
+									<IconButton
+										size="small"
+										onClick={() => removePhoto(i)}
+										sx={{ position: 'absolute', top: -8, right: -8, backgroundColor: '#fff', border: '1px solid #E8D5B0', p: 0.2, '&:hover': { backgroundColor: '#ffe0e0' } }}
+									>
+										<DeleteOutlineIcon sx={{ fontSize: 14, color: '#e3242b' }} />
+									</IconButton>
+								</Box>
+							))}
+							{photos.length < 2 && (
+								<Button
+									component="label"
+									size="small"
+									sx={{ border: '1.5px solid #E8D5B0', borderRadius: '20px', fontSize: '0.78rem', textTransform: 'none', color: 'var(--text-muted)', '&:hover': { borderColor: '#e3242b', color: '#e3242b' } }}
+								>
+									{photos.length === 0 ? 'Add Photo' : 'Add 2nd Photo'}
+									<input type="file" accept="image/*" hidden onChange={handlePhotoChange} />
+								</Button>
+							)}
+						</Box>
+					</Box>
+					{submitError && <Typography sx={{ color: '#d32f2f', fontSize: '0.78rem' }}>{submitError}</Typography>}
 				</Box>
 			</DialogContent>
 			<DialogActions sx={{ px: 3, pb: 2 }}>
@@ -2497,7 +2553,7 @@ function RateDialog({ open, onClose, order, onSubmit }) {
 					variant="contained"
 					sx={{ backgroundColor: '#e3242b', borderRadius: 30, px: 3, fontFamily: '"Georgia", serif', fontWeight: 600, '&:hover': { backgroundColor: '#b81b21' } }}
 				>
-					{submitting ? 'Submitting...' : 'Submit'}
+					{submitting ? 'Submitting…' : 'Submit Review'}
 				</Button>
 			</DialogActions>
 		</Dialog>
@@ -2547,7 +2603,7 @@ function OrderProgressTracker({ status }) {
 
 			{(status === 'shipped') && (
 				<Typography sx={{ mt: 1, fontSize: '0.78rem', color: '#888', textAlign: 'center' }}>
-					Estimated delivery: 5&ndash;10 business days after shipping
+					Estimated delivery: 10–14 days after dispatch
 				</Typography>
 			)}
 		</Box>
@@ -2555,7 +2611,7 @@ function OrderProgressTracker({ status }) {
 }
 
 // ─── Order Card ───────────────────────────────────────────────────────────────
-function OrderCard({ order, onCancel, onEdit, onRate }) {
+function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
 	const isCancelled = order.status === 'cancelled';
 	const isDelivered = ['delivered', 'received', 'completed'].includes(order.status);
 	const isPending   = order.status === 'pending';
@@ -2579,6 +2635,7 @@ function OrderCard({ order, onCancel, onEdit, onRate }) {
 
 	return (
 		<Box
+			onClick={() => onViewDetail(order.id)}
 			sx={{
 				border: '1px solid #E8D5B0',
 				borderRadius: 3,
@@ -2586,8 +2643,9 @@ function OrderCard({ order, onCancel, onEdit, onRate }) {
 				mb: 2,
 				backgroundColor: isCancelled ? '#fff5f5' : '#fff',
 				opacity: isCancelled ? 0.85 : 1,
-				transition: 'box-shadow 0.2s',
-				'&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.08)' },
+				transition: 'box-shadow 0.2s, border-color 0.2s',
+				cursor: 'pointer',
+				'&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.1)', borderColor: '#e3242b' },
 			}}
 		>
 			{/* Header row */}
@@ -2626,7 +2684,7 @@ function OrderCard({ order, onCancel, onEdit, onRate }) {
 							</Typography>
 							{item.price && (
 								<Typography sx={{ fontSize: '0.85rem', fontWeight: 600 }}>
-									\u20a6{Number(item.price).toLocaleString()}
+									{formatNaira(item.price)}
 								</Typography>
 							)}
 						</Box>
@@ -2639,7 +2697,7 @@ function OrderCard({ order, onCancel, onEdit, onRate }) {
 				<Box sx={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E8D5B0', pt: 1, mt: 1 }}>
 					<Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>Total</Typography>
 					<Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#e3242b' }}>
-						\u20a6{Number(order.total).toLocaleString()}
+						{formatNaira(order.total)}
 					</Typography>
 				</Box>
 			)}
@@ -2647,8 +2705,36 @@ function OrderCard({ order, onCancel, onEdit, onRate }) {
 			{/* Progress tracker */}
 			{!isCancelled && <OrderProgressTracker status={order.status} />}
 
+			{/* Fez Delivery tracking */}
+			{order.status === 'shipped' && order.trackingLink && (
+				<Box sx={{ mt: 1.5, p: 1.5, borderRadius: 2, background: '#f0faff', border: '1px solid #bae6fd', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
+					<Typography sx={{ fontSize: '0.78rem', color: '#0369a1', fontWeight: 600 }}>
+						Handled by Fez Delivery
+					</Typography>
+					<Button
+						size="small"
+						variant="contained"
+						href={order.trackingLink}
+						target="_blank"
+						rel="noopener noreferrer"
+						sx={{ borderRadius: 20, backgroundColor: '#0369a1', fontSize: '0.75rem', '&:hover': { backgroundColor: '#0284c7' } }}
+					>
+						Track My Package
+					</Button>
+				</Box>
+			)}
+
 			{/* Action buttons */}
-			<Box sx={{ display: 'flex', gap: 1.5, mt: 2, flexWrap: 'wrap' }}>
+			<Box sx={{ display: 'flex', gap: 1.5, mt: 2, flexWrap: 'wrap', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
+				<Button
+					size="small"
+					variant="outlined"
+					onClick={() => onViewDetail(order.id)}
+					endIcon={<span style={{ fontSize: '0.7rem' }}>→</span>}
+					sx={{ borderRadius: 30, borderColor: '#007a7a', color: '#007a7a', fontSize: '0.78rem', '&:hover': { backgroundColor: '#e8fff8', borderColor: '#005f5f' } }}
+				>
+					View Details
+				</Button>
 				{isPending && !isCancelled && (
 					<>
 						<Button

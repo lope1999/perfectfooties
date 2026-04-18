@@ -47,8 +47,8 @@ export default function OurStoryPage() {
 										letterSpacing: "0.02em",
 									}}
 								>
-									PerfectFooties is a handcrafted leather goods brand rooted
-									in quality, precision, and lasting style.
+									PerfectFooties is a handcrafted leather goods brand
+									rooted in quality, precision, and lasting style.
 								</Typography>
 							</Box>
 
@@ -60,14 +60,15 @@ export default function OurStoryPage() {
 									mb: 3,
 								}}
 							>
-								What began as a deep appreciation for fine leatherwork has
-								grown into a purpose-driven craft. PerfectFooties was built
-								not just to make beautiful goods, but to create pieces that
-								carry meaning — built to last, made to be worn, and designed
-								to tell a story. From humble beginnings experimenting with
-								leather in a Lagos workshop, the vision has steadily evolved
-								into a brand centered on quality, self-expression, and
-								enduring style.
+								What began as a deep appreciation for fine leatherwork
+								has grown into a purpose-driven craft. PerfectFooties
+								was built not just to make beautiful goods, but to
+								create pieces that carry meaning — built to last, made
+								to be worn, and designed to tell a story. From humble
+								beginnings experimenting with leather in a Lagos
+								workshop, the vision has steadily evolved into a brand
+								centered on quality, self-expression, and enduring
+								style.
 							</Typography>
 
 							<Typography
@@ -78,12 +79,12 @@ export default function OurStoryPage() {
 									mb: 3,
 								}}
 							>
-								Every piece — whether a pair of shoes, a belt, a bag, or a
-								wallet — is handcrafted with care and intention. We source
-								quality leather, work with skilled hands, and take time with
-								every stitch and edge. We believe that true craftsmanship
-								cannot be rushed, and that the details are what set a piece
-								apart from the ordinary.
+								Every piece — whether a pair of shoes, a belt, a bag, or
+								a wallet — is handcrafted with care and intention. We
+								source quality leather, work with skilled hands, and
+								take time with every stitch and edge. We believe that
+								true craftsmanship cannot be rushed, and that the
+								details are what set a piece apart from the ordinary.
 							</Typography>
 
 							<Typography
@@ -94,12 +95,12 @@ export default function OurStoryPage() {
 									mb: 3,
 								}}
 							>
-								Today, PerfectFooties offers a growing range of handmade
-								leather goods — from custom shoes and boots to bags, belts,
-								and accessories. Every order is a personal experience because
-								leather goods are more than fashion — they are character,
-								utility, and craftsmanship expressed in the things you carry
-								every day.
+								Today, PerfectFooties (Titi) offers a growing range of
+								handmade leather goods — from custom shoes and boots to
+								bags, belts, and accessories. Every order is a personal
+								experience because leather goods are more than fashion —
+								they are character, utility, and craftsmanship expressed
+								in the things you carry every day.
 							</Typography>
 
 							<Typography
@@ -123,7 +124,7 @@ export default function OurStoryPage() {
 						<ScrollReveal direction="right" delay={0.2}>
 							<Box
 								component="img"
-								src="/images/story/founders-2.jpeg"
+								src="/images/products/heirloom-regal-13.jpg"
 								alt="Craftsman at work"
 								sx={{
 									width: "100%",

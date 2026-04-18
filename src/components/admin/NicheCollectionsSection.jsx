@@ -263,7 +263,7 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
       {/* Stats */}
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         {[
-          { label: 'Total',     value: stats.total,    color: '#006666' },
+          { label: 'Total',     value: stats.total,    color: '#007a7a' },
           { label: 'Available', value: stats.open,     color: '#2e7d32' },
           { label: 'Coming Soon', value: stats.upcoming, color: '#e65100' },
           { label: 'Sold Out',  value: stats.closed,   color: '#616161' },
@@ -349,7 +349,7 @@ export default function NicheCollectionsSection({ collections, loading, onRefres
                       <Box sx={{ display: 'flex', gap: 0.5 }}>
                         <Tooltip title={col.hiddenFromStorefront ? 'Show on storefront' : 'Hide from storefront'}>
                           <IconButton size="small" onClick={() => handleVisibilityToggle(col)}
-                            sx={{ color: col.hiddenFromStorefront ? '#bbb' : '#006666' }}>
+                            sx={{ color: col.hiddenFromStorefront ? '#bbb' : '#007a7a' }}>
                             {col.hiddenFromStorefront ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
                           </IconButton>
                         </Tooltip>

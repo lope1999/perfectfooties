@@ -5,7 +5,7 @@ import { auth, googleProvider, db } from '../lib/firebase';
 
 const AuthContext = createContext(null);
 
-const ADMIN_EMAIL = 'chizobaezeh338@gmail.com';
+const ADMIN_EMAILS = new Set(['chizobaezeh338@gmail.com', 'perfect.footies@gmail.com']);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -51,7 +51,7 @@ export function AuthProvider({ children }) {
 
   const signOut = () => firebaseSignOut(auth);
 
-  const isAdmin = user?.email === ADMIN_EMAIL;
+  const isAdmin = ADMIN_EMAILS.has(user?.email);
 
   return (
     <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut, isAdmin }}>

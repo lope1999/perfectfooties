@@ -38,6 +38,7 @@ import AddIcon from '@mui/icons-material/Add';
 import HomeIcon from '@mui/icons-material/Home';
 import StoreIcon from '@mui/icons-material/Store';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import GroupIcon from '@mui/icons-material/Group';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -364,7 +365,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
     <Box>
       {/* Stats */}
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-        <StatCard icon={<EventNoteIcon fontSize="inherit" />} label="Total Appointments" value={stats.total} color="#006666" />
+        <StatCard icon={<EventNoteIcon fontSize="inherit" />} label="Total Appointments" value={stats.total} color="#007a7a" />
         <StatCard icon={<PendingActionsIcon fontSize="inherit" />} label="Pending" value={stats.pending} color="#e3242b" />
         <StatCard icon={<CheckCircleOutlineIcon fontSize="inherit" />} label="Confirmed" value={stats.confirmed} color="#2e7d32" />
         <StatCard icon={<HomeIcon fontSize="inherit" />} label="Home Service" value={stats.homeCount} color="#1565C0" />
@@ -391,7 +392,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setAddDialog(true)}
-            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
           >
             Add Appointment
           </Button>
@@ -399,7 +400,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
             variant="outlined"
             startIcon={<FileDownloadIcon />}
             onClick={() => exportOrdersToCSV(filtered, 'appointments-export.csv')}
-            sx={{ fontFamily, borderColor: '#006666', color: 'var(--text-purple)', '&:hover': { backgroundColor: '#006666', color: '#fff' } }}
+            sx={{ fontFamily, borderColor: '#007a7a', color: 'var(--text-purple)', '&:hover': { backgroundColor: '#007a7a', color: '#fff' } }}
           >
             Export CSV
           </Button>
@@ -442,7 +443,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table size="small">
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#006666' }}>
+            <TableRow sx={{ backgroundColor: '#007a7a' }}>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 40 }} />
               {['#', 'ID', 'Customer', 'Service / Group', 'Location', 'Status', 'Price', 'Appointment Date', 'Time', 'Booked On', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>{h}</TableCell>
@@ -491,9 +492,10 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                         >
                           <Box sx={{ cursor: 'default' }}>
                             <Chip
-                              label={`👥 Group (${o.items.length})`}
+                              icon={<GroupIcon sx={{ fontSize: '0.85rem !important', color: '#007a7a !important' }} />}
+                              label={`Group (${o.items.length})`}
                               size="small"
-                              sx={{ backgroundColor: '#EDE7F6', color: '#006666', fontWeight: 700, fontSize: '0.72rem', mb: 0.5 }}
+                              sx={{ backgroundColor: '#EDE7F6', color: '#007a7a', fontWeight: 700, fontSize: '0.72rem', mb: 0.5 }}
                             />
                             {o.items.map((item, i) => (
                               <Typography key={i} sx={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -582,7 +584,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
                           >
                             {sendingEmailId === o.id
                               ? <CircularProgress size={18} sx={{ color: 'var(--text-purple)' }} />
-                              : <MailOutlineIcon fontSize="small" sx={{ color: o.email ? '#006666' : '#ccc' }} />}
+                              : <MailOutlineIcon fontSize="small" sx={{ color: o.email ? '#007a7a' : '#ccc' }} />}
                           </IconButton>
                         </span>
                       </Tooltip>
@@ -886,7 +888,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
             onClick={handleAddNote}
             variant="contained"
             disabled={busy || !noteText.trim()}
-            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
           >
             Save Note
           </Button>
@@ -1020,7 +1022,7 @@ export default function AppointmentsSection({ orders, loading, onRefresh }) {
             onClick={handleAddSave}
             variant="contained"
             disabled={busy || !addForm.customerName.trim() || !addForm.total || !addForm.serviceName.trim()}
-            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
           >
             Save
           </Button>

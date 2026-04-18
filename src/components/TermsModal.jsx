@@ -51,7 +51,7 @@ export default function TermsModal({ open, onClose }) {
 						All orders must be placed through our website or WhatsApp. A
 						confirmation message will be sent once your order is received and
 						payment is confirmed. Production begins immediately after
-						confirmation — standard orders take 5–10 business days. Custom
+						confirmation — standard orders take 10–14 days. Custom
 						orders may take longer and a separate timeline will be communicated
 						at the time of order.
 					</Typography>

@@ -14,6 +14,10 @@ import {
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import CloseIcon from "@mui/icons-material/Close";
+import DiamondIcon from '@mui/icons-material/Diamond';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import CheckroomIcon from '@mui/icons-material/Checkroom';
+import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -25,13 +29,12 @@ import { fetchTestimonials } from '../lib/testimonialService';
 
 const ff = '"Georgia", serif';
 
-// Client tiers — 1 review per level, brand-aligned for a nail salon
-// 1 → Fresh Darling · 2 → Glam Client · 3 → Nail Lover · 4 → Star Client · 5+ → Diamond Diva
+// Client tiers — 1 review per level, brand-aligned for PerfectFooties
 function getClientTier(reviewCount) {
 	if (reviewCount >= 5)
 		return {
-			label: "Diamond Diva",
-			emoji: "💎",
+			label: "Master Patron",
+			Icon: DiamondIcon,
 			color: "var(--text-purple)",
 			bg: "#F3E5F5",
 			border: "#CE93D8",
@@ -39,15 +42,15 @@ function getClientTier(reviewCount) {
 	if (reviewCount >= 4)
 		return {
 			label: "Star Client",
-			emoji: "⭐",
+			Icon: StarIcon,
 			color: "#B8860B",
 			bg: "#FFFDE7",
 			border: "#FFD54F",
 		};
 	if (reviewCount >= 3)
 		return {
-			label: "Nail Lover",
-			emoji: "💅",
+			label: "Craft Lover",
+			Icon: CheckroomIcon,
 			color: "#b81b21",
 			bg: "#FFE8E8",
 			border: "#F48FB1",
@@ -55,14 +58,14 @@ function getClientTier(reviewCount) {
 	if (reviewCount >= 2)
 		return {
 			label: "Glam Client",
-			emoji: "✨",
+			Icon: AutoAwesomeIcon,
 			color: "#6A1B9A",
 			bg: "#EDE7F6",
 			border: "#B39DDB",
 		};
 	return {
-		label: "Fresh Darling",
-		emoji: "🌸",
+		label: "Fresh Patron",
+		Icon: LocalFloristIcon,
 		color: "#2E7D32",
 		bg: "#F1F8E9",
 		border: "#A5D6A7",
@@ -102,6 +105,7 @@ function groupByName(items) {
       rating: t.rating,
       review: t.review || t.testimonial,
       type: t.type,
+      photoURLs: t.photoURLs || (t.photoURL ? [t.photoURL] : []),
     });
     // Always keep group type in sync with the most recent review
     map[key].type = t.type;
@@ -136,6 +140,7 @@ export default function TestimonialsPage() {
 					rating: t.rating,
 					review: t.testimonial || t.review,
 					avatar: t.avatar || t.name?.charAt(0)?.toUpperCase() || "?",
+					photoURLs: t.photoURLs || (t.photoURL ? [t.photoURL] : []),
 				}));
 				// Reverse so newest Firestore review is processed last → group.type = most recent type
 			setGroups(groupByName([...staticTestimonials, ...mapped.slice().reverse()]));
@@ -228,7 +233,7 @@ export default function TestimonialsPage() {
 											<Chip
 												label={featured.type === 'appointment' ? 'Appointment' : 'Purchase'}
 												size="small"
-												sx={{ backgroundColor: featured.type === 'appointment' ? '#006666' : '#e3242b', color: '#fff', fontWeight: 600, fontFamily: ff, mb: 2 }}
+												sx={{ backgroundColor: featured.type === 'appointment' ? '#007a7a' : '#e3242b', color: '#fff', fontWeight: 600, fontFamily: ff, mb: 2 }}
 											/>
 											{featured.reviews.length === 1 && <StarRating rating={featured.reviews[0].rating} />}
 											{/* Tier badge */}
@@ -239,7 +244,7 @@ export default function TestimonialsPage() {
 													backgroundColor: featuredTier.bg, border: `1px solid ${featuredTier.border}`,
 												}}
 											>
-												<Typography sx={{ fontSize: '0.75rem', lineHeight: 1 }}>{featuredTier.emoji}</Typography>
+												<featuredTier.Icon sx={{ fontSize: '0.9rem', color: featuredTier.color }} />
 												<Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.75rem', color: featuredTier.color }}>
 													{featuredTier.label}
 												</Typography>
@@ -257,6 +262,14 @@ export default function TestimonialsPage() {
 														<Typography sx={{ color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.9, fontStyle: 'italic' }}>
 															"{featured.reviews[0].review}"
 														</Typography>
+														{featured.reviews[0].photoURLs?.length > 0 && (
+															<Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
+																{featured.reviews[0].photoURLs.map((url, i) => (
+																	<Box key={i} component="img" src={url} alt="Review photo"
+																		sx={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0' }} />
+																))}
+															</Box>
+														)}
 													</Box>
 												) : (
 													<Swiper
@@ -275,6 +288,14 @@ export default function TestimonialsPage() {
 																		"{rev.review}"
 																	</Typography>
 																	<Box sx={{ mt: 2 }}><StarRating rating={rev.rating} /></Box>
+										{rev.photoURLs?.length > 0 && (
+											<Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
+												{rev.photoURLs.map((url, pi) => (
+													<Box key={pi} component="img" src={url} alt="Review photo"
+														sx={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0' }} />
+												))}
+											</Box>
+										)}
 																</Box>
 															</SwiperSlide>
 														))}
@@ -398,14 +419,7 @@ export default function TestimonialsPage() {
 															border: `1px solid ${tier.border}`,
 														}}
 													>
-														<Typography
-															sx={{
-																fontSize: "0.65rem",
-																lineHeight: 1,
-															}}
-														>
-															{tier.emoji}
-														</Typography>
+														<tier.Icon sx={{ fontSize: '0.8rem', color: tier.color }} />
 														<Typography
 															sx={{
 																fontFamily: ff,
@@ -429,7 +443,7 @@ export default function TestimonialsPage() {
 													sx={{
 														backgroundColor:
 															group.type === "appointment"
-																? "#006666"
+																? "#007a7a"
 																: "#e3242b",
 														color: "#fff",
 														fontWeight: 600,
@@ -482,6 +496,14 @@ export default function TestimonialsPage() {
 												"{group.reviews[0].review}"
 											</Typography>
 											<StarRating rating={group.reviews[0].rating} />
+											{group.reviews[0].photoURLs?.length > 0 && (
+												<Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
+													{group.reviews[0].photoURLs.map((url, pi) => (
+														<Box key={pi} component="img" src={url} alt="Review photo"
+															sx={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0' }} />
+													))}
+												</Box>
+											)}
 										</Box>
 									) : (
 										<Box sx={{ flex: 1, ...swiperDotStyles }}>
@@ -528,6 +550,14 @@ export default function TestimonialsPage() {
 																"{rev.review}"
 															</Typography>
 															<StarRating rating={rev.rating} />
+										{rev.photoURLs?.length > 0 && (
+											<Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
+												{rev.photoURLs.map((url, pi) => (
+													<Box key={pi} component="img" src={url} alt="Review photo"
+														sx={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0' }} />
+												))}
+											</Box>
+										)}
 														</Box>
 													</SwiperSlide>
 												))}
@@ -646,7 +676,7 @@ function ReviewDetailModal({ group, onClose }) {
 								sx={{
 									backgroundColor:
 										group.type === "appointment"
-											? "#006666"
+											? "#007a7a"
 											: "#e3242b",
 									color: "#fff",
 									fontWeight: 600,
@@ -673,9 +703,7 @@ function ReviewDetailModal({ group, onClose }) {
 								border: `1px solid ${tier.border}`,
 							}}
 						>
-							<Typography sx={{ fontSize: "0.75rem", lineHeight: 1 }}>
-								{tier.emoji}
-							</Typography>
+							<tier.Icon sx={{ fontSize: '0.9rem', color: tier.color }} />
 							<Typography
 								sx={{
 									fontFamily: ff,
@@ -722,7 +750,7 @@ function ReviewDetailModal({ group, onClose }) {
 									<Chip
 										label={rev.type === 'appointment' ? 'Appointment' : 'Purchase'}
 										size="small"
-										sx={{ backgroundColor: rev.type === 'appointment' ? '#006666' : '#e3242b', color: '#fff', fontWeight: 600, fontSize: '0.62rem', fontFamily: ff, height: 18 }}
+										sx={{ backgroundColor: rev.type === 'appointment' ? '#007a7a' : '#e3242b', color: '#fff', fontWeight: 600, fontSize: '0.62rem', fontFamily: ff, height: 18 }}
 									/>
 								)}
 							</Box>
@@ -750,6 +778,14 @@ function ReviewDetailModal({ group, onClose }) {
 						>
 							"{rev.review}"
 						</Typography>
+						{rev.photoURLs?.length > 0 && (
+							<Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
+								{rev.photoURLs.map((url, pi) => (
+									<Box key={pi} component="img" src={url} alt="Review photo"
+										sx={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0', cursor: 'pointer' }} />
+								))}
+							</Box>
+						)}
 						{i < group.reviews.length - 1 && (
 							<Box sx={{ mt: 2.5, borderBottom: "1px solid #E8D5B0" }} />
 						)}

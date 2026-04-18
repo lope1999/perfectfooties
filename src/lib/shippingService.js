@@ -1,9 +1,9 @@
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
 export async function saveShippingDetails(uid, shipping) {
   const userRef = doc(db, 'users', uid);
-  return updateDoc(userRef, { shippingDetails: shipping });
+  return setDoc(userRef, { shippingDetails: shipping }, { merge: true });
 }
 
 export async function fetchShippingDetails(uid) {

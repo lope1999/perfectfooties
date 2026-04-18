@@ -10,16 +10,20 @@ import {
 } from '@mui/material';
 import LoginIcon from '@mui/icons-material/Login';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 
 export default function SignInPrompt({ open, onClose }) {
   const { signInWithGoogle } = useAuth();
+  const { showToast } = useNotifications();
   const [signingIn, setSigningIn] = useState(false);
 
   const handleSignIn = async () => {
     setSigningIn(true);
     try {
-      await signInWithGoogle();
+      const result = await signInWithGoogle();
       onClose();
+      const name = result?.user?.displayName?.split(' ')[0] || 'back';
+      showToast(`Welcome ${name}! You're now signed in.`, 'success');
     } catch {
       // user closed popup
     } finally {

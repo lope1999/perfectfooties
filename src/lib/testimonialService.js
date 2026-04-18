@@ -7,8 +7,17 @@ import {
   orderBy,
   serverTimestamp,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from './firebase';
 import { sanitizeString, validateNumber, validateEmail } from './validate';
+
+export async function uploadReviewPhoto(uid, file) {
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `review-photos/${uid}/${Date.now()}.${ext}`;
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, file);
+  return getDownloadURL(storageRef);
+}
 
 const COLLECTION = 'testimonials';
 

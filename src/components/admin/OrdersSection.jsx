@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -28,6 +28,9 @@ import {
   Toolbar,
   Switch,
   FormControlLabel,
+  Menu,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditIcon from '@mui/icons-material/Edit';
@@ -38,6 +41,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import AddIcon from '@mui/icons-material/Add';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { updateOrderStatus, deleteOrder, addOrderNote, createAdminOrder, updateOrder } from '../../lib/adminService';
 import { exportOrdersToCSV } from '../../lib/csvExport';
 import { sendConfirmationEmail } from '../../lib/emailService';
@@ -73,6 +77,9 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   const [bulkStatus, setBulkStatus] = useState('');
   const [hideAbandonedPending, setHideAbandonedPending] = useState(true);
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [trackingDialog, setTrackingDialog] = useState(null); // { uid, orderId }
+  const [trackingLink, setTrackingLink] = useState('');
+  const [actionMenu, setActionMenu] = useState(null); // { anchor, order }
   const [addForm, setAddForm] = useState({
     customerName: '', email: '', phone: '', status: 'pending',
     total: '', notes: '', createdAt: '',
@@ -97,6 +104,11 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   }, [orders, typeFilter, statusFilter, search, hideAbandonedPending]);
 
   const handleStatusChange = async (uid, orderId, newStatus) => {
+    if (newStatus === 'shipped') {
+      setTrackingLink('');
+      setTrackingDialog({ uid, orderId });
+      return;
+    }
     setBusy(true);
     try {
       await updateOrderStatus(uid, orderId, newStatus);
@@ -107,6 +119,21 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
           setEmailPrompt({ ...order, status: newStatus });
         }
       }
+    } catch (err) {
+      console.error('Status update error:', err);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleConfirmShipped = async () => {
+    if (!trackingDialog) return;
+    const { uid, orderId } = trackingDialog;
+    setBusy(true);
+    setTrackingDialog(null);
+    try {
+      await updateOrderStatus(uid, orderId, 'shipped', { trackingLink: trackingLink.trim() || null });
+      await onRefresh();
     } catch (err) {
       console.error('Status update error:', err);
     } finally {
@@ -258,50 +285,121 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   };
 
   const printShippingLabel = (o) => {
-    const date = o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString() : '—';
-    const items = (o.items || [])
-      .map((item, i) => {
-        let line = `${i + 1}. ${item.name || 'Item'} × ${item.quantity || 1} — ₦${(item.price || 0).toLocaleString()}`;
-        if (item.size) line += ` | Size: ${item.size}`;
-        if (item.colour) line += ` | Colour: ${item.colour}`;
-        return `<p style="margin:4px 0;">${line}</p>`;
-      })
-      .join('');
-    const win = window.open('', '_blank', 'width=600,height=700');
-    win.document.write(`<!DOCTYPE html><html><head><title>Shipping Label — ${o.id}</title>
-      <style>
-        body { font-family: Georgia, serif; padding: 32px; color: #222; }
-        .border { border: 2px dashed #444; padding: 24px; max-width: 500px; margin: auto; }
-        .brand { font-size: 1.4rem; font-weight: 700; color: #006666; text-align: center; letter-spacing: 1px; margin-bottom: 4px; }
-        .sub { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 20px; }
-        h3 { font-size: 0.75rem; text-transform: uppercase; color: #999; letter-spacing: 1px; margin: 16px 0 4px; }
-        p { margin: 2px 0; font-size: 0.95rem; }
-        .divider { border-top: 1px dashed #aaa; margin: 16px 0; }
-        .total { font-size: 1.1rem; font-weight: 700; color: #006666; }
-        @media print { body { padding: 0; } }
-      </style></head><body>
-      <div class="border">
-        <div class="brand">PERFECTFOOTIES</div>
-        <div class="sub">Handcrafted Leather Goods — Lagos, Nigeria</div>
-        <div class="divider"></div>
-        <h3>Ship To</h3>
-        <p><strong>${o.customerName || '—'}</strong></p>
-        <p>${o.phone || o.shipping?.phone || '—'}</p>
-        <p>${o.email || '—'}</p>
-        ${o.shipping ? `<p>${[o.shipping.address, o.shipping.lga, o.shipping.state].filter(Boolean).join(', ')}</p>` : ''}
-        <div class="divider"></div>
-        <h3>Order Details</h3>
-        <p>Order ID: <strong>${o.id}</strong></p>
-        <p>Date: ${date}</p>
-        <p>Type: ${o.type || '—'}</p>
-        <div class="divider"></div>
-        <h3>Items</h3>
-        ${items}
-        <div class="divider"></div>
-        <p class="total">Total: ₦${((o.total || 0) + (o.extraCharge || 0)).toLocaleString()}</p>
+    const date = o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+    const sh = o.shipping || {};
+    const addrParts = [sh.address, sh.lga, sh.city, sh.state, sh.country && sh.country !== 'Nigeria' ? sh.country : ''].filter(Boolean);
+    const itemRows = (o.items || []).map((item, i) => `
+      <tr>
+        <td>${i + 1}. ${item.name || 'Item'}</td>
+        <td style="text-align:center;">${item.quantity || 1}</td>
+        <td style="text-align:right;">${item.selectedColor || item.colour || '—'}</td>
+        <td style="text-align:right;font-weight:700;">₦${(item.price || 0).toLocaleString()}</td>
+      </tr>`).join('');
+    const logoUrl = `${window.location.origin}/images/logo.png`;
+    const win = window.open('', '_blank', 'width=640,height=800');
+    win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Shipping Label — ${o.id}</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: Georgia, serif; color: #1a1a1a; background: #f0ebe0; padding: 28px 20px; }
+    .page { max-width: 560px; margin: 0 auto; background: #fff; border: 2px solid #e8d5b0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,122,122,0.12); }
+    .header { background: linear-gradient(135deg, #005f5f, #007a7a, #009494); padding: 22px 24px; text-align: center; }
+    .logo { width: 64px; height: 64px; object-fit: contain; border-radius: 50%; background: rgba(255,255,255,0.15); padding: 6px; display: block; margin: 0 auto 8px; }
+    .brand { font-size: 20px; font-weight: 800; letter-spacing: 2px; color: #fff; }
+    .brand-sub { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 3px; }
+    .doc-badge { display: inline-block; color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 2px; padding: 4px 14px; border-radius: 20px; margin-top: 10px; border: 1.5px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); }
+    .accent-bar { height: 4px; background: linear-gradient(90deg, #e3242b, #007a7a, #e3242b); }
+    .body { padding: 20px 22px; }
+    .section { margin-bottom: 18px; }
+    .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #007a7a; border-left: 3px solid #007a7a; padding-left: 8px; margin-bottom: 10px; }
+    .to-box { background: #f9f5ee; border: 1.5px solid #e8d5b0; border-left: 4px solid #007a7a; border-radius: 0 8px 8px 0; padding: 14px 16px; font-size: 14px; line-height: 2; }
+    .to-name { font-size: 16px; font-weight: 800; color: #1a1a1a; }
+    .to-detail { color: #555; font-size: 13px; }
+    .meta-table { width: 100%; border-collapse: collapse; font-size: 12px; border: 1.5px solid #e8d5b0; border-radius: 8px; overflow: hidden; }
+    .meta-table td { padding: 6px 12px; }
+    .meta-table tr:nth-child(even) { background: #f9f5ee; }
+    .meta-table .key { color: #888; width: 36%; }
+    .meta-table .val { font-weight: 600; }
+    .items-wrap { border: 1.5px solid #e8d5b0; border-radius: 8px; overflow: hidden; }
+    .items-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .items-table thead tr { background: linear-gradient(135deg, #005f5f, #007a7a); }
+    .items-table thead td { color: #fff; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; padding: 8px 10px; }
+    .items-table tbody tr { border-bottom: 1px solid #f0e8d8; }
+    .items-table tbody tr:last-child { border-bottom: none; }
+    .items-table tbody tr:nth-child(even) { background: #fdfaf5; }
+    .items-table tbody td { padding: 8px 10px; vertical-align: top; }
+    .total-bar { background: linear-gradient(135deg, #005f5f, #007a7a); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; font-size: 15px; font-weight: 800; border-radius: 8px; margin-top: 14px; }
+    .from-box { background: linear-gradient(135deg, #e8fff8, #d4f5ee); border: 1.5px solid #b2f0e0; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #555; line-height: 1.8; }
+    .from-brand { font-weight: 700; color: #007a7a; font-size: 13px; }
+    .footer { background: #f9f5ee; border-top: 2px solid #e8d5b0; padding: 14px 22px; text-align: center; font-size: 11px; color: #999; }
+    @media print { body { background: #fff; padding: 0; } .page { border: none; border-radius: 0; box-shadow: none; max-width: 100%; } }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <img src="${logoUrl}" alt="Perfect Footies" class="logo"/>
+    <div class="brand">PERFECT FOOTIES</div>
+    <div class="brand-sub">perfectfooties.com &nbsp;·&nbsp; Gbagada, Lagos</div>
+    <div class="doc-badge">SHIPPING LABEL</div>
+  </div>
+  <div class="accent-bar"></div>
+
+  <div class="body">
+    <div class="section">
+      <div class="section-title">Ship To</div>
+      <div class="to-box">
+        <div class="to-name">${o.customerName || '—'}</div>
+        ${sh.phone || o.phone ? `<div class="to-detail">${sh.phone || o.phone}</div>` : ''}
+        ${o.email ? `<div class="to-detail">${o.email}</div>` : ''}
+        ${addrParts.length ? `<div class="to-detail">${addrParts.join(', ')}</div>` : ''}
       </div>
-      <script>window.onload = function(){ window.print(); window.close(); }</script>
-      </body></html>`);
+    </div>
+
+    <div class="section">
+      <div class="section-title">Order Reference</div>
+      <table class="meta-table">
+        <tr><td class="key">Order ID</td><td class="val">${o.id}</td></tr>
+        <tr><td class="key">Date</td><td class="val">${date}</td></tr>
+        <tr><td class="key">Type</td><td class="val">${o.type || '—'}</td></tr>
+        <tr><td class="key">Status</td><td class="val">${o.status || '—'}</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Items</div>
+      <div class="items-wrap">
+        <table class="items-table">
+          <thead><tr>
+            <td>Item</td><td style="text-align:center;">Qty</td><td style="text-align:right;">Colour</td><td style="text-align:right;">Price</td>
+          </tr></thead>
+          <tbody>${itemRows}</tbody>
+        </table>
+      </div>
+      <div class="total-bar">
+        <span>Total</span>
+        <span>₦${((o.total || 0) + (o.extraCharge || 0)).toLocaleString()}</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Shipped From</div>
+      <div class="from-box">
+        <div class="from-brand">Perfect Footies</div>
+        <div>Gbagada, Lagos, Nigeria</div>
+        <div>perfectfooties.com</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">Handle with care &nbsp;·&nbsp; Handcrafted leather goods</div>
+</div>
+<script>window.onload = function(){ window.print(); }</script>
+</body>
+</html>`);
     win.document.close();
   };
 
@@ -336,7 +434,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setAddDialog(true)}
-            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
           >
             Add Order
           </Button>
@@ -344,7 +442,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             variant="outlined"
             startIcon={<FileDownloadIcon />}
             onClick={() => exportOrdersToCSV(filtered, `${title.toLowerCase()}-export.csv`)}
-            sx={{ fontFamily, borderColor: '#006666', color: 'var(--text-purple)', '&:hover': { backgroundColor: '#006666', color: '#fff' } }}
+            sx={{ fontFamily, borderColor: '#007a7a', color: 'var(--text-purple)', '&:hover': { backgroundColor: '#007a7a', color: '#fff' } }}
           >
             Export CSV
           </Button>
@@ -389,7 +487,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
               checked={hideAbandonedPending}
               onChange={(e) => setHideAbandonedPending(e.target.checked)}
               size="small"
-              sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#006666' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#006666' } }}
+              sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#007a7a' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#007a7a' } }}
             />
           }
           label={
@@ -435,7 +533,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             size="small"
             disabled={!bulkStatus || bulkBusy}
             onClick={handleBulkStatusUpdate}
-            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' }, fontWeight: 600, textTransform: 'none' }}
+            sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' }, fontWeight: 600, textTransform: 'none' }}
           >
             {bulkBusy ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Apply'}
           </Button>
@@ -452,7 +550,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table size="small">
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#006666' }}>
+            <TableRow sx={{ backgroundColor: '#007a7a' }}>
               <TableCell sx={{ color: '#fff', width: 40, p: 0.5 }}>
                 <Checkbox
                   size="small"
@@ -472,8 +570,8 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
           </TableHead>
           <TableBody>
             {filtered.map((o, idx) => (
-              <>
-                <TableRow key={o.id} hover selected={selectedOrders.has(o.id)} sx={{ '&.Mui-selected': { backgroundColor: '#f3e5f5' }, '&.Mui-selected:hover': { backgroundColor: '#ede0f5' } }}>
+              <React.Fragment key={o.id}>
+                <TableRow hover selected={selectedOrders.has(o.id)} sx={{ '&.Mui-selected': { backgroundColor: '#f3e5f5' }, '&.Mui-selected:hover': { backgroundColor: '#ede0f5' } }}>
                   <TableCell sx={{ p: 0.5 }}>
                     <Checkbox
                       size="small"
@@ -536,27 +634,11 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                   <TableCell>
                     <IconButton
                       size="small"
-                      onClick={() => handleSendEmail(o)}
-                      disabled={!o.email || !!sendingEmailId}
-                      title={o.email ? 'Send confirmation email' : 'No email available'}
+                      onClick={(e) => { e.stopPropagation(); setActionMenu({ anchor: e.currentTarget, order: o }); }}
                     >
-                      {sendingEmailId === o.id ? (
-                        <CircularProgress size={18} sx={{ color: 'var(--text-purple)' }} />
-                      ) : (
-                        <MailOutlineIcon fontSize="small" sx={{ color: o.email ? '#006666' : '#ccc' }} />
-                      )}
-                    </IconButton>
-                    <IconButton size="small" onClick={() => handleEditOpen(o)} title="Edit order details">
-                      <EditIcon fontSize="small" sx={{ color: '#1565C0' }} />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => { setNoteDialog(o); setNoteText(''); }} title="Add note">
-                      <NoteAddIcon fontSize="small" sx={{ color: 'var(--text-purple)' }} />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => printShippingLabel(o)} title="Print shipping label">
-                      <LocalShippingIcon fontSize="small" sx={{ color: '#2e7d32' }} />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => setDeleteDialog(o)} title="Delete">
-                      <DeleteOutlineIcon fontSize="small" sx={{ color: '#d32f2f' }} />
+                      {sendingEmailId === o.id
+                        ? <CircularProgress size={18} sx={{ color: 'var(--text-purple)' }} />
+                        : <MoreVertIcon fontSize="small" />}
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -701,7 +783,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                     </Collapse>
                   </TableCell>
                 </TableRow>
-              </>
+              </React.Fragment>
             ))}
             {filtered.length === 0 && (
               <TableRow>
@@ -821,7 +903,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             onClick={handleAddNote}
             variant="contained"
             disabled={busy || !noteText.trim()}
-            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
           >
             Save Note
           </Button>
@@ -965,12 +1047,71 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
             onClick={handleAddSave}
             variant="contained"
             disabled={busy || !addForm.customerName.trim() || !addForm.total || !addForm.itemName.trim()}
-            sx={{ fontFamily, backgroundColor: '#006666', '&:hover': { backgroundColor: '#3a0b3e' } }}
+            sx={{ fontFamily, backgroundColor: '#007a7a', '&:hover': { backgroundColor: '#005a5a' } }}
           >
             Save
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Tracking Link Dialog */}
+      <Dialog open={!!trackingDialog} onClose={() => setTrackingDialog(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontFamily, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <LocalShippingIcon sx={{ color: '#e3242b' }} /> Mark as Shipped
+        </DialogTitle>
+        <DialogContent sx={{ pt: '8px !important' }}>
+          <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.88rem', mb: 2 }}>
+            Optionally paste the Fez Delivery tracking link. The customer will see a "Track My Package" button in their account.
+          </Typography>
+          <TextField
+            fullWidth
+            label="Fez Delivery Tracking Link (optional)"
+            placeholder="https://fezdelivery.co/track/..."
+            value={trackingLink}
+            onChange={(e) => setTrackingLink(e.target.value)}
+            size="small"
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#E8D5B0' }, '&.Mui-focused fieldset': { borderColor: '#e3242b' } } }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setTrackingDialog(null)} sx={{ fontFamily }}>Cancel</Button>
+          <Button onClick={handleConfirmShipped} variant="contained" sx={{ backgroundColor: '#e3242b', color: '#fff', borderRadius: '20px', fontFamily, fontWeight: 700, '&:hover': { backgroundColor: '#b81b21' } }}>
+            Confirm Shipped
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Action overflow menu */}
+      <Menu
+        anchorEl={actionMenu?.anchor}
+        open={Boolean(actionMenu)}
+        onClose={() => setActionMenu(null)}
+        PaperProps={{ sx: { borderRadius: 2, border: '1px solid #E8D5B0', minWidth: 200 } }}
+      >
+        <MenuItem
+          disabled={!actionMenu?.order?.email || !!sendingEmailId}
+          onClick={() => { const o = actionMenu.order; setActionMenu(null); handleSendEmail(o); }}
+        >
+          <ListItemIcon><MailOutlineIcon fontSize="small" sx={{ color: '#007a7a' }} /></ListItemIcon>
+          <ListItemText primaryTypographyProps={{ fontSize: '0.85rem', fontFamily }}>Send Email</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => { handleEditOpen(actionMenu.order); setActionMenu(null); }}>
+          <ListItemIcon><EditIcon fontSize="small" sx={{ color: '#1565C0' }} /></ListItemIcon>
+          <ListItemText primaryTypographyProps={{ fontSize: '0.85rem', fontFamily }}>Edit Order</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => { setNoteDialog(actionMenu.order); setNoteText(''); setActionMenu(null); }}>
+          <ListItemIcon><NoteAddIcon fontSize="small" sx={{ color: 'var(--text-purple)' }} /></ListItemIcon>
+          <ListItemText primaryTypographyProps={{ fontSize: '0.85rem', fontFamily }}>Add Note</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => { printShippingLabel(actionMenu.order); setActionMenu(null); }}>
+          <ListItemIcon><LocalShippingIcon fontSize="small" sx={{ color: '#2e7d32' }} /></ListItemIcon>
+          <ListItemText primaryTypographyProps={{ fontSize: '0.85rem', fontFamily }}>Print Label</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => { setDeleteDialog(actionMenu.order); setActionMenu(null); }} sx={{ color: '#d32f2f' }}>
+          <ListItemIcon><DeleteOutlineIcon fontSize="small" sx={{ color: '#d32f2f' }} /></ListItemIcon>
+          <ListItemText primaryTypographyProps={{ fontSize: '0.85rem', fontFamily, color: '#d32f2f' }}>Delete</ListItemText>
+        </MenuItem>
+      </Menu>
 
       {/* Email Prompt Snackbar */}
       <Snackbar

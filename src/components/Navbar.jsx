@@ -96,9 +96,12 @@ export default function Navbar() {
 				onMouseEnter={() => setHovered(true)}
 				onMouseLeave={() => setHovered(false)}
 				sx={{
-					backgroundColor: hovered || trigger
-						? (isDark ? '#1a0505' : '#FFF8F0')
-						: 'transparent',
+					backgroundColor:
+						hovered || trigger
+							? isDark
+								? "#1a0505"
+								: "#FFF8F0"
+							: "transparent",
 					transition: "background-color 0.4s ease",
 					zIndex: 1200,
 				}}
@@ -125,6 +128,20 @@ export default function Navbar() {
 								display: "block",
 							}}
 						/>
+						<Typography
+							sx={{
+								display: { xs: "none", md: "block" },
+								fontFamily: '"Dancing Script", "Pacifico", cursive',
+								fontSize: { md: "1.3rem", lg: "1.5rem" },
+								fontWeight: 700,
+								color: "#e3242b",
+								lineHeight: 1,
+								letterSpacing: "0.02em",
+								userSelect: "none",
+							}}
+						>
+							PerfectFooties
+						</Typography>
 					</Box>
 
 					{/* Center — Nav Buttons (desktop only) */}
@@ -148,10 +165,10 @@ export default function Navbar() {
 							<Button
 								sx={{
 									...navButtonSx,
-									borderColor: "#006666",
+									borderColor: "#007a7a",
 									color: "var(--text-purple)",
 									"&:hover": {
-										backgroundColor: "#006666",
+										backgroundColor: "#007a7a",
 										color: "#fff",
 									},
 								}}
@@ -165,9 +182,20 @@ export default function Navbar() {
 
 					{/* Right — Cart + User + Social Icons (desktop) + Hamburger (mobile) */}
 					<Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-						<Tooltip title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
-							<IconButton onClick={toggleMode} sx={{ color: isDark ? '#f5f0f0' : '#006666' }}>
-								{isDark ? <Brightness7Icon sx={{ fontSize: 22 }} /> : <Brightness4Icon sx={{ fontSize: 22 }} />}
+						<Tooltip
+							title={
+								isDark ? "Switch to light mode" : "Switch to dark mode"
+							}
+						>
+							<IconButton
+								onClick={toggleMode}
+								sx={{ color: "var(--accent-cyan)" }}
+							>
+								{isDark ? (
+									<Brightness7Icon sx={{ fontSize: 22 }} />
+								) : (
+									<Brightness4Icon sx={{ fontSize: 22 }} />
+								)}
 							</IconButton>
 						</Tooltip>
 						<UserMenu />
@@ -197,7 +225,7 @@ export default function Navbar() {
 				PaperProps={{
 					sx: {
 						width: 280,
-						backgroundColor: isDark ? '#120404' : '#FFF8F0',
+						backgroundColor: isDark ? "#120404" : "#FFF8F0",
 						pt: 2,
 					},
 				}}

@@ -8,23 +8,8 @@ import {
   Divider,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { serviceCategories } from '../data/services';
-// Product pricing is now dynamic from Firestore — static import removed
-const productCategories = [];
-import useServiceDiscounts from '../hooks/useServiceDiscounts';
-import { hasDiscount, getEffectivePrice, hasServiceDiscount, getServiceEffectivePrice } from '../lib/discountUtils';
-
-function formatNaira(amount) {
-  return `\u20A6${amount.toLocaleString()}`;
-}
-
-function getCategoryPricing(items) {
-  if (!items || items.length === 0) return null;
-  const prices = items.map((i) => i.price);
-  const min = Math.min(...prices);
-  const max = Math.max(...prices);
-  return { min, max };
-}
+import HandymanIcon from '@mui/icons-material/Handyman';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 
 const sectionHeadingSx = {
   fontFamily: '"Georgia", serif',
@@ -42,9 +27,7 @@ const rowSx = {
   py: 1.2,
   px: 1.5,
   borderRadius: 1.5,
-  '&:nth-of-type(odd)': {
-    backgroundColor: '#FFF8F0',
-  },
+  '&:nth-of-type(odd)': { backgroundColor: '#FFF8F0' },
 };
 
 const nameSx = {
@@ -64,226 +47,85 @@ const priceSx = {
   whiteSpace: 'nowrap',
 };
 
-export default function PricingTable({ open, onClose }) {
-  const { discounts } = useServiceDiscounts();
+const COLLECTIONS = [
+  { name: 'Female Handmade Footwear',  range: '₦45,000 – ₦120,000' },
+  { name: 'Male Handmade Footwear',    range: '₦50,000 – ₦130,000' },
+  { name: 'Heirloom Collection',       range: '₦60,000 – ₦200,000' },
+  { name: 'Handmade Bags & Belts',     range: '₦35,000 – ₦95,000'  },
+  { name: 'Custom Orders',             range: 'Quoted on WhatsApp'  },
+];
 
+const SHIPPING = [
+  { label: 'Lagos (Fez Delivery)',       price: '₦3,000' },
+  { label: 'Outside Lagos (Fez Delivery)', price: '₦4,000' },
+  { label: 'UK',                         price: '₦8,500/kg' },
+  { label: 'USA',                        price: '₦15,000/kg' },
+  { label: 'Canada',                     price: '₦13,500/kg' },
+  { label: 'Europe (general)',           price: '₦12,500/kg' },
+  { label: 'Sweden / France / Italy / Netherlands', price: '₦77,000 flat (≤ 2kg)' },
+];
+
+export default function PricingTable({ open, onClose }) {
   return (
     <Dialog
       open={open}
       onClose={onClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 4,
-          maxHeight: '85vh',
-        },
-      }}
+      PaperProps={{ sx: { borderRadius: 4, maxHeight: '85vh' } }}
     >
-      <DialogTitle
-        sx={{
-          textAlign: 'center',
-          pb: 0,
-          pt: 3,
-          position: 'relative',
-        }}
-      >
+      <DialogTitle sx={{ textAlign: 'center', pb: 0, pt: 3, position: 'relative' }}>
         <IconButton
           onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 12,
-            top: 12,
-            color: '#e3242b',
-            border: '1.5px solid #e3242b',
-            width: 32,
-            height: 32,
-            '&:hover': { backgroundColor: '#e3242b', color: '#fff' },
-          }}
+          sx={{ position: 'absolute', right: 12, top: 12, color: '#e3242b', border: '1.5px solid #e3242b', width: 32, height: 32, '&:hover': { backgroundColor: '#e3242b', color: '#fff' } }}
         >
           <CloseIcon sx={{ fontSize: 18 }} />
         </IconButton>
-        <Typography
-          variant="h5"
-          sx={{
-            fontFamily: '"Georgia", serif',
-            fontWeight: 700,
-            color: 'var(--text-main)',
-            fontSize: { xs: '1.3rem', sm: '1.6rem' },
-          }}
-        >
+        <Typography variant="h5" sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-main)', fontSize: { xs: '1.3rem', sm: '1.6rem' } }}>
           Price Guide
         </Typography>
-        <Typography
-          sx={{
-            color: '#777',
-            fontSize: '0.85rem',
-            mt: 0.5,
-            lineHeight: 1.5,
-          }}
-        >
-          A quick overview of our service and press-on pricing to help you plan ahead.
+        <Typography sx={{ color: '#777', fontSize: '0.85rem', mt: 0.5, lineHeight: 1.5 }}>
+          An overview of our handcrafted leather goods pricing. All items are made to order.
         </Typography>
       </DialogTitle>
 
       <DialogContent sx={{ px: { xs: 2, sm: 3 }, pb: 4 }}>
-        {/* SERVICE APPOINTMENTS */}
-        <Typography sx={sectionHeadingSx}>Service Appointments</Typography>
+
+        {/* COLLECTIONS */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 3, mb: 1.5 }}>
+          <HandymanIcon sx={{ fontSize: 18, color: 'var(--text-purple)' }} />
+          <Typography sx={{ ...sectionHeadingSx, mt: 0, mb: 0 }}>Leather Collections</Typography>
+        </Box>
         <Divider sx={{ borderColor: '#E8D5B0', mb: 1 }} />
+        {COLLECTIONS.map((c) => (
+          <Box key={c.name} sx={rowSx}>
+            <Typography sx={nameSx}>{c.name}</Typography>
+            <Typography sx={priceSx}>{c.range}</Typography>
+          </Box>
+        ))}
 
-        {serviceCategories.map((cat) => {
-          const pricing = getCategoryPricing(cat.services);
-          if (!pricing) return null;
-
-          return (
-            <Box key={cat.id}>
-              <Typography
-                sx={{
-                  fontFamily: '"Georgia", serif',
-                  fontWeight: 700,
-                  fontSize: '0.95rem',
-                  color: 'var(--text-purple)',
-                  mt: 2,
-                  mb: 0.5,
-                  px: 1.5,
-                }}
-              >
-                {cat.title}
-              </Typography>
-              {cat.services.map((service) => (
-                <Box key={service.id} sx={rowSx}>
-                  <Typography sx={nameSx}>{service.name}</Typography>
-                  {hasServiceDiscount(service.id, discounts) ? (
-                    <Box sx={{ textAlign: 'right' }}>
-                      <Typography sx={{ ...priceSx, color: '#2e7d32' }}>
-                        {formatNaira(getServiceEffectivePrice(service, discounts))}
-                      </Typography>
-                      <Typography sx={{ fontSize: '0.75rem', color: '#999', textDecoration: 'line-through', whiteSpace: 'nowrap' }}>
-                        {formatNaira(service.price)}
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Typography sx={priceSx}>{formatNaira(service.price)}</Typography>
-                  )}
-                </Box>
-              ))}
-            </Box>
-          );
-        })}
-
-        {/* PRESS-ON NAILS */}
-        <Typography sx={{ ...sectionHeadingSx, mt: 4 }}>Press-On Nails</Typography>
+        {/* SHIPPING */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 4, mb: 1.5 }}>
+          <LocalShippingOutlinedIcon sx={{ fontSize: 18, color: 'var(--text-purple)' }} />
+          <Typography sx={{ ...sectionHeadingSx, mt: 0, mb: 0 }}>Shipping Rates</Typography>
+        </Box>
         <Divider sx={{ borderColor: '#E8D5B0', mb: 1 }} />
+        {SHIPPING.map((s) => (
+          <Box key={s.label} sx={rowSx}>
+            <Typography sx={nameSx}>{s.label}</Typography>
+            <Typography sx={priceSx}>{s.price}</Typography>
+          </Box>
+        ))}
 
-        {productCategories
-          .filter((cat) => !cat.readyMade)
-          .map((cat) => {
-            const pricing = getCategoryPricing(cat.products);
-            if (!pricing) return null;
-
-            return (
-              <Box key={cat.id}>
-                <Typography
-                  sx={{
-                    fontFamily: '"Georgia", serif',
-                    fontWeight: 700,
-                    fontSize: '0.95rem',
-                    color: 'var(--text-purple)',
-                    mt: 2,
-                    mb: 0.5,
-                    px: 1.5,
-                  }}
-                >
-                  {cat.title}
-                </Typography>
-                {cat.products.map((product) => (
-                  <Box key={product.id} sx={rowSx}>
-                    <Typography sx={nameSx}>{product.name}</Typography>
-                    {hasDiscount(product) ? (
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Typography sx={{ ...priceSx, color: '#2e7d32' }}>
-                          {formatNaira(getEffectivePrice(product))}
-                        </Typography>
-                        <Typography sx={{ fontSize: '0.75rem', color: '#999', textDecoration: 'line-through', whiteSpace: 'nowrap' }}>
-                          {formatNaira(product.price)}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Typography sx={priceSx}>{formatNaira(product.price)}</Typography>
-                    )}
-                  </Box>
-                ))}
-              </Box>
-            );
-          })}
-
-        {/* READY-MADE PRESS-ONS */}
-        {productCategories
-          .filter((cat) => cat.readyMade)
-          .map((cat) => {
-            const activeProducts = cat.products;
-            const pricing = getCategoryPricing(activeProducts);
-            if (!pricing) return null;
-
-            return (
-              <Box key={cat.id}>
-                <Typography
-                  sx={{
-                    fontFamily: '"Georgia", serif',
-                    fontWeight: 700,
-                    fontSize: '0.95rem',
-                    color: 'var(--text-purple)',
-                    mt: 2,
-                    mb: 0.5,
-                    px: 1.5,
-                  }}
-                >
-                  {cat.title.length > 40 ? 'Available Press-Ons (Ready to Ship)' : cat.title}
-                </Typography>
-                <Box sx={rowSx}>
-                  <Typography sx={nameSx}>Price range</Typography>
-                  <Typography sx={priceSx}>
-                    {formatNaira(pricing.min)} &ndash; {formatNaira(pricing.max)}
-                  </Typography>
-                </Box>
-              </Box>
-            );
-          })}
-
-        {/* REMOVAL NOTE */}
-        <Box
-          sx={{
-            mt: 4,
-            p: 2,
-            borderRadius: 2,
-            backgroundColor: '#FFF8E1',
-            border: '1px solid #FFD54F',
-          }}
-        >
-          <Typography
-            sx={{
-              fontSize: '0.82rem',
-              color: '#5D4037',
-              fontWeight: 600,
-              lineHeight: 1.6,
-            }}
-          >
-            Nail removal starts from {formatNaira(5000)} if you arrive with existing nails. The exact
-            cost depends on the product type and nail length.
+        {/* NOTE */}
+        <Box sx={{ mt: 3, p: 2, borderRadius: 2, backgroundColor: '#FFF8E1', border: '1px solid #FFD54F' }}>
+          <Typography sx={{ fontSize: '0.82rem', color: '#5D4037', fontWeight: 600, lineHeight: 1.6 }}>
+            All pieces are handcrafted to order in full-grain leather. Production takes 10–14 days. Prices may vary for complex custom orders — contact us on WhatsApp for a quote.
           </Typography>
         </Box>
 
-        {/* NOTE */}
-        <Typography
-          sx={{
-            mt: 2,
-            color: '#999',
-            fontSize: '0.78rem',
-            textAlign: 'center',
-            fontStyle: 'italic',
-          }}
-        >
-          Prices are subject to change. Visit the full menu pages for the most up-to-date pricing.
+        <Typography sx={{ mt: 2, color: '#999', fontSize: '0.78rem', textAlign: 'center', fontStyle: 'italic' }}>
+          Prices are subject to change. Visit individual collection pages for the most up-to-date pricing.
         </Typography>
       </DialogContent>
     </Dialog>

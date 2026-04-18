@@ -3,7 +3,7 @@ import ScrollReveal from '../components/ScrollReveal';
 import { teamMembers, departments } from '../data/team';
 
 const departmentColors = {
-  Leadership: '#006666',
+  Leadership: '#007a7a',
   Stylists: '#e3242b',
   Design: '#b81b21',
   Marketing: '#880E4F',

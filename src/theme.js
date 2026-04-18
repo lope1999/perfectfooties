@@ -11,7 +11,9 @@ export function createAppTheme(mode) {
         dark:  '#b81b21',
       },
       secondary: {
-        main: isDark ? '#00cccc' : '#006666',
+        main:  isDark ? '#00ffff' : '#007a7a',
+        light: '#00ffff',
+        dark:  '#005a5a',
       },
       background: {
         default: isDark ? '#0a0000' : '#ffffff',
@@ -19,7 +21,7 @@ export function createAppTheme(mode) {
       },
       text: {
         primary:   isDark ? '#f5f0f0' : '#1A1A1A',
-        secondary: isDark ? '#00cccc' : '#006666',
+        secondary: isDark ? '#00ffff' : '#007a7a',
       },
       divider: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)',
     },

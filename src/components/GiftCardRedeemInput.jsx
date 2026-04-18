@@ -10,6 +10,7 @@ import {
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import CloseIcon from '@mui/icons-material/Close';
 import { lookupGiftCard, validateCardForRedemption } from '../lib/giftCardService';
+import { useNotifications } from '../context/NotificationContext';
 
 const textFieldSx = {
   '& .MuiOutlinedInput-root': {
@@ -25,6 +26,7 @@ function formatNaira(amount) {
 }
 
 export default function GiftCardRedeemInput({ onApplied, onRemoved, appliedCard }) {
+  const { showToast } = useNotifications();
   const [expanded, setExpanded] = useState(false);
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,13 +41,16 @@ export default function GiftCardRedeemInput({ onApplied, onRemoved, appliedCard 
       const validation = validateCardForRedemption(card);
       if (!validation.valid) {
         setError(validation.error);
+        showToast(`Gift card error: ${validation.error}`, 'error');
       } else {
         onApplied({ code: card.code, balance: card.balance, cardId: card.id });
         setCode('');
         setError('');
+        showToast(`Gift card applied! ₦${card.balance.toLocaleString()} credit added.`, 'success');
       }
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.');
+      showToast('Could not verify gift card. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
@@ -56,6 +61,7 @@ export default function GiftCardRedeemInput({ onApplied, onRemoved, appliedCard 
     setExpanded(false);
     setCode('');
     setError('');
+    showToast('Gift card removed from order.', 'info');
   };
 
   const maskedCode = appliedCard ? `****${appliedCard.code.slice(-4)}` : '';

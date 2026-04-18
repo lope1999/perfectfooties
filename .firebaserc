@@ -1,6 +1,6 @@
 {
   "projects": {
-    "staging prod": "chizzystyles-shop"
+    "default": "perfect-footies"
   },
   "targets": {},
   "etags": {}

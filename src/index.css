@@ -6,22 +6,29 @@
 
 /* ── Colour tokens ───────────────────────────────────────── */
 :root {
-  /* Primary: #e3242b (red) | Secondary: #00ffff (cyan) */
-  /* Accents: warm cream, tan border, pink undertones     */
+  /* Primary: #e3242b (red) | Accent: #00ffff (cyan) */
+  --accent-cyan:  #00ffff;
+  --accent-cyan-dark: #007a7a;   /* readable on white-text backgrounds */
+  --accent-cyan-hover: #005a5a;  /* hover state for dark cyan elements */
+
   --bg-page:     #ffffff;
-  --bg-soft:     #FFF8F0;   /* warm cream */
-  --bg-soft2:    #FFE8E8;   /* pink undertone */
-  --bg-soft3:    #FFF0E6;   /* light cream */
+  --bg-soft:     #FFF8F0;
+  --bg-soft2:    #FFE8E8;
+  --bg-soft3:    #FFF0E6;
   --bg-muted:    #FAFAFA;
   --bg-card:     #ffffff;
 
   --text-main:   #1A1A1A;
   --text-muted:  #6B5B45;
   --text-dim:    #888888;
-  --text-purple: #006666;   /* dark teal/cyan for readable secondary text */
+  --text-purple: #007a7a;
 }
 
 [data-theme="dark"] {
+  --accent-cyan:  #00ffff;
+  --accent-cyan-dark: #00cccc;
+  --accent-cyan-hover: #009999;
+
   --bg-page:     #0a0000;
   --bg-soft:     #1a0505;
   --bg-soft2:    #1f0808;
@@ -32,7 +39,7 @@
   --text-main:   #f5f0f0;
   --text-muted:  #c09898;
   --text-dim:    #8a6060;
-  --text-purple: #00cccc;   /* lighter cyan for dark mode */
+  --text-purple: #00ffff;
 }
 
 body {

@@ -20,13 +20,13 @@ import useBlogPosts from '../hooks/useBlogPosts';
 import ScrollToTopFab from '../components/ScrollToTopFab';
 
 const categoryColors = {
-	"Nail Care": "#e3242b",
-	"Gel Polishes": "#006666",
-	"Nail Brands": "#b81b21",
-	"Nail Art": "#AD1457",
-	"Nail Trends": "#880E4F",
-	"Nail Styles": "#d75498",
-	"Nail Shapes": "#9a1b50",
+	"Leather Care": "#e3242b",
+	"Craftsmanship": "#007a7a",
+	"Style Guide": "#b81b21",
+	"Behind the Craft": "#AD1457",
+	"Leather Trends": "#880E4F",
+	"Collections": "#9a1b50",
+	"Custom Orders": "#C4965A",
 };
 
 export default function BlogPage() {
@@ -77,7 +77,7 @@ export default function BlogPage() {
               fontFamily: '"Georgia", serif',
             }}
           >
-            Tips, trends, and everything nails
+            Craft stories, leather care tips, and style inspiration
           </Typography>
         </ScrollReveal>
       </Box>

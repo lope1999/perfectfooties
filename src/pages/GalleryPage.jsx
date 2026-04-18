@@ -95,18 +95,18 @@ function GalleryCarousel({ images }) {
 }
 
 export default function GalleryPage() {
-  const [nailImages, setNailImages] = useState([]);
-  const [pressOnImages, setPressOnImages] = useState([]);
+  const [footwearImages, setFootwearImages] = useState([]);
+  const [bagsImages, setBagsImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
-      fetchGalleryImages('nails'),
-      fetchGalleryImages('pressOn'),
+      fetchGalleryImages('footwear'),
+      fetchGalleryImages('bags'),
     ])
-      .then(([nails, pressOns]) => {
-        setNailImages(nails);
-        setPressOnImages(pressOns);
+      .then(([footwear, bags]) => {
+        setFootwearImages(footwear);
+        setBagsImages(bags);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -152,12 +152,12 @@ export default function GalleryPage() {
               mx: 'auto',
             }}
           >
-            A showcase of our nail artistry — gel-x sets, appointments, and handcrafted press-on nails.
+            A showcase of PerfectFooties craftsmanship — handmade footwear, leather bags, belts, and accessories.
           </Typography>
         </ScrollReveal>
       </Box>
 
-      {/* Nails section */}
+      {/* Footwear section */}
       <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#fff' }}>
         <Container maxWidth="md">
           <ScrollReveal direction="up">
@@ -172,16 +172,16 @@ export default function GalleryPage() {
                 fontSize: { xs: '1.4rem', sm: '1.8rem' },
               }}
             >
-              Nails
+              Footwear
             </Typography>
           </ScrollReveal>
           <ScrollReveal direction="up" delay={0.15}>
-            <GalleryCarousel images={nailImages} />
+            <GalleryCarousel images={footwearImages} />
           </ScrollReveal>
         </Container>
       </Box>
 
-      {/* Press-On Nails section */}
+      {/* Bags & Accessories section */}
       <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#FFF8F0' }}>
         <Container maxWidth="md">
           <ScrollReveal direction="up">
@@ -196,11 +196,11 @@ export default function GalleryPage() {
                 fontSize: { xs: '1.4rem', sm: '1.8rem' },
               }}
             >
-              Press-On Nails
+              Bags & Accessories
             </Typography>
           </ScrollReveal>
           <ScrollReveal direction="up" delay={0.15}>
-            <GalleryCarousel images={pressOnImages} />
+            <GalleryCarousel images={bagsImages} />
           </ScrollReveal>
         </Container>
       </Box>

@@ -11,16 +11,14 @@ import GiftCardsSection from '../components/admin/GiftCardsSection';
 import BlogPostsSection from '../components/admin/BlogPostsSection';
 import GallerySection from '../components/admin/GallerySection';
 import LoyaltySection from '../components/admin/LoyaltySection';
-import NicheCollectionsSection from '../components/admin/NicheCollectionsSection';
+import CollectionsSection from '../components/admin/CollectionsSection';
 import AnnouncementsSection from '../components/admin/AnnouncementsSection';
-import { fetchAllOrders, seedAndFetchCategories, fetchAllUsers, computeUserStats } from '../lib/adminService';
+import ProductionTrackerSection from '../components/admin/ProductionTrackerSection';
+import { fetchAllOrders, fetchAllUsers, computeUserStats } from '../lib/adminService';
 import { fetchProducts } from '../lib/productService';
 import { fetchGalleryImages } from '../lib/galleryService';
 import { fetchAllGiftCards } from '../lib/giftCardService';
 import { seedAndFetchBlogPosts } from '../lib/blogService';
-// Leather products are added via admin panel — no static seed data
-const staticPressOns = [];
-import { retailCategories as staticRetail } from '../data/retailProducts';
 import { blogPosts as staticBlogPosts } from '../data/blog';
 
 export default function AdminPage() {
@@ -28,8 +26,6 @@ export default function AdminPage() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [orders, setOrders] = useState([]);
-  const [pressOnCategories, setPressOnCategories] = useState([]);
-  const [retailCategories, setRetailCategories] = useState([]);
   const [giftCards, setGiftCards] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]);
   const [galleryImages, setGalleryImages] = useState([]);
@@ -43,10 +39,8 @@ export default function AdminPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [o, pc, rc, gc, uf, bp, gi, sp] = await Promise.allSettled([
+      const [o, gc, uf, bp, gi, sp] = await Promise.allSettled([
         fetchAllOrders(),
-        seedAndFetchCategories('productCategories', staticPressOns),
-        seedAndFetchCategories('retailCategories', staticRetail),
         fetchAllGiftCards(),
         fetchAllUsers(),
         seedAndFetchBlogPosts(staticBlogPosts),
@@ -61,10 +55,6 @@ export default function AdminPage() {
         setOrders([]);
       }
 
-      const pressOns = pc.status === 'fulfilled' ? pc.value : [];
-      const retail = rc.status === 'fulfilled' ? rc.value : [];
-      setPressOnCategories(pressOns.length > 0 ? pressOns : staticPressOns);
-      setRetailCategories(retail.length > 0 ? retail : staticRetail);
       setGiftCards(gc.status === 'fulfilled' ? gc.value : []);
       setBlogPosts(bp.status === 'fulfilled' ? bp.value : staticBlogPosts);
       setGalleryImages(gi.status === 'fulfilled' ? gi.value : []);
@@ -75,8 +65,6 @@ export default function AdminPage() {
       setShopProducts(sp.status === 'fulfilled' ? sp.value : []);
     } catch (err) {
       console.error('Admin data load error:', err);
-      setPressOnCategories(staticPressOns);
-      setRetailCategories(staticRetail);
     } finally {
       setLoading(false);
     }
@@ -92,8 +80,8 @@ export default function AdminPage() {
         return (
           <DashboardSection
             orders={orders}
-            pressOnCategories={pressOnCategories}
-            retailCategories={retailCategories}
+            pressOnCategories={[]}
+            retailCategories={[]}
             customerCount={users.length}
             loading={loading}
             onNavigate={setSection}
@@ -101,26 +89,10 @@ export default function AdminPage() {
         );
       case 'orders':
         return <OrdersSection orders={orders} loading={loading} onRefresh={loadData} />;
-      case 'pressons':
-        return (
-          <ProductsSection
-            collectionName="productCategories"
-            categories={pressOnCategories}
-            loading={loading}
-            onRefresh={loadData}
-            type="presson"
-          />
-        );
-      case 'retail':
-        return (
-          <ProductsSection
-            collectionName="retailCategories"
-            categories={retailCategories}
-            loading={loading}
-            onRefresh={loadData}
-            type="retail"
-          />
-        );
+      case 'production':
+        return <ProductionTrackerSection />;
+      case 'collections':
+        return <CollectionsSection />;
       case 'customers':
         return <CustomersSection users={users} loading={loading} />;
       case 'blog':
@@ -149,14 +121,6 @@ export default function AdminPage() {
         );
       case 'loyalty':
         return <LoyaltySection loading={loading} />;
-      case 'nichecollections':
-        return (
-          <NicheCollectionsSection
-            collections={shopProducts}
-            loading={loading}
-            onRefresh={loadData}
-          />
-        );
       case 'announcements':
         return <AnnouncementsSection />;
       default:

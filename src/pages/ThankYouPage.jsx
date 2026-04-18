@@ -1,39 +1,75 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Typography,
-  Container,
-  Button,
-  Divider,
-  Chip,
+  Box, Typography, Container, Button, Divider, Chip,
+  CircularProgress, Snackbar, Alert,
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import LinkIcon from '@mui/icons-material/Link';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { fetchItems } from '../lib/collectionService';
+import { sendConfirmationEmail } from '../lib/emailService';
+import { generateReceiptHtml, openReceiptWindow } from '../lib/receiptTemplate';
+
+const ff = '"Georgia", serif';
+
+const ALL_COLLECTION_IDS = ['female-footwear', 'male-footwear', 'heirloom', 'bags-belts'];
 
 function formatNaira(n) {
   return `₦${(n || 0).toLocaleString()}`;
 }
 
-function SummaryRow({ label, value, highlight, strike }) {
+function SummaryRow({ label, value, strike, icon: Icon }) {
   return (
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.6 }}>
-      <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{label}</Typography>
-      <Typography
-        sx={{
-          fontSize: '0.84rem',
-          fontWeight: highlight ? 700 : 500,
-          color: strike ? '#e3242b' : highlight ? '#1a1a1a' : '#444',
-          textDecoration: strike ? 'none' : 'none',
-        }}
-      >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        {Icon && <Icon sx={{ fontSize: '0.85rem', color: 'var(--text-muted)' }} />}
+        <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontFamily: ff }}>{label}</Typography>
+      </Box>
+      <Typography sx={{ fontSize: '0.84rem', fontWeight: 500, color: strike ? '#e3242b' : '#444', fontFamily: ff }}>
         {value}
       </Typography>
+    </Box>
+  );
+}
+
+function SuggestedItem({ item, collectionId, navigate }) {
+  return (
+    <Box
+      onClick={() => navigate(`/shop/${collectionId}/${item.id}`)}
+      sx={{
+        flex: '0 0 160px', width: 160, borderRadius: 2, overflow: 'hidden',
+        border: '1px solid #E8D5B0', backgroundColor: '#fff', cursor: 'pointer',
+        transition: 'box-shadow 0.2s, transform 0.2s',
+        '&:hover': { boxShadow: '0 4px 16px rgba(0,255,255,0.2)', transform: 'translateY(-2px)' },
+      }}
+    >
+      <Box sx={{ height: 110, backgroundColor: '#f5f5f5', overflow: 'hidden' }}>
+        {item.images?.[0] ? (
+          <Box component="img" src={item.images[0]} alt={item.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <ShoppingBagOutlinedIcon sx={{ color: '#ddd', fontSize: 40 }} />
+          </Box>
+        )}
+      </Box>
+      <Box sx={{ p: 1.2 }}>
+        <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.75rem', color: 'var(--text-main)', mb: 0.3, lineHeight: 1.3 }}>
+          {item.name}
+        </Typography>
+        <Typography sx={{ fontFamily: ff, fontSize: '0.72rem', color: 'var(--text-purple)', fontWeight: 600 }}>
+          {formatNaira(item.price)}
+        </Typography>
+      </Box>
     </Box>
   );
 }
@@ -41,9 +77,15 @@ function SummaryRow({ label, value, highlight, strike }) {
 export default function ThankYouPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const state = location.state || {};
+  const state = location.state || (() => {
+    try { return JSON.parse(sessionStorage.getItem('thankYouState') || '{}'); } catch { return {}; }
+  })();
   const [show, setShow] = useState(false);
   const [waOpened, setWaOpened] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailSnack, setEmailSnack] = useState({ open: false, success: true });
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestColId, setSuggestColId] = useState('');
 
   const isReschedule = !!state.isReschedule;
   const isAppointment =
@@ -51,6 +93,7 @@ export default function ThankYouPage() {
     state.type === 'service' ||
     state.type === 'appointment' ||
     (state.appointmentDate && !state.items?.some?.((i) => i.kind !== 'service'));
+  const isLeather = state.type === 'leather';
 
   const whatsappUrl = state.whatsappUrl || '';
 
@@ -59,16 +102,71 @@ export default function ThankYouPage() {
     return () => clearTimeout(t);
   }, []);
 
-  // Attempt auto-redirect to WhatsApp once page is visible.
-  // Works on most Android browsers; iOS Safari requires a direct user tap (button below handles that).
   useEffect(() => {
-    if (!whatsappUrl || waOpened) return;
+    if (location.state && Object.keys(location.state).length > 0) {
+      try { sessionStorage.setItem('thankYouState', JSON.stringify(location.state)); } catch {}
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-open WhatsApp only for appointments
+  useEffect(() => {
+    if (!whatsappUrl || waOpened || !isAppointment) return;
     const t = setTimeout(() => {
-      window.location.href = whatsappUrl;
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
       setWaOpened(true);
     }, 600);
     return () => clearTimeout(t);
-  }, [whatsappUrl]);
+  }, [whatsappUrl, isAppointment]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch "you might also like" items from a different collection
+  useEffect(() => {
+    const orderedColId = state.items?.find((i) => i.kind === 'leather')?.collectionId;
+    const pool = ALL_COLLECTION_IDS.filter((id) => id !== orderedColId);
+    const colId = pool[Math.floor(Math.random() * pool.length)];
+    setSuggestColId(colId);
+    fetchItems(colId)
+      .then((items) => setSuggestions(items.filter((it) => it.status === 'open').slice(0, 4)))
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleEmailReceipt = useCallback(async () => {
+    if (!state.email) {
+      setEmailSnack({ open: true, success: false });
+      return;
+    }
+    setEmailSending(true);
+    const result = await sendConfirmationEmail({
+      id: state.orderId,
+      customerName: state.customerName,
+      email: state.email,
+      items: state.items,
+      total: state.finalTotal ?? state.total,
+      shipping: state.shipping,
+    });
+    setEmailSending(false);
+    setEmailSnack({ open: true, success: result.success });
+  }, [state]);
+
+  const handlePrintReceipt = () => {
+    const shipping = state.shipping || {};
+    const html = generateReceiptHtml({
+      orderId: state.orderId,
+      customerName: state.customerName,
+      email: state.email,
+      paymentReference: state.paymentReference,
+      items: state.items || [],
+      giftCardDiscount: state.giftCardDiscount || 0,
+      referralDiscount: state.referralDiscount || 0,
+      loyaltyDiscount: state.loyaltyDiscount || 0,
+      shipping,
+      shippingFee: shipping.fee || 0,
+      total: state.total,
+      finalTotal: state.finalTotal,
+      type: state.type,
+      logoUrl: `${window.location.origin}/images/logo.png`,
+    });
+    openReceiptWindow(html);
+  };
 
   // Derived values
   const customerName = state.customerName || '';
@@ -83,11 +181,22 @@ export default function ThankYouPage() {
   const depositAmount = state.depositAmount || 0;
   const serviceName = state.serviceName || items[0]?.serviceName || items[0]?.name || '';
 
+  const cardSx = (delay = 0) => ({
+    background: '#fff',
+    borderRadius: 4,
+    border: '1.5px solid #E8D5B0',
+    p: 2.5,
+    mb: 2.5,
+    opacity: show ? 1 : 0,
+    transform: show ? 'translateY(0)' : 'translateY(24px)',
+    transition: `all 0.6s cubic-bezier(0.34,1.56,0.64,1) ${delay}s`,
+  });
+
   return (
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(160deg, #FFF0F8 0%, #F8F0FF 50%, #FFF8F0 100%)',
+        background: 'linear-gradient(160deg, #f0fffe 0%, #f8f0ff 50%, #fff8f0 100%)',
         pt: { xs: 10, md: 12 },
         pb: { xs: 12, md: 8 },
       }}
@@ -103,275 +212,175 @@ export default function ThankYouPage() {
             transition: 'all 0.55s cubic-bezier(0.34,1.56,0.64,1)',
           }}
         >
-          {/* Animated checkmark ring */}
           <Box
             sx={{
-              width: 90,
-              height: 90,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #e3242b22, #9C27B022)',
-              border: '2.5px solid #e3242b44',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mx: 'auto',
-              mb: 2,
-              boxShadow: '0 8px 32px rgba(233,30,140,0.15)',
-              animation: show ? 'pulse 2s ease-in-out infinite' : 'none',
+              width: 90, height: 90, borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(0,255,255,0.15), rgba(0,122,122,0.1))',
+              border: '2.5px solid rgba(0,255,255,0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              mx: 'auto', mb: 2,
+              boxShadow: '0 8px 32px rgba(0,255,255,0.2)',
+              animation: show ? 'pulse 2.5s ease-in-out infinite' : 'none',
               '@keyframes pulse': {
-                '0%, 100%': { boxShadow: '0 8px 32px rgba(233,30,140,0.15)' },
-                '50%': { boxShadow: '0 8px 48px rgba(233,30,140,0.35)' },
+                '0%, 100%': { boxShadow: '0 8px 32px rgba(0,255,255,0.2)' },
+                '50%': { boxShadow: '0 8px 48px rgba(0,255,255,0.4)' },
               },
             }}
           >
-            <CheckCircleOutlineIcon sx={{ fontSize: 52, color: '#e3242b' }} />
+            <CheckCircleOutlineIcon sx={{ fontSize: 52, color: 'var(--accent-cyan)' }} />
           </Box>
 
           <Typography
             variant="h4"
             sx={{
-              fontWeight: 800,
+              fontWeight: 800, fontFamily: ff,
               fontSize: { xs: '1.6rem', md: '2rem' },
-              background: 'linear-gradient(135deg, #e3242b, #9C27B0)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              color: 'var(--text-purple)',
               mb: 0.5,
             }}
           >
-            {isReschedule ? 'Appointment Rescheduled!' : isAppointment ? 'Appointment Booked!' : 'Order Placed!'}
+            Order Placed!
           </Typography>
-          <Typography sx={{ fontSize: '0.92rem', color: '#777', px: 2 }}>
+          <Typography sx={{ fontSize: '0.92rem', color: '#777', px: 2, fontFamily: ff }}>
             {customerName
-              ? `Thank you, ${customerName.split(' ')[0]}! We've received your ${isReschedule ? 'reschedule request' : isAppointment ? 'booking' : 'order'} and will be in touch via WhatsApp shortly.`
-              : `Thank you! We've received your ${isReschedule ? 'reschedule request' : isAppointment ? 'booking' : 'order'} and will be in touch via WhatsApp shortly.`}
+              ? `Thank you, ${customerName.split(' ')[0]}! We've received your order and our artisans will begin crafting your piece soon.`
+              : `Thank you! We've received your order and will confirm via WhatsApp shortly.`}
           </Typography>
         </Box>
 
         {/* Summary card */}
         <Box
           sx={{
-            background: '#fff',
-            borderRadius: 4,
-            border: '1.5px solid #F8D7E8',
-            boxShadow: '0 4px 24px rgba(233,30,140,0.08)',
-            overflow: 'hidden',
-            mb: 2.5,
+            background: '#fff', borderRadius: 4,
+            border: '1.5px solid #E8D5B0',
+            boxShadow: '0 4px 24px rgba(0,255,255,0.08)',
+            overflow: 'hidden', mb: 2.5,
             opacity: show ? 1 : 0,
             transform: show ? 'translateY(0)' : 'translateY(24px)',
             transition: 'all 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.1s',
           }}
         >
-          {/* Card header */}
-          <Box
-            sx={{
-              px: 2.5,
-              py: 1.5,
-              background: 'linear-gradient(135deg, #FFF0F8, #F8F0FF)',
-              borderBottom: '1px solid #F0C8DC',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-            }}
-          >
-            {isAppointment ? (
-              <CalendarMonthIcon sx={{ fontSize: 20, color: '#e3242b' }} />
-            ) : (
-              <ShoppingBagOutlinedIcon sx={{ fontSize: 20, color: '#e3242b' }} />
-            )}
-            <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#b81b21' }}>
-              {isReschedule ? 'Reschedule Summary' : isAppointment ? 'Appointment Summary' : 'Order Summary'}
+          <Box sx={{ px: 2.5, py: 1.5, background: 'linear-gradient(135deg, rgba(0,255,255,0.08), rgba(0,122,122,0.05))', borderBottom: '1px solid #E8D5B0', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ShoppingBagOutlinedIcon sx={{ fontSize: 20, color: 'var(--accent-cyan)' }} />
+            <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-purple)', fontFamily: ff }}>
+              Order Summary
             </Typography>
           </Box>
 
           <Box sx={{ px: 2.5, py: 2 }}>
-            {/* Items list */}
             {items.length > 0 ? (
               <Box sx={{ mb: 1.5 }}>
                 {items.map((item, idx) => (
                   <Box key={idx} sx={{ mb: idx < items.length - 1 ? 1.5 : 0 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <Box sx={{ flex: 1, pr: 1 }}>
-                        <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-main)' }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-main)', fontFamily: ff }}>
                           {item.serviceName || item.name || 'Item'}
                         </Typography>
-                        {item.nailShape && (
-                          <Typography sx={{ fontSize: '0.75rem', color: '#888', mt: 0.2 }}>
-                            {item.nailShape}{item.nailLength ? ` · ${item.nailLength}` : ''}
+                        {item.selectedColor && (
+                          <Typography sx={{ fontSize: '0.75rem', color: '#888', mt: 0.2, fontFamily: ff }}>
+                            Colour: {item.selectedColor}{item.footLength ? ` · Length: ${item.footLength}cm` : ''}
                           </Typography>
                         )}
                         {item.selectedLength && (
-                          <Typography sx={{ fontSize: '0.75rem', color: '#888', mt: 0.2 }}>
-                            Length: {item.selectedLength}
-                          </Typography>
+                          <Typography sx={{ fontSize: '0.75rem', color: '#888', mt: 0.2 }}>Length: {item.selectedLength}</Typography>
                         )}
-                        {item.setIncludes?.length > 0 && (
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.4, mt: 0.5 }}>
-                            {item.setIncludes.map((tag) => (
-                              <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.65rem', height: 18, backgroundColor: '#FFE8E8', color: '#b81b21', fontWeight: 600 }} />
-                            ))}
-                          </Box>
-                        )}
-                        {item.inspirationTags?.length > 0 && (
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.4, mt: 0.4 }}>
-                            {item.inspirationTags.map((tag) => (
-                              <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.65rem', height: 18, backgroundColor: '#EDE7F6', color: '#5E35B1', fontWeight: 600 }} />
-                            ))}
-                          </Box>
-                        )}
-                        {item.nailNotes && (
-                          <Typography sx={{ fontSize: '0.73rem', color: '#888', mt: 0.4, fontStyle: 'italic' }}>
-                            &ldquo;{item.nailNotes}&rdquo;
-                          </Typography>
+                        {item.quantity && item.quantity > 1 && (
+                          <Typography sx={{ fontSize: '0.75rem', color: '#888', mt: 0.2 }}>Qty: {item.quantity}</Typography>
                         )}
                         {item.specialRequest && (
-                          <Chip
-                            label="Made to Order — 4–7 days"
-                            size="small"
-                            sx={{ mt: 0.5, fontSize: '0.65rem', height: 18, backgroundColor: '#FFF8E1', color: '#B8860B', fontWeight: 700, border: '1px solid #FFD54F' }}
-                          />
+                          <Chip label="Made to Order — 4–7 days" size="small"
+                            sx={{ mt: 0.5, fontSize: '0.65rem', height: 18, backgroundColor: '#FFF8E1', color: '#B8860B', fontWeight: 700, border: '1px solid #FFD54F' }} />
                         )}
                         {item.date && (
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.3 }}>
-                            <AccessTimeIcon sx={{ fontSize: 13, color: '#e3242b' }} />
-                            <Typography sx={{ fontSize: '0.75rem', color: '#e3242b', fontWeight: 600 }}>
-                              {item.date}
-                            </Typography>
+                            <AccessTimeIcon sx={{ fontSize: 13, color: 'var(--accent-cyan)' }} />
+                            <Typography sx={{ fontSize: '0.75rem', color: 'var(--text-purple)', fontWeight: 600 }}>{item.date}</Typography>
                           </Box>
                         )}
-                        {item.quantity && item.quantity > 1 && (
-                          <Typography sx={{ fontSize: '0.75rem', color: '#888', mt: 0.2 }}>
-                            Qty: {item.quantity}
-                          </Typography>
-                        )}
                       </Box>
-                      <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
+                      <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-main)', whiteSpace: 'nowrap', fontFamily: ff }}>
                         {formatNaira(item.price)}
                       </Typography>
                     </Box>
-                    {idx < items.length - 1 && <Divider sx={{ mt: 1.2, borderColor: '#F8EEF4' }} />}
+                    {idx < items.length - 1 && <Divider sx={{ mt: 1.2, borderColor: '#E8D5B0' }} />}
                   </Box>
                 ))}
               </Box>
             ) : serviceName ? (
               <Box sx={{ mb: 1.5 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-main)' }}>{serviceName}</Typography>
-                  <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-main)' }}>{formatNaira(total)}</Typography>
+                  <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-main)', fontFamily: ff }}>{serviceName}</Typography>
+                  <Typography sx={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-main)', fontFamily: ff }}>{formatNaira(total)}</Typography>
                 </Box>
                 {appointmentDate && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.4 }}>
-                    <AccessTimeIcon sx={{ fontSize: 13, color: '#e3242b' }} />
-                    <Typography sx={{ fontSize: '0.75rem', color: '#e3242b', fontWeight: 600 }}>{appointmentDate}</Typography>
+                    <AccessTimeIcon sx={{ fontSize: 13, color: 'var(--accent-cyan)' }} />
+                    <Typography sx={{ fontSize: '0.75rem', color: 'var(--text-purple)', fontWeight: 600 }}>{appointmentDate}</Typography>
                   </Box>
                 )}
               </Box>
             ) : null}
 
-            <Divider sx={{ borderColor: '#F0C8DC', mb: 1.5 }} />
+            <Divider sx={{ borderColor: '#E8D5B0', mb: 1.5 }} />
 
-            {/* Discounts & totals */}
-            {giftCardDiscount > 0 && (
-              <SummaryRow label="🎁 Gift Card" value={`-${formatNaira(giftCardDiscount)}`} strike />
-            )}
-            {referralDiscount > 0 && (
-              <SummaryRow label="🔗 Referral Code" value={`-${formatNaira(referralDiscount)}`} strike />
-            )}
-            {loyaltyDiscount > 0 && (
-              <SummaryRow label="⭐ Loyalty Points" value={`-${formatNaira(loyaltyDiscount)}`} strike />
-            )}
+            {giftCardDiscount > 0 && <SummaryRow icon={CardGiftcardIcon} label="Gift Card" value={`-${formatNaira(giftCardDiscount)}`} strike />}
+            {referralDiscount > 0 && <SummaryRow icon={LinkIcon} label="Referral Code" value={`-${formatNaira(referralDiscount)}`} strike />}
+            {loyaltyDiscount > 0 && <SummaryRow icon={StarOutlineIcon} label="Loyalty Points" value={`-${formatNaira(loyaltyDiscount)}`} strike />}
             {totalDiscount > 0 && (
               <>
                 <SummaryRow label="Subtotal" value={formatNaira(total + totalDiscount)} />
                 <SummaryRow label="Total Saved" value={`-${formatNaira(totalDiscount)}`} strike />
-                <Divider sx={{ borderColor: '#F0C8DC', my: 0.8 }} />
+                <Divider sx={{ borderColor: '#E8D5B0', my: 0.8 }} />
               </>
             )}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.5 }}>
-              <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: '#1a1a1a' }}>
-                {isAppointment && depositAmount > 0 ? 'Deposit' : 'Total'}
+              <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: '#1a1a1a', fontFamily: ff }}>
+                Total
               </Typography>
-              <Typography
-                sx={{
-                  fontWeight: 800,
-                  fontSize: '1.1rem',
-                  background: 'linear-gradient(135deg, #e3242b, #9C27B0)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                {isAppointment && depositAmount > 0
-                  ? formatNaira(depositAmount)
-                  : formatNaira(finalTotal)}
+              <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-purple)', fontFamily: ff }}>
+                {formatNaira(finalTotal)}
               </Typography>
             </Box>
-            {isAppointment && depositAmount > 0 && (
-              <Typography sx={{ fontSize: '0.73rem', color: '#888', mt: 0.3, textAlign: 'right' }}>
-                Balance: {formatNaira(finalTotal - depositAmount)} due on the day
-              </Typography>
-            )}
           </Box>
         </Box>
 
-        {/* Order Progress Tracker — product orders only */}
-        {!isAppointment && (
-          <Box
-            sx={{
-              background: '#fff',
-              borderRadius: 4,
-              border: '1.5px solid #F0C8DC',
-              p: 2.5,
-              mb: 2.5,
-              opacity: show ? 1 : 0,
-              transform: show ? 'translateY(0)' : 'translateY(24px)',
-              transition: 'all 0.62s cubic-bezier(0.34,1.56,0.64,1) 0.15s',
-            }}
-          >
-            <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#b81b21', mb: 2 }}>
+        {/* Order Progress Tracker */}
+        {(
+          <Box sx={cardSx(0.15)}>
+            <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-purple)', mb: 2, fontFamily: ff }}>
               Order Progress
             </Typography>
             {(() => {
               const steps = [
-                { key: 'pending',    label: 'Placed'       },
-                { key: 'confirmed',  label: 'Confirmed'    },
-                { key: 'production', label: 'In Production'},
-                { key: 'shipping',   label: 'Shipped'      },
-                { key: 'received',   label: 'Delivered'    },
+                { key: 'pending',    label: 'Placed' },
+                { key: 'confirmed',  label: 'Confirmed' },
+                { key: 'production', label: 'In Production' },
+                { key: 'shipping',   label: 'Shipped' },
+                { key: 'received',   label: 'Delivered' },
               ];
-              const activeIdx = 0; // freshly placed
+              const activeIdx = 0;
               return (
                 <>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     {steps.map((step, idx) => (
                       <Box key={step.key} sx={{ display: 'flex', alignItems: 'center', flex: idx < steps.length - 1 ? 1 : 0 }}>
-                        <Box
-                          sx={{
-                            width: idx === activeIdx ? 14 : 10,
-                            height: idx === activeIdx ? 14 : 10,
-                            borderRadius: '50%',
-                            backgroundColor: idx <= activeIdx ? '#e3242b' : '#e0e0e0',
-                            border: idx === activeIdx ? '2px solid #b81b21' : 'none',
-                            flexShrink: 0,
-                          }}
-                        />
-                        {idx < steps.length - 1 && (
-                          <Box sx={{ flex: 1, height: 2, backgroundColor: idx < activeIdx ? '#e3242b' : '#e0e0e0', mx: 0.3 }} />
-                        )}
+                        <Box sx={{ width: idx === activeIdx ? 14 : 10, height: idx === activeIdx ? 14 : 10, borderRadius: '50%', backgroundColor: idx <= activeIdx ? 'var(--accent-cyan)' : '#e0e0e0', border: idx === activeIdx ? '2px solid var(--accent-cyan-dark)' : 'none', flexShrink: 0 }} />
+                        {idx < steps.length - 1 && <Box sx={{ flex: 1, height: 2, backgroundColor: idx < activeIdx ? 'var(--accent-cyan)' : '#e0e0e0', mx: 0.3 }} />}
                       </Box>
                     ))}
                   </Box>
                   <Box sx={{ display: 'flex', mt: 0.8 }}>
                     {steps.map((step, idx) => (
                       <Box key={step.key} sx={{ flex: idx < steps.length - 1 ? 1 : 0, textAlign: idx === 0 ? 'left' : idx === steps.length - 1 ? 'right' : 'center' }}>
-                        <Typography sx={{ fontSize: '0.62rem', fontWeight: idx === activeIdx ? 700 : 400, color: idx <= activeIdx ? '#e3242b' : '#aaa', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                        <Typography sx={{ fontSize: '0.62rem', fontWeight: idx === activeIdx ? 700 : 400, color: idx <= activeIdx ? 'var(--accent-cyan-dark)' : '#aaa', lineHeight: 1.2, whiteSpace: 'nowrap', fontFamily: ff }}>
                           {step.label}
                         </Typography>
                       </Box>
                     ))}
                   </Box>
-                  <Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 1, textAlign: 'center' }}>
-                    {items.some((i) => i.nailBedSize)
-                      ? 'Custom sets take 4–7 business days to make'
-                      : 'Ready-made sets ship within 2–3 business days'}
+                  <Typography sx={{ fontSize: '0.72rem', color: '#888', mt: 1, textAlign: 'center', fontFamily: ff }}>
+                    {isLeather ? 'Handmade to order — 10–14 days production time' : 'We\'ll update your order as we prepare and dispatch your items.'}
                   </Typography>
                 </>
               );
@@ -379,192 +388,170 @@ export default function ThankYouPage() {
           </Box>
         )}
 
-        {/* What's next */}
-        <Box
-          sx={{
-            background: '#fff',
-            borderRadius: 4,
-            border: '1.5px solid #F0C8DC',
-            p: 2.5,
-            mb: 3,
-            opacity: show ? 1 : 0,
-            transform: show ? 'translateY(0)' : 'translateY(24px)',
-            transition: 'all 0.65s cubic-bezier(0.34,1.56,0.64,1) 0.2s',
-          }}
-        >
-          <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#b81b21', mb: 1.5 }}>
+        {/* WhatsApp action section */}
+        {whatsappUrl && (
+          <Box sx={{ ...cardSx(0.2), background: 'linear-gradient(135deg, #e8fff8, #f0fff8)', border: '1.5px solid rgba(0,255,255,0.3)' }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-purple)', mb: 0.5, fontFamily: ff }}>
+              Send your order details to us on WhatsApp
+            </Typography>
+            <Typography sx={{ fontSize: '0.78rem', color: 'var(--text-muted)', mb: 1.5, fontFamily: ff }}>
+              Tap below to send your order summary to the PerfectFooties team so we can begin crafting your piece.
+            </Typography>
+            <Button
+              fullWidth
+              component="a"
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              startIcon={<WhatsAppIcon />}
+              sx={{
+                py: 1.4, borderRadius: '50px',
+                background: 'linear-gradient(135deg, #25D366, #128C7E)',
+                color: '#fff', fontWeight: 700, fontSize: '0.92rem',
+                fontFamily: ff, textDecoration: 'none',
+                boxShadow: '0 4px 16px rgba(37,211,102,0.3)',
+                '&:hover': { background: 'linear-gradient(135deg, #1ebe5d, #0e7063)', boxShadow: '0 6px 20px rgba(37,211,102,0.45)' },
+              }}
+            >
+              Send Order to WhatsApp
+            </Button>
+          </Box>
+        )}
+
+        {/* What happens next */}
+        <Box sx={cardSx(0.25)}>
+          <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-purple)', mb: 1.5, fontFamily: ff }}>
             What happens next?
           </Typography>
           {[
             {
               icon: <WhatsAppIcon sx={{ fontSize: 18, color: '#25D366' }} />,
               text: whatsappUrl
-                ? 'Tap "Send Booking to WhatsApp" above to send your appointment details directly to our stylist.'
-                : 'You\'ll receive a WhatsApp message from us to confirm details and arrange payment.',
+                ? 'Tap "Send Order to WhatsApp" above to notify our team — they\'ll confirm production timelines and delivery.'
+                : 'You\'ll receive a WhatsApp message from us to confirm your order details.',
             },
             {
-              icon: <AccessTimeIcon sx={{ fontSize: 18, color: '#e3242b' }} />,
-              text: isReschedule
-                ? 'We\'ll confirm your new appointment slot on WhatsApp and update your booking.'
-                : isAppointment
-                ? 'We\'ll confirm your appointment slot and send a reminder before your visit.'
-                : 'We\'ll update your order status as we prepare and dispatch your items.',
+              icon: <AccessTimeIcon sx={{ fontSize: 18, color: 'var(--accent-cyan)' }} />,
+              text: 'Your handmade leather piece goes into production (10–14 days). We\'ll update your order status at each stage.',
             },
             {
               icon: <StarOutlineIcon sx={{ fontSize: 18, color: '#FFB300' }} />,
-              text: isReschedule
-                ? 'Your appointment has been updated. View it in My Account → Appointments tab.'
-                : `You'll earn loyalty points for this ${isAppointment ? 'appointment' : 'order'} once it's completed — check your Account page.`,
+              text: 'You\'ll earn loyalty points for this order once it\'s delivered — check your Account page.',
             },
           ].map((step, i) => (
             <Box key={i} sx={{ display: 'flex', gap: 1.5, mb: i < 2 ? 1.2 : 0, alignItems: 'flex-start' }}>
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '50%',
-                  background: '#FFF0F8',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  mt: 0.1,
-                }}
-              >
+              <Box sx={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(0,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.1 }}>
                 {step.icon}
               </Box>
-              <Typography sx={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5, pt: 0.5 }}>
+              <Typography sx={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5, pt: 0.5, fontFamily: ff }}>
                 {step.text}
               </Typography>
             </Box>
           ))}
         </Box>
 
-        {/* Discount saved banner */}
+        {/* Savings banner */}
         {totalDiscount > 0 && (
-          <Box
-            sx={{
-              background: 'linear-gradient(135deg, #FFF8E1, #FFF3CD)',
-              border: '1.5px solid #FFD54F',
-              borderRadius: 3,
-              p: 1.5,
-              mb: 3,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              opacity: show ? 1 : 0,
-              transition: 'opacity 0.7s 0.3s',
-            }}
-          >
+          <Box sx={{ background: 'linear-gradient(135deg, #FFF8E1, #FFF3CD)', border: '1.5px solid #FFD54F', borderRadius: 3, p: 1.5, mb: 2.5, display: 'flex', alignItems: 'center', gap: 1.5, opacity: show ? 1 : 0, transition: 'opacity 0.7s 0.3s' }}>
             <LocalOfferIcon sx={{ fontSize: 22, color: '#F9A825', flexShrink: 0 }} />
             <Box>
-              <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: '#B8860B' }}>
-                You saved {formatNaira(totalDiscount)}!
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#888' }}>
-                Great job using your discounts on this order
-              </Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: '#B8860B', fontFamily: ff }}>You saved {formatNaira(totalDiscount)}!</Typography>
+              <Typography sx={{ fontSize: '0.74rem', color: '#888', fontFamily: ff }}>Great job using your discounts on this order</Typography>
             </Box>
           </Box>
         )}
 
-        {/* WhatsApp send button — shown for appointments so the stylist receives details */}
-        {whatsappUrl && (
-          <Box
-            sx={{
-              mb: 2.5,
-              opacity: show ? 1 : 0,
-              transform: show ? 'translateY(0)' : 'translateY(16px)',
-              transition: 'all 0.65s cubic-bezier(0.34,1.56,0.64,1) 0.25s',
-            }}
-          >
-            <Box
-              sx={{
-                p: 1.5,
-                mb: 1.5,
-                borderRadius: 3,
-                background: 'linear-gradient(135deg, #E8F5E9, #F1F8E9)',
-                border: '1.5px solid #A5D6A7',
-                textAlign: 'center',
-              }}
-            >
-              <Typography sx={{ fontSize: '0.8rem', color: '#2e7d32', fontWeight: 600, mb: 0.3 }}>
-                📲 One more step — send your booking to our stylist!
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                Tap below to open WhatsApp with your appointment details pre-filled.
-              </Typography>
-            </Box>
+        {/* Quick actions row */}
+        {(
+          <Box sx={{ display: 'flex', gap: 1.5, mb: 2.5, flexWrap: 'wrap', opacity: show ? 1 : 0, transition: 'opacity 0.7s 0.32s' }}>
             <Button
-              fullWidth
-              component="a"
-              href={whatsappUrl}
-              startIcon={<WhatsAppIcon />}
+              onClick={handleEmailReceipt}
+              disabled={emailSending}
+              startIcon={emailSending ? <CircularProgress size={14} sx={{ color: 'var(--accent-cyan)' }} /> : <EmailOutlinedIcon />}
               sx={{
-                py: 1.5,
-                borderRadius: '50px',
-                background: 'linear-gradient(135deg, #25D366, #128C7E)',
-                color: '#fff',
-                fontWeight: 700,
-                fontSize: '0.95rem',
-                boxShadow: '0 4px 18px rgba(37,211,102,0.35)',
-                textDecoration: 'none',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #1ebe5d, #0e7063)',
-                  boxShadow: '0 6px 24px rgba(37,211,102,0.45)',
-                },
+                flex: 1, minWidth: 130, py: 1, borderRadius: '50px',
+                border: '1.5px solid var(--accent-cyan)', color: 'var(--text-purple)',
+                fontFamily: ff, fontWeight: 600, fontSize: '0.8rem',
+                backgroundColor: 'rgba(0,255,255,0.05)',
+                '&:hover': { backgroundColor: 'rgba(0,255,255,0.12)' },
               }}
             >
-              Send Booking to WhatsApp
+              {emailSending ? 'Sending…' : 'Email Receipt'}
             </Button>
+            <Button
+              onClick={handlePrintReceipt}
+              startIcon={<DownloadOutlinedIcon />}
+              sx={{
+                flex: 1, minWidth: 130, py: 1, borderRadius: '50px',
+                border: '1.5px solid #E8D5B0', color: '#555',
+                fontFamily: ff, fontWeight: 600, fontSize: '0.8rem',
+                '&:hover': { borderColor: 'var(--accent-cyan)', color: 'var(--text-purple)' },
+              }}
+            >
+              Download Receipt
+            </Button>
+          </Box>
+        )}
+
+        {/* You might also like */}
+        {suggestions.length > 0 && (
+          <Box sx={{ mb: 2.5, opacity: show ? 1 : 0, transition: 'opacity 0.8s 0.35s' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+              <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)' }}>
+                You might also like
+              </Typography>
+              <Button
+                endIcon={<ArrowForwardIosIcon sx={{ fontSize: '0.7rem !important' }} />}
+                onClick={() => navigate(`/shop/${suggestColId}`)}
+                sx={{ fontFamily: ff, fontSize: '0.75rem', color: 'var(--text-purple)', textTransform: 'none', p: 0, minWidth: 0, '&:hover': { background: 'none', textDecoration: 'underline' } }}
+              >
+                See all
+              </Button>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { display: 'none' } }}>
+              {suggestions.map((it) => (
+                <SuggestedItem key={it.id} item={it} collectionId={suggestColId} navigate={navigate} />
+              ))}
+            </Box>
           </Box>
         )}
 
         {/* Action buttons */}
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 1.5,
-            opacity: show ? 1 : 0,
-            transform: show ? 'translateY(0)' : 'translateY(16px)',
-            transition: 'all 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.3s',
-          }}
-        >
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, opacity: show ? 1 : 0, transform: show ? 'translateY(0)' : 'translateY(16px)', transition: 'all 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.38s' }}>
           <Button
-              fullWidth
-              onClick={() => navigate('/shop')}
-              sx={{
-                py: 1.4,
-                borderRadius: '50px',
-                background: 'linear-gradient(135deg, #e3242b, #b81b21)',
-                color: '#fff',
-                fontWeight: 700,
-                fontSize: '0.9rem',
-                boxShadow: '0 4px 16px rgba(227,36,43,0.3)',
-                '&:hover': { background: 'linear-gradient(135deg, #b81b21, #8a1318)', boxShadow: '0 6px 20px rgba(227,36,43,0.4)' },
-              }}
-            >
-              Continue Shopping
-            </Button>
+            fullWidth
+            onClick={() => navigate('/shop')}
+            sx={{
+              py: 1.4, borderRadius: '50px',
+              background: 'linear-gradient(135deg, var(--accent-cyan-dark), var(--accent-cyan-hover))',
+              color: '#fff', fontWeight: 700, fontSize: '0.9rem', fontFamily: ff,
+              boxShadow: '0 4px 16px rgba(0,122,122,0.3)',
+              '&:hover': { background: 'linear-gradient(135deg, var(--accent-cyan-hover), #003a3a)', boxShadow: '0 6px 20px rgba(0,122,122,0.4)' },
+            }}
+          >
+            Continue Shopping
+          </Button>
           <Button
             fullWidth
             onClick={() => navigate('/account')}
             sx={{
-              py: 1.2,
-              borderRadius: '50px',
-              background: 'transparent',
-              color: '#888',
-              fontWeight: 500,
-              fontSize: '0.84rem',
+              py: 1.2, borderRadius: '50px',
+              background: 'transparent', color: '#888',
+              fontWeight: 500, fontSize: '0.84rem', fontFamily: ff,
               border: '1.5px solid #E0E0E0',
-              '&:hover': { background: '#FAFAFA', borderColor: '#ccc' },
+              '&:hover': { background: '#FAFAFA', borderColor: 'var(--accent-cyan)' },
             }}
           >
-            View My Account
+            View My Account &amp; Orders
           </Button>
         </Box>
       </Container>
+
+      <Snackbar open={emailSnack.open} autoHideDuration={4000} onClose={() => setEmailSnack((s) => ({ ...s, open: false }))} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert severity={emailSnack.success ? 'success' : 'error'} sx={{ fontFamily: ff }}>
+          {emailSnack.success ? 'Receipt emailed successfully!' : 'Could not send email. Please try again.'}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

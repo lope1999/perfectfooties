@@ -25,6 +25,12 @@ import {
 } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import StarIcon from '@mui/icons-material/Star';
+import DiamondIcon from '@mui/icons-material/Diamond';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import CheckroomIcon from '@mui/icons-material/Checkroom';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
+import GradeIcon from '@mui/icons-material/Grade';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import SearchIcon from '@mui/icons-material/Search';
@@ -40,16 +46,16 @@ function formatNaira(amount) {
 
 // Mirror of AccountPage CLIENT_TIERS — review-count based
 const CLIENT_TIERS = [
-  { min: 5, label: 'Diamond Diva',  emoji: '💎', color: '#5E35B1', bg: '#EDE7F6', border: '#B39DDB' },
-  { min: 4, label: 'Star Client',   emoji: '⭐', color: '#B8860B', bg: '#FFFDE7', border: '#FFD54F' },
-  { min: 3, label: 'Nail Lover',    emoji: '💅', color: '#b81b21', bg: '#FFE8E8', border: '#F48FB1' },
-  { min: 2, label: 'Glam Client',   emoji: '✨', color: '#6A1B9A', bg: '#EDE7F6', border: '#B39DDB' },
-  { min: 1, label: 'Fresh Darling', emoji: '🌸', color: '#2E7D32', bg: '#F1F8E9', border: '#A5D6A7' },
-  { min: 0, label: 'New Member',    emoji: '🌟', color: '#e3242b', bg: '#FFF8F0', border: '#E8D5B0' },
+  { min: 5, label: 'Diamond Diva',  Icon: DiamondIcon,      color: '#5E35B1', bg: '#EDE7F6', border: '#B39DDB' },
+  { min: 4, label: 'Star Client',   Icon: StarIcon,         color: '#B8860B', bg: '#FFFDE7', border: '#FFD54F' },
+  { min: 3, label: 'Leather Lover', Icon: CheckroomIcon,    color: '#b81b21', bg: '#FFE8E8', border: '#F48FB1' },
+  { min: 2, label: 'Glam Client',   Icon: AutoAwesomeIcon,  color: '#6A1B9A', bg: '#EDE7F6', border: '#B39DDB' },
+  { min: 1, label: 'Fresh Darling', Icon: LocalFloristIcon, color: '#2E7D32', bg: '#F1F8E9', border: '#A5D6A7' },
+  { min: 0, label: 'New Member',    Icon: GradeIcon,        color: '#e3242b', bg: '#FFF8F0', border: '#E8D5B0' },
 ];
 
 const PERK_LABELS = {
-  pressOnDiscount: '5% Press-On Discount',
+  pressOnDiscount: '5% Leather Goods Discount',
   glamBadge: 'Glam Badge',
   earlyAccess: 'Early Access',
   priorityBooking: 'Priority Booking',
@@ -214,7 +220,7 @@ export default function CustomersSection({ users, loading }) {
             title="Total Customers"
             value={totalCustomers}
             icon={<PeopleIcon />}
-            gradient="linear-gradient(135deg, #006666 0%, #7B1FA2 100%)"
+            gradient="linear-gradient(135deg, #007a7a 0%, #7B1FA2 100%)"
           />
         </Grid>
         <Grid item xs={6} sm={3}>
@@ -283,7 +289,7 @@ export default function CustomersSection({ users, loading }) {
       <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
         <Table size="small">
           <TableHead>
-            <TableRow sx={{ backgroundColor: '#006666' }}>
+            <TableRow sx={{ backgroundColor: '#007a7a' }}>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 32 }}>#</TableCell>
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700, width: 32 }} />
               <TableCell sx={{ color: '#fff', fontFamily, fontWeight: 700 }}>
@@ -371,7 +377,8 @@ export default function CustomersSection({ users, loading }) {
                   </TableCell>
                   <TableCell align="center">
                     <Chip
-                      label={`${tier.emoji} ${tier.label}`}
+                      icon={<tier.Icon sx={{ fontSize: '0.85rem !important', color: `${tier.color} !important` }} />}
+                      label={tier.label}
                       size="small"
                       sx={{
                         backgroundColor: tier.bg,
@@ -400,8 +407,9 @@ export default function CustomersSection({ users, loading }) {
                               minWidth: 200,
                             }}
                           >
-                            <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1rem', color: tier.color, mb: 0.5 }}>
-                              {tier.emoji} {tier.label}
+                            <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '1rem', color: tier.color, mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <tier.Icon sx={{ fontSize: '1.1rem' }} />
+                              {tier.label}
                             </Typography>
                             <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#666', mb: 1 }}>
                               Reviews: {u.reviewCount || 0} &nbsp;|&nbsp; Points: {u.loyaltyPoints || 0}

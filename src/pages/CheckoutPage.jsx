@@ -24,18 +24,39 @@ import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import StarIcon from '@mui/icons-material/Star';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { saveOrder } from '../lib/orderService';
 import { decrementStockBatch } from '../lib/stockService';
 import { redeemGiftCard } from '../lib/giftCardService';
 import { saveShippingDetails, fetchShippingDetails } from '../lib/shippingService';
-import { validateReferralCode, applyReferral, getLoyaltyData, redeemLoyaltyPoints, REFERRAL_DISCOUNT, REDEMPTION_UNIT, REDEMPTION_VALUE, PRESSONS_TIER_MIN, PRESSONS_TIER_DISCOUNT, getPendingLoyaltyReward, clearPendingLoyaltyReward } from '../lib/loyaltyService';
+import { validateReferralCode, applyReferral, getLoyaltyData, redeemLoyaltyPoints, REFERRAL_DISCOUNT, REDEMPTION_UNIT, REDEMPTION_VALUE, getPendingLoyaltyReward, clearPendingLoyaltyReward } from '../lib/loyaltyService';
 import { nigerianStates } from '../data/nigerianStates';
+import { COUNTRIES } from '../data/countries';
 import SignInPrompt from '../components/SignInPrompt';
 
 function formatNaira(amount) {
   return `\u20A6${Number(amount).toLocaleString()}`;
+}
+
+function addBusinessDays(date, days) {
+  const result = new Date(date);
+  let count = 0;
+  while (count < days) {
+    result.setDate(result.getDate() + 1);
+    const d = result.getDay();
+    if (d !== 0 && d !== 6) count++;
+  }
+  return result;
+}
+
+function formatDeliveryDate(date) {
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
 }
 
 const WHATSAPP_NUMBER = '2348073637911';
@@ -54,8 +75,9 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { showToast } = useNotifications();
   const { cart, clearCart, getCartTotal } = useCart();
-  const { services, products, pressOns } = cart.items;
+  const { services, products, pressOns, leatherGoods } = cart.items;
 
   const appliedGiftCard = location.state?.appliedGiftCard || null;
   const subtotal = getCartTotal();
@@ -71,25 +93,21 @@ export default function CheckoutPage() {
 
   // Loyalty points redemption
   const [loyaltyBalance, setLoyaltyBalance] = useState(0);
-  const [userReviewCount, setUserReviewCount] = useState(0);
   const [loyaltyUnits, setLoyaltyUnits] = useState(location.state?.presetLoyaltyUnits || 0);
   const [pendingReward] = useState(() => getPendingLoyaltyReward());
   const maxLoyaltyUnits = Math.floor(loyaltyBalance / REDEMPTION_UNIT);
   const loyaltyDiscount = Math.min(loyaltyUnits * REDEMPTION_VALUE, subtotal);
 
-  // Tier perk: Glam Client (2+ reviews) gets 5% off press-ons
-  const pressOnTotal = pressOns.reduce((sum, p) => sum + p.price * (p.quantity || 1), 0);
-  const tierPerkActive = !!user && userReviewCount >= PRESSONS_TIER_MIN && pressOnTotal > 0;
-  const tierPerkDiscount = tierPerkActive ? Math.round(pressOnTotal * PRESSONS_TIER_DISCOUNT) : 0;
+  const tierPerkDiscount = 0;
 
   const finalTotal = Math.max(0, subtotal - giftCardDiscount - referralDiscount - loyaltyDiscount - tierPerkDiscount);
 
-  const hasDeliverables = products.length > 0 || pressOns.length > 0;
+  const hasDeliverables = products.length > 0 || pressOns.length > 0 || leatherGoods.length > 0;
 
   const serviceSubtotal = services.reduce((sum, s) => sum + s.price, 0);
   const depositAmount = services.length > 0 ? Math.round(serviceSubtotal * 0.5) : 0;
 
-  const [form, setForm] = useState({ name: '', phone: '', address: '', state: '', lga: '' });
+  const [form, setForm] = useState({ country: 'Nigeria', name: '', phone: '', address: '', state: '', lga: '', city: '', province: '', postalCode: '' });
   const [submitting, setSubmitting] = useState(false);
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -98,7 +116,7 @@ export default function CheckoutPage() {
   // Fetch loyalty balance and review count for logged-in user
   useEffect(() => {
     if (!user) return;
-    getLoyaltyData(user.uid).then((d) => { const pts = d.loyaltyPoints || 0; setLoyaltyBalance(pts); setUserReviewCount(d.reviewCount || 0); if (!location.state?.presetLoyaltyUnits) { const pr = getPendingLoyaltyReward(); if (pr && pr.units > 0) setLoyaltyUnits(Math.min(pr.units, Math.floor(pts / REDEMPTION_UNIT))); } }).catch(() => {});
+    getLoyaltyData(user.uid).then((d) => { const pts = d.loyaltyPoints || 0; setLoyaltyBalance(pts); if (!location.state?.presetLoyaltyUnits) { const pr = getPendingLoyaltyReward(); if (pr && pr.units > 0) setLoyaltyUnits(Math.min(pr.units, Math.floor(pts / REDEMPTION_UNIT))); } }).catch(() => {});
   }, [user]);
 
   // Validate referral code on mount
@@ -119,10 +137,24 @@ export default function CheckoutPage() {
     setReferralMsg('');
     try {
       const referrerUid = await validateReferralCode(pendingReferralCode.trim());
-      if (!referrerUid) { setReferralValid(false); setReferralMsg('Invalid code.'); }
-      else if (referrerUid === user?.uid) { setReferralValid(false); setReferralMsg("You can't use your own referral code."); }
-      else { setReferralValid(true); setReferralMsg('\u20a6500 off applied!'); }
-    } catch { setReferralValid(false); setReferralMsg('Could not verify code.'); }
+      if (!referrerUid) {
+        setReferralValid(false);
+        setReferralMsg('Invalid code.');
+        showToast('Invalid referral code. Please check and try again.', 'error');
+      } else if (referrerUid === user?.uid) {
+        setReferralValid(false);
+        setReferralMsg("You can't use your own referral code.");
+        showToast("You can't apply your own referral code.", 'warning');
+      } else {
+        setReferralValid(true);
+        setReferralMsg('\u20a6500 off applied!');
+        showToast('Referral code applied! ₦500 discount added to your order.', 'success');
+      }
+    } catch {
+      setReferralValid(false);
+      setReferralMsg('Could not verify code.');
+      showToast('Could not verify referral code. Please try again.', 'error');
+    }
     setReferralChecking(false);
   };
 
@@ -139,11 +171,15 @@ export default function CheckoutPage() {
       .then((saved) => {
         if (saved) {
           setForm({
+            country: saved.country || 'Nigeria',
             name: saved.name || user.displayName || '',
             phone: saved.phone || '',
             address: saved.address || '',
             state: saved.state || '',
             lga: saved.lga || '',
+            city: saved.city || '',
+            province: saved.province || '',
+            postalCode: saved.postalCode || '',
           });
         }
       })
@@ -153,14 +189,15 @@ export default function CheckoutPage() {
   const handleChange = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
-  const isValidPhone = (p) => /^0\d{10}$/.test(p.replace(/[\s-]/g, ''));
+  const isDomestic = form.country === 'Nigeria';
+  const isLagos = isDomestic && form.state === 'Lagos';
+  const shippingCost = isDomestic ? (isLagos ? 3000 : 4000) : 0;
+  const grandTotal = finalTotal + shippingCost;
+  const isValidPhone = (p) => isDomestic ? /^0\d{10}$/.test(p.replace(/[\s-]/g, '')) : p.replace(/[\s\-+()]/g, '').length >= 7;
 
-  const isFormValid =
-    form.name.trim() &&
-    isValidPhone(form.phone) &&
-    form.address.trim() &&
-    form.state &&
-    form.lga.trim();
+  const isFormValid = isDomestic
+    ? form.name.trim() && isValidPhone(form.phone) && form.address.trim() && form.state && form.lga.trim()
+    : form.name.trim() && isValidPhone(form.phone) && form.address.trim() && form.city.trim() && form.province.trim() && form.postalCode.trim();
 
   const handleCompleteOrder = async (paymentReference, shipping) => {
     setPaymentModalOpen(false);
@@ -172,9 +209,17 @@ export default function CheckoutPage() {
     lines.push('--- SHIPPING DETAILS ---');
     lines.push(`Name: ${shipping.name}`);
     lines.push(`Phone: ${shipping.phone}`);
+    lines.push(`Country: ${shipping.country}`);
     lines.push(`Address: ${shipping.address}`);
-    lines.push(`State: ${shipping.state}`);
-    lines.push(`LGA: ${shipping.lga}`);
+    if (shipping.shippingZone === 'domestic') {
+      lines.push(`State: ${shipping.state}`);
+      lines.push(`LGA: ${shipping.lga}`);
+    } else {
+      lines.push(`City: ${shipping.city}`);
+      lines.push(`State/Province: ${shipping.province}`);
+      lines.push(`Postal Code: ${shipping.postalCode}`);
+      lines.push(`[INTERNATIONAL ORDER — Shipping cost TBD via WhatsApp]`);
+    }
     lines.push('');
 
     if (services.length > 0) {
@@ -184,6 +229,18 @@ export default function CheckoutPage() {
         if (s.customerName) line += `\n   Name: ${s.customerName}`;
         line += `\n   Date: ${s.date}\n   Shape: ${s.nailShape} | Length: ${s.nailLength}`;
         lines.push(line);
+      });
+      lines.push('');
+    }
+
+    if (leatherGoods.length > 0) {
+      lines.push('--- LEATHER GOODS ORDER ---');
+      leatherGoods.forEach((g, i) => {
+        let detail = `${i + 1}. ${g.name} x${g.quantity} \u2014 ${formatNaira(g.price * g.quantity)}`;
+        if (g.selectedColor) detail += `\n   Colour: ${g.selectedColor}`;
+        if (g.footLength) detail += ` | Foot Length: ${g.footLength}cm`;
+        if (g.collectionName) detail += `\n   Collection: ${g.collectionName}`;
+        lines.push(detail);
       });
       lines.push('');
     }
@@ -210,7 +267,7 @@ export default function CheckoutPage() {
         if (p.setIncludes?.length > 0) detail += `\n   Set Includes: ${p.setIncludes.join(', ')}`;
         if (p.inspirationTags?.length > 0) detail += `\n   Inspiration: ${p.inspirationTags.join(', ')}`;
         if (p.nailNotes) detail += `\n   Notes: ${p.nailNotes}`;
-        if (p.specialRequest) detail += `\n   ⚠️ SPECIAL REQUEST — Made to Order (production: 4–7 days)`;
+        if (p.specialRequest) detail += `\n   [!] SPECIAL REQUEST — Made to Order (production: 4–7 days)`;
         if (p.orderingForOthers && p.otherPeople?.length > 0) {
           p.otherPeople.forEach((o) => {
             detail += `\n   Also for: ${o.name || 'N/A'} \u2014 Shape: ${o.nailShape || 'Same'} \u2014 Nail Bed: ${o.nailBedSize || 'N/A'}`;
@@ -237,6 +294,12 @@ export default function CheckoutPage() {
     if (giftCardDiscount > 0 || referralDiscount > 0 || loyaltyDiscount > 0 || tierPerkDiscount > 0) {
       totalLine += `\nAmount Due: ${formatNaira(finalTotal)}`;
     }
+    if (isDomestic && shippingCost > 0) {
+      totalLine += `\nShipping (Fez Delivery${isLagos ? ' — Lagos' : ' — Outside Lagos'}): ${formatNaira(shippingCost)}`;
+      totalLine += `\nGrand Total: ${formatNaira(grandTotal)}`;
+    } else if (!isDomestic) {
+      totalLine += `\nShipping: To be quoted via WhatsApp (international)`;
+    }
 
     let depositLine = '';
     if (services.length > 0) {
@@ -249,8 +312,8 @@ export default function CheckoutPage() {
 
     const message = `Hi! I\u2019d like to place an order.\n\n${lines.join('\n')}\n${totalLine}${depositLine}\n\nPlease confirm availability and payment details. Thank you!`;
     const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
-    // Open WhatsApp only when no deposit required (products/press-ons only — no service)
-    if (!paymentReference && services.length === 0) window.open(waUrl, '_blank');
+    // Open WhatsApp directly only for legacy press-on/product orders (no leather goods, no deposit)
+    if (!paymentReference && services.length === 0 && leatherGoods.length === 0) window.open(waUrl, '_blank');
     if (!paymentReference && services.length > 0) { setSubmitting(false); return; }
 
     // Background async operations (save shipping, decrement stock, save order, redeem gift card)
@@ -278,8 +341,10 @@ export default function CheckoutPage() {
     const hasServices = services.length > 0;
     const hasProducts = products.length > 0;
     const hasPressOns = pressOns.length > 0;
+    const hasLeatherGoods = leatherGoods.length > 0;
     const orderType =
       hasServices ? 'mixed' :
+      hasLeatherGoods && !hasProducts && !hasPressOns ? 'leather' :
       hasPressOns && !hasProducts ? 'pressOn' :
       hasProducts && !hasPressOns ? 'retail' : 'mixed';
 
@@ -288,6 +353,16 @@ export default function CheckoutPage() {
     try {
       const allItems = [
         ...services.map((s) => ({ kind: 'service', name: s.name, price: s.price, quantity: 1 })),
+        ...leatherGoods.map((g) => ({
+          kind: 'leather',
+          name: g.name,
+          price: g.price,
+          quantity: g.quantity,
+          selectedColor: g.selectedColor,
+          ...(g.footLength && { footLength: g.footLength }),
+          collectionId: g.collectionId,
+          collectionName: g.collectionName,
+        })),
         ...products.map((p) => ({ kind: 'retail', name: p.name, price: p.price, quantity: p.quantity })),
         ...pressOns.map((p) => ({
           kind: 'pressOn', name: p.name, price: p.price, quantity: p.quantity || 1,
@@ -304,11 +379,14 @@ export default function CheckoutPage() {
       ];
       const orderData = {
         type: orderType,
-        total: finalTotal,
+        total: grandTotal,
+        subtotal: finalTotal,
+        shippingCost,
         customerName: shipping.name,
         email: user.email || '',
         items: allItems,
         shipping,
+        shippingZone: shipping.shippingZone || 'domestic',
       };
       if (paymentReference) {
         orderData.paymentReference = paymentReference;
@@ -354,43 +432,65 @@ export default function CheckoutPage() {
     }
 
     setSubmitting(false);
+    showToast('Order placed successfully! Check your email for confirmation.', 'success');
     clearCart();
-    // Push /thank-you into history FIRST, then navigate to WhatsApp.
-    // History stack becomes [..., /thank-you, whatsapp] so pressing back returns to thank-you page.
     navigate('/thank-you', {
       state: {
         type: orderType,
         customerName: shipping.name,
+        email: user?.email || '',
+        shipping,
+        orderId,
+        whatsappUrl: waUrl,
+        paymentReference: paymentReference || null,
         items: [
           ...services.map((s) => ({ kind: 'service', serviceName: s.name, price: s.price })),
+          ...leatherGoods.map((g) => ({ kind: 'leather', name: g.name, price: g.price * g.quantity, quantity: g.quantity, selectedColor: g.selectedColor, footLength: g.footLength, collectionId: g.collectionId })),
           ...products.map((p) => ({ kind: 'retail', name: p.name, price: p.price * (p.quantity || 1), quantity: p.quantity })),
           ...pressOns.map((p) => ({ kind: 'press-on', name: p.name, price: p.price * (p.quantity || 1), nailShape: p.nailShape, quantity: p.quantity || 1, selectedLength: p.selectedLength, setIncludes: p.setIncludes, inspirationTags: p.inspirationTags, nailNotes: p.nailNotes, specialRequest: p.specialRequest || false })),
         ],
-        total: services.reduce((s, i) => s + i.price, 0) + products.reduce((s, i) => s + i.price * (i.quantity || 1), 0) + pressOns.reduce((s, i) => s + i.price * (i.quantity || 1), 0),
-        finalTotal,
+        total: services.reduce((s, i) => s + i.price, 0) + leatherGoods.reduce((s, g) => s + g.price * g.quantity, 0) + products.reduce((s, i) => s + i.price * (i.quantity || 1), 0) + pressOns.reduce((s, i) => s + i.price * (i.quantity || 1), 0),
+        finalTotal: grandTotal,
         giftCardDiscount,
         referralDiscount,
         loyaltyDiscount,
+        shippingCost,
       },
     });
-    if (paymentReference) window.location.href = waUrl;
+  };
+
+  const payWithPaystackFull = (shipping) => {
+    const pk = import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY || '';
+    if (!pk || !window.PaystackPop) {
+      alert('Payment unavailable. Please refresh and try again.');
+      return;
+    }
+    window.PaystackPop.setup({
+      key: pk,
+      email: user?.email || 'customer@perfectfooties.com',
+      amount: grandTotal * 100,
+      currency: 'NGN',
+      ref: `PF-${Date.now()}`,
+      metadata: { itemCount: leatherGoods.length },
+      callback: (response) => handleCompleteOrder(response.reference, shipping),
+      onClose: () => {},
+    }).openIframe();
   };
 
   const handleSubmit = async () => {
     if (!user) { setSignInPromptOpen(true); return; }
     if (!isFormValid) return;
 
-    const shipping = {
-      name: form.name.trim(),
-      phone: form.phone.trim(),
-      address: form.address.trim(),
-      state: form.state,
-      lga: form.lga.trim(),
-    };
+    const shipping = isDomestic
+      ? { country: 'Nigeria', name: form.name.trim(), phone: form.phone.trim(), address: form.address.trim(), state: form.state, lga: form.lga.trim(), shippingZone: 'domestic' }
+      : { country: form.country, name: form.name.trim(), phone: form.phone.trim(), address: form.address.trim(), city: form.city.trim(), province: form.province.trim(), postalCode: form.postalCode.trim(), shippingZone: 'international' };
 
     if (services.length > 0) {
       setPendingShipping(shipping);
       setPaymentModalOpen(true);
+    } else if (leatherGoods.length > 0) {
+      setPendingShipping(shipping);
+      payWithPaystackFull(shipping);
     } else {
       handleCompleteOrder('', shipping);
     }
@@ -434,25 +534,6 @@ export default function CheckoutPage() {
         <Grid container spacing={4} alignItems="flex-start">
           {/* ── Shipping Form ── */}
           <Grid item xs={12} md={7}>
-            {/* Nigeria-only delivery notice */}
-            <Box
-              sx={{
-                mb: 3,
-                p: 2,
-                backgroundColor: '#FFE8E8',
-                borderRadius: 2,
-                border: '1px solid #E8D5B0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.5,
-              }}
-            >
-              <LocalShippingOutlinedIcon sx={{ color: 'var(--text-purple)', fontSize: 22, flexShrink: 0 }} />
-              <Typography sx={{ color: 'var(--text-purple)', fontWeight: 600, fontSize: '0.9rem', lineHeight: 1.5 }}>
-                We currently deliver within Nigeria only. Please provide a valid Nigerian delivery address.
-              </Typography>
-            </Box>
-
             <Typography
               sx={{
                 fontFamily: '"Georgia", serif',
@@ -465,14 +546,53 @@ export default function CheckoutPage() {
               Shipping Details
             </Typography>
 
-            <TextField
-              fullWidth
-              label="Full Name *"
-              value={form.name}
-              onChange={handleChange('name')}
-              size="small"
-              sx={{ mb: 2, ...textFieldSx }}
-            />
+            {/* Country */}
+            <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+              <InputLabel sx={{ '&.Mui-focused': { color: '#e3242b' } }}>Country *</InputLabel>
+              <Select
+                value={form.country}
+                onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value, state: '', lga: '', city: '', province: '', postalCode: '' }))}
+                label="Country *"
+                sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E8D5B0' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#e3242b' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#e3242b' } }}
+              >
+                {COUNTRIES.map((c) => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+              </Select>
+            </FormControl>
+
+            {/* Fez Delivery card */}
+            {isDomestic && (
+              <Box sx={{ mb: 2, p: 2, borderRadius: 2, background: 'linear-gradient(135deg,#fff8f0,#fff)', border: '1px solid #E8D5B0', display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                <LocalShippingOutlinedIcon sx={{ color: '#e3242b', fontSize: 20, flexShrink: 0, mt: 0.2 }} />
+                <Box>
+                  <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-main)', mb: 0.3 }}>
+                    Shipped via{' '}
+                    <a href="https://fezdelivery.co" target="_blank" rel="noopener noreferrer" style={{ color: '#e3242b', textDecoration: 'none' }}>Fez Delivery</a>
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                    {isLagos ? 'Lagos delivery — ₦3,000' : 'Outside Lagos delivery — ₦4,000'}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+
+            {/* International shipping notice */}
+            {!isDomestic && (
+              <Box sx={{ mb: 2, p: 2, backgroundColor: 'rgba(0,255,255,0.06)', borderRadius: 2, border: '1px solid rgba(0,255,255,0.25)', display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                <LocalShippingOutlinedIcon sx={{ color: 'var(--accent-cyan)', fontSize: 20, flexShrink: 0, mt: 0.2 }} />
+                <Box>
+                  <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.88rem', lineHeight: 1.6 }}>
+                    <strong style={{ color: 'var(--text-main)' }}>International order</strong> — shipping cost will be quoted and confirmed via WhatsApp before production begins.
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.78rem', color: 'var(--text-muted)', mt: 0.5, lineHeight: 1.6 }}>
+                    <strong style={{ color: 'var(--text-main)' }}>Ghana & Zone 2:</strong> ~₦22,500 (0.5kg–2kg, 2–3 business days)<br/>
+                    <strong style={{ color: 'var(--text-main)' }}>South Africa, Kenya, Rwanda & Zone 5:</strong> from ₦66,000 (express)<br/>
+                    Other rates: UK ₦8,500/kg · US ₦15,000/kg · Canada ₦13,500/kg · Europe ₦12,500/kg · Sweden/France/Italy/Netherlands ₦77,000 flat (≤2kg)
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+
+            <TextField fullWidth label="Full Name *" value={form.name} onChange={handleChange('name')} size="small" sx={{ mb: 2, ...textFieldSx }} />
 
             <TextField
               fullWidth
@@ -480,54 +600,45 @@ export default function CheckoutPage() {
               value={form.phone}
               onChange={handleChange('phone')}
               size="small"
-              placeholder="e.g. 08012345678"
+              placeholder={isDomestic ? 'e.g. 08012345678' : 'e.g. +44 7700 900123'}
               error={form.phone.length > 0 && !isValidPhone(form.phone)}
-              helperText={
-                form.phone.length > 0 && !isValidPhone(form.phone)
-                  ? 'Enter a valid 11-digit Nigerian phone number'
-                  : ''
-              }
+              helperText={form.phone.length > 0 && !isValidPhone(form.phone) ? (isDomestic ? 'Enter a valid 11-digit Nigerian number' : 'Enter a valid phone number') : ''}
               sx={{ mb: 2, ...textFieldSx }}
             />
 
             <TextField
               fullWidth
-              label="Delivery Address *"
+              label="Street Address *"
               value={form.address}
               onChange={handleChange('address')}
               multiline
               rows={2}
-              placeholder="House number, street, nearest landmark"
+              placeholder={isDomestic ? 'House number, street, nearest landmark' : 'House number and street name'}
               sx={{ mb: 2, ...textFieldSx }}
             />
 
-            <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-              <InputLabel sx={{ '&.Mui-focused': { color: '#e3242b' } }}>State *</InputLabel>
-              <Select
-                value={form.state}
-                onChange={handleChange('state')}
-                label="State *"
-                sx={{
-                  borderRadius: 2,
-                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E8D5B0' },
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#e3242b' },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#e3242b' },
-                }}
-              >
-                {nigerianStates.map((s) => (
-                  <MenuItem key={s} value={s}>{s}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <TextField
-              fullWidth
-              label="LGA (Local Government Area) *"
-              value={form.lga}
-              onChange={handleChange('lga')}
-              size="small"
-              sx={{ mb: 2, ...textFieldSx }}
-            />
+            {isDomestic ? (
+              <>
+                <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                  <InputLabel sx={{ '&.Mui-focused': { color: '#e3242b' } }}>State *</InputLabel>
+                  <Select
+                    value={form.state}
+                    onChange={handleChange('state')}
+                    label="State *"
+                    sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E8D5B0' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#e3242b' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#e3242b' } }}
+                  >
+                    {nigerianStates.map((s) => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+                  </Select>
+                </FormControl>
+                <TextField fullWidth label="LGA (Local Government Area) *" value={form.lga} onChange={handleChange('lga')} size="small" sx={{ mb: 2, ...textFieldSx }} />
+              </>
+            ) : (
+              <>
+                <TextField fullWidth label="City *" value={form.city} onChange={handleChange('city')} size="small" sx={{ mb: 2, ...textFieldSx }} />
+                <TextField fullWidth label="State / Province *" value={form.province} onChange={handleChange('province')} size="small" sx={{ mb: 2, ...textFieldSx }} />
+                <TextField fullWidth label="Postal / ZIP Code *" value={form.postalCode} onChange={handleChange('postalCode')} size="small" sx={{ mb: 2, ...textFieldSx }} />
+              </>
+            )}
           </Grid>
 
           {/* ── Order Summary ── */}
@@ -554,76 +665,25 @@ export default function CheckoutPage() {
                 Order Summary
               </Typography>
 
-              {services.length > 0 && (
+              {leatherGoods.length > 0 && (
                 <Box sx={{ mb: 2 }}>
                   <Typography sx={{ color: '#aaa', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, mb: 1 }}>
-                    Appointments
+                    Leather Goods
                   </Typography>
-                  {services.map((s) => (
-                    <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)', flex: 1, mr: 1 }}>{s.name}</Typography>
-                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#e3242b', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
-                    </Box>
-                  ))}
-                </Box>
-              )}
-
-              {products.length > 0 && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography sx={{ color: '#aaa', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, mb: 1 }}>
-                    Nail Care Products
-                  </Typography>
-                  {products.map((p) => (
-                    <Box key={p.productId} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)', flex: 1, mr: 1 }}>{p.name} ×{p.quantity}</Typography>
-                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#e3242b', whiteSpace: 'nowrap' }}>{formatNaira(p.price * p.quantity)}</Typography>
-                    </Box>
-                  ))}
-                </Box>
-              )}
-
-              {pressOns.length > 0 && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography sx={{ color: '#aaa', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, mb: 1 }}>
-                    Press-On Orders
-                  </Typography>
-                  {pressOns.map((p) => (
-                    <Box key={p.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)', flex: 1, mr: 1 }}>
-                        {p.name}{p.quantity > 1 ? ` ×${p.quantity}` : ''}
+                  {leatherGoods.map((g) => (
+                    <Box key={g.cartId} sx={{ mb: 0.8 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)', flex: 1, mr: 1 }}>{g.name} &times;{g.quantity}</Typography>
+                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#e3242b', whiteSpace: 'nowrap' }}>{formatNaira(g.price * g.quantity)}</Typography>
+                      </Box>
+                      <Typography sx={{ fontSize: '0.75rem', color: '#aaa' }}>
+                        {g.selectedColor}{g.footLength ? ` · ${g.footLength}cm` : ''}
                       </Typography>
-                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#e3242b', whiteSpace: 'nowrap' }}>{formatNaira(p.price)}</Typography>
                     </Box>
                   ))}
                 </Box>
               )}
 
-              {/* Appointment Deposit Info */}
-              {services.length > 0 && (
-                <Box sx={{ mb: 2, p: 2, borderRadius: 2, backgroundColor: '#FFF0F8', border: '1.5px solid #e3242b' }}>
-                  <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', fontSize: '0.82rem', mb: 1 }}>
-                    Appointment Deposit
-                  </Typography>
-                  {services.map((s) => (
-                    <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.4 }}>
-                      <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)', flex: 1, mr: 1 }}>{s.name}</Typography>
-                      <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
-                    </Box>
-                  ))}
-                  <Divider sx={{ borderColor: '#E8D5B0', my: 1 }} />
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.4 }}>
-                    <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Appointment subtotal</Typography>
-                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)' }}>{formatNaira(serviceSubtotal)}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.4 }}>
-                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#e3242b' }}>50% deposit due now</Typography>
-                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#e3242b' }}>{formatNaira(depositAmount)}</Typography>
-                  </Box>
-                  <Typography sx={{ fontSize: '0.75rem', color: '#999' }}>
-                    Balance {formatNaira(serviceSubtotal - depositAmount)} due on appointment day
-                  </Typography>
-                </Box>
-              )}
 
               <Divider sx={{ borderColor: '#E8D5B0', my: 2 }} />
 
@@ -681,15 +741,15 @@ export default function CheckoutPage() {
                   {pendingReward && loyaltyUnits === 0 && (
                     <Box sx={{ mb: 1.5, p: 1.2, borderRadius: 2, background: 'linear-gradient(135deg, #FFF8E1, #FFF3E0)', border: '1.5px solid #FFD54F', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
                       <Box>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#B8860B' }}>🎁 ₦{pendingReward.naira.toLocaleString()} loyalty reward ready</Typography>
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#B8860B', display: 'flex', alignItems: 'center', gap: 0.5 }}><CardGiftcardIcon sx={{ fontSize: '0.95rem' }} /> ₦{pendingReward.naira.toLocaleString()} loyalty reward ready</Typography>
                         <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>{pendingReward.pts} pts saved — tap Apply to use</Typography>
                       </Box>
-                      <Button size="small" onClick={() => setLoyaltyUnits(Math.min(pendingReward.units, maxLoyaltyUnits))} sx={{ border: '1.5px solid #e3242b', borderRadius: '20px', color: '#e3242b', px: 2, py: 0.4, fontSize: '0.78rem', fontWeight: 700, textTransform: 'none', '&:hover': { backgroundColor: '#e3242b', color: '#fff' } }}>Apply</Button>
+                      <Button size="small" onClick={() => { const u = Math.min(pendingReward.units, maxLoyaltyUnits); setLoyaltyUnits(u); showToast(`Loyalty reward applied! ₦${(u * REDEMPTION_VALUE).toLocaleString()} off your order.`, 'success'); }} sx={{ border: '1.5px solid #e3242b', borderRadius: '20px', color: '#e3242b', px: 2, py: 0.4, fontSize: '0.78rem', fontWeight: 700, textTransform: 'none', '&:hover': { backgroundColor: '#e3242b', color: '#fff' } }}>Apply</Button>
                     </Box>
                   )}
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#B8860B' }}>
-                      🏆 Loyalty Points
+                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#B8860B', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <EmojiEventsIcon sx={{ fontSize: '1rem' }} /> Loyalty Points
                     </Typography>
                     <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>
                       {loyaltyBalance} pts available
@@ -731,12 +791,27 @@ export default function CheckoutPage() {
 
               {tierPerkDiscount > 0 && (
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, p: 1, borderRadius: 2, backgroundColor: '#FFFDE7', border: '1px solid #FFD54F' }}>
-                  <Typography sx={{ color: '#B8860B', fontSize: '0.82rem', fontWeight: 600 }}>
-                    ⭐ Star Client — 5% off press-ons
+                  <Typography sx={{ color: '#B8860B', fontSize: '0.82rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <StarIcon sx={{ fontSize: '0.95rem' }} /> Star Client — 5% off
                   </Typography>
                   <Typography sx={{ color: '#B8860B', fontWeight: 700, fontSize: '0.82rem' }}>
                     -{formatNaira(tierPerkDiscount)}
                   </Typography>
+                </Box>
+              )}
+
+              {isDomestic && (
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <LocalShippingOutlinedIcon sx={{ fontSize: 14 }} /> Shipping (Fez)
+                  </Typography>
+                  <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{formatNaira(shippingCost)}</Typography>
+                </Box>
+              )}
+              {!isDomestic && (
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Shipping (intl.)</Typography>
+                  <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--accent-cyan)' }}>TBD</Typography>
                 </Box>
               )}
 
@@ -745,9 +820,30 @@ export default function CheckoutPage() {
                   Total
                 </Typography>
                 <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.05rem', color: '#e3242b' }}>
-                  {formatNaira(finalTotal)}
+                  {formatNaira(grandTotal)}
                 </Typography>
               </Box>
+
+              {/* Estimated delivery (leather goods only) */}
+              {leatherGoods.length > 0 && (() => {
+                const earliest = addBusinessDays(new Date(), 10);
+                const latest = addBusinessDays(new Date(), 14);
+                return (
+                  <Box sx={{ mt: 2, p: 1.5, borderRadius: 2, backgroundColor: 'rgba(0,255,255,0.06)', border: '1px solid rgba(0,255,255,0.2)', display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                    <LocalShippingOutlinedIcon sx={{ fontSize: 16, color: 'var(--accent-cyan)', flexShrink: 0, mt: 0.2 }} />
+                    <Box>
+                      <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)' }}>Estimated Dispatch</Typography>
+                      <Typography sx={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                        Production: 10–14 days after confirmation.<br />
+                        {isDomestic
+                          ? <>Delivered via <strong>Fez Delivery</strong> approx. <strong>{formatDeliveryDate(earliest)} – {formatDeliveryDate(latest)}</strong>.</>
+                          : <strong style={{ color: 'var(--accent-cyan)' }}>International shipping cost will be confirmed via WhatsApp.</strong>
+                        }
+                      </Typography>
+                    </Box>
+                  </Box>
+                );
+              })()}
             </Box>
           </Grid>
         </Grid>
@@ -772,7 +868,7 @@ export default function CheckoutPage() {
           >
             {submitting
               ? <CircularProgress size={22} sx={{ color: '#fff' }} />
-              : services.length > 0 ? 'Pay Deposit & Place Order' : 'Place Order via WhatsApp'}
+              : services.length > 0 ? 'Pay Deposit & Place Order' : leatherGoods.length > 0 ? 'Pay & Confirm Order' : 'Place Order via WhatsApp'}
           </Button>
         </Box>
       </Container>

@@ -3,7 +3,7 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 
 export default function WhatsAppBubble() {
   const phone = '2348073637911';
-  const message = encodeURIComponent("Hi! I have a question about PerfectFooties 👟");
+  const message = encodeURIComponent("Hi! I have a question about PerfectFooties");
 
   return (
     <Tooltip title="Chat with us on WhatsApp" placement="left">

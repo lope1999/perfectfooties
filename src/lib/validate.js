@@ -2,14 +2,16 @@
 const ALLOWED_COLLECTIONS = new Set(['productCategories', 'retailCategories', 'serviceCategories']);
 
 // Allowed order types
-const ALLOWED_ORDER_TYPES = new Set(['product', 'retail', 'mixed', 'nicheCollection']);
+const ALLOWED_ORDER_TYPES = new Set(['leather', 'product', 'retail', 'mixed', 'nicheCollection', 'pressOn', 'service']);
 
 // Allowed order statuses
 const ALLOWED_ORDER_STATUSES = new Set([
   'pending',
   'confirmed',
   'production',
+  'shipped',
   'shipping',
+  'delivered',
   'in-progress',
   'completed',
   'cancelled',

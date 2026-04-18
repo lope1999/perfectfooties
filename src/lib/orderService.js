@@ -5,10 +5,12 @@ import {
   getDoc,
   getDocs,
   updateDoc,
+  setDoc,
   query,
   where,
   orderBy,
   limit,
+  arrayUnion,
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -23,6 +25,10 @@ export async function saveOrder(uid, data) {
 
   const items = Array.isArray(data.items) ? data.items.slice(0, 50) : [];
 
+  // Ensure the user document exists so subcollection reads/writes work reliably
+  const userRef = doc(db, 'users', uid);
+  await setDoc(userRef, { uid }, { merge: true });
+
   const ref = collection(db, 'users', uid, 'orders');
   return addDoc(ref, {
     ...data,
@@ -32,6 +38,7 @@ export async function saveOrder(uid, data) {
     uid,
     status: 'pending',
     createdAt: serverTimestamp(),
+    statusHistory: [{ status: 'pending', at: new Date().toISOString() }],
   });
 }
 
@@ -52,10 +59,14 @@ export async function fetchRecentOrders(uid) {
 export async function updateOrderStatus(uid, orderId, status, extraFields = {}) {
   requireString(uid, 'uid');
   requireString(orderId, 'orderId');
-  validateOrderStatus(status, 'appointment');
+  validateOrderStatus(status, 'order');
   const ref = doc(db, 'users', uid, 'orders', orderId);
   updateBookedSlotStatus(orderId, status).catch(() => {});
-  return updateDoc(ref, { status, ...extraFields });
+  return updateDoc(ref, {
+    status,
+    ...extraFields,
+    statusHistory: arrayUnion({ status, at: new Date().toISOString() }),
+  });
 }
 
 export async function updateOrderDetails(uid, orderId, updates) {
@@ -69,7 +80,7 @@ export async function saveNailBedSizes(uid, sizes) {
   requireString(uid, 'uid');
   if (!sizes) return;
   const userRef = doc(db, 'users', uid);
-  return updateDoc(userRef, { nailBedSizes: sizes });
+  return setDoc(userRef, { nailBedSizes: sizes }, { merge: true });
 }
 
 export async function fetchNailBedSizes(uid) {
