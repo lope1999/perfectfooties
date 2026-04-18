@@ -18,6 +18,11 @@ import { updateOrderStatus } from '../../lib/adminService';
 
 const ff = '"Georgia", serif';
 const PRODUCTION_DAYS = 14;
+const QUEUE_STATUSES = new Set(['confirmed', 'production', 'in-progress']);
+
+function getDisplayStatus(status) {
+  return status === 'production' || status === 'in-progress' ? 'production' : status;
+}
 
 function getDaysRemaining(order) {
   const start = order.depositPaidAt?.toDate?.() || order.createdAt?.toDate?.() || new Date(order.createdAt || Date.now());
@@ -51,11 +56,11 @@ export default function ProductionTrackerSection() {
       const snap = await getDocs(collectionGroup(db, 'orders'));
       const docs = snap.docs
         .map((d) => {
-          const pathParts = d.ref.path.split('/');
-          const uid = pathParts[1];
+          const parentPath = d.ref.parent.parent?.path || '';
+          const uid = parentPath.startsWith('users/') ? parentPath.split('/')[1] : d.data().uid || null;
           return { id: d.id, uid, ...d.data() };
         })
-        .filter((o) => o.status === 'confirmed' || o.status === 'production');
+        .filter((o) => QUEUE_STATUSES.has(o.status));
       // Sort: overdue first, then due-soon, then on-track; within each group, least days first
       docs.sort((a, b) => {
         const da = getDaysRemaining(a);
@@ -122,6 +127,7 @@ export default function ProductionTrackerSection() {
       )}
 
       {!loading && orders.map((order) => {
+        const displayStatus = getDisplayStatus(order.status);
         const daysLeft = getDaysRemaining(order);
         const urgency = getUrgency(daysLeft);
         const cfg = urgencyConfig[urgency];
@@ -152,9 +158,9 @@ export default function ProductionTrackerSection() {
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Chip
-                  label={order.status === 'confirmed' ? 'Confirmed' : 'In Production'}
+                  label={displayStatus === 'confirmed' ? 'Confirmed' : 'In Production'}
                   size="small"
-                  sx={{ backgroundColor: order.status === 'confirmed' ? '#dbeafe' : '#ede9fe', color: order.status === 'confirmed' ? '#1d4ed8' : '#6d28d9', fontSize: '0.72rem', fontWeight: 700 }}
+                  sx={{ backgroundColor: displayStatus === 'confirmed' ? '#dbeafe' : '#ede9fe', color: displayStatus === 'confirmed' ? '#1d4ed8' : '#6d28d9', fontSize: '0.72rem', fontWeight: 700 }}
                 />
                 <Chip
                   icon={urgency === 'overdue' ? <WarningAmberIcon sx={{ fontSize: '0.9rem !important' }} /> : undefined}

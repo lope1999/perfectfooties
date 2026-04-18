@@ -18,7 +18,7 @@ service cloud.firestore {
 
       // Orders subcollection
       match /orders/{orderId} {
-        allow read: if request.auth != null && request.auth.uid == uid;
+        allow read: if isAdmin() || (request.auth != null && request.auth.uid == uid);
         allow create: if request.auth != null && request.auth.uid == uid
                       && request.resource.data.keys().hasAll(['type', 'customerName', 'status'])
                       && request.resource.data.status == 'pending'

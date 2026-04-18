@@ -144,12 +144,19 @@ function ImageField({ imageUrl, onChange, onSnack }) {
       return;
     }
     setUploading(true);
-    const path = `newsletter-images/${Date.now()}-${file.name}`;
+    const path = `newsletters/${Date.now()}-${file.name}`;
     const sRef = storageRef(storage, path);
     const task = uploadBytesResumable(sRef, file);
     task.on('state_changed',
       (snap) => setProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100)),
-      () => { onSnack('Upload failed', 'error'); setUploading(false); },
+      (err) => {
+        console.error('Newsletter image upload error:', err);
+        const message = err.code === 'storage/unauthorized'
+          ? 'Permission denied for newsletter uploads. Check the Storage path, rules, and signed-in admin account.'
+          : 'Upload failed';
+        onSnack(message, 'error');
+        setUploading(false);
+      },
       async () => {
         const url = await getDownloadURL(task.snapshot.ref);
         onChange(url);

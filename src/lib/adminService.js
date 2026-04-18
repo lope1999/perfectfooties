@@ -28,8 +28,8 @@ import { awardPointsForOrder } from './loyaltyService';
 export async function fetchAllOrders() {
   const snap = await getDocs(collectionGroup(db, 'orders'));
   const orders = snap.docs.map((d) => {
-    const pathParts = d.ref.path.split('/');
-    const uid = pathParts[1]; // users/{uid}/orders/{orderId}
+    const parentPath = d.ref.parent.parent?.path || '';
+    const uid = parentPath.startsWith('users/') ? parentPath.split('/')[1] : d.data().uid || null;
     return { id: d.id, uid, ...d.data() };
   });
   // Sort client-side to avoid requiring a Firestore collection group index
@@ -265,6 +265,7 @@ export async function updateCustomerPerks(uid, perks) {
 // ─── Stats ──────────────────────────────────────────────
 
 const REVENUE_STATUSES = ['confirmed', 'received', 'completed'];
+const PRODUCTION_QUEUE_STATUSES = new Set(['confirmed', 'production', 'in-progress']);
 
 export function computeDashboardStats(orders) {
   const total = orders.length;
@@ -273,7 +274,7 @@ export function computeDashboardStats(orders) {
     .reduce((sum, o) => sum + (o.total || 0) + (o.extraCharge || 0), 0);
   const pending = orders.filter((o) => o.status === 'pending').length;
   const confirmed = orders.filter((o) => o.status === 'confirmed').length;
-  const production = orders.filter((o) => o.status === 'production').length;
+  const production = orders.filter((o) => PRODUCTION_QUEUE_STATUSES.has(o.status)).length;
   const received = orders.filter((o) => o.status === 'received').length;
   return { total, revenue, pending, confirmed, production, received };
 }
