@@ -1,5 +1,12 @@
-const { onDocumentUpdated } = require("firebase-functions/v2/firestore");
-const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
+const {
+	onDocumentUpdated,
+	onDocumentCreated,
+} = require("firebase-functions/v2/firestore");
+const {
+	onCall,
+	onRequest,
+	HttpsError,
+} = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { initializeApp } = require("firebase-admin/app");
@@ -12,19 +19,18 @@ const {
 	sendShippedEmail,
 	sendDeliveredEmail,
 	sendWelcomeEmail,
+	sendNewsletterEmail,
 } = require("./lib/emailSender");
 
 initializeApp();
 
-// ── Secrets (set via: firebase functions:secrets:set SECRET_NAME) ─────────────
+// ── Secrets ───────────────────────────────────────────────────────────────────
 const PAYSTACK_SECRET = defineSecret("PAYSTACK_SECRET_KEY");
-const MAILTRAP_TOKEN  = defineSecret("MAILTRAP_TOKEN");
+const MAILTRAP_TOKEN = defineSecret("MAILTRAP_TOKEN");
 
 const SHOP_URL = "https://perfectfooties.com";
 
-// ── HTTP: Paystack webhook ─────────────────────────────────────────────────────
-// Add this URL in Paystack Dashboard → Settings → API Keys & Webhooks
-// URL: https://us-central1-perfect-footies.cloudfunctions.net/paystackWebhook
+// ── Paystack Webhook ──────────────────────────────────────────────────────────
 exports.paystackWebhook = onRequest(
 	{ rawBody: true, secrets: [PAYSTACK_SECRET, MAILTRAP_TOKEN] },
 	async (req, res) => {
@@ -40,7 +46,6 @@ exports.paystackWebhook = onRequest(
 			return;
 		}
 
-		// Validate Paystack HMAC-SHA512 signature
 		const signature = req.headers["x-paystack-signature"];
 		const hash = crypto
 			.createHmac("sha512", secretKey)
@@ -98,15 +103,18 @@ exports.paystackWebhook = onRequest(
 			depositVerified: true,
 			depositPaidAt: FieldValue.serverTimestamp(),
 			webhookVerified: true,
+			statusHistory: FieldValue.arrayUnion({
+				status: "confirmed",
+				at: new Date().toISOString(),
+			}),
 		});
 
 		logger.info(
 			`Webhook: order ${orderDoc.id} confirmed (ref: ${reference})`,
 		);
 
-		// Send confirmation email for leather orders
 		const token = MAILTRAP_TOKEN.value();
-		if (token && order.email && order.type !== "service") {
+		if (token && order.email) {
 			try {
 				await sendOrderConfirmationEmail({
 					token,
@@ -124,10 +132,10 @@ exports.paystackWebhook = onRequest(
 		}
 
 		res.status(200).send("OK");
-	};
+	},
 );
 
-// ── Callable: verify Paystack deposit (for appointment 50% deposits) ──────────
+// ── Verify Deposit ────────────────────────────────────────────────────────────
 exports.verifyPaystackDeposit = onCall(
 	{ secrets: [PAYSTACK_SECRET] },
 	async (request) => {
@@ -154,6 +162,7 @@ exports.verifyPaystackDeposit = onCall(
 			`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
 			{ headers: { Authorization: `Bearer ${secretKey}` } },
 		);
+
 		const json = await res.json();
 
 		if (!json.status || json.data?.status !== "success") {
@@ -177,134 +186,162 @@ exports.verifyPaystackDeposit = onCall(
 			depositPaidAt: FieldValue.serverTimestamp(),
 		});
 
-		logger.info(`Deposit verified for order ${orderId} (ref: ${reference})`);
+		logger.info(`Deposit verified for order ${orderId}`);
 		return { verified: true };
 	},
 );
 
-// ── Trigger: leather/collection order status changes → send email ─────────────
-exports.onLeatherOrderStatusChanged = onDocumentUpdated(
+// ── Order Status Trigger ──────────────────────────────────────────────────────
+exports.onOrderStatusChanged = onDocumentUpdated(
 	{ document: "users/{uid}/orders/{orderId}", secrets: [MAILTRAP_TOKEN] },
 	async (event) => {
 		const before = event.data.before.data();
 		const after = event.data.after.data();
 
-		// Only handle leather/collection orders
-		if (after.type === "service") return;
-
-		// Only fire when status actually changes
 		if (before.status === after.status) return;
-
-		if (!after.email) {
-			logger.warn(
-				`No email on order ${event.params.orderId} — skipping status email`,
-			);
-			return;
-		}
+		if (!after.email) return;
 
 		const token = MAILTRAP_TOKEN.value();
-		if (!token) {
-			logger.error("MAILTRAP_TOKEN not configured");
-			return;
-		}
+		if (!token) return;
 
-		const statusesToEmail = [
-			"confirmed",
-			"production",
-			"shipped",
-			"shipping",
-			"received",
-		];
-		if (!statusesToEmail.includes(after.status)) return;
-
+		const orderId = event.params.orderId;
+		const customerName = after.customerName || "Customer";
 		const itemName = after.items?.[0]?.name || "";
+		const items = after.items || [];
+		const total = after.finalTotal ?? after.total ?? 0;
 
-		// confirmed: send full order confirmation (payment just verified)
-		if (after.status === "confirmed" && !before.depositVerified) {
-			try {
+		switch (after.status) {
+			case "confirmed": {
+				if (before.depositVerified) return;
 				await sendOrderConfirmationEmail({
 					token,
 					email: after.email,
-					customerName: after.customerName || "Customer",
-					orderId: event.params.orderId,
-					items: after.items || [],
-					total: after.finalTotal ?? after.total ?? 0,
+					customerName,
+					orderId,
+					items,
+					total,
 					shipping: after.shipping || null,
 				});
-				logger.info(`Order confirmation email sent to ${after.email}`);
-			} catch (err) {
-				logger.error("sendOrderConfirmationEmail failed:", err);
+				break;
 			}
-			return;
-		}
 
-		// production / shipped / received: send status update
-		if (
-			["production", "shipped", "shipping", "received"].includes(
-				after.status,
-			)
-		) {
-			try {
-				await sendOrderStatusEmail({
+			case "production":
+				await sendProductionEmail({
 					token,
 					email: after.email,
-					customerName: after.customerName || "Customer",
-					orderId: event.params.orderId,
-					status: after.status === "shipped" ? "shipping" : after.status,
+					customerName,
+					orderId,
+					itemName,
+				});
+				break;
+
+			case "shipped":
+			case "shipping":
+				await sendShippedEmail({
+					token,
+					email: after.email,
+					customerName,
+					orderId,
 					itemName,
 					trackingLink: after.trackingLink || null,
 				});
-				logger.info(
-					`Status email (${after.status}) sent to ${after.email}`,
-				);
-			} catch (err) {
-				logger.error(`sendOrderStatusEmail(${after.status}) failed:`, err);
-			}
+				break;
+
+			case "received":
+			case "delivered":
+				await sendDeliveredEmail({
+					token,
+					email: after.email,
+					customerName,
+					orderId,
+					items,
+					total,
+				});
+				break;
 		}
-	};
+	},
 );
 
-// ── Trigger: appointment confirmed → send confirmation email ──────────────────
-exports.onAppointmentConfirmed = onDocumentUpdated(
-	{ document: "users/{uid}/orders/{orderId}", secrets: [MAILTRAP_TOKEN] },
-	async (event) => {
-		const before = event.data.before.data();
-		const after = event.data.after.data();
+// ── Newsletter Sender (FIXED HERE) ────────────────────────────────────────────
+const ADMIN_EMAILS = ["chizobaezeh338@gmail.com", "perfect.footies@gmail.com"];
 
-		// Only service orders transitioning to confirmed
-		if (after.type !== "service") return;
-		if (before.status === "confirmed" || after.status !== "confirmed") return;
-
-		if (!after.email) {
-			logger.warn(
-				`No email on order ${event.params.orderId} — skipping appointment email`,
-			);
-			return;
+exports.sendNewsletter = onCall(
+	{ secrets: [MAILTRAP_TOKEN] },
+	async (request) => {
+		if (!request.auth)
+			throw new HttpsError("unauthenticated", "Must be signed in");
+		if (!ADMIN_EMAILS.includes(request.auth.token.email)) {
+			throw new HttpsError("permission-denied", "Admin only");
 		}
+
+		const { newsletterId } = request.data;
+		if (!newsletterId)
+			throw new HttpsError("invalid-argument", "newsletterId is required");
+
+		const db = getFirestore();
+		const newsletterRef = db.collection("newsletters").doc(newsletterId);
+		const newsletterSnap = await newsletterRef.get();
+
+		if (!newsletterSnap.exists) {
+			throw new HttpsError("not-found", "Newsletter not found");
+		}
+
+		const newsletter = newsletterSnap.data();
+
+		if (newsletter.status === "sent") {
+			throw new HttpsError("failed-precondition", "Newsletter already sent");
+		}
+
+		const subscribersSnap = await db.collection("subscribers").get();
+		const subscribers = subscribersSnap.docs.map((d) => ({
+			id: d.id,
+			...d.data(),
+		}));
 
 		const token = MAILTRAP_TOKEN.value();
-		if (!token) {
-			logger.error("MAILTRAP_TOKEN not configured");
-			return;
+		if (!token)
+			throw new HttpsError("internal", "Email service not configured");
+
+		let sentCount = 0;
+		const BATCH_SIZE = 50;
+
+		for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
+			const batch = subscribers.slice(i, i + BATCH_SIZE);
+
+			await Promise.allSettled(
+				batch.map((sub) =>
+					sendNewsletterEmail({
+						token,
+						email: sub.email,
+						subject: newsletter.subject,
+						previewText: newsletter.previewText || "",
+						headline: newsletter.headline || "",
+						bodyText: newsletter.bodyText || "",
+						imageUrl: newsletter.imageUrl || "",
+						ctaText: newsletter.ctaText || "",
+						ctaUrl: newsletter.ctaUrl || "",
+					})
+						.then(() => {
+							sentCount++;
+						})
+						.catch((err) =>
+							logger.error(`Newsletter failed for ${sub.email}:`, err),
+						),
+				),
+			);
+
+			if (i + BATCH_SIZE < subscribers.length) {
+				await new Promise((resolve) => setTimeout(resolve, 200));
+			}
 		}
 
-		const deposit = after.total
-			? `₦${Math.round(after.total * 0.5).toLocaleString()}`
-			: null;
+		await newsletterRef.update({
+			status: "sent",
+			sentAt: FieldValue.serverTimestamp(),
+			sentCount,
+		});
 
-		try {
-			await sendAppointmentConfirmationEmail({
-				token,
-				email: after.email,
-				customerName: after.customerName || "Customer",
-				orderId: event.params.orderId,
-				appointmentDate:
-					after.appointmentDate || after.items?.[0]?.date || "TBD",
-				deposit,
-			});
-			logger.info(`Appointment confirmation sent to ${after.email}`);
-		} catch (err) {
-			logger.error("sendAppointmentConfirmationEmail failed:", err);
-		}
-	};
-);
+		logger.info(`Newsletter sent to ${sentCount}`);
+		return { success: true, sentCount };
+	},
+); // ✅ THIS was missing
