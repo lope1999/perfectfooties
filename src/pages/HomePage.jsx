@@ -43,18 +43,18 @@ const HERO_IMAGES = [
 
 const HOME_COLLECTIONS = [
 	{
-		id: "female-footwear",
-		name: "Female Handmade Footwear",
-		coverImage: "/images/products/male-low-slides-1.jpeg",
+		id: "heirloom",
+		name: "Heirloom Collection",
+		coverImage: "/images/products/heirloom-regal-1.jpg",
 		description:
-			"Elegantly crafted footwear for women, made to measure, made to last.",
+			"Signature leather pieces with elevated craftsmanship, timeless form, and heirloom-level finish.",
 	},
 	{
 		id: "male-footwear",
 		name: "Male Handmade Footwear",
 		coverImage: "/images/products/male-low-slides-1.jpeg",
 		description:
-			"Handcrafted leather footwear for men, built with precision and pride.",
+			"Handcrafted leather footwear for men, built with precision, pride and durability finish.",
 	},
 ];
 
