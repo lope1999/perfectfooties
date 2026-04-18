@@ -164,7 +164,7 @@ function ItemDialog({ open, onClose, onSaved, collectionId, item }) {
               <ImageUploadField
                 value={url}
                 onChange={(val) => setImage(idx, val)}
-                folder="collections"
+                folder={`collections/${collectionId}`}
                 label={`Image ${idx + 1}`}
               />
               {form.images.length > 1 && (

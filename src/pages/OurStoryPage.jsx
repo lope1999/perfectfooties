@@ -15,6 +15,7 @@ function getInitials(name) {
 
 export default function OurStoryPage() {
 	const visibleTeam = teamMembers.filter((m) => m.name !== "TBD");
+  const ceo = teamMembers.find((member) => member.id === "ceo");
 
 	return (
 		<Box sx={{ pt: 12 }}>
@@ -137,8 +138,8 @@ export default function OurStoryPage() {
 						<ScrollReveal direction="right" delay={0.2}>
 							<Box
 								component="img"
-								src="/images/hero/titceo.JPG"
-								alt="Suliat Titilope Alaga, Founder & Creative Director"
+								src={ceo?.photo}
+								alt={ceo ? `${ceo.name}, ${ceo.role}` : "Founder & Creative Director"}
 								sx={{
 									width: "100%",
 									borderRadius: 4,

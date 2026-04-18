@@ -8,9 +8,14 @@ const fontFamily = '"Georgia", serif';
 const MAX_WIDTH = 1200;
 const QUALITY = 0.8;
 
+function sanitizeBaseName(filename) {
+  return filename.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9-_]+/g, '-');
+}
+
 function compressImage(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
     img.onload = () => {
       let { width, height } = img;
       if (width > MAX_WIDTH) {
@@ -23,6 +28,7 @@ function compressImage(file) {
       canvas.getContext('2d').drawImage(img, 0, 0, width, height);
       canvas.toBlob(
         (blob) => {
+          URL.revokeObjectURL(objectUrl);
           if (blob) resolve(blob);
           else reject(new Error('Compression failed'));
         },
@@ -30,8 +36,11 @@ function compressImage(file) {
         QUALITY,
       );
     };
-    img.onerror = () => reject(new Error('Failed to load image'));
-    img.src = URL.createObjectURL(file);
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Failed to load image'));
+    };
+    img.src = objectUrl;
   });
 }
 
@@ -58,11 +67,23 @@ export default function ImageUploadField({ value, onChange, folder = 'images', l
     setProgress(0);
 
     try {
-      const compressed = await compressImage(file);
-      const name = file.name.replace(/\.[^.]+$/, '.webp');
+      let uploadFile = file;
+      let contentType = file.type || 'application/octet-stream';
+      let extension = file.name.includes('.') ? file.name.split('.').pop() : 'bin';
+
+      try {
+        const compressed = await compressImage(file);
+        uploadFile = compressed;
+        contentType = 'image/webp';
+        extension = 'webp';
+      } catch (compressionError) {
+        console.warn('Image compression failed, uploading original file instead:', compressionError);
+      }
+
+      const name = `${sanitizeBaseName(file.name)}.${extension}`;
       const filename = `${folder}/${Date.now()}-${name}`;
       const fileRef = storageRef(storage, filename);
-      const task = uploadBytesResumable(fileRef, compressed, { contentType: 'image/webp' });
+      const task = uploadBytesResumable(fileRef, uploadFile, { contentType });
 
       // Timeout — if no progress after 30s, likely a rules/config issue
       let lastProgress = Date.now();
@@ -70,7 +91,7 @@ export default function ImageUploadField({ value, onChange, folder = 'images', l
         if (Date.now() - lastProgress > 30000) {
           clearInterval(timeout);
           task.cancel();
-          setError('Upload timed out — have you deployed Firebase Storage rules? Run: firebase deploy --only storage');
+          setError('Upload timed out. Check Firebase Storage bucket config and rules for this upload path.');
           setUploading(false);
         }
       }, 5000);
@@ -85,7 +106,7 @@ export default function ImageUploadField({ value, onChange, folder = 'images', l
           clearInterval(timeout);
           console.error('Upload error:', err);
           const msg = err.code === 'storage/unauthorized'
-            ? 'Permission denied — deploy Storage rules: firebase deploy --only storage'
+            ? 'Permission denied for this Storage path. Check the upload folder, Storage rules, and signed-in admin account.'
             : 'Upload failed — please try again';
           setError(msg);
           setUploading(false);
@@ -98,8 +119,8 @@ export default function ImageUploadField({ value, onChange, folder = 'images', l
         },
       );
     } catch (err) {
-      console.error('Compression error:', err);
-      setError('Failed to process image');
+      console.error('Image preparation error:', err);
+      setError('Failed to prepare image for upload');
       setUploading(false);
     }
   };

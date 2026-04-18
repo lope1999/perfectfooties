@@ -4,7 +4,7 @@ export const teamMembers = [
     name: 'Suliat Titilope Alaga',
     role: 'Founder & Creative Director',
     department: 'Leadership',
-    photo: '/images/hero/titceo.JPG',
+    photo: '/images/team/ceo.jpeg',
     bio: 'Suliat is the visionary behind Perfect Footies, leading both the creative direction and overall brand experience. What began as a personal need for better, longer-lasting leather pieces has grown into a purpose-driven brand. She oversees design decisions, product development, and final quality control, ensuring every piece reflects the brand\'s standard of craftsmanship, elegance, and durability.',
   },
   {
@@ -28,7 +28,7 @@ export const teamMembers = [
     name: 'Praise Olusegun',
     role: 'Marketing & Community Manager',
     department: 'Marketing',
-    photo: null,
+    photo: '/images/team/praise-team.jpg',
     bio: 'Praise leads marketing and audience engagement for Perfect Footies. He manages social media strategy, content direction, and community growth, helping the brand stay visible, relatable, and connected to its audience. Through storytelling and consistent engagement, he drives awareness and brand loyalty.',
   },
 ];
