@@ -257,7 +257,7 @@ export default function Footer() {
 							<Typography
 								sx={{ color: "#1b1b1b", fontSize: "0.9rem", mb: 0.8 }}
 							>
-								perfect.footies@gmail.com
+								perfectfooties@gmail.com
 							</Typography>
 							<Typography
 								sx={{ color: "#1b1b1b", fontSize: "0.9rem", mb: 0.8 }}

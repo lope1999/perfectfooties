@@ -343,7 +343,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   <div class="header">
     <img src="${logoUrl}" alt="Perfect Footies" class="logo"/>
     <div class="brand">PERFECT FOOTIES</div>
-    <div class="brand-sub">perfectfooties.com &nbsp;·&nbsp; Gbagada, Lagos</div>
+    <div class="brand-sub">perfectfooties.com &nbsp;·&nbsp; Lagos State</div>
     <div class="doc-badge">SHIPPING LABEL</div>
   </div>
   <div class="accent-bar"></div>
@@ -352,10 +352,10 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
     <div class="section">
       <div class="section-title">Ship To</div>
       <div class="to-box">
-        <div class="to-name">${o.customerName || '—'}</div>
-        ${sh.phone || o.phone ? `<div class="to-detail">${sh.phone || o.phone}</div>` : ''}
-        ${o.email ? `<div class="to-detail">${o.email}</div>` : ''}
-        ${addrParts.length ? `<div class="to-detail">${addrParts.join(', ')}</div>` : ''}
+        <div class="to-name">${o.customerName || "—"}</div>
+        ${sh.phone || o.phone ? `<div class="to-detail">${sh.phone || o.phone}</div>` : ""}
+        ${o.email ? `<div class="to-detail">${o.email}</div>` : ""}
+        ${addrParts.length ? `<div class="to-detail">${addrParts.join(", ")}</div>` : ""}
       </div>
     </div>
 
@@ -364,8 +364,8 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
       <table class="meta-table">
         <tr><td class="key">Order ID</td><td class="val">${o.id}</td></tr>
         <tr><td class="key">Date</td><td class="val">${date}</td></tr>
-        <tr><td class="key">Type</td><td class="val">${o.type || '—'}</td></tr>
-        <tr><td class="key">Status</td><td class="val">${o.status || '—'}</td></tr>
+        <tr><td class="key">Type</td><td class="val">${o.type || "—"}</td></tr>
+        <tr><td class="key">Status</td><td class="val">${o.status || "—"}</td></tr>
       </table>
     </div>
 
@@ -389,7 +389,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
       <div class="section-title">Shipped From</div>
       <div class="from-box">
         <div class="from-brand">Perfect Footies</div>
-        <div>Gbagada, Lagos, Nigeria</div>
+        <div>Lagos State, Nigeria</div>
         <div>perfectfooties.com</div>
       </div>
     </div>

@@ -5,7 +5,6 @@ const STORAGE_KEY = 'perfectfooties-cart';
 const initialState = {
   customerName: '',
   items: {
-    services: [],
     products: [],
     pressOns: [],
     leatherGoods: [],
@@ -20,7 +19,6 @@ function loadFromStorage() {
       return {
         customerName: parsed.customerName || '',
         items: {
-          services: parsed.items?.services || [],
           products: parsed.items?.products || [],
           pressOns: parsed.items?.pressOns || [],
           leatherGoods: parsed.items?.leatherGoods || [],
@@ -35,24 +33,6 @@ function loadFromStorage() {
 
 function cartReducer(state, action) {
   switch (action.type) {
-		case "ADD_SERVICE":
-			return {
-				...state,
-				items: {
-					...state.items,
-					services: [...state.items.services, action.payload],
-				},
-			};
-		case "REMOVE_SERVICE":
-			return {
-				...state,
-				items: {
-					...state.items,
-					services: state.items.services.filter(
-						(s) => s.id !== action.payload,
-					),
-				},
-			};
 		case "ADD_PRODUCT": {
 			const existing = state.items.products.find(
 				(p) => p.productId === action.payload.productId,
@@ -189,12 +169,6 @@ export function CartProvider({ children }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
-  const addService = (service) =>
-    dispatch({ type: 'ADD_SERVICE', payload: { ...service, id: crypto.randomUUID() } });
-
-  const removeService = (id) =>
-    dispatch({ type: 'REMOVE_SERVICE', payload: id });
-
   const addProduct = (product) =>
     dispatch({ type: 'ADD_PRODUCT', payload: product });
 
@@ -226,9 +200,8 @@ export function CartProvider({ children }) {
     dispatch({ type: 'CLEAR_CART' });
 
   const getCartCount = () => {
-    const { services, products, pressOns, leatherGoods } = state.items;
+    const { products, pressOns, leatherGoods } = state.items;
     return (
-      services.length +
       products.reduce((sum, p) => sum + p.quantity, 0) +
       pressOns.length +
       leatherGoods.reduce((sum, g) => sum + g.quantity, 0)
@@ -236,20 +209,17 @@ export function CartProvider({ children }) {
   };
 
   const getCartTotal = () => {
-    const { services, products, pressOns, leatherGoods } = state.items;
-    const serviceTotal = services.reduce((sum, s) => sum + s.price, 0);
+    const { products, pressOns, leatherGoods } = state.items;
     const productTotal = products.reduce((sum, p) => sum + p.price * p.quantity, 0);
     const pressOnTotal = pressOns.reduce((sum, p) => sum + p.price * (p.quantity || 1), 0);
     const leatherTotal = leatherGoods.reduce((sum, g) => sum + g.price * g.quantity, 0);
-    return serviceTotal + productTotal + pressOnTotal + leatherTotal;
+    return productTotal + pressOnTotal + leatherTotal;
   };
 
   return (
     <CartContext.Provider
       value={{
         cart: state,
-        addService,
-        removeService,
         addProduct,
         removeProduct,
         updateProductQty,

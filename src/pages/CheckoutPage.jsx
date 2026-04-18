@@ -15,10 +15,7 @@ import {
   Divider,
   IconButton,
   Collapse,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  InputAdornment,
 } from '@mui/material';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
@@ -77,7 +74,7 @@ export default function CheckoutPage() {
   const { user } = useAuth();
   const { showToast } = useNotifications();
   const { cart, clearCart, getCartTotal } = useCart();
-  const { services, products, pressOns, leatherGoods } = cart.items;
+  const { products, pressOns, leatherGoods } = cart.items;
 
   const appliedGiftCard = location.state?.appliedGiftCard || null;
   const subtotal = getCartTotal();
@@ -104,13 +101,9 @@ export default function CheckoutPage() {
 
   const hasDeliverables = products.length > 0 || pressOns.length > 0 || leatherGoods.length > 0;
 
-  const serviceSubtotal = services.reduce((sum, s) => sum + s.price, 0);
-  const depositAmount = services.length > 0 ? Math.round(serviceSubtotal * 0.5) : 0;
-
   const [form, setForm] = useState({ country: 'Nigeria', name: '', phone: '', address: '', state: '', lga: '', city: '', province: '', postalCode: '' });
   const [submitting, setSubmitting] = useState(false);
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [pendingShipping, setPendingShipping] = useState(null);
 
   // Fetch loyalty balance and review count for logged-in user
@@ -193,7 +186,11 @@ export default function CheckoutPage() {
   const isLagos = isDomestic && form.state === 'Lagos';
   const shippingCost = isDomestic ? (isLagos ? 3000 : 4000) : 0;
   const grandTotal = finalTotal + shippingCost;
-  const isValidPhone = (p) => isDomestic ? /^0\d{10}$/.test(p.replace(/[\s-]/g, '')) : p.replace(/[\s\-+()]/g, '').length >= 7;
+  const isValidPhone = (p) => {
+    const c = p.replace(/[\s\-+()\u00A0]/g, '');
+    if (isDomestic) return /^(0\d{10}|234\d{10})$/.test(c);
+    return c.length >= 7;
+  };
 
   const isFormValid = isDomestic
     ? form.name.trim() && isValidPhone(form.phone) && form.address.trim() && form.state && form.lga.trim()
@@ -221,17 +218,6 @@ export default function CheckoutPage() {
       lines.push(`[INTERNATIONAL ORDER — Shipping cost TBD via WhatsApp]`);
     }
     lines.push('');
-
-    if (services.length > 0) {
-      lines.push('--- SERVICE APPOINTMENTS ---');
-      services.forEach((s, i) => {
-        let line = `${i + 1}. ${s.name} \u2014 ${formatNaira(s.price)}`;
-        if (s.customerName) line += `\n   Name: ${s.customerName}`;
-        line += `\n   Date: ${s.date}\n   Shape: ${s.nailShape} | Length: ${s.nailLength}`;
-        lines.push(line);
-      });
-      lines.push('');
-    }
 
     if (leatherGoods.length > 0) {
       lines.push('--- LEATHER GOODS ORDER ---');
@@ -301,20 +287,9 @@ export default function CheckoutPage() {
       totalLine += `\nShipping: To be quoted via WhatsApp (international)`;
     }
 
-    let depositLine = '';
-    if (services.length > 0) {
-      if (paymentReference) {
-        depositLine = `\n\n\u2705 Appointment Deposit Paid: ${formatNaira(depositAmount)} (Paystack Ref: ${paymentReference})`;
-      } else {
-        depositLine = `\n\n\u26A0\uFE0F Appointment Deposit (50%): ${formatNaira(depositAmount)} \u2014 To be arranged via WhatsApp`;
-      }
-    }
-
-    const message = `Hi! I\u2019d like to place an order.\n\n${lines.join('\n')}\n${totalLine}${depositLine}\n\nPlease confirm availability and payment details. Thank you!`;
+    const message = `Hi! I\u2019d like to place an order.\n\n${lines.join('\n')}\n${totalLine}\n\nPlease confirm availability and payment details. Thank you!`;
     const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
-    // Open WhatsApp directly only for legacy press-on/product orders (no leather goods, no deposit)
-    if (!paymentReference && services.length === 0 && leatherGoods.length === 0) window.open(waUrl, '_blank');
-    if (!paymentReference && services.length > 0) { setSubmitting(false); return; }
+    if (!paymentReference && leatherGoods.length === 0) window.open(waUrl, '_blank');
 
     // Background async operations (save shipping, decrement stock, save order, redeem gift card)
     saveShippingDetails(user.uid, shipping).catch(() => {});
@@ -338,12 +313,10 @@ export default function CheckoutPage() {
     }
 
     // Determine order type
-    const hasServices = services.length > 0;
     const hasProducts = products.length > 0;
     const hasPressOns = pressOns.length > 0;
     const hasLeatherGoods = leatherGoods.length > 0;
     const orderType =
-      hasServices ? 'mixed' :
       hasLeatherGoods && !hasProducts && !hasPressOns ? 'leather' :
       hasPressOns && !hasProducts ? 'pressOn' :
       hasProducts && !hasPressOns ? 'retail' : 'mixed';
@@ -352,7 +325,6 @@ export default function CheckoutPage() {
     let orderId = null;
     try {
       const allItems = [
-        ...services.map((s) => ({ kind: 'service', name: s.name, price: s.price, quantity: 1 })),
         ...leatherGoods.map((g) => ({
           kind: 'leather',
           name: g.name,
@@ -390,7 +362,6 @@ export default function CheckoutPage() {
       };
       if (paymentReference) {
         orderData.paymentReference = paymentReference;
-        orderData.depositPaid = depositAmount;
       }
       if (appliedGiftCard) {
         orderData.giftCardCode = appliedGiftCard.code;
@@ -444,12 +415,11 @@ export default function CheckoutPage() {
         whatsappUrl: waUrl,
         paymentReference: paymentReference || null,
         items: [
-          ...services.map((s) => ({ kind: 'service', serviceName: s.name, price: s.price })),
           ...leatherGoods.map((g) => ({ kind: 'leather', name: g.name, price: g.price * g.quantity, quantity: g.quantity, selectedColor: g.selectedColor, footLength: g.footLength, collectionId: g.collectionId })),
           ...products.map((p) => ({ kind: 'retail', name: p.name, price: p.price * (p.quantity || 1), quantity: p.quantity })),
           ...pressOns.map((p) => ({ kind: 'press-on', name: p.name, price: p.price * (p.quantity || 1), nailShape: p.nailShape, quantity: p.quantity || 1, selectedLength: p.selectedLength, setIncludes: p.setIncludes, inspirationTags: p.inspirationTags, nailNotes: p.nailNotes, specialRequest: p.specialRequest || false })),
         ],
-        total: services.reduce((s, i) => s + i.price, 0) + leatherGoods.reduce((s, g) => s + g.price * g.quantity, 0) + products.reduce((s, i) => s + i.price * (i.quantity || 1), 0) + pressOns.reduce((s, i) => s + i.price * (i.quantity || 1), 0),
+        total: leatherGoods.reduce((s, g) => s + g.price * g.quantity, 0) + products.reduce((s, i) => s + i.price * (i.quantity || 1), 0) + pressOns.reduce((s, i) => s + i.price * (i.quantity || 1), 0),
         finalTotal: grandTotal,
         giftCardDiscount,
         referralDiscount,
@@ -485,10 +455,7 @@ export default function CheckoutPage() {
       ? { country: 'Nigeria', name: form.name.trim(), phone: form.phone.trim(), address: form.address.trim(), state: form.state, lga: form.lga.trim(), shippingZone: 'domestic' }
       : { country: form.country, name: form.name.trim(), phone: form.phone.trim(), address: form.address.trim(), city: form.city.trim(), province: form.province.trim(), postalCode: form.postalCode.trim(), shippingZone: 'international' };
 
-    if (services.length > 0) {
-      setPendingShipping(shipping);
-      setPaymentModalOpen(true);
-    } else if (leatherGoods.length > 0) {
+    if (leatherGoods.length > 0) {
       setPendingShipping(shipping);
       payWithPaystackFull(shipping);
     } else {
@@ -496,20 +463,6 @@ export default function CheckoutPage() {
     }
   };
 
-  const payWithPaystack = () => {
-    const pk = import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY || '';
-    if (!pk || !window.PaystackPop) { alert('Payment is required to confirm your booking. Please refresh the page and try again.'); return; }
-    window.PaystackPop.setup({
-      key: pk,
-      email: user?.email || 'guest@perfectfooties.com',
-      amount: depositAmount * 100,
-      currency: 'NGN',
-      ref: `FOOTIES-CART-${Date.now()}`,
-      metadata: { appointmentCount: services.length },
-      callback: (response) => handleCompleteOrder(response.reference, pendingShipping),
-      onClose: () => {},
-    }).openIframe();
-  };
 
   if (!hasDeliverables) return null;
 
@@ -602,7 +555,14 @@ export default function CheckoutPage() {
               size="small"
               placeholder={isDomestic ? 'e.g. 08012345678' : 'e.g. +44 7700 900123'}
               error={form.phone.length > 0 && !isValidPhone(form.phone)}
-              helperText={form.phone.length > 0 && !isValidPhone(form.phone) ? (isDomestic ? 'Enter a valid 11-digit Nigerian number' : 'Enter a valid phone number') : ''}
+              helperText={form.phone.length > 0 && !isValidPhone(form.phone) ? (isDomestic ? 'Enter a valid Nigerian number (08012345678 or 234...)' : 'Enter a valid phone number') : ''}
+              InputProps={isDomestic ? {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600, mr: 0.5 }}>+234</Typography>
+                  </InputAdornment>
+                ),
+              } : undefined}
               sx={{ mb: 2, ...textFieldSx }}
             />
 
@@ -868,80 +828,11 @@ export default function CheckoutPage() {
           >
             {submitting
               ? <CircularProgress size={22} sx={{ color: '#fff' }} />
-              : services.length > 0 ? 'Pay Deposit & Place Order' : leatherGoods.length > 0 ? 'Pay & Confirm Order' : 'Place Order via WhatsApp'}
+              : leatherGoods.length > 0 ? 'Pay & Confirm Order' : 'Place Order via WhatsApp'}
           </Button>
         </Box>
       </Container>
 
-      {/* Payment Modal */}
-      <Dialog
-        open={paymentModalOpen}
-        onClose={() => setPaymentModalOpen(false)}
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: 3 } }}
-      >
-        <DialogTitle sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', pb: 1 }}>
-          Confirm &amp; Pay Appointment Deposit
-        </DialogTitle>
-        <DialogContent>
-          {/* Service list */}
-          <Box sx={{ mb: 2, p: 2, borderRadius: 2, backgroundColor: '#FFF0F8', border: '1px solid #E8D5B0' }}>
-            {services.map((s) => (
-              <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
-                <Box sx={{ flex: 1, mr: 1 }}>
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-main)' }}>{s.name}</Typography>
-                  <Typography sx={{ fontSize: '0.78rem', color: '#888' }}>{s.date}</Typography>
-                </Box>
-                <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#e3242b', whiteSpace: 'nowrap' }}>{formatNaira(s.price)}</Typography>
-              </Box>
-            ))}
-          </Box>
-
-          <Divider sx={{ borderColor: '#E8D5B0', mb: 2 }} />
-
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-            <Typography sx={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Appointment total</Typography>
-            <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-muted)' }}>{formatNaira(serviceSubtotal)}</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
-            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#e3242b' }}>Deposit (50%)</Typography>
-            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#e3242b' }}>{formatNaira(depositAmount)}</Typography>
-          </Box>
-          <Typography sx={{ fontSize: '0.78rem', color: '#999', mb: 1.5 }}>
-            Balance {formatNaira(serviceSubtotal - depositAmount)} due on appointment day
-          </Typography>
-
-          {(products.length > 0 || pressOns.length > 0) && (
-            <Typography sx={{ fontSize: '0.82rem', color: '#777', mb: 1.5, p: 1.2, borderRadius: 2, backgroundColor: '#F5F5F5', border: '1px solid #E0E0E0' }}>
-              Press-on &amp; product orders will be confirmed via WhatsApp after payment.
-            </Typography>
-          )}
-
-          <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Pay the 50% deposit via Paystack to confirm your booking.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          <Button
-            onClick={payWithPaystack}
-            sx={{
-              backgroundColor: '#e3242b',
-              color: '#fff',
-              borderRadius: '30px',
-              px: 3,
-              py: 1,
-              fontFamily: '"Georgia", serif',
-              fontWeight: 600,
-              fontSize: '0.88rem',
-              whiteSpace: 'nowrap',
-              '&:hover': { backgroundColor: '#b81b21' },
-            }}
-          >
-            Pay {formatNaira(depositAmount)} Deposit
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       <SignInPrompt open={signInPromptOpen} onClose={() => setSignInPromptOpen(false)} />
     </Box>

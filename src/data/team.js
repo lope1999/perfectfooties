@@ -1,36 +1,36 @@
 export const teamMembers = [
-	{
-		id: "ceo",
-		name: "Titi",
-		role: "Founder & Lead Craftsman",
-		department: "Leadership",
-		image: "/images/products/heirloom-regal-13.jpg",
-		bio: "Titi is the creative force and lead craftsman behind PerfectFooties. With a deep passion for leatherwork and years of hands-on experience, she built the brand from the ground up — turning a love for quality craftsmanship into a full-service leather goods brand. She oversees every piece, from design direction to final quality inspection.",
-	},
-	{
-		id: "lead-craftsman",
-		name: "Tade",
-		role: "Lead Leather Artisan",
-		department: "Craftsmanship",
-		image: "/images/team/stylist-1.jpg.jpg",
-		bio: "Tade specialises in handstitched leather construction and custom shoe-making. Known for his precision and attention to detail, he brings each client's vision to life with clean edges, tight saddle stitching, and flawless finishing. Every piece that leaves the workshop passes through his hands.",
-	},
-	{
-		id: "designer",
-		name: "Chizoba",
-		role: "Brand Designer",
-		department: "Design",
-		image: "/images/team/stylist-1.jpg.jpg",
-		bio: "Chizoba is the visual storyteller behind the PerfectFooties brand. From the website design and email marketing, she ensures everything looks cohesive, elegant, and on-brand.",
-	},
-	{
-		id: "marketer",
-		name: "Lope",
-		role: "Marketing & Social Media",
-		department: "Marketing",
-		image: "/images/team/stylist-1.jpg.jpg",
-		bio: "Lope runs our social media presence and marketing campaigns. He connects with our community, shares behind-the-scenes content from the workshop, and keeps PerfectFooties visible. His content strategy has helped the brand reach thousands of leather goods lovers across Lagos and beyond.",
-	},
+  {
+    id: 'ceo',
+    name: 'Suliat Titilope Alaga',
+    role: 'Founder & Creative Director',
+    department: 'Leadership',
+    photo: '/images/hero/titceo.JPG',
+    bio: 'Suliat is the visionary behind Perfect Footies, leading both the creative direction and overall brand experience. What began as a personal need for better, longer-lasting leather pieces has grown into a purpose-driven brand. She oversees design decisions, product development, and final quality control, ensuring every piece reflects the brand\'s standard of craftsmanship, elegance, and durability.',
+  },
+  {
+    id: 'artisan',
+    name: 'Michael',
+    role: 'Head Leather Artisan',
+    department: 'Craft',
+    photo: null,
+    bio: 'Michael leads the craftsmanship process within the workshop, specialising in handcrafted leather construction and custom footwear. Known for his precision and consistency, he ensures every piece is carefully constructed, neatly finished, and built to last. His hands shape the quality that defines Perfect Footies.',
+  },
+  {
+    id: 'designer',
+    name: 'Chizoba Ezeh',
+    role: 'Brand & Visual Designer',
+    department: 'Design',
+    photo: null,
+    bio: 'Chizoba is responsible for the visual identity of Perfect Footies. From digital design to brand communication, she ensures every touchpoint reflects a clean, refined, and cohesive aesthetic. Her work brings the brand\'s story to life visually across all platforms.',
+  },
+  {
+    id: 'marketing',
+    name: 'Praise Olusegun',
+    role: 'Marketing & Community Manager',
+    department: 'Marketing',
+    photo: null,
+    bio: 'Praise leads marketing and audience engagement for Perfect Footies. He manages social media strategy, content direction, and community growth, helping the brand stay visible, relatable, and connected to its audience. Through storytelling and consistent engagement, he drives awareness and brand loyalty.',
+  },
 ];
 
-export const departments = ['Leadership', 'Craftsmanship', 'Design', 'Marketing'];
+export const departments = ['Leadership', 'Craft', 'Design', 'Marketing'];

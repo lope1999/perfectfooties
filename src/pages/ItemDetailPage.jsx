@@ -311,428 +311,1000 @@ export default function ItemDetailPage() {
   };
 
   return (
-    <Box sx={{ pt: 12, pb: { xs: 12, md: 8 } }}>
-      <SizeGuideDialog open={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)} />
-      <Snackbar
-        open={cartSnack}
-        autoHideDuration={3000}
-        onClose={() => setCartSnack(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={() => setCartSnack(false)} severity="success" sx={{ fontFamily: ff, borderRadius: 2 }}>
-          Added to cart! Continue shopping or go to checkout.
-        </Alert>
-      </Snackbar>
-      <Snackbar
-        open={wishlistSnack.open}
-        autoHideDuration={2500}
-        onClose={() => setWishlistSnack((s) => ({ ...s, open: false }))}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={() => setWishlistSnack((s) => ({ ...s, open: false }))} severity={wishlistSnack.added ? 'success' : 'info'} sx={{ fontFamily: ff, borderRadius: 2 }}>
-          {wishlistSnack.added ? 'Saved to wishlist!' : 'Removed from wishlist.'}
-        </Alert>
-      </Snackbar>
-      {/* Back */}
-      <Box sx={{ px: { xs: 2, sm: 4 }, pb: 0 }}>
-        <Button
-          startIcon={<ArrowBackIosNewIcon sx={{ fontSize: '0.75rem !important' }} />}
-          onClick={() => navigate(`/shop/${collectionId}`)}
-          sx={{
-            fontFamily: ff, fontWeight: 600, fontSize: '0.85rem',
-            color: 'var(--text-muted)', textTransform: 'none',
-            px: 1.5, py: 0.6, borderRadius: '20px',
-            border: '1px solid #eee', backgroundColor: 'var(--bg-card)',
-            '&:hover': { borderColor: '#e3242b', color: '#e3242b' },
-          }}
-        >
-          {col?.name || 'Collection'}
-        </Button>
-      </Box>
+		<Box sx={{ pt: 12, pb: { xs: 12, md: 8 } }}>
+			<SizeGuideDialog
+				open={sizeGuideOpen}
+				onClose={() => setSizeGuideOpen(false)}
+			/>
+			<Snackbar
+				open={cartSnack}
+				autoHideDuration={3000}
+				onClose={() => setCartSnack(false)}
+				anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+			>
+				<Alert
+					onClose={() => setCartSnack(false)}
+					severity="success"
+					sx={{ fontFamily: ff, borderRadius: 2 }}
+				>
+					Added to cart! Continue shopping or go to checkout.
+				</Alert>
+			</Snackbar>
+			<Snackbar
+				open={wishlistSnack.open}
+				autoHideDuration={2500}
+				onClose={() => setWishlistSnack((s) => ({ ...s, open: false }))}
+				anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+			>
+				<Alert
+					onClose={() => setWishlistSnack((s) => ({ ...s, open: false }))}
+					severity={wishlistSnack.added ? "success" : "info"}
+					sx={{ fontFamily: ff, borderRadius: 2 }}
+				>
+					{wishlistSnack.added
+						? "Saved to wishlist!"
+						: "Removed from wishlist."}
+				</Alert>
+			</Snackbar>
+			{/* Back */}
+			<Box sx={{ px: { xs: 2, sm: 4 }, pb: 0 }}>
+				<Button
+					startIcon={
+						<ArrowBackIosNewIcon
+							sx={{ fontSize: "0.75rem !important" }}
+						/>
+					}
+					onClick={() => navigate(`/shop/${collectionId}`)}
+					sx={{
+						fontFamily: ff,
+						fontWeight: 600,
+						fontSize: "0.85rem",
+						color: "var(--text-muted)",
+						textTransform: "none",
+						px: 1.5,
+						py: 0.6,
+						borderRadius: "20px",
+						border: "1px solid #eee",
+						backgroundColor: "var(--bg-card)",
+						"&:hover": { borderColor: "#e3242b", color: "#e3242b" },
+					}}
+				>
+					{col?.name || "Collection"}
+				</Button>
+			</Box>
 
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Grid container spacing={6}>
-          {/* ── Left: Image Gallery ── */}
-          <Grid item xs={12} md={6}>
-            {images.length > 0 ? (
-              <Box>
-                {/* Main image */}
-                <Box sx={{ position: 'relative', borderRadius: 3, overflow: 'hidden', border: '1px solid #E8D5B0', mb: 2 }}>
-                  <Box
-                    component="img"
-                    src={images[activeImg]}
-                    alt={item.name}
-                    sx={{ width: '100%', height: { xs: 320, md: 460 }, objectFit: 'cover', display: 'block' }}
-                  />
-                  {images.length > 1 && (
-                    <>
-                      <IconButton
-                        onClick={() => setActiveImg((p) => (p - 1 + images.length) % images.length)}
-                        sx={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', backgroundColor: 'rgba(0,0,0,0.4)', color: '#fff', '&:hover': { backgroundColor: 'rgba(0,0,0,0.65)' } }}
-                        size="small"
-                      >
-                        <ArrowBackIosIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                      <IconButton
-                        onClick={() => setActiveImg((p) => (p + 1) % images.length)}
-                        sx={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', backgroundColor: 'rgba(0,0,0,0.4)', color: '#fff', '&:hover': { backgroundColor: 'rgba(0,0,0,0.65)' } }}
-                        size="small"
-                      >
-                        <ArrowForwardIosIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </>
-                  )}
-                </Box>
+			<Container maxWidth="lg" sx={{ mt: 4 }}>
+				<Grid container spacing={6}>
+					{/* ── Left: Image Gallery ── */}
+					<Grid item xs={12} md={6}>
+						{images.length > 0 ? (
+							<Box>
+								{/* Main image */}
+								<Box
+									sx={{
+										position: "relative",
+										borderRadius: 3,
+										overflow: "hidden",
+										border: "1px solid #E8D5B0",
+										mb: 2,
+									}}
+								>
+									<Box
+										component="img"
+										src={images[activeImg]}
+										alt={item.name}
+										sx={{
+											width: "100%",
+											height: { xs: 320, md: 460 },
+											objectFit: "cover",
+											display: "block",
+										}}
+									/>
+									{images.length > 1 && (
+										<>
+											<IconButton
+												onClick={() =>
+													setActiveImg(
+														(p) =>
+															(p - 1 + images.length) %
+															images.length,
+													)
+												}
+												sx={{
+													position: "absolute",
+													left: 8,
+													top: "50%",
+													transform: "translateY(-50%)",
+													backgroundColor: "rgba(0,0,0,0.4)",
+													color: "#fff",
+													"&:hover": {
+														backgroundColor: "rgba(0,0,0,0.65)",
+													},
+												}}
+												size="small"
+											>
+												<ArrowBackIosIcon sx={{ fontSize: 16 }} />
+											</IconButton>
+											<IconButton
+												onClick={() =>
+													setActiveImg(
+														(p) => (p + 1) % images.length,
+													)
+												}
+												sx={{
+													position: "absolute",
+													right: 8,
+													top: "50%",
+													transform: "translateY(-50%)",
+													backgroundColor: "rgba(0,0,0,0.4)",
+													color: "#fff",
+													"&:hover": {
+														backgroundColor: "rgba(0,0,0,0.65)",
+													},
+												}}
+												size="small"
+											>
+												<ArrowForwardIosIcon
+													sx={{ fontSize: 16 }}
+												/>
+											</IconButton>
+										</>
+									)}
+								</Box>
 
-                {/* Thumbnails */}
-                {images.length > 1 && (
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    {images.map((img, i) => (
-                      <Box
-                        key={i}
-                        component="img"
-                        src={img}
-                        alt={`${item.name} ${i + 1}`}
-                        onClick={() => setActiveImg(i)}
-                        sx={{
-                          width: 72, height: 72, objectFit: 'cover', borderRadius: 2, cursor: 'pointer',
-                          border: i === activeImg ? '2px solid var(--accent-cyan)' : '2px solid #E8D5B0',
-                          transition: 'border-color 0.2s',
-                          '&:hover': { borderColor: 'var(--accent-cyan)' },
-                        }}
-                      />
-                    ))}
-                  </Box>
-                )}
-              </Box>
-            ) : (
-              <Box sx={{ height: 400, backgroundColor: 'var(--bg-soft)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E8D5B0' }}>
-                <Typography sx={{ color: '#E8D5B0', fontFamily: ff }}>No images yet</Typography>
-              </Box>
-            )}
-          </Grid>
+								{/* Thumbnails */}
+								{images.length > 1 && (
+									<Box
+										sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}
+									>
+										{images.map((img, i) => (
+											<Box
+												key={i}
+												component="img"
+												src={img}
+												alt={`${item.name} ${i + 1}`}
+												onClick={() => setActiveImg(i)}
+												sx={{
+													width: 72,
+													height: 72,
+													objectFit: "cover",
+													borderRadius: 2,
+													cursor: "pointer",
+													border:
+														i === activeImg
+															? "2px solid var(--accent-cyan)"
+															: "2px solid #E8D5B0",
+													transition: "border-color 0.2s",
+													"&:hover": {
+														borderColor: "var(--accent-cyan)",
+													},
+												}}
+											/>
+										))}
+									</Box>
+								)}
+							</Box>
+						) : (
+							<Box
+								sx={{
+									height: 400,
+									backgroundColor: "var(--bg-soft)",
+									borderRadius: 3,
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+									border: "1px solid #E8D5B0",
+								}}
+							>
+								<Typography sx={{ color: "#E8D5B0", fontFamily: ff }}>
+									No images yet
+								</Typography>
+							</Box>
+						)}
+					</Grid>
 
-          {/* ── Right: Info + Order Form ── */}
-          <Grid item xs={12} md={6}>
-            <Typography variant="h4" sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-main)', mb: 0.5, fontSize: { xs: '1.5rem', md: '2rem' } }}>
-              {item.name}
-            </Typography>
+					{/* ── Right: Info + Order Form ── */}
+					<Grid item xs={12} md={6}>
+						<Typography
+							variant="h4"
+							sx={{
+								fontFamily: ff,
+								fontWeight: 700,
+								color: "var(--text-main)",
+								mb: 0.5,
+								fontSize: { xs: "1.5rem", md: "2rem" },
+							}}
+						>
+							{item.name}
+						</Typography>
 
-            <Typography sx={{ color: 'var(--text-purple)', fontFamily: ff, fontWeight: 700, fontSize: '1.4rem', mb: 1 }}>
-              ₦{Number(item.price).toLocaleString()}
-            </Typography>
+						<Typography
+							sx={{
+								color: "var(--text-purple)",
+								fontFamily: ff,
+								fontWeight: 700,
+								fontSize: "1.4rem",
+								mb: 1,
+							}}
+						>
+							₦{Number(item.price).toLocaleString()}
+						</Typography>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <CalendarMonthIcon sx={{ fontSize: 13, color: 'var(--text-muted)' }} />
-                <Typography sx={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: ff, letterSpacing: 1, textTransform: 'uppercase' }}>Est. 2020</Typography>
-              </Box>
-              <Typography sx={{ color: '#E8D5B0', fontSize: '0.85rem' }}>|</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <HandymanIcon sx={{ fontSize: 13, color: 'var(--text-muted)' }} />
-                <Typography sx={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: ff, letterSpacing: 1, textTransform: 'uppercase' }}>Made to Order</Typography>
-              </Box>
-            </Box>
+						<Box
+							sx={{
+								display: "flex",
+								alignItems: "center",
+								gap: 2,
+								mb: 2,
+							}}
+						>
+							<Box
+								sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+							>
+								<CalendarMonthIcon
+									sx={{ fontSize: 13, color: "var(--text-muted)" }}
+								/>
+								<Typography
+									sx={{
+										fontSize: "0.72rem",
+										color: "var(--text-muted)",
+										fontFamily: ff,
+										letterSpacing: 1,
+										textTransform: "uppercase",
+									}}
+								>
+									Est. 2020
+								</Typography>
+							</Box>
+							<Typography sx={{ color: "#E8D5B0", fontSize: "0.85rem" }}>
+								|
+							</Typography>
+							<Box
+								sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+							>
+								<HandymanIcon
+									sx={{ fontSize: 13, color: "var(--text-muted)" }}
+								/>
+								<Typography
+									sx={{
+										fontSize: "0.72rem",
+										color: "var(--text-muted)",
+										fontFamily: ff,
+										letterSpacing: 1,
+										textTransform: "uppercase",
+									}}
+								>
+									Made to Order
+								</Typography>
+							</Box>
+						</Box>
 
-            {item.description && (
-              <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.8, mb: 3 }}>
-                {item.description}
-              </Typography>
-            )}
+						{item.description && (
+							<Typography
+								sx={{
+									color: "var(--text-muted)",
+									fontSize: "0.95rem",
+									lineHeight: 1.8,
+									mb: 3,
+								}}
+							>
+								{item.description}
+							</Typography>
+						)}
 
-            <Divider sx={{ borderColor: '#E8D5B0', mb: 3 }} />
+						<Divider sx={{ borderColor: "#E8D5B0", mb: 3 }} />
 
-            {/* Colour selector */}
-            <Box sx={{ mb: 3 }}>
-              <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)', mb: 1.5 }}>
-                Colour{activeColor && (
-                  <span style={{ fontWeight: 400, color: COLOR_HEX[activeColor] || customColorHex || 'var(--accent-cyan)', marginLeft: 6 }}>
-                    — {activeColor}
-                  </span>
-                )}
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {/* First 3 standard colors */}
-                {colors.slice(0, 3).map((c) => {
-                  const hex = COLOR_HEX[c] || '#888';
-                  const isSelected = selectedColor === c && !customColor;
-                  return (
-                    <Chip
-                      key={c}
-                      label={c}
-                      onClick={() => { setSelectedColor(c); setCustomColor(''); setCustomColorOpen(false); setErrors((e) => ({ ...e, color: undefined })); }}
-                      icon={<Box sx={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: hex, border: hex === '#d0d0d0' || hex === '#E8D5B0' ? '1px solid #aaa' : 'none', flexShrink: 0 }} />}
-                      sx={{
-                        fontFamily: ff, fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
-                        backgroundColor: isSelected ? 'rgba(0,255,255,0.12)' : 'transparent',
-                        color: isSelected ? 'var(--accent-cyan)' : 'var(--text-main)',
-                        border: `1.5px solid ${isSelected ? 'var(--accent-cyan)' : '#E8D5B0'}`,
-                        '&:hover': { borderColor: 'var(--accent-cyan)', backgroundColor: 'rgba(0,255,255,0.08)' },
-                        '& .MuiChip-icon': { ml: '8px', mr: '-4px' },
-                      }}
-                    />
-                  );
-                })}
+						{/* Colour selector */}
+						<Box sx={{ mb: 3 }}>
+							<Typography
+								sx={{
+									fontFamily: ff,
+									fontWeight: 700,
+									fontSize: "0.95rem",
+									color: "var(--text-main)",
+									mb: 1.5,
+								}}
+							>
+								Colour
+								{activeColor && (
+									<span
+										style={{
+											fontWeight: 400,
+											color:
+												COLOR_HEX[activeColor] ||
+												customColorHex ||
+												"var(--accent-cyan)",
+											marginLeft: 6,
+										}}
+									>
+										— {activeColor}
+									</span>
+								)}
+							</Typography>
+							<Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+								{/* First 3 standard colors */}
+								{colors.slice(0, 3).map((c) => {
+									const hex = COLOR_HEX[c] || "#888";
+									const isSelected =
+										selectedColor === c && !customColor;
+									return (
+										<Chip
+											key={c}
+											label={c}
+											onClick={() => {
+												setSelectedColor(c);
+												setCustomColor("");
+												setCustomColorOpen(false);
+												setErrors((e) => ({
+													...e,
+													color: undefined,
+												}));
+											}}
+											icon={
+												<Box
+													sx={{
+														width: 12,
+														height: 12,
+														borderRadius: "50%",
+														backgroundColor: hex,
+														border:
+															hex === "#d0d0d0" ||
+															hex === "#E8D5B0"
+																? "1px solid #aaa"
+																: "none",
+														flexShrink: 0,
+													}}
+												/>
+											}
+											sx={{
+												fontFamily: ff,
+												fontWeight: 600,
+												fontSize: "0.8rem",
+												cursor: "pointer",
+												backgroundColor: isSelected
+													? "rgba(0,255,255,0.12)"
+													: "transparent",
+												color: isSelected
+													? "var(--accent-cyan)"
+													: "var(--text-main)",
+												border: `1.5px solid ${isSelected ? "var(--accent-cyan)" : "#E8D5B0"}`,
+												"&:hover": {
+													borderColor: "var(--accent-cyan)",
+													backgroundColor: "rgba(0,255,255,0.08)",
+												},
+												"& .MuiChip-icon": {
+													ml: "8px",
+													mr: "-4px",
+												},
+											}}
+										/>
+									);
+								})}
 
-                {/* Overflow chip: "+N more" */}
-                {colors.length > 3 && (
-                  <>
-                    <Chip
-                      label={`+${colors.length - 3} more`}
-                      onClick={(e) => setOverflowMenuAnchor(e.currentTarget)}
-                      sx={{
-                        fontFamily: ff, fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
-                        backgroundColor: colors.slice(3).includes(selectedColor) && !customColor ? 'rgba(0,255,255,0.12)' : 'transparent',
-                        color: colors.slice(3).includes(selectedColor) && !customColor ? 'var(--accent-cyan)' : 'var(--text-muted)',
-                        border: `1.5px solid ${colors.slice(3).includes(selectedColor) && !customColor ? 'var(--accent-cyan)' : '#E8D5B0'}`,
-                        '&:hover': { borderColor: 'var(--accent-cyan)', backgroundColor: 'rgba(0,255,255,0.08)' },
-                      }}
-                    />
-                    <Menu
-                      anchorEl={overflowMenuAnchor}
-                      open={Boolean(overflowMenuAnchor)}
-                      onClose={() => setOverflowMenuAnchor(null)}
-                      PaperProps={{ sx: { borderRadius: 2, border: '1px solid #E8D5B0', mt: 0.5 } }}
-                    >
-                      {colors.slice(3).map((c) => {
-                        const hex = COLOR_HEX[c] || '#888';
-                        return (
-                          <MenuItem
-                            key={c}
-                            onClick={() => { setSelectedColor(c); setCustomColor(''); setCustomColorOpen(false); setOverflowMenuAnchor(null); setErrors((e) => ({ ...e, color: undefined })); }}
-                            sx={{ fontFamily: ff, fontSize: '0.85rem', gap: 1.5, py: 1 }}
-                          >
-                            <Box sx={{ width: 14, height: 14, borderRadius: '50%', backgroundColor: hex, border: '1px solid #E8D5B0', flexShrink: 0 }} />
-                            {c}
-                          </MenuItem>
-                        );
-                      })}
-                    </Menu>
-                  </>
-                )}
+								{/* Overflow chip: "+N more" */}
+								{colors.length > 3 && (
+									<>
+										<Chip
+											label={`+${colors.length - 3} more`}
+											onClick={(e) =>
+												setOverflowMenuAnchor(e.currentTarget)
+											}
+											sx={{
+												fontFamily: ff,
+												fontWeight: 600,
+												fontSize: "0.8rem",
+												cursor: "pointer",
+												backgroundColor:
+													colors
+														.slice(3)
+														.includes(selectedColor) &&
+													!customColor
+														? "rgba(0,255,255,0.12)"
+														: "transparent",
+												color:
+													colors
+														.slice(3)
+														.includes(selectedColor) &&
+													!customColor
+														? "var(--accent-cyan)"
+														: "var(--text-muted)",
+												border: `1.5px solid ${colors.slice(3).includes(selectedColor) && !customColor ? "var(--accent-cyan)" : "#E8D5B0"}`,
+												"&:hover": {
+													borderColor: "var(--accent-cyan)",
+													backgroundColor: "rgba(0,255,255,0.08)",
+												},
+											}}
+										/>
+										<Menu
+											anchorEl={overflowMenuAnchor}
+											open={Boolean(overflowMenuAnchor)}
+											onClose={() => setOverflowMenuAnchor(null)}
+											PaperProps={{
+												sx: {
+													borderRadius: 2,
+													border: "1px solid #E8D5B0",
+													mt: 0.5,
+												},
+											}}
+										>
+											{colors.slice(3).map((c) => {
+												const hex = COLOR_HEX[c] || "#888";
+												return (
+													<MenuItem
+														key={c}
+														onClick={() => {
+															setSelectedColor(c);
+															setCustomColor("");
+															setCustomColorOpen(false);
+															setOverflowMenuAnchor(null);
+															setErrors((e) => ({
+																...e,
+																color: undefined,
+															}));
+														}}
+														sx={{
+															fontFamily: ff,
+															fontSize: "0.85rem",
+															gap: 1.5,
+															py: 1,
+														}}
+													>
+														<Box
+															sx={{
+																width: 14,
+																height: 14,
+																borderRadius: "50%",
+																backgroundColor: hex,
+																border: "1px solid #E8D5B0",
+																flexShrink: 0,
+															}}
+														/>
+														{c}
+													</MenuItem>
+												);
+											})}
+										</Menu>
+									</>
+								)}
 
-                {/* Custom color chip */}
-                <Chip
-                  label="Custom"
-                  onClick={() => { setCustomColorOpen((v) => !v); setSelectedColor(''); }}
-                  sx={{
-                    fontFamily: ff, fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
-                    backgroundColor: customColor ? 'rgba(0,255,255,0.12)' : 'transparent',
-                    color: customColor ? 'var(--accent-cyan)' : 'var(--text-muted)',
-                    border: `1.5px dashed ${customColor ? 'var(--accent-cyan)' : '#E8D5B0'}`,
-                    '&:hover': { borderColor: 'var(--accent-cyan)', backgroundColor: 'rgba(0,255,255,0.08)' },
-                  }}
-                />
-              </Box>
+								{/* Custom color chip */}
+								<Chip
+									label="Custom"
+									onClick={() => {
+										setCustomColorOpen((v) => !v);
+										setSelectedColor("");
+									}}
+									sx={{
+										fontFamily: ff,
+										fontWeight: 600,
+										fontSize: "0.8rem",
+										cursor: "pointer",
+										backgroundColor: customColor
+											? "rgba(0,255,255,0.12)"
+											: "transparent",
+										color: customColor
+											? "var(--accent-cyan)"
+											: "var(--text-muted)",
+										border: `1.5px dashed ${customColor ? "var(--accent-cyan)" : "#E8D5B0"}`,
+										"&:hover": {
+											borderColor: "var(--accent-cyan)",
+											backgroundColor: "rgba(0,255,255,0.08)",
+										},
+									}}
+								/>
+							</Box>
 
-              {/* Custom color input row */}
-              <Collapse in={customColorOpen}>
-                <Box sx={{ mt: 1.5, display: 'flex', gap: 1, alignItems: 'center' }}>
-                  <Box
-                    component="input"
-                    type="text"
-                    placeholder="e.g. Forest Green"
-                    value={typeof customColor === 'string' && !customColor.startsWith('#') ? customColor : ''}
-                    onChange={(e) => { const v = e.target.value; setCustomColor(v); const hex = resolveColorName(v); if (hex) setCustomColorHex(hex); setErrors((er) => ({ ...er, color: undefined })); }}
-                    style={{
-                      flex: 1, height: 36, borderRadius: 8, border: '1.5px solid #E8D5B0',
-                      padding: '0 12px', fontFamily: ff, fontSize: '0.85rem',
-                      outline: 'none', backgroundColor: '#fff',
-                    }}
-                  />
-                  <Box
-                    component="input"
-                    type="color"
-                    value={customColorHex}
-                    onChange={(e) => { setCustomColorHex(e.target.value); setCustomColor(e.target.value); setErrors((er) => ({ ...er, color: undefined })); }}
-                    style={{
-                      width: 36, height: 36, borderRadius: 8, border: '1.5px solid #E8D5B0',
-                      cursor: 'pointer', padding: 0, backgroundColor: 'transparent',
-                    }}
-                    title="Pick a colour"
-                  />
-                </Box>
-                {customColor && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mt: 0.8 }}>
-                    <Box sx={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: customColorHex, border: '1px solid #E8D5B0', flexShrink: 0 }} />
-                    <Typography sx={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{customColor}</Typography>
-                  </Box>
-                )}
-              </Collapse>
+							{/* Custom color input row */}
+							<Collapse in={customColorOpen}>
+								<Box
+									sx={{
+										mt: 1.5,
+										display: "flex",
+										gap: 1,
+										alignItems: "center",
+									}}
+								>
+									<Box
+										component="input"
+										type="text"
+										placeholder="e.g. Forest Green"
+										value={
+											typeof customColor === "string" &&
+											!customColor.startsWith("#")
+												? customColor
+												: ""
+										}
+										onChange={(e) => {
+											const v = e.target.value;
+											setCustomColor(v);
+											const hex = resolveColorName(v);
+											if (hex) setCustomColorHex(hex);
+											setErrors((er) => ({
+												...er,
+												color: undefined,
+											}));
+										}}
+										style={{
+											flex: 1,
+											height: 36,
+											borderRadius: 8,
+											border: "1.5px solid #E8D5B0",
+											padding: "0 12px",
+											fontFamily: ff,
+											fontSize: "0.85rem",
+											outline: "none",
+											backgroundColor: "#fff",
+										}}
+									/>
+									<Box
+										component="input"
+										type="color"
+										value={customColorHex}
+										onChange={(e) => {
+											setCustomColorHex(e.target.value);
+											setCustomColor(e.target.value);
+											setErrors((er) => ({
+												...er,
+												color: undefined,
+											}));
+										}}
+										style={{
+											width: 36,
+											height: 36,
+											borderRadius: 8,
+											border: "1.5px solid #E8D5B0",
+											cursor: "pointer",
+											padding: 0,
+											backgroundColor: "transparent",
+										}}
+										title="Pick a colour"
+									/>
+								</Box>
+								{customColor && (
+									<Box
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											gap: 0.8,
+											mt: 0.8,
+										}}
+									>
+										<Box
+											sx={{
+												width: 12,
+												height: 12,
+												borderRadius: "50%",
+												backgroundColor: customColorHex,
+												border: "1px solid #E8D5B0",
+												flexShrink: 0,
+											}}
+										/>
+										<Typography
+											sx={{
+												fontSize: "0.75rem",
+												color: "var(--text-muted)",
+											}}
+										>
+											{customColor}
+										</Typography>
+									</Box>
+								)}
+							</Collapse>
 
-              {errors.color && <Typography sx={{ color: '#e3242b', fontSize: '0.78rem', mt: 0.5 }}>{errors.color}</Typography>}
-            </Box>
+							{errors.color && (
+								<Typography
+									sx={{
+										color: "#e3242b",
+										fontSize: "0.78rem",
+										mt: 0.5,
+									}}
+								>
+									{errors.color}
+								</Typography>
+							)}
+						</Box>
 
-            {/* Shoe size (footwear only) */}
-            {requiresLength && (
-              <Box sx={{ mb: 3 }}>
-                <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)', mb: 1 }}>
-                  Shoe Size (EU)
-                </Typography>
-                <FormControl size="small" error={!!errors.euSize} sx={{ width: 180 }}>
-                  <InputLabel sx={{ fontFamily: ff }}>Select EU size</InputLabel>
-                  <Select
-                    value={euSize}
-                    label="Select EU size"
-                    onChange={(e) => { setEuSize(e.target.value); setErrors((er) => ({ ...er, euSize: undefined })); }}
-                    sx={{ borderRadius: 2, fontFamily: ff, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--accent-cyan)' } }}
-                  >
-                    {EU_SIZES.map((s) => (
-                      <MenuItem key={s} value={s} sx={{ fontFamily: ff }}>{s}</MenuItem>
-                    ))}
-                  </Select>
-                  {errors.euSize && (
-                    <Typography sx={{ color: '#e3242b', fontSize: '0.75rem', mt: 0.5 }}>{errors.euSize}</Typography>
-                  )}
-                </FormControl>
-                <Box sx={{ mt: 1 }}>
-                  <Button
-                    size="small"
-                    startIcon={<StraightenIcon sx={{ fontSize: '0.9rem !important' }} />}
-                    onClick={() => setSizeGuideOpen(true)}
-                    sx={{
-                      fontFamily: ff, fontSize: '0.78rem', textTransform: 'none',
-                      color: 'var(--accent-cyan)', px: 1, py: 0.3,
-                      '&:hover': { backgroundColor: 'rgba(0,255,255,0.08)' },
-                    }}
-                  >
-                    Size Guide
-                  </Button>
-                </Box>
-              </Box>
-            )}
+						{/* Shoe size (footwear only) */}
+						{requiresLength && (
+							<Box sx={{ mb: 3 }}>
+								<Typography
+									sx={{
+										fontFamily: ff,
+										fontWeight: 700,
+										fontSize: "0.95rem",
+										color: "var(--text-main)",
+										mb: 1,
+									}}
+								>
+									Shoe Size (EU)
+								</Typography>
+								<FormControl
+									size="small"
+									error={!!errors.euSize}
+									sx={{ width: 180 }}
+								>
+									<InputLabel sx={{ fontFamily: ff }}>
+										Select EU size
+									</InputLabel>
+									<Select
+										value={euSize}
+										label="Select EU size"
+										onChange={(e) => {
+											setEuSize(e.target.value);
+											setErrors((er) => ({
+												...er,
+												euSize: undefined,
+											}));
+										}}
+										sx={{
+											borderRadius: 2,
+											fontFamily: ff,
+											"&.Mui-focused .MuiOutlinedInput-notchedOutline":
+												{ borderColor: "var(--accent-cyan)" },
+										}}
+									>
+										{EU_SIZES.map((s) => (
+											<MenuItem
+												key={s}
+												value={s}
+												sx={{ fontFamily: ff }}
+											>
+												{s}
+											</MenuItem>
+										))}
+									</Select>
+									{errors.euSize && (
+										<Typography
+											sx={{
+												color: "#e3242b",
+												fontSize: "0.75rem",
+												mt: 0.5,
+											}}
+										>
+											{errors.euSize}
+										</Typography>
+									)}
+								</FormControl>
+								<Box sx={{ mt: 1 }}>
+									<Button
+										size="small"
+										startIcon={
+											<StraightenIcon
+												sx={{ fontSize: "0.9rem !important" }}
+											/>
+										}
+										onClick={() => setSizeGuideOpen(true)}
+										sx={{
+											fontFamily: ff,
+											fontSize: "0.78rem",
+											textTransform: "none",
+											color: "var(--accent-cyan)",
+											px: 1,
+											py: 0.3,
+											"&:hover": {
+												backgroundColor: "rgba(0,255,255,0.08)",
+											},
+										}}
+									>
+										Size Guide
+									</Button>
+								</Box>
+							</Box>
+						)}
 
-            {/* Quantity */}
-            <Box sx={{ mb: 3 }}>
-              <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)', mb: 1 }}>
-                Quantity
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <IconButton onClick={() => setQuantity((q) => Math.max(1, q - 1))} sx={{ border: '1.5px solid #E8D5B0', borderRadius: 2, p: 0.5 }}>
-                  <ArrowBackIosIcon sx={{ fontSize: 14 }} />
-                </IconButton>
-                <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1.1rem', minWidth: 24, textAlign: 'center' }}>{quantity}</Typography>
-                <IconButton onClick={() => setQuantity((q) => q + 1)} sx={{ border: '1.5px solid #E8D5B0', borderRadius: 2, p: 0.5 }}>
-                  <ArrowForwardIosIcon sx={{ fontSize: 14 }} />
-                </IconButton>
-              </Box>
-            </Box>
+						{/* Quantity */}
+						<Box sx={{ mb: 3 }}>
+							<Typography
+								sx={{
+									fontFamily: ff,
+									fontWeight: 700,
+									fontSize: "0.95rem",
+									color: "var(--text-main)",
+									mb: 1,
+								}}
+							>
+								Quantity
+							</Typography>
+							<Box
+								sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+							>
+								<IconButton
+									onClick={() =>
+										setQuantity((q) => Math.max(1, q - 1))
+									}
+									sx={{
+										border: "1.5px solid #E8D5B0",
+										borderRadius: 2,
+										p: 0.5,
+									}}
+								>
+									<ArrowBackIosIcon sx={{ fontSize: 14 }} />
+								</IconButton>
+								<Typography
+									sx={{
+										fontFamily: ff,
+										fontWeight: 700,
+										fontSize: "1.1rem",
+										minWidth: 24,
+										textAlign: "center",
+									}}
+								>
+									{quantity}
+								</Typography>
+								<IconButton
+									onClick={() => setQuantity((q) => q + 1)}
+									sx={{
+										border: "1.5px solid #E8D5B0",
+										borderRadius: 2,
+										p: 0.5,
+									}}
+								>
+									<ArrowForwardIosIcon sx={{ fontSize: 14 }} />
+								</IconButton>
+							</Box>
+						</Box>
 
-            {/* Stock urgency badge */}
-            {selectedColor && !customColor && (() => {
-              const stock = item.colorStock?.[selectedColor];
-              if (stock != null && stock <= 5 && stock > 0) {
-                return (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, px: 1.5, py: 1, borderRadius: 2, backgroundColor: '#FFF3E0', border: '1px solid #FFCC80' }}>
-                    <ErrorOutlineIcon sx={{ color: '#e65100', fontSize: 16 }} />
-                    <Typography sx={{ fontSize: '0.82rem', color: '#e65100', fontWeight: 700 }}>
-                      Only {stock} left in {selectedColor}!
-                    </Typography>
-                  </Box>
-                );
-              }
-              if (stock === 0) {
-                return (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, px: 1.5, py: 1, borderRadius: 2, backgroundColor: '#f5f5f5', border: '1px solid #ddd' }}>
-                    <ErrorOutlineIcon sx={{ color: '#999', fontSize: 16 }} />
-                    <Typography sx={{ fontSize: '0.82rem', color: '#999', fontWeight: 700 }}>
-                      Out of stock in {selectedColor}
-                    </Typography>
-                  </Box>
-                );
-              }
-              return null;
-            })()}
+						{/* Stock urgency badge */}
+						{selectedColor &&
+							!customColor &&
+							(() => {
+								const stock = item.colorStock?.[selectedColor];
+								if (stock != null && stock <= 5 && stock > 0) {
+									return (
+										<Box
+											sx={{
+												display: "flex",
+												alignItems: "center",
+												gap: 1,
+												mb: 2,
+												px: 1.5,
+												py: 1,
+												borderRadius: 2,
+												backgroundColor: "#FFF3E0",
+												border: "1px solid #FFCC80",
+											}}
+										>
+											<ErrorOutlineIcon
+												sx={{ color: "#e65100", fontSize: 16 }}
+											/>
+											<Typography
+												sx={{
+													fontSize: "0.82rem",
+													color: "#e65100",
+													fontWeight: 700,
+												}}
+											>
+												Only {stock} left in {selectedColor}!
+											</Typography>
+										</Box>
+									);
+								}
+								if (stock === 0) {
+									return (
+										<Box
+											sx={{
+												display: "flex",
+												alignItems: "center",
+												gap: 1,
+												mb: 2,
+												px: 1.5,
+												py: 1,
+												borderRadius: 2,
+												backgroundColor: "#f5f5f5",
+												border: "1px solid #ddd",
+											}}
+										>
+											<ErrorOutlineIcon
+												sx={{ color: "#999", fontSize: 16 }}
+											/>
+											<Typography
+												sx={{
+													fontSize: "0.82rem",
+													color: "#999",
+													fontWeight: 700,
+												}}
+											>
+												Out of stock in {selectedColor}
+											</Typography>
+										</Box>
+									);
+								}
+								return null;
+							})()}
 
-            {/* Made-to-order note */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, p: 1.5, borderRadius: 2, backgroundColor: 'rgba(227,36,43,0.05)', border: '1px solid rgba(227,36,43,0.18)' }}>
-              <CheckCircleOutlineIcon sx={{ color: '#e3242b', fontSize: 18 }} />
-              <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                Made to order — 10–14 days production + 2–5 days shipping
-              </Typography>
-            </Box>
+						{/* Made-to-order note */}
+						<Box
+							sx={{
+								display: "flex",
+								alignItems: "center",
+								gap: 1,
+								mb: 3,
+								p: 1.5,
+								borderRadius: 2,
+								backgroundColor: "rgba(227,36,43,0.05)",
+								border: "1px solid rgba(227,36,43,0.18)",
+							}}
+						>
+							<CheckCircleOutlineIcon
+								sx={{ color: "#e3242b", fontSize: 18 }}
+							/>
+							<Typography
+								sx={{ fontSize: "0.82rem", color: "var(--text-muted)" }}
+							>
+								Made to order — 10–14 days production + 2–5 days
+								shipping
+							</Typography>
+						</Box>
 
-            {/* Care & Maintenance Guide */}
-            {item.careGuide && (
-              <Box sx={{ mb: 3, borderRadius: 2, border: '1px solid #E8D5B0', overflow: 'hidden' }}>
-                <Box
-                  onClick={() => setCareOpen((v) => !v)}
-                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1.2, cursor: 'pointer', backgroundColor: '#FFF8F0', '&:hover': { backgroundColor: '#FFF0E0' } }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <WaterDropOutlinedIcon sx={{ fontSize: 16, color: '#7B4319' }} />
-                    <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-main)' }}>
-                      Care & Maintenance
-                    </Typography>
-                  </Box>
-                  <ExpandMoreIcon sx={{ fontSize: 18, color: 'var(--text-muted)', transform: careOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-                </Box>
-                <Collapse in={careOpen}>
-                  <Box sx={{ px: 2, py: 1.5, backgroundColor: '#fff' }}>
-                    <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.8, whiteSpace: 'pre-line' }}>
-                      {item.careGuide}
-                    </Typography>
-                  </Box>
-                </Collapse>
-              </Box>
-            )}
+						{/* Care & Maintenance Guide */}
+						{item.careGuide && (
+							<Box
+								sx={{
+									mb: 3,
+									borderRadius: 2,
+									border: "1px solid #E8D5B0",
+									overflow: "hidden",
+								}}
+							>
+								<Box
+									onClick={() => setCareOpen((v) => !v)}
+									sx={{
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "space-between",
+										px: 2,
+										py: 1.2,
+										cursor: "pointer",
+										backgroundColor: "#FFF8F0",
+										"&:hover": { backgroundColor: "#FFF0E0" },
+									}}
+								>
+									<Box
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											gap: 1,
+										}}
+									>
+										<WaterDropOutlinedIcon
+											sx={{ fontSize: 16, color: "#7B4319" }}
+										/>
+										<Typography
+											sx={{
+												fontFamily: ff,
+												fontWeight: 700,
+												fontSize: "0.88rem",
+												color: "var(--text-main)",
+											}}
+										>
+											Care & Maintenance
+										</Typography>
+									</Box>
+									<ExpandMoreIcon
+										sx={{
+											fontSize: 18,
+											color: "var(--text-muted)",
+											transform: careOpen
+												? "rotate(180deg)"
+												: "none",
+											transition: "transform 0.2s",
+										}}
+									/>
+								</Box>
+								<Collapse in={careOpen}>
+									<Box
+										sx={{ px: 2, py: 1.5, backgroundColor: "#fff" }}
+									>
+										<Typography
+											sx={{
+												fontSize: "0.85rem",
+												color: "var(--text-muted)",
+												lineHeight: 1.8,
+												whiteSpace: "pre-line",
+											}}
+										>
+											{item.careGuide}
+										</Typography>
+									</Box>
+								</Collapse>
+							</Box>
+						)}
 
-            {/* Action Buttons */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              {/* Order Now + heart always side-by-side */}
-              <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-                <Button
-                  disabled={item.status === 'closed'}
-                  onClick={handleOrder}
-                  sx={{
-                    flex: 1, borderRadius: '30px', fontFamily: ff, fontWeight: 700,
-                    fontSize: '0.95rem', textTransform: 'none', py: 1.5,
-                    backgroundColor: '#e3242b', color: '#fff',
-                    '&:hover': { backgroundColor: '#b81b21' },
-                    '&.Mui-disabled': { backgroundColor: '#eee', color: '#aaa' },
-                  }}
-                >
-                  {item.status === 'open' ? `Order Now — ₦${(item.price * quantity).toLocaleString()}` : item.status === 'upcoming' ? 'Coming Soon' : 'Sold Out'}
-                </Button>
-                <Tooltip title={isInWishlist(item.id || itemId) ? 'Remove from wishlist' : 'Save to wishlist'} arrow>
-                  <IconButton
-                    onClick={handleToggleWishlist}
-                    sx={{
-                      border: '1.5px solid #E8D5B0',
-                      borderRadius: '50%',
-                      p: 1.2,
-                      flexShrink: 0,
-                      color: isInWishlist(item.id || itemId) ? '#e3242b' : 'var(--text-muted)',
-                      '&:hover': { borderColor: '#e3242b', color: '#e3242b', backgroundColor: 'rgba(227,36,43,0.06)' },
-                    }}
-                  >
-                    {isInWishlist(item.id || itemId)
-                      ? <FavoriteIcon sx={{ fontSize: 22 }} />
-                      : <FavoriteBorderIcon sx={{ fontSize: 22 }} />}
-                  </IconButton>
-                </Tooltip>
-              </Box>
-              {/* Add to Cart below */}
-              {item.status === 'open' && (
-                <Button
-                  fullWidth
-                  startIcon={<AddShoppingCartIcon />}
-                  onClick={handleAddToCart}
-                  sx={{
-                    borderRadius: '30px', fontFamily: ff, fontWeight: 700,
-                    fontSize: '0.9rem', textTransform: 'none', py: 1.5,
-                    backgroundColor: 'transparent', color: 'var(--accent-cyan)',
-                    border: '1.5px solid var(--accent-cyan)',
-                    '&:hover': { backgroundColor: 'rgba(0,255,255,0.08)' },
-                  }}
-                >
-                  Add to Cart
-                </Button>
-              )}
-            </Box>
-          </Grid>
-        </Grid>
-      </Container>
-    </Box>
+						{/* Action Buttons */}
+						<Box
+							sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
+						>
+							{/* Order Now + heart always side-by-side */}
+							<Box
+								sx={{ display: "flex", gap: 1.5, alignItems: "center" }}
+							>
+								<Button
+									disabled={item.status === "closed"}
+									onClick={handleOrder}
+									sx={{
+										flex: 1,
+										borderRadius: "30px",
+										fontFamily: ff,
+										fontWeight: 700,
+										fontSize: "0.95rem",
+										textTransform: "none",
+										py: 1.5,
+										backgroundColor: "#e3242b",
+										color: "#fff",
+										"&:hover": { backgroundColor: "#b81b21" },
+										"&.Mui-disabled": {
+											backgroundColor: "#eee",
+											color: "#aaa",
+										},
+									}}
+								>
+									{item.status === "open"
+										? `Order Now — ₦${(item.price * quantity).toLocaleString()}`
+										: item.status === "upcoming"
+											? "Coming Soon"
+											: "Sold Out"}
+								</Button>
+								<Tooltip
+									title={
+										isInWishlist(item.id || itemId)
+											? "Remove from wishlist"
+											: "Save to wishlist"
+									}
+									arrow
+								>
+									<IconButton
+										onClick={handleToggleWishlist}
+										sx={{
+											border: "1.5px solid #E8D5B0",
+											borderRadius: "50%",
+											p: 1.2,
+											flexShrink: 0,
+											color: isInWishlist(item.id || itemId)
+												? "#e3242b"
+												: "var(--text-muted)",
+											"&:hover": {
+												borderColor: "#e3242b",
+												color: "#e3242b",
+												backgroundColor: "rgba(227,36,43,0.06)",
+											},
+										}}
+									>
+										{isInWishlist(item.id || itemId) ? (
+											<FavoriteIcon sx={{ fontSize: 22 }} />
+										) : (
+											<FavoriteBorderIcon sx={{ fontSize: 22 }} />
+										)}
+									</IconButton>
+								</Tooltip>
+							</Box>
+							{/* Add to Cart below */}
+							{item.status === "open" && (
+								<Button
+									fullWidth
+									startIcon={<AddShoppingCartIcon />}
+									onClick={handleAddToCart}
+									sx={{
+										borderRadius: "30px",
+										fontFamily: ff,
+										fontWeight: 700,
+										fontSize: "0.9rem",
+										textTransform: "none",
+										py: 1.5,
+										backgroundColor: "transparent",
+										color: "#e3242b",
+										border: "1.5px solid var(--accent-cyan)",
+										"&:hover": {
+											backgroundColor: "rgba(0,255,255,0.08)",
+										},
+									}}
+								>
+									Add to Cart
+								</Button>
+							)}
+						</Box>
+					</Grid>
+				</Grid>
+			</Container>
+		</Box>
   );
 }

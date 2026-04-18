@@ -5,7 +5,10 @@ import { auth, googleProvider, db } from '../lib/firebase';
 
 const AuthContext = createContext(null);
 
-const ADMIN_EMAILS = new Set(['chizobaezeh338@gmail.com', 'perfect.footies@gmail.com']);
+const ADMIN_EMAILS = new Set([
+	"chizobaezeh338@gmail.com",
+	"perfectfooties@gmail.com",
+]);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);

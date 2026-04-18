@@ -2,8 +2,6 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from './AuthContext';
-import { fetchOrders } from '../lib/orderService';
-import { parseAppointmentDate, isWithinHours, isUpcoming, formatRelativeTime } from '../lib/appointmentDateUtils';
 
 const NotificationContext = createContext(null);
 
@@ -24,6 +22,7 @@ function getOrderLabel(order) {
 }
 
 function getDismissed() {
+
   try {
     return JSON.parse(localStorage.getItem(DISMISSED_KEY) || '[]');
   } catch {
@@ -35,83 +34,15 @@ function saveDismissed(ids) {
   localStorage.setItem(DISMISSED_KEY, JSON.stringify(ids));
 }
 
-function buildNotifications(orders) {
-  const notifications = [];
-
-  for (const order of orders) {
-    if (order.status === 'received') continue;
-
-    const dateStr = order.appointmentDate || order.items?.[0]?.date;
-    if (!dateStr) continue;
-
-    const parsed = parseAppointmentDate(dateStr);
-    if (!parsed) continue;
-
-    if (isWithinHours(parsed, 24.5)) {
-      notifications.push({
-        id: `reminder-${order.id}`,
-        type: 'appointment-reminder',
-        orderId: order.id,
-        title: 'Appointment Soon',
-        message: `Your appointment for ${order.items?.[0]?.serviceName || 'a service'} is ${formatRelativeTime(parsed)}`,
-        date: parsed,
-        dateStr,
-        serviceName: order.items?.[0]?.serviceName || 'Service',
-      });
-    } else if (isUpcoming(parsed)) {
-      notifications.push({
-        id: `upcoming-${order.id}`,
-        type: 'appointment-upcoming',
-        orderId: order.id,
-        title: 'Upcoming Appointment',
-        message: `${order.items?.[0]?.serviceName || 'Service'} — ${dateStr}`,
-        date: parsed,
-        dateStr,
-        serviceName: order.items?.[0]?.serviceName || 'Service',
-      });
-    }
-  }
-
-  notifications.sort((a, b) => {
-    if (a.type !== b.type) return a.type === 'appointment-reminder' ? -1 : 1;
-    return a.date - b.date;
-  });
-
-  return notifications;
-}
-
 export function NotificationProvider({ children }) {
   const { user } = useAuth();
-  const [appointmentNotifications, setAppointmentNotifications] = useState([]);
   const [statusChangeNotifications, setStatusChangeNotifications] = useState([]);
   const [toastQueue, setToastQueue] = useState([]);
   const [dismissed, setDismissed] = useState(getDismissed);
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   const statusMapRef = useRef({});
   const initialLoadDoneRef = useRef(false);
-
-  // Fetch appointment-related notifications (existing logic)
-  useEffect(() => {
-    if (!user) {
-      setAppointmentNotifications([]);
-      return;
-    }
-
-    let cancelled = false;
-    setLoading(true);
-
-    fetchOrders(user.uid, 'service')
-      .then((orders) => {
-        if (!cancelled) setAppointmentNotifications(buildNotifications(orders));
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => { cancelled = true; };
-  }, [user?.uid]);
 
   // Real-time listener for order status changes
   useEffect(() => {
@@ -198,7 +129,8 @@ export function NotificationProvider({ children }) {
     };
   }, [user?.uid]);
 
-  const showToast = useCallback((message, severity = 'success', title = '') => {
+  const showToast
+ = useCallback((message, severity = 'success', title = '') => {
     setToastQueue((prev) => [
       ...prev,
       {
@@ -224,11 +156,7 @@ export function NotificationProvider({ children }) {
     setToastQueue((prev) => prev.slice(1));
   }, []);
 
-  // Merge all notifications: reminders first, then upcoming, then status changes (newest first)
-  const allNotifications = [
-    ...appointmentNotifications,
-    ...statusChangeNotifications,
-  ];
+  const allNotifications = [...statusChangeNotifications];
 
   const dismissAll = useCallback(() => {
     setDismissed((prev) => {
@@ -239,7 +167,7 @@ export function NotificationProvider({ children }) {
   }, [allNotifications]);
 
   const undismissedCount = allNotifications.filter((n) => !dismissed.includes(n.id)).length;
-  const urgentNotifications = allNotifications.filter((n) => n.type === 'appointment-reminder');
+  const urgentNotifications = [];
   const currentToast = toastQueue[0] || null;
 
   return (

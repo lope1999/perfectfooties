@@ -33,7 +33,7 @@ import SignInPrompt from '../components/SignInPrompt';
 
 const ff = '"Georgia", serif';
 const WHATSAPP_NUMBER = '2348073637911';
-const BUSINESS_EMAIL = 'perfect.footies@gmail.com';
+const BUSINESS_EMAIL = "perfectfooties@gmail.com";
 
 function formatNaira(amount) {
   return `₦${Number(amount).toLocaleString()}`;

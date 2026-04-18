@@ -12,11 +12,10 @@ import {
 import { db } from './firebase';
 
 export const POINTS_PER_ORDER = 15;
-export const POINTS_PER_APPOINTMENT = 20;
 export const POINTS_PER_REFERRAL = 50;   // referrer bonus when their code is used
 export const REFERRAL_DISCOUNT = 1000;   // ₦1,000 off for the person using a referral code
-export const REDEMPTION_UNIT = 50;       // every 50 pts = ₦1,000 redeemable
-export const REDEMPTION_VALUE = 1000;    // ₦ value per REDEMPTION_UNIT points
+export const REDEMPTION_UNIT = 50;       // every 50 pts = ₦500 redeemable
+export const REDEMPTION_VALUE = 500;     // ₦ value per REDEMPTION_UNIT points
 // ── Customer Tiers (based on number of completed orders) ──────
 export const TIERS = [
   { key: 'fresh',         label: 'Fresh',         minOrders: 0, color: '#78909C', bg: '#ECEFF1', perk: 'Welcome to PerfectFooties — your journey begins here.' },
@@ -84,7 +83,7 @@ export async function awardPointsForOrder(uid, orderId, orderType) {
   const snap = await getDoc(orderRef);
   if (!snap.exists() || snap.data()?.loyaltyPointsAwarded) return; // already awarded
 
-  const points = orderType === 'service' ? POINTS_PER_APPOINTMENT : POINTS_PER_ORDER;
+  const points = POINTS_PER_ORDER;
   await Promise.all([
     updateDoc(doc(db, 'users', uid), {
       loyaltyPoints: increment(points),

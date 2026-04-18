@@ -1,15 +1,16 @@
 export const BAGS_BELTS_COLLECTION = {
-  id: 'bags-belts',
-  name: 'Handmade Bags & Belts',
-  description: 'Full-grain leather bags and belts, finished by hand in Gbagada, Lagos.',
-  coverImage: '/images/products/heirloom-tmt-1.jpg',
-  order: 4,
-  active: true,
+	id: "bags-belts",
+	name: "Handmade Bags & Belts",
+	description:
+		"Full-grain leather bags and belts, finished by hand in Lagos State.",
+	coverImage: "/images/products/heirloom-tmt-1.jpg",
+	order: 4,
+	active: true,
 };
 
 export const BAGS_BELTS_ITEMS = [
   {
-    name: 'TMT — The Majesty Tote Bag',
+    name: 'TMT: The Majesty Tote Bag',
     description: 'A signature PF piece created for women who value space, structure, and timeless elegance. Spacious interior, premium structured finish, comes with a longer strap, custom PF key holder, PF pop socket, and a beautifully printed vintage scarf. Perfect for work, travel, and elevated everyday wear.',
     price: 49999,
     colors: ['Black', 'Brown'],

@@ -47,28 +47,14 @@ const HOME_COLLECTIONS = [
 		name: "Female Handmade Footwear",
 		coverImage: "/images/products/male-low-slides-1.jpeg",
 		description:
-			"Elegantly crafted footwear for women — made to measure, made to last.",
+			"Elegantly crafted footwear for women, made to measure, made to last.",
 	},
 	{
 		id: "male-footwear",
 		name: "Male Handmade Footwear",
 		coverImage: "/images/products/male-low-slides-1.jpeg",
 		description:
-			"Handcrafted leather footwear for men — built with precision and pride.",
-	},
-	{
-		id: "heirloom",
-		name: "Heirloom Collection",
-		coverImage: "/images/products/heirloom-regal-1.jpg",
-		description:
-			"Timeless pieces designed to be passed down through generations.",
-	},
-	{
-		id: "bags-belts",
-		name: "Handmade Bags & Belts",
-		coverImage: "/images/products/heirloom-tmt-1.jpg",
-		description:
-			"Full-grain leather bags and belts, finished by hand in Gbagada, Lagos.",
+			"Handcrafted leather footwear for men, built with precision and pride.",
 	},
 ];
 
@@ -336,7 +322,7 @@ export default function HomePage() {
 									mx: "auto",
 								}}
 							>
-								Each piece is made to order by hand in Gbagada, Lagos —
+								Each piece is made to order by hand in Lagos State —
 								cut, stitched, and finished to your preference.
 							</Typography>
 							<Box
@@ -448,6 +434,47 @@ export default function HomePage() {
 				</Container>
 			</Box>
 
+			{/* Brand Video Section */}
+			<Box
+				sx={{
+					py: { xs: 4, md: 6 },
+					backgroundColor: "#0a0000",
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "center",
+					gap: 2,
+				}}
+			>
+				<Typography
+					sx={{
+						fontFamily: '"Georgia", serif',
+						color: "#fff",
+						fontSize: { xs: "1.1rem", md: "1.4rem" },
+						fontWeight: 600,
+						letterSpacing: "0.04em",
+						textAlign: "center",
+					}}
+				>
+					Crafted by Hand. Built to Last.
+				</Typography>
+				<Box
+					component="video"
+					autoPlay
+					muted
+					loop
+					playsInline
+					sx={{
+						width: "100%",
+						maxWidth: 900,
+						borderRadius: 3,
+						display: "block",
+					}}
+				>
+					<source src="/videos/brand-reel.mp4" type="video/mp4" />
+					<source src="/videos/brand-reel.mov" type="video/quicktime" />
+				</Box>
+			</Box>
+
 			{/* Contact / Hours / Location Section */}
 			<Box id="contact-section" sx={{ py: 8, backgroundColor: "#FFF8F0" }}>
 				<Container maxWidth="lg">
@@ -499,7 +526,7 @@ export default function HomePage() {
 										<EmailIcon
 											sx={{ fontSize: 18, color: "#e3242b" }}
 										/>
-										<Typography>perfect.footies@gmail.com</Typography>
+										<Typography>perfectfooties@gmail.com</Typography>
 									</Box>
 								</Box>
 							</ScrollReveal>
@@ -544,7 +571,7 @@ export default function HomePage() {
 									>
 										Location
 									</Typography>
-									<Typography>Gbagada, Lagos</Typography>
+									<Typography>Lagos State</Typography>
 									<Typography>Nigeria</Typography>
 								</Box>
 							</ScrollReveal>

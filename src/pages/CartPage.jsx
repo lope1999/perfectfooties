@@ -26,8 +26,6 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { decrementStockBatch } from '../lib/stockService';
-import { saveOrder } from '../lib/orderService';
 import { redeemGiftCard } from '../lib/giftCardService';
 import { validateReferralCode, applyReferral, getLoyaltyData, redeemLoyaltyPoints, REFERRAL_DISCOUNT, REDEMPTION_UNIT, REDEMPTION_VALUE, getPendingLoyaltyReward, clearPendingLoyaltyReward } from '../lib/loyaltyService';
 import GiftCardRedeemInput from '../components/GiftCardRedeemInput';
@@ -110,8 +108,8 @@ export default function CartPage() {
         showToast("You can't apply your own referral code.", 'warning');
       } else {
         setReferralValid(true);
-        setReferralMsg('\u20a6500 off applied!');
-        showToast('Referral code applied! ₦500 discount added.', 'success');
+        setReferralMsg('\u20a61,000 off applied!');
+        showToast('Referral code applied! ₦1,000 discount added.', 'success');
       }
     } catch {
       setReferralValid(false);
@@ -124,196 +122,6 @@ export default function CartPage() {
   const handleCheckout = () => {
     if (!user) { setSignInPromptOpen(true); return; }
     navigate('/checkout', { state: { appliedGiftCard, referralCode: referralValid ? refCodeInput : null, presetLoyaltyUnits: loyaltyUnits } });
-  };
-
-  const handleCompleteServiceOrder = async (paymentReference = '') => {
-    setPaymentModalOpen(false);
-    setCheckoutLoading(true);
-
-    // Build WhatsApp message synchronously BEFORE any awaits — browsers block
-    // window.open() when called after async operations break the user-gesture chain
-    const lines = [];
-
-    lines.push('--- SERVICE APPOINTMENTS ---');
-    services.forEach((s, i) => {
-      let line = `${i + 1}. ${s.name} \u2014 ${formatNaira(s.price)}`;
-      if (s.customerName) line += `\n   Name: ${s.customerName}`;
-      if (s.isHomeService) {
-        line += `\n   Type: Home Service`;
-        if (s.homeLocation) line += `\n   Location: ${s.homeLocation}`;
-        if (s.homeAddress) line += `\n   Address: ${s.homeAddress}`;
-        if (s.hasTableArea) line += `\n   Table Area: ${s.hasTableArea}`;
-        if (s.transportRange) line += `\n   Est. Transport Fee: ${s.transportRange}`;
-      }
-      line += `\n   Date: ${s.date}\n   Shape: ${s.nailShape} | Length: ${s.nailLength}`;
-      lines.push(line);
-    });
-    lines.push('');
-
-    let totalLine = `Estimated Total: ${formatNaira(total)}`;
-    if (appliedGiftCard && giftCardDiscount > 0) {
-      totalLine += `\nGift Card Applied: ${appliedGiftCard.code} \u2014 Discount: ${formatNaira(giftCardDiscount)}`;
-    }
-    if (referralValid && referralDiscount > 0) {
-      totalLine += `\nReferral Code Applied: ${refCodeInput} \u2014 Discount: ${formatNaira(referralDiscount)}`;
-    }
-    if (loyaltyUnits > 0 && loyaltyDiscount > 0) {
-      totalLine += `\nLoyalty Points Applied: ${loyaltyUnits * REDEMPTION_UNIT} pts \u2014 Discount: ${formatNaira(loyaltyDiscount)}`;
-    }
-    if (giftCardDiscount > 0 || referralDiscount > 0 || loyaltyDiscount > 0) {
-      totalLine += `\nAmount Due: ${formatNaira(finalTotal)}`;
-    }
-
-    let depositLine = '';
-    if (paymentReference) {
-      depositLine = `\n\n\u2705 Appointment Deposit Paid: ${formatNaira(depositAmount)} (Paystack Ref: ${paymentReference})`;
-    } else {
-      depositLine = `\n\n\u26A0\uFE0F Appointment Deposit (50%): ${formatNaira(depositAmount)} \u2014 To be arranged via WhatsApp`;
-    }
-
-    const message = `Hi! I\u2019d like to place a combined order.\n\n${lines.join('\n')}\n${totalLine}${depositLine}\n\nPlease confirm availability and payment details. Thank you!`;
-    const encoded = encodeURIComponent(message);
-    const whatsAppUrl = `https://api.whatsapp.com/send?phone=2348073637911&text=${encoded}`;
-    if (!paymentReference) return;
-
-    // Async operations after window.open
-    try {
-      const stockItems = [];
-      products.forEach((p) => {
-        if (p.categoryId && p.stock !== undefined) {
-          stockItems.push({ collection: 'retailCategories', categoryId: p.categoryId, productId: p.productId, quantity: p.quantity });
-        }
-      });
-      pressOns.forEach((p) => {
-        if (p.readyMade && !p.specialRequest && p.categoryId && p.stock !== undefined) {
-          stockItems.push({ collection: 'productCategories', categoryId: p.categoryId, productId: p.productId, quantity: Number(p.quantity) || 1 });
-        }
-      });
-      if (stockItems.length > 0) {
-        await decrementStockBatch(stockItems);
-      }
-    } catch (err) {
-      console.error('Stock decrement failed:', err);
-    }
-
-    let orderId = null;
-    if (user) {
-      const allItems = [
-        ...services.map((s) => ({
-          kind: 'service', name: s.name, price: s.price, quantity: 1,
-          ...(s.isHomeService && {
-            isHomeService: true,
-            homeLocation: s.homeLocation,
-            homeAddress: s.homeAddress,
-            hasTableArea: s.hasTableArea,
-            transportRange: s.transportRange,
-          }),
-        })),
-        ...products.map((p) => ({ kind: 'retail', name: p.name, price: p.price, quantity: p.quantity })),
-        ...pressOns.map((p) => ({
-          kind: 'pressOn', name: p.name, price: p.price, quantity: p.quantity || 1,
-          ...(p.nailBedSize && { nailBedSize: p.nailBedSize }),
-          ...(p.presetSize && { presetSize: p.presetSize }),
-          ...(p.selectedLength && { selectedLength: p.selectedLength }),
-          ...(p.setIncludes?.length > 0 && { setIncludes: p.setIncludes }),
-          ...(p.inspirationTags?.length > 0 && { inspirationTags: p.inspirationTags }),
-          ...(p.nailNotes && { nailNotes: p.nailNotes }),
-          ...(p.specialRequest && { specialRequest: true }),
-        })),
-      ];
-      try {
-        const homeService = services.find((s) => s.isHomeService);
-        const orderData = {
-          type: 'mixed',
-          total: finalTotal,
-          customerName: user.displayName || '',
-          email: user.email || '',
-          ...(homeService && {
-            isHomeService: true,
-            homeLocation: homeService.homeLocation,
-            homeAddress: homeService.homeAddress,
-            hasTableArea: homeService.hasTableArea,
-            transportRange: homeService.transportRange,
-          }),
-          items: allItems,
-        };
-        if (paymentReference) {
-          orderData.paymentReference = paymentReference;
-          orderData.depositPaid = depositAmount;
-        }
-        if (appliedGiftCard) {
-          orderData.giftCardCode = appliedGiftCard.code;
-          orderData.giftCardDiscount = giftCardDiscount;
-        }
-        if (referralValid && referralDiscount > 0) {
-          orderData.referralCode = refCodeInput;
-          orderData.referralDiscount = referralDiscount;
-        }
-        if (loyaltyUnits > 0) {
-          orderData.loyaltyPointsUsed = loyaltyUnits * REDEMPTION_UNIT;
-          orderData.loyaltyDiscount = loyaltyDiscount;
-        }
-        const docRef = await saveOrder(user.uid, orderData);
-        orderId = docRef?.id || null;
-      } catch {
-        // order save failed — continue with checkout
-      }
-    }
-
-    if (appliedGiftCard && giftCardDiscount > 0) {
-      try {
-        await redeemGiftCard(appliedGiftCard.code, giftCardDiscount, orderId);
-      } catch (err) {
-        console.error('Gift card redemption failed:', err);
-      }
-    }
-
-    if (referralValid && refCodeInput) {
-      applyReferral(refCodeInput.trim(), user.uid).catch(() => {});
-      sessionStorage.removeItem('pendingReferralCode');
-    }
-    if (loyaltyUnits > 0) {
-      redeemLoyaltyPoints(user.uid, loyaltyUnits * REDEMPTION_UNIT).catch(() => {});
-      clearPendingLoyaltyReward();
-    }
-
-    setCheckoutLoading(false);
-    setAppliedGiftCard(null);
-    clearCart();
-    // Push /thank-you into history FIRST, then navigate to WhatsApp.
-    // History stack becomes [..., /thank-you, whatsapp] so pressing back returns to thank-you page.
-    navigate('/thank-you', {
-      state: {
-        type: services.length > 0 && products.length === 0 && pressOns.length === 0 ? 'service' : 'retail',
-        items: [
-          ...services.map((s) => ({ kind: 'service', serviceName: s.name, price: s.price, date: s.appointmentDate })),
-          ...products.map((p) => ({ kind: 'product', name: p.name, price: p.price * (p.quantity || 1), quantity: p.quantity })),
-          ...pressOns.map((p) => ({ kind: 'press-on', name: p.name, price: p.price * (p.quantity || 1), nailShape: p.nailShape, quantity: p.quantity, selectedLength: p.selectedLength, setIncludes: p.setIncludes, inspirationTags: p.inspirationTags, nailNotes: p.nailNotes, specialRequest: p.specialRequest || false })),
-        ],
-        total,
-        finalTotal,
-        giftCardDiscount,
-        referralDiscount,
-        loyaltyDiscount,
-      },
-    });
-    if (paymentReference) window.location.href = whatsAppUrl;
-  };
-
-  const payWithPaystackCart = () => {
-    const pk = import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY || '';
-    if (!pk || !window.PaystackPop) { alert('Payment is required to confirm your booking. Please refresh the page and try again.'); return; }
-    const handler = window.PaystackPop.setup({
-      key: pk,
-      email: user?.email || 'guest@perfectfooties.com',
-      amount: depositAmount * 100,
-      currency: 'NGN',
-      ref: `FOOTIES-APT-${Date.now()}`,
-      metadata: { appointmentCount: services.length },
-      callback: (response) => handleCompleteServiceOrder(response.reference),
-      onClose: () => {},
-    });
-    handler.openIframe();
   };
 
   return (
@@ -465,7 +273,7 @@ export default function CartPage() {
                     <IconButton size="small" onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))} disabled={loyaltyUnits >= maxLoyaltyUnits} sx={{ border: '1.5px solid #E8D5B0', borderRadius: '50%', width: 28, height: 28 }}>
                       <AddIcon sx={{ fontSize: 14 }} />
                     </IconButton>
-                    <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>units &times; &#8358;1,000 = <strong style={{ color: '#B8860B' }}>{formatNaira(loyaltyDiscount)} off</strong></Typography>
+                    <Typography sx={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>units &times; &#8358;500 = <strong style={{ color: '#B8860B' }}>{formatNaira(loyaltyDiscount)} off</strong></Typography>
                   </Box>
                 </Box>
               )}

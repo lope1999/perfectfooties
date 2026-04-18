@@ -4,7 +4,7 @@
 export const FEMALE_FOOTWEAR_COLLECTION = {
   id: 'female-footwear',
   name: 'Female Handmade Footwear',
-  description: 'Elegantly crafted footwear for women — made to measure, made to last.',
+  description: 'Elegantly crafted footwear for women, made to measure, made to last.',
   coverImage: '',
   order: 1,
   active: true,

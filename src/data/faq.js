@@ -17,7 +17,7 @@ export const faqData = [
 	{
 		question: "How long does production take?",
 		answer:
-			"Standard products typically take 10–14 days to produce before shipping. Custom orders may take longer depending on complexity — we will give you an estimated timeline when you confirm your order. We do not rush production because quality craftsmanship takes time.",
+			"Standard products typically take 10–14 days to produce before shipping. Custom orders may take longer depending on complexity; we will give you an estimated timeline when you confirm your order. We do not rush production because quality craftsmanship takes time.",
 	},
 	{
 		question: "How do I care for my leather goods?",

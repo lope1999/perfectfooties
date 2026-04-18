@@ -169,14 +169,14 @@ async function sendProductionEmail({ token, email, customerName, orderId, itemNa
       premium full-grain leather. This stage typically takes <strong>10–14 days</strong>, after which your order ships within 2–5 days depending on your location.
     </p>
 
-    ${infoBox('Production Details', [
-      ['Order ID',   `#${orderId}`],
-      ['Item',       itemName || 'Your leather piece'],
-      ['Est. Time',  '10–14 days (+ 2–5 days shipping)'],
-      ['Crafted in', 'Gbagada, Lagos, Nigeria'],
-    ])}
+    ${infoBox("Production Details", [
+			["Order ID", `#${orderId}`],
+			["Item", itemName || "Your leather piece"],
+			["Est. Time", "10–14 days (+ 2–5 days shipping)"],
+			["Crafted in", "Lagos State, Nigeria"],
+		])}
 
-    ${ctaBtn('View My Order', `${SHOP_URL}/account`)}
+    ${ctaBtn("View My Order", `${SHOP_URL}/account`)}
     ${note("We'll send you another email the moment your order ships. You can also track your order status any time from your account page.")}
   `);
 

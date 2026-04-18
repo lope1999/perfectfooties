@@ -159,16 +159,16 @@ export function generateReceiptHtml({
 <html>
 <head>
   <meta charset="utf-8"/>
-  <title>${docType} — ${orderId || ''}</title>
+  <title>${docType} — ${orderId || ""}</title>
   <style>${CSS}</style>
 </head>
 <body>
 <div class="page">
 
   <div class="header">
-    ${logoUrl ? `<img src="${logoUrl}" alt="Perfect Footies" class="logo"/>` : ''}
+    ${logoUrl ? `<img src="${logoUrl}" alt="Perfect Footies" class="logo"/>` : ""}
     <div class="brand">PERFECT FOOTIES</div>
-    <div class="brand-sub">perfectfooties.com &nbsp;·&nbsp; Gbagada, Lagos</div>
+    <div class="brand-sub">perfectfooties.com &nbsp;·&nbsp; Lagos State</div>
     <div class="doc-badge">${docType}</div>
   </div>
   <div class="accent-bar"></div>
@@ -178,13 +178,13 @@ export function generateReceiptHtml({
     <div class="section">
       <div class="section-title">Order Details</div>
       <table class="meta-table">
-        <tr><td class="key">Order ID</td><td class="val">${orderId || '—'}</td></tr>
-        ${createdAtLabel ? `<tr><td class="key">Date Placed</td><td class="val">${createdAtLabel}</td></tr>` : ''}
+        <tr><td class="key">Order ID</td><td class="val">${orderId || "—"}</td></tr>
+        ${createdAtLabel ? `<tr><td class="key">Date Placed</td><td class="val">${createdAtLabel}</td></tr>` : ""}
         <tr><td class="key">Printed</td><td class="val">${now}</td></tr>
-        <tr><td class="key">Customer</td><td class="val">${customerName || '—'}</td></tr>
-        ${email ? `<tr><td class="key">Email</td><td class="val">${email}</td></tr>` : ''}
-        ${status ? `<tr><td class="key">Status</td><td class="val"><span class="status-badge">${statusLabel}</span></td></tr>` : ''}
-        ${paymentReference ? `<tr><td class="key">Payment Ref</td><td class="val">${paymentReference}</td></tr>` : ''}
+        <tr><td class="key">Customer</td><td class="val">${customerName || "—"}</td></tr>
+        ${email ? `<tr><td class="key">Email</td><td class="val">${email}</td></tr>` : ""}
+        ${status ? `<tr><td class="key">Status</td><td class="val"><span class="status-badge">${statusLabel}</span></td></tr>` : ""}
+        ${paymentReference ? `<tr><td class="key">Payment Ref</td><td class="val">${paymentReference}</td></tr>` : ""}
       </table>
     </div>
 

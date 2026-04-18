@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Container, Button, TextField,
   FormControl, InputLabel, Select, MenuItem,
-  Divider, CircularProgress, LinearProgress,
+  Divider, CircularProgress, LinearProgress, InputAdornment,
 } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
@@ -301,7 +301,14 @@ export default function CustomOrderPage() {
             fullWidth size="small" label="Phone Number"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="+234 xxx xxx xxxx"
+            placeholder="e.g. 08012345678"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Typography sx={{ fontSize: '0.85rem', color: '#888', fontWeight: 600, mr: 0.5 }}>+234</Typography>
+                </InputAdornment>
+              ),
+            }}
             sx={{ mb: 2, ...inputSx }}
           />
           <TextField

@@ -21,7 +21,6 @@ import {
   validateNumber,
   validateOrderStatus,
 } from './validate';
-import { updateBookedSlotStatus } from './bookedSlotsService';
 import { awardPointsForOrder } from './loyaltyService';
 
 // ─── Orders ─────────────────────────────────────────────
@@ -68,27 +67,18 @@ export async function createAdminOrder(data) {
   return addDoc(colRef, orderData);
 }
 
-const APPOINTMENT_ONLY_STATUSES = new Set(['no-show', 'rescheduled', 'in progress']);
-
 export async function updateOrderStatus(uid, orderId, status, extra = {}) {
-  const kind = APPOINTMENT_ONLY_STATUSES.has(status) ? 'appointment' : 'order';
-  validateOrderStatus(status, kind);
+  validateOrderStatus(status, 'order');
   const ref = doc(db, 'users', uid, 'orders', orderId);
-  updateBookedSlotStatus(orderId, status).catch(() => {});
   await updateDoc(ref, {
     status,
     ...extra,
     statusHistory: arrayUnion({ status, at: new Date().toISOString() }),
   });
-  // Award loyalty points: retail/press-on orders on 'received', service appointments on 'completed'
-  if (status === 'received' || status === 'completed') {
+  if (status === 'received') {
     const snap = await getDoc(ref).catch(() => null);
     const orderType = snap?.data()?.type || 'retail';
-    if (status === 'received' && orderType !== 'service') {
-      awardPointsForOrder(uid, orderId, orderType).catch(() => {});
-    } else if (status === 'completed' && orderType === 'service') {
-      awardPointsForOrder(uid, orderId, orderType).catch(() => {});
-    }
+    awardPointsForOrder(uid, orderId, orderType).catch(() => {});
   }
 }
 
@@ -243,8 +233,8 @@ export function computeUserStats(users, orders) {
 
   return users.map((u) => {
     const userOrders = ordersByUid[u.uid] || [];
-    const orderCount = userOrders.filter((o) => o.type !== 'service').length;
-    const appointmentCount = userOrders.filter((o) => o.type === 'service').length;
+    const orderCount = userOrders.length;
+    const appointmentCount = 0;
     const totalPaid = userOrders
       .filter((o) => REVENUE_STATUSES.includes(o.status))
       .reduce((sum, o) => sum + (o.total || 0) + (o.extraCharge || 0), 0);
@@ -270,76 +260,6 @@ export function computeUserStats(users, orders) {
 export async function updateCustomerPerks(uid, perks) {
   const ref = doc(db, 'users', uid);
   return updateDoc(ref, { tierPerks: perks });
-}
-
-// ─── Service Discounts ──────────────────────────────────
-
-export async function fetchServiceDiscounts() {
-  const snap = await getDocs(collection(db, 'serviceDiscounts'));
-  const map = {};
-  snap.docs.forEach((d) => { map[d.id] = d.data(); });
-  return map;
-}
-
-export async function setServiceDiscount(serviceId, data) {
-  const ref = doc(db, 'serviceDiscounts', serviceId);
-  return setDoc(ref, data, { merge: true });
-}
-
-export async function removeServiceDiscount(serviceId) {
-  const ref = doc(db, 'serviceDiscounts', serviceId);
-  return deleteDoc(ref);
-}
-
-// ─── Service Category + Service Item CRUD ───────────────
-
-export async function addServiceCategory(id, data) {
-  const ref = doc(db, 'serviceCategories', id);
-  const snap = await getDocs(collection(db, 'serviceCategories'));
-  return setDoc(ref, { ...data, services: data.services || [], order: snap.size });
-}
-
-export async function updateServiceCategory(id, updates) {
-  const ref = doc(db, 'serviceCategories', id);
-  return updateDoc(ref, updates);
-}
-
-export async function deleteServiceCategory(id) {
-  const ref = doc(db, 'serviceCategories', id);
-  return deleteDoc(ref);
-}
-
-export async function addServiceItem(categoryId, item) {
-  const ref = doc(db, 'serviceCategories', categoryId);
-  await runTransaction(db, async (transaction) => {
-    const snap = await transaction.get(ref);
-    if (!snap.exists()) throw new Error(`Category ${categoryId} not found`);
-    const services = [...(snap.data().services || [])];
-    services.push({ ...item, id: item.id || crypto.randomUUID() });
-    transaction.update(ref, { services });
-  });
-}
-
-export async function updateServiceItem(categoryId, serviceId, updates) {
-  const ref = doc(db, 'serviceCategories', categoryId);
-  await runTransaction(db, async (transaction) => {
-    const snap = await transaction.get(ref);
-    if (!snap.exists()) throw new Error(`Category ${categoryId} not found`);
-    const services = (snap.data().services || []).map((s) =>
-      s.id === serviceId ? { ...s, ...updates } : s
-    );
-    transaction.update(ref, { services });
-  });
-}
-
-export async function deleteServiceItem(categoryId, serviceId) {
-  const ref = doc(db, 'serviceCategories', categoryId);
-  await runTransaction(db, async (transaction) => {
-    const snap = await transaction.get(ref);
-    if (!snap.exists()) throw new Error(`Category ${categoryId} not found`);
-    const services = (snap.data().services || []).filter((s) => s.id !== serviceId);
-    transaction.update(ref, { services });
-  });
 }
 
 // ─── Stats ──────────────────────────────────────────────

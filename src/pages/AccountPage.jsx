@@ -1044,7 +1044,7 @@ export default function AccountPage() {
 								}}
 							>
 								<Typography sx={{ fontSize: "0.72rem", color: "#777" }}>
-									{loyaltyPoints % 50} / 50 pts to next ₦1,000 reward
+									{loyaltyPoints % 50} / 50 pts to next ₦500 reward
 								</Typography>
 								{redeemableNaira > 0 && (
 									<Box
@@ -1107,7 +1107,7 @@ export default function AccountPage() {
 									}}
 								>
 									<MilitaryTechIcon sx={{ fontSize: '0.9rem', mr: 0.4, verticalAlign: 'middle' }} />
-															<strong>15 pts</strong> per completed order · <strong>50 pts = ₦1,000 off</strong>
+															<strong>15 pts</strong> per completed order · <strong>50 pts = ₦500 off</strong>
 								</Typography>
 							</Box>
 						</Box>
@@ -1980,7 +1980,7 @@ export default function AccountPage() {
 										mb: 2,
 									}}
 								>
-									Each unit = <strong>50 pts = ₦1,000 off</strong>.
+									Each unit = <strong>50 pts = ₦500 off</strong>.
 									Select how many units to redeem:
 								</Typography>
 								<Box

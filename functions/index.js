@@ -1,4 +1,4 @@
-const { onDocumentUpdated } = require("firebase-functions/v2/firestore");
+const { onDocumentUpdated, onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
@@ -253,28 +253,36 @@ exports.onOrderStatusChanged = onDocumentUpdated(
   },
 );
 
-// ── Trigger: first confirmed order → send welcome email ───────────────────────
+// ── Trigger: first confirmed order → welcome email fallback for pre-existing users ─
+// onUserCreated handles new signups. This catches users who signed up before that
+// trigger existed and haven't received a welcome email yet.
 exports.onFirstOrderWelcome = onDocumentUpdated(
   { document: "users/{uid}/orders/{orderId}", secrets: [MAILTRAP_TOKEN] },
   async (event) => {
     const before = event.data.before.data();
     const after  = event.data.after.data();
 
-    // Only fire when newly confirmed
     if (before.status === after.status) return;
     if (after.status !== "confirmed") return;
-    if (!after.email || !after.welcomeEmailSent === false) return;
 
-    // Check if this is their first ever confirmed order
     const db = getFirestore();
     const uid = event.params.uid;
-    const snap = await db
+
+    // Check the USER document (not the order) for welcomeEmailSent
+    const userRef = db.collection("users").doc(uid);
+    const userSnap = await userRef.get();
+    const userData = userSnap.data() || {};
+
+    if (!userData.email || userData.welcomeEmailSent) return;
+
+    // Only send on their first ever confirmed order
+    const ordersSnap = await db
       .collection("users").doc(uid).collection("orders")
       .where("status", "in", ["confirmed", "production", "shipped", "received", "delivered"])
       .limit(2)
       .get();
 
-    if (snap.size > 1) return; // not their first order
+    if (ordersSnap.size > 1) return;
 
     const token = MAILTRAP_TOKEN.value();
     if (!token) return;
@@ -282,12 +290,35 @@ exports.onFirstOrderWelcome = onDocumentUpdated(
     try {
       await sendWelcomeEmail({
         token,
-        email: after.email,
-        customerName: after.customerName || "Customer",
+        email: userData.email,
+        customerName: userData.displayName || after.customerName || "Customer",
       });
-      logger.info(`[welcome] email → ${after.email}`);
+      await userRef.update({ welcomeEmailSent: true });
+      logger.info(`[welcome] fallback email → ${userData.email}`);
     } catch (err) {
-      logger.error("sendWelcomeEmail failed:", err);
+      logger.error("sendWelcomeEmail (onFirstOrderWelcome) failed:", err);
+    }
+  },
+);
+
+// ── Trigger: new user document created → send welcome email immediately ───────
+exports.onUserCreated = onDocumentCreated(
+  { document: "users/{uid}", secrets: [MAILTRAP_TOKEN] },
+  async (event) => {
+    const data = event.data.data();
+    if (!data?.email || data?.welcomeEmailSent) return;
+    const token = MAILTRAP_TOKEN.value();
+    if (!token) return;
+    try {
+      await sendWelcomeEmail({
+        token,
+        email: data.email,
+        customerName: data.displayName || "Customer",
+      });
+      await getFirestore().doc(`users/${event.params.uid}`).update({ welcomeEmailSent: true });
+      logger.info(`[welcome] new user → ${data.email}`);
+    } catch (err) {
+      logger.error("sendWelcomeEmail (onUserCreated) failed:", err);
     }
   },
 );
