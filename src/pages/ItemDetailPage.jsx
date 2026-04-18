@@ -4,9 +4,9 @@ import {
   Box, Typography, Container, Button, Chip,
   Grid, IconButton, CircularProgress, Divider,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  FormControl, InputLabel, Select, MenuItem,
+  FormControl, InputLabel, Select, MenuItem, TextField,
   Table, TableBody, TableCell, TableHead, TableRow,
-  Snackbar, Alert, Collapse, Menu, Tooltip,
+  Snackbar, Alert, Collapse, Menu, Tooltip, Rating,
 } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
@@ -24,6 +24,7 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { getCollection, getItem } from '../lib/collectionService';
+import { fetchTestimonialsByProductId } from '../lib/testimonialService';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 
@@ -213,6 +214,7 @@ export default function ItemDetailPage() {
   const [overflowMenuAnchor, setOverflowMenuAnchor] = useState(null);
   const [euSize, setEuSize] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [orderNotes, setOrderNotes] = useState('');
   const [errors, setErrors] = useState({});
 
   // UI state
@@ -220,6 +222,8 @@ export default function ItemDetailPage() {
   const [cartSnack, setCartSnack] = useState(false);
   const [wishlistSnack, setWishlistSnack] = useState({ open: false, added: false });
   const [careOpen, setCareOpen] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
 
   const requiresLength = col?.requiresLength === true;
 
@@ -241,6 +245,40 @@ export default function ItemDetailPage() {
     };
     load();
   }, [collectionId, itemId]);
+
+  useEffect(() => {
+    if (!item) return;
+
+    const productId = item.id || itemId;
+    let active = true;
+    setReviewsLoading(true);
+
+    fetchTestimonialsByProductId(productId)
+      .then((items) => {
+        if (!active) return;
+        setReviews(items);
+      })
+      .catch(() => {
+        if (!active) return;
+        setReviews([]);
+      })
+      .finally(() => {
+        if (!active) return;
+        setReviewsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [item, itemId]);
+
+  const reviewCount = reviews.length;
+  const averageRating = reviewCount
+    ? reviews.reduce((sum, review) => sum + (Number(review.rating) || 0), 0) / reviewCount
+    : 0;
+  const reviewPhotos = reviews
+    .flatMap((review) => review.photoURLs || [])
+    .slice(0, 4);
 
   if (loading) {
     return <Box sx={{ pt: 16, textAlign: 'center' }}><CircularProgress sx={{ color: 'var(--accent-cyan)' }} /></Box>;
@@ -274,9 +312,12 @@ export default function ItemDetailPage() {
     collectionId,
     collectionName: col?.name,
     price: item.price,
-    image: images[0] || '',
+    image: images[activeImg] || images[0] || '',
+    selectedImage: images[activeImg] || images[0] || '',
+    selectedImageIndex: images[activeImg] ? activeImg + 1 : 1,
     selectedColor: activeColor,
     euSize: requiresLength ? euSize : null,
+    orderNotes: orderNotes.trim(),
     quantity,
   });
 
@@ -483,6 +524,15 @@ export default function ItemDetailPage() {
 										))}
 									</Box>
 								)}
+								<Typography
+									sx={{
+										mt: 1.2,
+										fontSize: "0.8rem",
+										color: "var(--text-muted)",
+									}}
+								>
+									Selected design: Image {activeImg + 1}
+								</Typography>
 							</Box>
 						) : (
 							<Box
@@ -1044,6 +1094,48 @@ export default function ItemDetailPage() {
 							</Box>
 						</Box>
 
+						{/* Additional notes */}
+						<Box sx={{ mb: 3 }}>
+							<Typography
+								sx={{
+									fontFamily: ff,
+									fontWeight: 700,
+									fontSize: "0.95rem",
+									color: "var(--text-main)",
+									mb: 1,
+								}}
+							>
+								Additional Notes
+							</Typography>
+							<TextField
+								fullWidth
+								multiline
+								minRows={3}
+								placeholder="Add any design preference, finish note, or instruction for this order."
+								value={orderNotes}
+								onChange={(e) => setOrderNotes(e.target.value.slice(0, 500))}
+								InputProps={{
+									sx: {
+										fontFamily: ff,
+										borderRadius: 2,
+										"& fieldset": { borderColor: "#E8D5B0" },
+										"&:hover fieldset": { borderColor: "var(--accent-cyan)" },
+										"&.Mui-focused fieldset": { borderColor: "var(--accent-cyan)" },
+									},
+								}}
+							/>
+							<Typography
+								sx={{
+									mt: 0.6,
+									fontSize: "0.74rem",
+									color: "#999",
+									textAlign: "right",
+								}}
+							>
+								{orderNotes.length}/500
+							</Typography>
+						</Box>
+
 						{/* Stock urgency badge */}
 						{selectedColor &&
 							!customColor &&
@@ -1304,7 +1396,143 @@ export default function ItemDetailPage() {
 						</Box>
 					</Grid>
 				</Grid>
-			</Container>
-		</Box>
-  );
+
+        <Box sx={{ mt: 8, mb: 6 }}>
+          <Typography
+            sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1.6rem', mb: 2 }}
+          >
+            Customer reviews
+          </Typography>
+
+          {reviewsLoading ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <CircularProgress sx={{ color: 'var(--accent-cyan)' }} />
+            </Box>
+          ) : reviewCount === 0 ? (
+            <Typography sx={{ color: 'var(--text-muted)' }}>
+              No reviews for this item yet. Be the first to leave feedback after purchase.
+            </Typography>
+          ) : (
+            <>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  alignItems: { xs: 'flex-start', sm: 'center' },
+                  justifyContent: 'space-between',
+                  gap: 2,
+                  mb: 3,
+                }}
+              >
+                <Box>
+                  <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1rem' }}>
+                    {reviewCount} review{reviewCount === 1 ? '' : 's'}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                    <Rating value={averageRating} precision={0.5} readOnly size="small" />
+                    <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                      {averageRating.toFixed(1)} average rating
+                    </Typography>
+                  </Box>
+                </Box>
+                {reviewPhotos.length > 0 && (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {reviewPhotos.map((url, index) => (
+                      <Box
+                        key={index}
+                        component="img"
+                        src={url}
+                        alt={`Customer photo ${index + 1}`}
+                        sx={{
+                          width: 92,
+                          height: 92,
+                          objectFit: 'cover',
+                          borderRadius: 2,
+                          border: '1px solid #E8D5B0',
+                        }}
+                      />
+                    ))}
+                  </Box>
+                )}
+              </Box>
+
+              <Box sx={{ display: 'grid', gap: 3 }}>
+                {reviews.map((review) => (
+                  <Box
+                    key={review.id}
+                    sx={{
+                      p: 3,
+                      borderRadius: 3,
+                      border: '1px solid #E8D5B0',
+                      backgroundColor: '#fff',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        flexWrap: 'wrap',
+                        gap: 1,
+                        mb: 1.5,
+                      }}
+                    >
+                      <Box>
+                        <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem' }}>
+                          {review.name || 'Happy customer'}
+                        </Typography>
+                        {review.createdAt?.toDate && (
+                          <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.8rem', mt: 0.3 }}>
+                            {review.createdAt.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </Typography>
+                        )}
+                      </Box>
+                      <Rating
+                        value={Number(review.rating) || 0}
+                        readOnly
+                        size="small"
+                      />
+                    </Box>
+                    {(review.testimonial || review.review) && (
+                      <Typography
+                        sx={{ color: 'var(--text-muted)', lineHeight: 1.8, whiteSpace: 'pre-line' }}
+                      >
+                        {review.testimonial || review.review}
+                      </Typography>
+                    )}
+                    {review.photoURLs?.length > 0 && (
+                      <Box
+                        sx={{
+                          mt: 2,
+                          display: 'grid',
+                          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                          gap: 2,
+                        }}
+                      >
+                        {review.photoURLs.map((url, index) => (
+                          <Box
+                            key={index}
+                            component="img"
+                            src={url}
+                            alt={`Review photo ${index + 1}`}
+                            sx={{
+                              width: '100%',
+                              height: 160,
+                              objectFit: 'cover',
+                              borderRadius: 2,
+                              border: '1px solid #E8D5B0',
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            </>
+          )}
+        </Box>
+        </Container>
+      </Box>
+    );
 }

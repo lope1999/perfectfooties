@@ -186,8 +186,18 @@ export default function CartPage() {
                     <Box sx={{ flex: 1 }}>
                       <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.95rem' }}>{g.name}</Typography>
                       <Typography sx={{ color: '#777', fontSize: '0.82rem', mt: 0.3 }}>
-                        Colour: {g.selectedColor}{g.footLength ? ` · Foot Length: ${g.footLength}cm` : ''}
+                        Colour: {g.selectedColor}{g.euSize ? ` · EU Size: ${g.euSize}` : ''}{g.footLength ? ` · Foot Length: ${g.footLength}cm` : ''}
                       </Typography>
+                      {g.selectedImageIndex && (
+                        <Typography sx={{ color: '#777', fontSize: '0.78rem', mt: 0.2 }}>
+                          Selected design: Image {g.selectedImageIndex}
+                        </Typography>
+                      )}
+                      {g.orderNotes && (
+                        <Typography sx={{ color: '#777', fontSize: '0.78rem', mt: 0.2, lineHeight: 1.6 }}>
+                          Notes: {g.orderNotes}
+                        </Typography>
+                      )}
                       {g.collectionName && (
                         <Typography sx={{ color: '#aaa', fontSize: '0.75rem', mt: 0.2 }}>{g.collectionName}</Typography>
                       )}

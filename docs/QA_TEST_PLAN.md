@@ -108,7 +108,7 @@ Region: us-central1
 
 | Role | Account | Notes |
 |---|---|---|
-| Admin user | `chizobaezeh338@gmail.com` or `perfectfooties@gmail.com` | Google sign-in; has access to `/admin` |
+| Admin user | `chizobaezeh338@gmail.com` or `perfectfooties@gmail.com` | `praiseolusegun19@gmail.com` | Google sign-in; has access to `/admin` |
 | Regular user A | Any Google account | For placing orders, viewing account |
 | Regular user B | Second Google account | For testing referral code flow between two users |
 | Mailtrap inbox | Provided by dev | Inspect all transactional emails |

@@ -224,8 +224,11 @@ export default function CheckoutPage() {
       leatherGoods.forEach((g, i) => {
         let detail = `${i + 1}. ${g.name} x${g.quantity} \u2014 ${formatNaira(g.price * g.quantity)}`;
         if (g.selectedColor) detail += `\n   Colour: ${g.selectedColor}`;
+        if (g.euSize) detail += ` | EU Size: ${g.euSize}`;
         if (g.footLength) detail += ` | Foot Length: ${g.footLength}cm`;
         if (g.collectionName) detail += `\n   Collection: ${g.collectionName}`;
+        if (g.selectedImageIndex) detail += `\n   Selected Design: Image ${g.selectedImageIndex}`;
+        if (g.orderNotes) detail += `\n   Notes: ${g.orderNotes}`;
         lines.push(detail);
       });
       lines.push('');
@@ -331,7 +334,11 @@ export default function CheckoutPage() {
           price: g.price,
           quantity: g.quantity,
           selectedColor: g.selectedColor,
+          ...(g.euSize && { euSize: g.euSize }),
           ...(g.footLength && { footLength: g.footLength }),
+          ...(g.selectedImage && { selectedImage: g.selectedImage }),
+          ...(g.selectedImageIndex && { selectedImageIndex: g.selectedImageIndex }),
+          ...(g.orderNotes && { orderNotes: g.orderNotes }),
           collectionId: g.collectionId,
           collectionName: g.collectionName,
         })),
@@ -415,7 +422,19 @@ export default function CheckoutPage() {
         whatsappUrl: waUrl,
         paymentReference: paymentReference || null,
         items: [
-          ...leatherGoods.map((g) => ({ kind: 'leather', name: g.name, price: g.price * g.quantity, quantity: g.quantity, selectedColor: g.selectedColor, footLength: g.footLength, collectionId: g.collectionId })),
+          ...leatherGoods.map((g) => ({
+            kind: 'leather',
+            name: g.name,
+            price: g.price * g.quantity,
+            quantity: g.quantity,
+            selectedColor: g.selectedColor,
+            euSize: g.euSize,
+            footLength: g.footLength,
+            selectedImage: g.selectedImage,
+            selectedImageIndex: g.selectedImageIndex,
+            orderNotes: g.orderNotes,
+            collectionId: g.collectionId,
+          })),
           ...products.map((p) => ({ kind: 'retail', name: p.name, price: p.price * (p.quantity || 1), quantity: p.quantity })),
           ...pressOns.map((p) => ({ kind: 'press-on', name: p.name, price: p.price * (p.quantity || 1), nailShape: p.nailShape, quantity: p.quantity || 1, selectedLength: p.selectedLength, setIncludes: p.setIncludes, inspirationTags: p.inspirationTags, nailNotes: p.nailNotes, specialRequest: p.specialRequest || false })),
         ],

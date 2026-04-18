@@ -16,7 +16,7 @@ const FALLBACK_COLLECTIONS = [
 	{
 		id: "female-footwear",
 		name: "Female Handmade Footwear",
-		coverImage: "/images/products/marble-luxe.jpg",
+		coverImage: "/images/products/platform.jpeg",
 		description:
 			"Elegantly crafted footwear for women — made to measure, made to last.",
 	},

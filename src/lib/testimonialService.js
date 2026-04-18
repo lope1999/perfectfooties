@@ -30,10 +30,12 @@ export async function saveTestimonial(data) {
 
   const testimonial = sanitizeString(data.testimonial, 2000);
   const email = data.email ? validateEmail(data.email) : '';
+  const productId = data.productId ? sanitizeString(String(data.productId), 100) : '';
 
   const ref = collection(db, COLLECTION);
   return addDoc(ref, {
     ...data,
+    ...(productId && { productId }),
     name,
     rating,
     testimonial,
@@ -45,6 +47,15 @@ export async function saveTestimonial(data) {
 export async function fetchTestimonials() {
   const ref = collection(db, COLLECTION);
   const snap = await getDocs(query(ref, orderBy('createdAt', 'desc')));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function fetchTestimonialsByProductId(productId) {
+  if (!productId) return [];
+  const ref = collection(db, COLLECTION);
+  const snap = await getDocs(
+    query(ref, where('productId', '==', productId), orderBy('createdAt', 'desc'))
+  );
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 

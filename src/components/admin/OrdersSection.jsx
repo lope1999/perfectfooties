@@ -687,6 +687,22 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                             <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700 }}>Items:</Typography>
                             {o.items.map((item, i) => (
                               <Box key={i} sx={{ pl: 2, mb: 1, borderLeft: '2px solid #E8D5B0', ml: 1 }}>
+                                {item.selectedImage && (
+                                  <Box
+                                    component="a"
+                                    href={item.selectedImage}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    sx={{ display: 'inline-block', mb: 1 }}
+                                  >
+                                    <Box
+                                      component="img"
+                                      src={item.selectedImage}
+                                      alt={`${item.serviceName || item.name || item.title || 'Item'} selected design`}
+                                      sx={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0' }}
+                                    />
+                                  </Box>
+                                )}
                                 <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-purple)' }}>
                                   {item.serviceName || item.name || item.title || 'Item'}
                                 </Typography>
@@ -710,9 +726,34 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                                     Size: {item.size}
                                   </Typography>
                                 )}
+                                {item.euSize && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
+                                    EU Size: {item.euSize}
+                                  </Typography>
+                                )}
                                 {item.colour && (
                                   <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
                                     Colour: {item.colour}
+                                  </Typography>
+                                )}
+                                {item.selectedColor && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
+                                    Colour: {item.selectedColor}
+                                  </Typography>
+                                )}
+                                {item.collectionName && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
+                                    Collection: {item.collectionName}
+                                  </Typography>
+                                )}
+                                {item.selectedImageIndex && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777' }}>
+                                    Selected Design: Image {item.selectedImageIndex}
+                                  </Typography>
+                                )}
+                                {item.orderNotes && (
+                                  <Typography sx={{ fontFamily, fontSize: '0.78rem', color: '#777', lineHeight: 1.6 }}>
+                                    Notes: {item.orderNotes}
                                   </Typography>
                                 )}
                               </Box>

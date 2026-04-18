@@ -263,7 +263,11 @@ exports.onOrderStatusChanged = onDocumentUpdated(
 );
 
 // ── Newsletter Sender (FIXED HERE) ────────────────────────────────────────────
-const ADMIN_EMAILS = ["chizobaezeh338@gmail.com", "perfect.footies@gmail.com"];
+const ADMIN_EMAILS = [
+	"chizobaezeh338@gmail.com",
+	"perfect.footies@gmail.com",
+	"praiseolusegun19@gmail.com",
+];
 
 exports.sendNewsletter = onCall(
 	{ secrets: [MAILTRAP_TOKEN] },

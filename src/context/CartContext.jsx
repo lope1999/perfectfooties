@@ -112,7 +112,12 @@ function cartReducer(state, action) {
 			};
 		case 'ADD_LEATHER_GOOD': {
 			const existing = state.items.leatherGoods.find(
-				(p) => p.itemId === action.payload.itemId && p.selectedColor === action.payload.selectedColor && p.footLength === action.payload.footLength
+				(p) => p.itemId === action.payload.itemId
+          && p.selectedColor === action.payload.selectedColor
+          && p.footLength === action.payload.footLength
+          && p.euSize === action.payload.euSize
+          && p.selectedImage === action.payload.selectedImage
+          && p.orderNotes === action.payload.orderNotes
 			);
 			if (existing) {
 				return {

@@ -2471,8 +2471,10 @@ function RateDialog({ open, onClose, order, userName, uid, userEmail, onSubmitte
 					try { photoURLs.push(await uploadReviewPhoto(uid, photo)); } catch { /* skip */ }
 				}
 			}
+			const firstItem = order?.items?.[0];
 			await saveTestimonial({
 				orderId: order?.id,
+				productId: firstItem?.productId || firstItem?.id,
 				rating,
 				testimonial: comment,
 				name: userName,
