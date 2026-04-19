@@ -50,6 +50,11 @@ service firebase.storage {
       allow write: if request.auth != null && isValidImage();
     }
 
+    // Review photos: owners (their UID) or admins can upload
+    match /review-photos/{userId}/{fileName} {
+      allow write: if request.auth != null && (request.auth.uid == userId || isAdmin()) && isValidImage();
+    }
+
     // Newsletter campaign images — admin only
     match /newsletters/{fileName} {
       allow write: if isAdmin() && isValidImage();
