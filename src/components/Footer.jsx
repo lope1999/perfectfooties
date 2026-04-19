@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
 	Box,
 	Typography,
@@ -13,12 +13,12 @@ import {
 	Snackbar,
 	Alert,
 } from "@mui/material";
-import InstagramIcon from '@mui/icons-material/Instagram';
-import YouTubeIcon from '@mui/icons-material/YouTube';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import InstagramIcon from "@mui/icons-material/Instagram";
+import YouTubeIcon from "@mui/icons-material/YouTube";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import TermsModal from './TermsModal';
+import TermsModal from "./TermsModal";
 import { db } from "../lib/firebase";
 import {
 	collection,
@@ -27,33 +27,68 @@ import {
 	query,
 	where,
 	getDocs,
+	doc,
+	getDoc,
+	updateDoc,
 } from "firebase/firestore";
+import { useAuth } from "../context/AuthContext";
 import { sendNewsletterWelcome } from "../lib/emailService";
 
 const linkSx = {
-  color: 'var(--text-purple)',
-  fontSize: '0.9rem',
-  cursor: 'pointer',
-  transition: 'color 0.2s ease',
-  display: 'block',
-  mb: 1.2,
-  textDecoration: 'none',
-  '&:hover': {
-    color: '#e3242b',
-  },
+	color: "var(--text-purple)",
+	fontSize: "0.9rem",
+	cursor: "pointer",
+	transition: "color 0.2s ease",
+	display: "block",
+	mb: 1.2,
+	textDecoration: "none",
+	"&:hover": {
+		color: "#e3242b",
+	},
 };
 
 const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
 export default function Footer() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [termsOpen, setTermsOpen] = useState(false);
-  const [nlEmail, setNlEmail] = useState("");
-  const [nlStatus, setNlStatus] = useState("idle"); // idle | loading | success | error | duplicate
-  const [snackOpen, setSnackOpen] = useState(false);
+	const { user } = useAuth();
+	const navigate = useNavigate();
+	const location = useLocation();
+	const [userSubscribed, setUserSubscribed] = useState(false);
+	const [termsOpen, setTermsOpen] = useState(false);
+	const [nlEmail, setNlEmail] = useState("");
+	const [nlStatus, setNlStatus] = useState("idle"); // idle | loading | success | error | duplicate
+	const [snackOpen, setSnackOpen] = useState(false);
 
-  const handleSubscribe = async () => {
+	// If the user is logged in, check whether they're subscribed and hide the footer form
+	useEffect(() => {
+		let mounted = true;
+		if (!user?.uid) return;
+		(async () => {
+			try {
+				const userRef = doc(db, "users", user.uid);
+				const usnap = await getDoc(userRef);
+				if (usnap.exists() && usnap.data()?.newsletterSubscribed) {
+					if (mounted) setUserSubscribed(true);
+					return;
+				}
+				const subsRef = collection(db, "subscribers");
+				const dup = await getDocs(
+					query(
+						subsRef,
+						where("email", "==", (user.email || "").toLowerCase()),
+					),
+				);
+				if (!dup.empty && mounted) setUserSubscribed(true);
+			} catch (e) {
+				// ignore
+			}
+		})();
+		return () => {
+			mounted = false;
+		};
+	}, [user]);
+
+	const handleSubscribe = async () => {
 		if (!isValidEmail(nlEmail)) return;
 		setNlStatus("loading");
 		try {
@@ -78,31 +113,39 @@ export default function Footer() {
 			setNlStatus("error");
 			setSnackOpen(true);
 		}
-  };
+	};
 
-  const handleContactClick = () => {
-    if (location.pathname !== '/') {
-      navigate('/');
-      setTimeout(() => {
-        document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' });
-      }, 300);
-    } else {
-      document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+	const handleContactClick = () => {
+		if (location.pathname !== "/") {
+			navigate("/");
+			setTimeout(() => {
+				document
+					.getElementById("contact-section")
+					?.scrollIntoView({ behavior: "smooth" });
+			}, 300);
+		} else {
+			document
+				.getElementById("contact-section")
+				?.scrollIntoView({ behavior: "smooth" });
+		}
+	};
 
-  const handleFaqClick = () => {
-    if (location.pathname !== '/') {
-      navigate('/');
-      setTimeout(() => {
-        document.getElementById('faq-section')?.scrollIntoView({ behavior: 'smooth' });
-      }, 300);
-    } else {
-      document.getElementById('faq-section')?.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+	const handleFaqClick = () => {
+		if (location.pathname !== "/") {
+			navigate("/");
+			setTimeout(() => {
+				document
+					.getElementById("faq-section")
+					?.scrollIntoView({ behavior: "smooth" });
+			}, 300);
+		} else {
+			document
+				.getElementById("faq-section")
+				?.scrollIntoView({ behavior: "smooth" });
+		}
+	};
 
-  return (
+	return (
 		<>
 			<Box
 				sx={{
@@ -128,7 +171,7 @@ export default function Footer() {
 									src="/images/logo.png"
 									alt="PerfectFooties"
 									sx={{
-										height: 48,
+										height: 80,
 										width: "auto",
 										objectFit: "contain",
 										display: "block",
@@ -311,7 +354,7 @@ export default function Footer() {
 								New collections, exclusive deals, and behind-the-scenes
 								stories — delivered to your inbox.
 							</Typography>
-							{nlStatus !== "success" ? (
+							{!userSubscribed && nlStatus !== "success" ? (
 								<Box
 									sx={{
 										display: "flex",
@@ -484,5 +527,5 @@ export default function Footer() {
 				</Alert>
 			</Snackbar>
 		</>
-  );
+	);
 }

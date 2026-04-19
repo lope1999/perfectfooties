@@ -9,6 +9,7 @@ import StatusChangeToast from './components/StatusChangeToast';
 import Footer from './components/Footer';
 import WhatsAppBubble from './components/WhatsAppBubble';
 import MobileBottomNav from './components/MobileBottomNav';
+import NewsletterPopup from "./components/NewsletterPopup";
 import HomePage from './pages/HomePage';
 import OurStoryPage from './pages/OurStoryPage';
 import BlogPage from './pages/BlogPage';
@@ -65,8 +66,14 @@ function App() {
 					<Route path="/thank-you" element={<ThankYouPage />} />
 					<Route path="/shop" element={<ShopPage />} />
 					<Route path="/shop/:collectionId" element={<CollectionPage />} />
-					<Route path="/shop/:collectionId/:itemId" element={<ItemDetailPage />} />
-					<Route path="/account/orders/:orderId" element={<OrderDetailPage />} />
+					<Route
+						path="/shop/:collectionId/:itemId"
+						element={<ItemDetailPage />}
+					/>
+					<Route
+						path="/account/orders/:orderId"
+						element={<OrderDetailPage />}
+					/>
 					<Route path="/custom-order" element={<CustomOrderPage />} />
 					<Route
 						path="/admin"
@@ -81,6 +88,7 @@ function App() {
 			<WhatsAppBubble />
 			<MobileBottomNav />
 			{location.pathname !== "/admin" && <Footer />}
+			{location.pathname === "/" && <NewsletterPopup />}
 			<Analytics />
 		</>
   );

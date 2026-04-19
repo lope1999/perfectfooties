@@ -139,7 +139,7 @@ export default function Navbar() {
 							src="/images/logo.png"
 							alt="PerfectFooties"
 							sx={{
-								height: { xs: 38, md: 46 },
+								height: { xs: 60, md: 80 },
 								width: "auto",
 								objectFit: "contain",
 								display: "block",
@@ -156,8 +156,18 @@ export default function Navbar() {
 								userSelect: "none",
 							}}
 						>
-							<Box component="span" sx={{ display: { xs: "inline", md: "none" } }}>PF</Box>
-							<Box component="span" sx={{ display: { xs: "none", md: "inline" } }}>PerfectFooties</Box>
+							<Box
+								component="span"
+								sx={{ display: { xs: "inline", md: "none" } }}
+							>
+								PF
+							</Box>
+							<Box
+								component="span"
+								sx={{ display: { xs: "none", md: "inline" } }}
+							>
+								PerfectFooties
+							</Box>
 						</Typography>
 					</Box>
 
@@ -170,7 +180,9 @@ export default function Navbar() {
 						}}
 					>
 						{navItems.map((item) => {
-							const isActive = item.path !== 'contact' && location.pathname === item.path;
+							const isActive =
+								item.path !== "contact" &&
+								location.pathname === item.path;
 							return (
 								<Button
 									key={item.label}
@@ -184,16 +196,16 @@ export default function Navbar() {
 						{isAdmin && (
 							<Button
 								sx={{
-									color: '#fff',
-									backgroundColor: '#007a7a',
-									borderRadius: '20px',
+									color: "#fff",
+									backgroundColor: "#007a7a",
+									borderRadius: "20px",
 									px: 2,
 									py: 0.6,
-									fontSize: '0.85rem',
+									fontSize: "0.85rem",
 									fontFamily: '"Georgia", serif',
 									fontWeight: 600,
-									whiteSpace: 'nowrap',
-									'&:hover': { backgroundColor: '#005f5f' },
+									whiteSpace: "nowrap",
+									"&:hover": { backgroundColor: "#005f5f" },
 								}}
 								startIcon={<AdminPanelSettingsIcon />}
 								onClick={() => navigate("/admin")}

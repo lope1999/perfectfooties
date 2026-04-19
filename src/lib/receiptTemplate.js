@@ -26,7 +26,7 @@ const CSS = `
 
   /* ── Header ── */
   .header { background: linear-gradient(135deg, ${TEAL_DARK} 0%, ${TEAL} 60%, #009494 100%); padding: 28px 24px 20px; text-align: center; }
-  .logo { width: 76px; height: 76px; object-fit: contain; border-radius: 50%; background: rgba(255,255,255,0.15); padding: 8px; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; }
+  .logo { width: 120px; height: 120px; object-fit: contain; border-radius: 50%; background: rgba(255,255,255,0.15); padding: 10px; margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto; }
   .brand { font-size: 21px; font-weight: 800; letter-spacing: 2.5px; color: #fff; }
   .brand-sub { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 3px; letter-spacing: 0.5px; }
   .doc-badge { display: inline-block; color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 2px; padding: 4px 16px; border-radius: 20px; margin-top: 12px; border: 1.5px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); }

@@ -307,7 +307,7 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
     body { font-family: Georgia, serif; color: #1a1a1a; background: #f0ebe0; padding: 28px 20px; }
     .page { max-width: 560px; margin: 0 auto; background: #fff; border: 2px solid #e8d5b0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,122,122,0.12); }
     .header { background: linear-gradient(135deg, #005f5f, #007a7a, #009494); padding: 22px 24px; text-align: center; }
-    .logo { width: 64px; height: 64px; object-fit: contain; border-radius: 50%; background: rgba(255,255,255,0.15); padding: 6px; display: block; margin: 0 auto 8px; }
+    .logo { width: 110px; height: 110px; object-fit: contain; border-radius: 50%; background: rgba(255,255,255,0.15); padding: 8px; display: block; margin: 0 auto 10px; }
     .brand { font-size: 20px; font-weight: 800; letter-spacing: 2px; color: #fff; }
     .brand-sub { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 3px; }
     .doc-badge { display: inline-block; color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 2px; padding: 4px 14px; border-radius: 20px; margin-top: 10px; border: 1.5px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); }

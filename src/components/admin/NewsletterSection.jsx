@@ -38,91 +38,275 @@ function EmailPreview({ draft }) {
   const paragraphs = (draft.bodyText || '').split('\n\n').filter(Boolean);
 
   return (
-    <Box sx={{ bgcolor: '#f0ece6', p: { xs: 1.5, md: 2 }, borderRadius: 2, minHeight: 400 }}>
-      {/* inbox preview hint */}
-      {draft.subject && (
-        <Box sx={{ mb: 1.5, p: 1.5, bgcolor: '#fff', borderRadius: 1.5, border: '1px solid #e0d5c8' }}>
-          <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.82rem', color: '#333' }}>
-            {draft.subject || '(no subject)'}
-          </Typography>
-          {draft.previewText && (
-            <Typography sx={{ fontFamily: ff, fontSize: '0.74rem', color: '#888', mt: 0.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {draft.previewText}
-            </Typography>
-          )}
-        </Box>
-      )}
+		<Box
+			sx={{
+				bgcolor: "#f0ece6",
+				p: { xs: 1.5, md: 2 },
+				borderRadius: 2,
+				minHeight: 400,
+			}}
+		>
+			{/* inbox preview hint */}
+			{draft.subject && (
+				<Box
+					sx={{
+						mb: 1.5,
+						p: 1.5,
+						bgcolor: "#fff",
+						borderRadius: 1.5,
+						border: "1px solid #e0d5c8",
+					}}
+				>
+					<Typography
+						sx={{
+							fontFamily: ff,
+							fontWeight: 700,
+							fontSize: "0.82rem",
+							color: "#333",
+						}}
+					>
+						{draft.subject || "(no subject)"}
+					</Typography>
+					{draft.previewText && (
+						<Typography
+							sx={{
+								fontFamily: ff,
+								fontSize: "0.74rem",
+								color: "#888",
+								mt: 0.3,
+								whiteSpace: "nowrap",
+								overflow: "hidden",
+								textOverflow: "ellipsis",
+							}}
+						>
+							{draft.previewText}
+						</Typography>
+					)}
+				</Box>
+			)}
 
-      {/* Email card */}
-      <Box sx={{ bgcolor: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.10)' }}>
+			{/* Email card */}
+			<Box
+				sx={{
+					bgcolor: "#fff",
+					borderRadius: "12px",
+					overflow: "hidden",
+					boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
+				}}
+			>
+				{/* Dark header */}
+				<Box
+					sx={{
+						background:
+							"linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)",
+						p: "24px 20px",
+						textAlign: "center",
+					}}
+				>
+					<Box
+						sx={{
+							width: 90,
+							height: 90,
+							borderRadius: "50%",
+							bgcolor: "rgba(255,255,255,0.1)",
+							mx: "auto",
+							mb: 1.2,
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							p: "10px",
+							overflow: "hidden",
+						}}
+					>
+						<Box
+							component="img"
+							src="/images/logo.png"
+							alt="PF"
+							sx={{ width: "100%", objectFit: "contain" }}
+							onError={(e) => {
+								e.target.style.display = "none";
+							}}
+						/>
+					</Box>
+					<Typography
+						sx={{
+							fontFamily: ff,
+							fontSize: "18px",
+							fontWeight: 800,
+							color: "#fff",
+							letterSpacing: 1,
+						}}
+					>
+						PerfectFooties
+					</Typography>
+					<Typography
+						sx={{
+							fontFamily: ff,
+							fontSize: "11px",
+							color: BRAND_RED,
+							fontStyle: "italic",
+							mt: 0.5,
+						}}
+					>
+						Handcrafted leather goods, built to last
+					</Typography>
+				</Box>
 
-        {/* Dark header */}
-        <Box sx={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)', p: '24px 20px', textAlign: 'center' }}>
-          <Box sx={{ width: 60, height: 60, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.1)', mx: 'auto', mb: 1.2, display: 'flex', alignItems: 'center', justifyContent: 'center', p: '8px', overflow: 'hidden' }}>
-            <Box component="img" src="/images/logo.png" alt="PF" sx={{ width: '100%', objectFit: 'contain' }} onError={(e) => { e.target.style.display = 'none'; }} />
-          </Box>
-          <Typography sx={{ fontFamily: ff, fontSize: '18px', fontWeight: 800, color: '#fff', letterSpacing: 1 }}>PerfectFooties</Typography>
-          <Typography sx={{ fontFamily: ff, fontSize: '11px', color: BRAND_RED, fontStyle: 'italic', mt: 0.5 }}>Handcrafted leather goods, built to last</Typography>
-        </Box>
+				{/* Red accent bar */}
+				<Box
+					sx={{
+						height: 4,
+						background: `linear-gradient(90deg, #b81b21, ${BRAND_RED}, #b81b21)`,
+					}}
+				/>
 
-        {/* Red accent bar */}
-        <Box sx={{ height: 4, background: `linear-gradient(90deg, #b81b21, ${BRAND_RED}, #b81b21)` }} />
+				{/* Email body */}
+				<Box sx={{ p: "24px 20px" }}>
+					{draft.previewText && (
+						<Typography
+							sx={{
+								fontFamily: "Arial, sans-serif",
+								fontSize: "12px",
+								color: "#888",
+								fontStyle: "italic",
+								mb: 1.5,
+								pb: 1.5,
+								borderBottom: "1px solid #E8D5B0",
+							}}
+						>
+							{draft.previewText}
+						</Typography>
+					)}
 
-        {/* Email body */}
-        <Box sx={{ p: '24px 20px' }}>
-          {draft.previewText && (
-            <Typography sx={{ fontFamily: 'Arial, sans-serif', fontSize: '12px', color: '#888', fontStyle: 'italic', mb: 1.5, pb: 1.5, borderBottom: '1px solid #E8D5B0' }}>
-              {draft.previewText}
-            </Typography>
-          )}
+					{draft.headline && (
+						<Typography
+							sx={{
+								fontFamily: ff,
+								fontSize: "19px",
+								fontWeight: 700,
+								color: "#1a1a1a",
+								mb: 2,
+								lineHeight: 1.4,
+							}}
+						>
+							{draft.headline}
+						</Typography>
+					)}
 
-          {draft.headline && (
-            <Typography sx={{ fontFamily: ff, fontSize: '19px', fontWeight: 700, color: '#1a1a1a', mb: 2, lineHeight: 1.4 }}>
-              {draft.headline}
-            </Typography>
-          )}
+					{draft.imageUrl && (
+						<Box
+							component="img"
+							src={draft.imageUrl}
+							alt="Newsletter image"
+							sx={{
+								width: "100%",
+								borderRadius: "8px",
+								mb: 2,
+								display: "block",
+								maxHeight: 280,
+								objectFit: "cover",
+							}}
+							onError={(e) => {
+								e.target.style.display = "none";
+							}}
+						/>
+					)}
 
-          {draft.imageUrl && (
-            <Box component="img"
-              src={draft.imageUrl}
-              alt="Newsletter image"
-              sx={{ width: '100%', borderRadius: '8px', mb: 2, display: 'block', maxHeight: 280, objectFit: 'cover' }}
-              onError={(e) => { e.target.style.display = 'none'; }}
-            />
-          )}
+					{paragraphs.length > 0 ? (
+						paragraphs.map((p, i) => (
+							<Typography
+								key={i}
+								sx={{
+									fontFamily: "Arial, sans-serif",
+									fontSize: "13.5px",
+									color: "#444",
+									lineHeight: 1.8,
+									mb: 1.5,
+								}}
+							>
+								{p}
+							</Typography>
+						))
+					) : (
+						<Typography
+							sx={{
+								fontFamily: "Arial, sans-serif",
+								fontSize: "13.5px",
+								color: "#ccc",
+								fontStyle: "italic",
+							}}
+						>
+							Your message will appear here…
+						</Typography>
+					)}
 
-          {paragraphs.length > 0
-            ? paragraphs.map((p, i) => (
-                <Typography key={i} sx={{ fontFamily: 'Arial, sans-serif', fontSize: '13.5px', color: '#444', lineHeight: 1.8, mb: 1.5 }}>
-                  {p}
-                </Typography>
-              ))
-            : (
-                <Typography sx={{ fontFamily: 'Arial, sans-serif', fontSize: '13.5px', color: '#ccc', fontStyle: 'italic' }}>
-                  Your message will appear here…
-                </Typography>
-              )
-          }
+					{draft.ctaText && (
+						<Box sx={{ textAlign: "center", mt: 2.5, mb: 1 }}>
+							<Box
+								component="span"
+								sx={{
+									display: "inline-block",
+									background: BRAND_RED,
+									color: "#fff",
+									fontFamily: ff,
+									fontSize: "13px",
+									fontWeight: 700,
+									px: 3,
+									py: 1.4,
+									borderRadius: "30px",
+									cursor: "default",
+								}}
+							>
+								{draft.ctaText}
+							</Box>
+						</Box>
+					)}
+				</Box>
 
-          {draft.ctaText && (
-            <Box sx={{ textAlign: 'center', mt: 2.5, mb: 1 }}>
-              <Box component="span" sx={{ display: 'inline-block', background: BRAND_RED, color: '#fff', fontFamily: ff, fontSize: '13px', fontWeight: 700, px: 3, py: 1.4, borderRadius: '30px', cursor: 'default' }}>
-                {draft.ctaText}
-              </Box>
-            </Box>
-          )}
-        </Box>
-
-        {/* Footer */}
-        <Box sx={{ bgcolor: '#FAFAFA', borderTop: '1px solid #E8D5B0', p: '16px 20px', textAlign: 'center' }}>
-          <Typography sx={{ fontFamily: ff, fontSize: '12px', fontWeight: 700, color: '#1a1a1a', mb: 0.4 }}>PerfectFooties</Typography>
-          <Typography sx={{ fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#999' }}>Instagram · perfectfooties.com</Typography>
-          <Typography sx={{ fontFamily: 'Arial, sans-serif', fontSize: '10px', color: '#bbb', mt: 0.5, lineHeight: 1.6 }}>
-            © 2026 PerfectFooties. You're receiving this because you subscribed.
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
+				{/* Footer */}
+				<Box
+					sx={{
+						bgcolor: "#FAFAFA",
+						borderTop: "1px solid #E8D5B0",
+						p: "16px 20px",
+						textAlign: "center",
+					}}
+				>
+					<Typography
+						sx={{
+							fontFamily: ff,
+							fontSize: "12px",
+							fontWeight: 700,
+							color: "#1a1a1a",
+							mb: 0.4,
+						}}
+					>
+						PerfectFooties
+					</Typography>
+					<Typography
+						sx={{
+							fontFamily: "Arial, sans-serif",
+							fontSize: "11px",
+							color: "#999",
+						}}
+					>
+						Instagram · perfectfooties.com
+					</Typography>
+					<Typography
+						sx={{
+							fontFamily: "Arial, sans-serif",
+							fontSize: "10px",
+							color: "#bbb",
+							mt: 0.5,
+							lineHeight: 1.6,
+						}}
+					>
+						© 2026 PerfectFooties. You're receiving this because you
+						subscribed.
+					</Typography>
+				</Box>
+			</Box>
+		</Box>
   );
 }
 
