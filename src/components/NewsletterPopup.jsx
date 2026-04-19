@@ -68,20 +68,6 @@ export default function NewsletterPopup() {
     setStatus('loading');
     try {
 			const subsRef = collection(db, "subscribers");
-			const dup = await getDocs(
-				query(subsRef, where("email", "==", email.toLowerCase())),
-			);
-			if (!dup.empty) {
-				setStatus("duplicate");
-				setSnack({
-					open: true,
-					message: "You're already subscribed",
-					severity: "info",
-				});
-				localStorage.setItem(LS_SUBSCRIBED, "1");
-				close(true);
-				return;
-			}
 			// create subscriber record (attach uid when available)
 			const docRef = await addDoc(subsRef, {
 				uid: user?.uid || null,
@@ -111,9 +97,13 @@ export default function NewsletterPopup() {
 			} catch (e) {}
 			setTimeout(() => close(true), 700);
 		} catch (err) {
-      setStatus('error');
-      setSnack({ open: true, message: 'Subscription failed — try again later', severity: 'error' });
-    }
+			console.error("Newsletter subscribe error:", err);
+			setStatus("error");
+			const msg = err?.message
+				? `Subscription failed: ${err.message}`
+				: "Subscription failed — try again later";
+			setSnack({ open: true, message: msg, severity: "error" });
+		}
   };
 
   return (

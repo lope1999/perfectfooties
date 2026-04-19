@@ -349,3 +349,56 @@ exports.sendNewsletter = onCall(
 		return { success: true, sentCount };
 	},
 ); // ✅ THIS was missing
+
+// ── Trigger: Subscriber created — dedupe + send welcome email ───────────────
+exports.onSubscriberCreated = onDocumentCreated(
+	{ document: 'subscribers/{docId}', secrets: [MAILTRAP_TOKEN] },
+	async (event) => {
+		const data = event.data?.data();
+		const newId = event.params?.docId;
+		if (!data || !data.email) return;
+
+		const db = getFirestore();
+		try {
+			// Find any existing subscriber with same email (excluding the newly created doc)
+			const snaps = await db.collection('subscribers').where('email', '==', data.email).get();
+			let other = null;
+			for (const d of snaps.docs) {
+				if (d.id !== newId) {
+					other = d;
+					break;
+				}
+			}
+
+			// If another subscriber exists, merge useful fields into it and delete the new doc
+			if (other) {
+				const existing = other.data() || {};
+				const updates = {};
+				if ((!existing.name || existing.name === '') && data.name) updates.name = data.name;
+				if ((!existing.uid || existing.uid === '') && data.uid) updates.uid = data.uid;
+				if ((!existing.subscribedAt || existing.subscribedAt === null) && data.subscribedAt) updates.subscribedAt = data.subscribedAt;
+
+				if (Object.keys(updates).length > 0) {
+					await other.ref.update(updates);
+				}
+
+				// Remove the duplicate document we just created
+				await db.collection('subscribers').doc(newId).delete();
+				logger.info(`Subscriber dedup: merged ${newId} into ${other.id}`);
+
+				// Do not send another welcome if the existing doc likely already received one
+				logger.info(`Skipping welcome email for duplicate subscriber ${data.email}`);
+				return;
+			}
+
+			// No duplicate found — send welcome email
+			const token = MAILTRAP_TOKEN.value();
+			if (!token) return;
+
+			await sendSubscriberWelcomeEmail({ token, email: data.email, name: data.name || '' });
+			logger.info(`Subscriber welcome sent to ${data.email}`);
+		} catch (err) {
+			logger.error('Failed processing subscriber create:', err);
+		}
+	}
+);

@@ -381,10 +381,41 @@ async function sendNewsletterEmail({ token, email, subject, previewText, headlin
 }
 
 module.exports = {
-  sendOrderConfirmationEmail,
-  sendProductionEmail,
-  sendShippedEmail,
-  sendDeliveredEmail,
-  sendWelcomeEmail,
-  sendNewsletterEmail,
+	sendOrderConfirmationEmail,
+	sendProductionEmail,
+	sendShippedEmail,
+	sendDeliveredEmail,
+	sendWelcomeEmail,
+	sendSubscriberWelcomeEmail,
+	sendNewsletterEmail,
 };
+
+// ── Template: Subscriber Welcome ───────────────────────────────────────────
+async function sendSubscriberWelcomeEmail({ token, email, name }) {
+  const displayName = name && name.trim() ? name.trim() : '';
+  const html = baseHtml(`
+    <p style="font-family:Georgia,serif;font-size:20px;font-weight:bold;color:#1a1a1a;margin:0 0 12px">Welcome${displayName ? `, ${displayName}` : ''}!</p>
+    <p style="font-family:Arial,sans-serif;font-size:15px;color:#444;line-height:1.7;margin:0 0 16px">
+      Thanks for subscribing to PerfectFooties. You'll be the first to hear about new handcrafted drops, exclusive deals, and styling tips curated by our artisans.
+    </p>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:18px 0">
+      <a href="${SHOP_URL}/shop" style="display:inline-block;background:#e3242b;color:#ffffff;text-decoration:none;font-family:Georgia,serif;font-size:15px;font-weight:bold;padding:12px 22px;border-radius:30px">Shop New Arrivals</a>
+      <a href="${SHOP_URL}/our-story" style="display:inline-block;background:transparent;color:#1a1a1a;text-decoration:none;font-family:Georgia,serif;font-size:15px;font-weight:bold;padding:12px 22px;border-radius:30px;border:2px solid #1a1a1a">Our Story</a>
+    </div>
+
+    <p style="font-family:Arial,sans-serif;font-size:13px;color:#888;line-height:1.6;margin:12px 0 0">You can unsubscribe at any time by replying to this email or contacting us at ${FROM_EMAIL}.</p>
+  `, "You're receiving this because you subscribed to PerfectFooties updates.");
+
+  const text = [
+    `Welcome${displayName ? `, ${displayName}` : ''}!`,
+    '',
+    "Thanks for subscribing to PerfectFooties. You'll be the first to hear about new handcrafted drops and exclusive deals.",
+    '',
+    `Shop new arrivals: ${SHOP_URL}/shop`,
+    '',
+    `— PerfectFooties Team`,
+  ].join('\n');
+
+  return sendMail({ token, to: email, toName: displayName || '', subject: 'Welcome to PerfectFooties — Thanks for subscribing!', html, text });
+}

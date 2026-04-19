@@ -24,9 +24,6 @@ import {
 	collection,
 	addDoc,
 	serverTimestamp,
-	query,
-	where,
-	getDocs,
 	doc,
 	getDoc,
 	updateDoc,
@@ -71,14 +68,7 @@ export default function Footer() {
 					if (mounted) setUserSubscribed(true);
 					return;
 				}
-				const subsRef = collection(db, "subscribers");
-				const dup = await getDocs(
-					query(
-						subsRef,
-						where("email", "==", (user.email || "").toLowerCase()),
-					),
-				);
-				if (!dup.empty && mounted) setUserSubscribed(true);
+
 			} catch (e) {
 				// ignore
 			}
@@ -93,14 +83,7 @@ export default function Footer() {
 		setNlStatus("loading");
 		try {
 			const subsRef = collection(db, "subscribers");
-			const dup = await getDocs(
-				query(subsRef, where("email", "==", nlEmail.toLowerCase())),
-			);
-			if (!dup.empty) {
-				setNlStatus("duplicate");
-				setSnackOpen(true);
-				return;
-			}
+			// Create subscriber record directly. Rules allow create without auth.
 			await addDoc(subsRef, {
 				email: nlEmail.toLowerCase(),
 				subscribedAt: serverTimestamp(),
