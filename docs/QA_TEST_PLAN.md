@@ -22,12 +22,16 @@
    - 5.6 Checkout & Payment
    - 5.7 Thank You Page
    - 5.8 Account & Order History
-   - 5.9 Custom Order
-   - 5.10 Gift Cards
-   - 5.11 Loyalty Points & Referrals
-   - 5.12 Newsletter Subscribe
-   - 5.14 Wishlist
-   - 5.15 Testimonials
+   - 5.9 Gift Cards
+   - 5.10 Custom Order
+   - 5.11 Gallery
+   - 5.12 Blog
+   - 5.13 Testimonials
+   - 5.14 Our Story
+   - 5.15 Our Team
+   - 5.16 Newsletter Subscribe
+   - 5.17 Wishlist
+   - 5.18 Loyalty Points & Referrals
 6. [Admin Panel Test Cases](#6-admin-panel-test-cases)
    - 6.1 Dashboard
    - 6.2 Orders Management
@@ -320,7 +324,21 @@ Cloud Functions
 
 ---
 
-### 5.9 Custom Order
+### 5.9 Gift Cards
+
+| ID | Test Case | Steps | Expected Result |
+|---|---|---|---|
+| GC-01 | Gift card info page | Navigate to `/gift-cards` | Page explains gift card programme |
+| GC-02 | Apply gift card at checkout | Enter valid active code | Balance applied as discount; remaining balance shown |
+| GC-03 | Partially used card | Use card partially | Balance reduced correctly; status becomes `partially_used` |
+| GC-04 | Fully redeemed card | Use remaining balance | Status becomes `fully_redeemed`; card rejected on future use |
+| GC-05 | Expired card rejected | Enter expired card code | Error: card expired |
+| GC-06 | Invalid code rejected | Enter random string | Error: card not found |
+| GC-07 | Only one card per order | Apply card; try adding second | Second card rejected |
+
+---
+
+### 5.10 Custom Order
 
 | ID | Test Case | Steps | Expected Result |
 |---|---|---|---|
@@ -352,21 +370,87 @@ Cloud Functions
 
 ---
 
-### 5.10 Gift Cards
+### 5.11 Gallery
 
 | ID | Test Case | Steps | Expected Result |
 |---|---|---|---|
-| GC-01 | Gift card info page | Navigate to `/gift-cards` | Page explains gift card programme |
-| GC-02 | Apply gift card at checkout | Enter valid active code | Balance applied as discount; remaining balance shown |
-| GC-03 | Partially used card | Use card partially | Balance reduced correctly; status becomes `partially_used` |
-| GC-04 | Fully redeemed card | Use remaining balance | Status becomes `fully_redeemed`; card rejected on future use |
-| GC-05 | Expired card rejected | Enter expired card code | Error: card expired |
-| GC-06 | Invalid code rejected | Enter random string | Error: card not found |
-| GC-07 | Only one card per order | Apply card; try adding second | Second card rejected |
+| GAL-01 | Gallery page loads | Navigate to `/gallery` | Gallery images display in grid |
+| GAL-02 | Image opens full view | Click a gallery image | Opens full-size preview or new tab |
+| GAL-03 | Gallery caption shows when present | View gallery item | Caption displays beneath image |
+| GAL-04 | Gallery page loads quickly | Navigate to `/gallery` | Page loads without long blank state |
 
 ---
 
-### 5.11 Loyalty Points & Referrals
+### 5.12 Blog
+
+| ID | Test Case | Steps | Expected Result |
+|---|---|---|---|
+| BLOG-01 | Blog page loads | Navigate to `/blog` | Blog posts list appears |
+| BLOG-02 | Blog post opens | Click a blog card | Post details page opens |
+| BLOG-03 | Post image and content render | View blog post | Headline, image, body, and author/date show correctly |
+| BLOG-04 | Blog navigation | Use back or breadcrumb | Returns to `/blog` without losing state |
+
+---
+
+### 5.13 Testimonials
+
+| ID | Test Case | Steps | Expected Result |
+|---|---|---|---|
+| TEST-01 | Testimonials page loads | Navigate to `/testimonials` | All published testimonials displayed with star ratings |
+| TEST-02 | Submit review | Order status = `received`; go to account; click review | Review form shown |
+| TEST-03 | Star rating required | Submit review without rating | Error shown |
+| TEST-04 | Text required | Submit with only a rating | Error: review text required |
+| TEST-05 | Optional photo upload | Attach photo to review | Photo uploaded to Storage; shown in testimonial |
+| TEST-06 | Review submitted | Complete form; submit | Success message; testimonial saved to Firestore |
+| TEST-07 | Cannot review twice | Already reviewed an order | Review option no longer shown for that order |
+
+---
+
+### 5.14 Our Story
+
+| ID | Test Case | Steps | Expected Result |
+|---|---|---|---|
+| STORY-01 | Our Story page loads | Navigate to `/our-story` | Page content renders with brand history and imagery |
+| STORY-02 | Section headings show brand red underline | View page headings | Underlines are red, not cyan |
+| STORY-03 | Content readable on mobile | View page on mobile | Text and images scale correctly without overflow |
+
+---
+
+### 5.15 Our Team
+
+| ID | Test Case | Steps | Expected Result |
+|---|---|---|---|
+| TEAM-01 | Our Team page loads | Navigate to `/our-team` | Team cards and bios display correctly |
+| TEAM-02 | Team images render | Scroll page | Images load and are not broken |
+| TEAM-03 | Mobile layout works | View on mobile | Cards stack and text remains legible |
+
+---
+
+### 5.16 Newsletter Subscribe
+
+| ID | Test Case | Steps | Expected Result |
+|---|---|---|---|
+| NS-01 | Subscribe with valid email | Enter email in footer; submit | Success message: "You're subscribed!" |
+| NS-02 | Email saved to Firestore | Subscribe; check Firebase console | Doc in `subscribers` collection with email and `subscribedAt` timestamp |
+| NS-03 | Invalid email rejected | Enter "notanemail"; submit | Validation error shown |
+| NS-04 | Duplicate email | Subscribe with same email twice | Either silently accepted or "Already subscribed" message (no crash) |
+| NS-05 | Empty field rejected | Click subscribe with no email | Required field error |
+
+---
+
+### 5.17 Wishlist
+
+| ID | Test Case | Steps | Expected Result |
+|---|---|---|---|
+| WL-01 | Add to wishlist | Click heart on product card | Heart fills; item saved |
+| WL-02 | Wishlist persists | Add item; close browser; reopen | Item still in wishlist (localStorage) |
+| WL-03 | Remove from wishlist | Click filled heart | Item removed; heart unfurls |
+| WL-04 | Wishlist icon in navbar | Have items in wishlist | Wishlist count badge visible |
+| WL-05 | Wishlist in account | Visit Account → Wishlist tab | All wishlisted items shown |
+
+---
+
+### 5.18 Loyalty Points & Referrals
 
 | ID | Test Case | Steps | Expected Result |
 |---|---|---|---|
@@ -382,44 +466,6 @@ Cloud Functions
 | LOY-10 | Tier: Fresh (0 orders) | New user | Tier shown as "Fresh" |
 | LOY-11 | Tier: Star Client (2+ orders) | User with 2 completed orders | Tier shown as "Star Client"; 5% discount referenced |
 | LOY-12 | Tier: Master Patron (4+ orders) | User with 4+ completed orders | Tier shown as "Master Patron"; 10% discount + free engraving |
-
----
-
-### 5.12 Newsletter Subscribe
-
-| ID | Test Case | Steps | Expected Result |
-|---|---|---|---|
-| NS-01 | Subscribe with valid email | Enter email in footer; submit | Success message: "You're subscribed!" |
-| NS-02 | Email saved to Firestore | Subscribe; check Firebase console | Doc in `subscribers` collection with email and `subscribedAt` timestamp |
-| NS-03 | Invalid email rejected | Enter "notanemail"; submit | Validation error shown |
-| NS-04 | Duplicate email | Subscribe with same email twice | Either silently accepted or "Already subscribed" message (no crash) |
-| NS-05 | Empty field rejected | Click subscribe with no email | Required field error |
-
----
-
-### 5.14 Wishlist
-
-| ID | Test Case | Steps | Expected Result |
-|---|---|---|---|
-| WL-01 | Add to wishlist | Click heart on product card | Heart fills; item saved |
-| WL-02 | Wishlist persists | Add item; close browser; reopen | Item still in wishlist (localStorage) |
-| WL-03 | Remove from wishlist | Click filled heart | Item removed; heart unfills |
-| WL-04 | Wishlist icon in navbar | Have items in wishlist | Wishlist count badge visible |
-| WL-05 | Wishlist in account | Visit Account → Wishlist tab | All wishlisted items shown |
-
----
-
-### 5.15 Testimonials
-
-| ID | Test Case | Steps | Expected Result |
-|---|---|---|---|
-| TEST-01 | Testimonials page loads | Navigate to `/testimonials` | All published testimonials displayed with star ratings |
-| TEST-02 | Submit review | Order status = `received`; go to account; click review | Review form shown |
-| TEST-03 | Star rating required | Submit review without rating | Error shown |
-| TEST-04 | Text required | Submit with only a rating | Error: review text required |
-| TEST-05 | Optional photo upload | Attach photo to review | Photo uploaded to Storage; shown in testimonial |
-| TEST-06 | Review submitted | Complete form; submit | Success message; testimonial saved to Firestore |
-| TEST-07 | Cannot review twice | Already reviewed an order | Review option no longer shown for that order |
 
 ---
 

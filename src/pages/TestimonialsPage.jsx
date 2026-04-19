@@ -131,17 +131,19 @@ export default function TestimonialsPage() {
 	useEffect(() => {
 		fetchTestimonials()
 			.then((firestoreItems) => {
-				const mapped = firestoreItems.map((t) => ({
-					id: t.id,
-					name: t.name,
-					occupation: t.occupation || "Client",
-					service: t.service,
-					type: t.type,
-					rating: t.rating,
-					review: t.testimonial || t.review,
-					avatar: t.avatar || t.name?.charAt(0)?.toUpperCase() || "?",
-					photoURLs: t.photoURLs || (t.photoURL ? [t.photoURL] : []),
-				}));
+				const mapped = firestoreItems
+					.filter((t) => t.published !== false)
+					.map((t) => ({
+						id: t.id,
+						name: t.name,
+						occupation: t.occupation || "Client",
+						service: t.service,
+						type: t.type,
+						rating: t.rating,
+						review: t.testimonial || t.review,
+						avatar: t.avatar || t.name?.charAt(0)?.toUpperCase() || "?",
+						photoURLs: t.photoURLs || (t.photoURL ? [t.photoURL] : []),
+					}));
 				// Reverse so newest Firestore review is processed last → group.type = most recent type
 			setGroups(groupByName([...staticTestimonials, ...mapped.slice().reverse()]));
 			})

@@ -1,12 +1,16 @@
 import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  serverTimestamp,
-} from 'firebase/firestore';
+	collection,
+	doc,
+	addDoc,
+	getDoc,
+	getDocs,
+	updateDoc,
+	deleteDoc,
+	query,
+	where,
+	orderBy,
+	serverTimestamp,
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from './firebase';
 import { sanitizeString, validateNumber, validateEmail } from './validate';
@@ -31,17 +35,72 @@ export async function saveTestimonial(data) {
   const testimonial = sanitizeString(data.testimonial, 2000);
   const email = data.email ? validateEmail(data.email) : '';
   const productId = data.productId ? sanitizeString(String(data.productId), 100) : '';
+  const productName = data.productName
+		? sanitizeString(data.productName, 200)
+		: "";
+  const collectionId = data.collectionId
+		? sanitizeString(String(data.collectionId), 100)
+		: "";
+  const collectionName = data.collectionName
+		? sanitizeString(data.collectionName, 200)
+		: "";
+  const occupation = data.occupation
+		? sanitizeString(data.occupation, 100)
+		: "";
+  const service = data.service
+		? sanitizeString(data.service, 200)
+		: productName || collectionName || "";
+  const published = data.published !== false;
+  const source = data.source || "customer";
+  const photoURLs = Array.isArray(data.photoURLs)
+		? data.photoURLs.filter(Boolean)
+		: [];
 
   const ref = collection(db, COLLECTION);
   return addDoc(ref, {
-    ...data,
-    ...(productId && { productId }),
-    name,
-    rating,
-    testimonial,
-    email,
-    createdAt: serverTimestamp(),
+		...data,
+		...(productId && { productId }),
+		...(productName && { productName }),
+		...(collectionId && { collectionId }),
+		...(collectionName && { collectionName }),
+		...(occupation && { occupation }),
+		...(service && { service }),
+		published,
+		source,
+		photoURLs,
+		name,
+		rating,
+		testimonial,
+		email,
+		createdAt: serverTimestamp(),
   });
+}
+
+export async function updateTestimonial(testimonialId, data) {
+	const ref = doc(db, COLLECTION, testimonialId);
+	return updateDoc(ref, {
+		...data,
+		updatedAt: serverTimestamp(),
+	});
+}
+
+export async function deleteTestimonial(testimonialId) {
+	return deleteDoc(doc(db, COLLECTION, testimonialId));
+}
+
+export async function fetchTestimonialsByCollectionId(collectionId) {
+	if (!collectionId) return [];
+	const ref = collection(db, COLLECTION);
+	const snap = await getDocs(
+		query(ref, where("collectionId", "==", collectionId)),
+	);
+	return snap.docs
+		.map((d) => ({ id: d.id, ...d.data() }))
+		.sort((a, b) => {
+			const aTime = a.createdAt?.toDate?.()?.getTime() || 0;
+			const bTime = b.createdAt?.toDate?.()?.getTime() || 0;
+			return bTime - aTime;
+		});
 }
 
 export async function fetchTestimonials() {

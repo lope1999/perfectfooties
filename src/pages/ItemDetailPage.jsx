@@ -225,7 +225,8 @@ export default function ItemDetailPage() {
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
 
-  const requiresLength = col?.requiresLength === true;
+  const requiresLength =
+		item?.requiresLength === true || col?.requiresLength === true;
 
   useEffect(() => {
     const load = async () => {
@@ -256,7 +257,7 @@ export default function ItemDetailPage() {
     fetchTestimonialsByProductId(productId)
       .then((items) => {
         if (!active) return;
-        setReviews(items);
+        setReviews(items.filter((review) => review.published !== false));
       })
       .catch(() => {
         if (!active) return;

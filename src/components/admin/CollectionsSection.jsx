@@ -16,8 +16,15 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import {
-  fetchItems, addCollection, addItem, getCollection, updateCollection, updateItem, deleteItem,
-} from '../../lib/collectionService';
+	fetchCollections,
+	fetchItems,
+	addCollection,
+	addItem,
+	getCollection,
+	updateCollection,
+	updateItem,
+	deleteItem,
+} from "../../lib/collectionService";
 import ImageUploadField from './ImageUploadField';
 
 const ff = '"Georgia", serif';
@@ -67,6 +74,251 @@ function formToData(form) {
     careGuide: form.careGuide.trim(),
     colorStock: form.colorStock,
   };
+}
+
+const EMPTY_COLLECTION_FORM = {
+	id: "",
+	name: "",
+	description: "",
+	coverImage: "",
+	order: 99,
+	active: true,
+};
+
+function slugify(value) {
+	return value
+		.toString()
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/(^-|-$)/g, "");
+}
+
+function CollectionDialog({ open, onClose, onSaved, collection }) {
+	const isEdit = !!collection;
+	const [form, setForm] = useState(EMPTY_COLLECTION_FORM);
+	const [saving, setSaving] = useState(false);
+	const [error, setError] = useState("");
+
+	useEffect(() => {
+		if (open) {
+			setForm(
+				collection
+					? {
+							id: collection.id || "",
+							name: collection.name || "",
+							description: collection.description || "",
+							coverImage: collection.coverImage || "",
+							order: collection.order != null ? collection.order : 99,
+							active: collection.active !== false,
+						}
+					: EMPTY_COLLECTION_FORM,
+			);
+			setError("");
+			setSaving(false);
+		}
+	}, [open, collection]);
+
+	const setField = (field) => (e) => {
+		const value = field === "active" ? e.target.checked : e.target.value;
+		setForm((f) => ({ ...f, [field]: value }));
+	};
+
+	const handleSave = async () => {
+		const id = form.id.trim() || slugify(form.name);
+		if (!form.name.trim()) {
+			setError("Collection name is required");
+			return;
+		}
+		if (!id) {
+			setError("Collection ID is required");
+			return;
+		}
+		setSaving(true);
+		setError("");
+
+		try {
+			if (!isEdit) {
+				const existing = await getCollection(id);
+				if (existing) {
+					throw new Error(
+						"A collection with this ID already exists. Choose a different slug.",
+					);
+				}
+			}
+
+			const payload = {
+				name: form.name,
+				description: form.description,
+				coverImage: form.coverImage,
+				order: Number(form.order) || 99,
+				active: form.active,
+			};
+
+			if (isEdit) {
+				await updateCollection(collection.id, payload);
+				onSaved("Collection updated successfully.");
+			} else {
+				await addCollection({ id, ...payload });
+				onSaved("Collection added successfully.");
+			}
+			onClose();
+		} catch (err) {
+			setError(err.message || "Unable to save collection");
+		} finally {
+			setSaving(false);
+		}
+	};
+
+	return (
+		<Dialog
+			open={open}
+			onClose={onClose}
+			maxWidth="sm"
+			fullWidth
+			PaperProps={{ sx: { borderRadius: 3 } }}
+		>
+			<DialogTitle
+				sx={{
+					fontFamily: ff,
+					fontWeight: 700,
+					color: "var(--text-purple)",
+					pb: 1,
+				}}
+			>
+				{isEdit ? "Edit Collection" : "Add New Collection"}
+			</DialogTitle>
+			<DialogContent
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+					gap: 2,
+					pt: "12px !important",
+				}}
+			>
+				<TextField
+					label="Collection Name *"
+					value={form.name}
+					onChange={setField("name")}
+					size="small"
+					fullWidth
+					sx={{
+						"& .MuiOutlinedInput-root.Mui-focused fieldset": {
+							borderColor: "var(--accent-cyan)",
+						},
+					}}
+				/>
+				<TextField
+					label="Collection Slug"
+					value={form.id}
+					onChange={setField("id")}
+					size="small"
+					fullWidth
+					disabled={isEdit}
+					helperText={
+						isEdit
+							? "Collection ID cannot be changed."
+							: "Leave blank to generate from name. Must be unique."
+					}
+					sx={{
+						"& .MuiOutlinedInput-root.Mui-focused fieldset": {
+							borderColor: "var(--accent-cyan)",
+						},
+					}}
+				/>
+				<TextField
+					label="Description"
+					value={form.description}
+					onChange={setField("description")}
+					size="small"
+					fullWidth
+					multiline
+					rows={3}
+					sx={{
+						"& .MuiOutlinedInput-root.Mui-focused fieldset": {
+							borderColor: "var(--accent-cyan)",
+						},
+					}}
+				/>
+				<ImageUploadField
+					label="Cover Image"
+					value={form.coverImage}
+					onChange={(url) => setForm((f) => ({ ...f, coverImage: url }))}
+					folder="collections"
+				/>
+				<Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+					<TextField
+						label="Display Order"
+						value={form.order}
+						onChange={setField("order")}
+						type="number"
+						size="small"
+						sx={{
+							width: 120,
+							"& .MuiOutlinedInput-root.Mui-focused fieldset": {
+								borderColor: "var(--accent-cyan)",
+							},
+						}}
+					/>
+					<FormControlLabel
+						control={
+							<Switch
+								checked={form.active}
+								onChange={setField("active")}
+								sx={{
+									"& .MuiSwitch-switchBase.Mui-checked": {
+										color: "var(--accent-cyan)",
+									},
+									"& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
+										{ backgroundColor: "var(--accent-cyan-dark)" },
+								}}
+							/>
+						}
+						label={
+							<Typography sx={{ fontFamily: ff, fontSize: "0.88rem" }}>
+								Active
+							</Typography>
+						}
+					/>
+				</Box>
+				{error && (
+					<Alert severity="error" sx={{ py: 0.5, fontSize: "0.82rem" }}>
+						{error}
+					</Alert>
+				)}
+			</DialogContent>
+			<DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+				<Button
+					onClick={onClose}
+					sx={{ fontFamily: ff, color: "#888", textTransform: "none" }}
+				>
+					Cancel
+				</Button>
+				<Button
+					onClick={handleSave}
+					disabled={saving}
+					startIcon={
+						saving && (
+							<CircularProgress size={14} sx={{ color: "#fff" }} />
+						)
+					}
+					sx={{
+						fontFamily: ff,
+						fontWeight: 700,
+						textTransform: "none",
+						backgroundColor: "var(--text-purple)",
+						color: "#fff",
+						borderRadius: "20px",
+						px: 3,
+						"&:hover": { backgroundColor: "var(--accent-cyan-hover)" },
+						"&.Mui-disabled": { backgroundColor: "#ccc" },
+					}}
+				>
+					{saving ? "Saving…" : isEdit ? "Save Changes" : "Add Collection"}
+				</Button>
+			</DialogActions>
+		</Dialog>
+	);
 }
 
 // ── Item edit / add dialog ────────────────────────────────────
@@ -271,218 +523,607 @@ function DeleteDialog({ open, item, onClose, onDeleted }) {
 
 // ── Collection row (expandable, editable items table) ─────────
 
-function CollectionRow({ colMeta, onAction }) {
-  const [open, setOpen] = useState(false);
-  const [items, setItems] = useState([]);
-  const [loaded, setLoaded] = useState(false);
-  const [loading, setLoading] = useState(false);
+function CollectionRow({ colMeta, onAction, onEditCollection }) {
+	const [open, setOpen] = useState(false);
+	const [items, setItems] = useState([]);
+	const [loaded, setLoaded] = useState(false);
+	const [loading, setLoading] = useState(false);
 
-  const [addOpen, setAddOpen] = useState(false);
-  const [editItem, setEditItem] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);
+	const [addOpen, setAddOpen] = useState(false);
+	const [editItem, setEditItem] = useState(null);
+	const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const loadItems = useCallback(async (forceReload = false) => {
-    if (loaded && !forceReload) { setOpen((o) => !o); return; }
-    setLoading(true);
-    try {
-      const data = await fetchItems(colMeta.id);
-      setItems(data);
-      setLoaded(true);
-      setOpen(true);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, [colMeta.id, loaded]);
+	const loadItems = useCallback(
+		async (forceReload = false) => {
+			if (loaded && !forceReload) {
+				setOpen((o) => !o);
+				return;
+			}
+			setLoading(true);
+			try {
+				const data = await fetchItems(colMeta.id);
+				setItems(data);
+				setLoaded(true);
+				setOpen(true);
+			} catch (e) {
+				console.error(e);
+			} finally {
+				setLoading(false);
+			}
+		},
+		[colMeta.id, loaded],
+	);
 
-  const reload = () => loadItems(true);
+	const reload = () => loadItems(true);
 
-  const handleSaved = (msg) => {
-    setAddOpen(false);
-    setEditItem(null);
-    reload();
-    onAction(msg);
-  };
+	const handleSaved = (msg) => {
+		setAddOpen(false);
+		setEditItem(null);
+		reload();
+		onAction(msg);
+	};
 
-  const handleDeleted = (msg) => {
-    setDeleteTarget(null);
-    reload();
-    onAction(msg);
-  };
+	const handleDeleted = (msg) => {
+		setDeleteTarget(null);
+		reload();
+		onAction(msg);
+	};
 
-  return (
-    <>
-      <Paper sx={{ mb: 2, borderRadius: 3, overflow: 'hidden', border: '1px solid #E8D5B0' }}>
-        {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3, py: 2, backgroundColor: open ? 'rgba(0,255,255,0.04)' : '#fff', '&:hover': { backgroundColor: 'rgba(0,255,255,0.06)' } }}>
-          <Box onClick={() => open ? setOpen(false) : loadItems()} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, cursor: 'pointer', flex: 1 }}>
-            <AutoAwesomeIcon sx={{ color: 'var(--accent-cyan)', fontSize: 20 }} />
-            <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1rem', color: 'var(--text-main)' }}>
-              {colMeta.name}
-            </Typography>
-            {loaded && (
-              <Chip label={`${items.length} item${items.length !== 1 ? 's' : ''}`} size="small"
-                sx={{ fontSize: '0.68rem', fontFamily: ff, fontWeight: 600, backgroundColor: 'rgba(0,255,255,0.12)', color: 'var(--text-purple)' }} />
-            )}
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {loading && <CircularProgress size={18} sx={{ color: 'var(--accent-cyan)' }} />}
-            <Tooltip title="Add item to this collection">
-              <IconButton size="small" onClick={(e) => { e.stopPropagation(); setAddOpen(true); }}
-                sx={{ backgroundColor: 'rgba(0,255,255,0.1)', '&:hover': { backgroundColor: 'rgba(0,255,255,0.2)' } }}>
-                <AddIcon sx={{ fontSize: 18, color: 'var(--text-purple)' }} />
-              </IconButton>
-            </Tooltip>
-            <IconButton size="small" onClick={() => open ? setOpen(false) : loadItems()}>
-              {open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </IconButton>
-          </Box>
-        </Box>
+	return (
+		<>
+			<Paper
+				sx={{
+					mb: 2,
+					borderRadius: 3,
+					overflow: "hidden",
+					border: "1px solid #E8D5B0",
+				}}
+			>
+				{/* Header */}
+				<Box
+					sx={{
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "space-between",
+						px: 3,
+						py: 2,
+						backgroundColor: open ? "rgba(0,255,255,0.04)" : "#fff",
+						"&:hover": { backgroundColor: "rgba(0,255,255,0.06)" },
+					}}
+				>
+					<Box
+						onClick={() => (open ? setOpen(false) : loadItems())}
+						sx={{
+							display: "flex",
+							alignItems: "center",
+							gap: 1.5,
+							cursor: "pointer",
+							flex: 1,
+						}}
+					>
+						<AutoAwesomeIcon
+							sx={{ color: "var(--accent-cyan)", fontSize: 20 }}
+						/>
+						<Typography
+							sx={{
+								fontFamily: ff,
+								fontWeight: 700,
+								fontSize: "1rem",
+								color: "var(--text-main)",
+							}}
+						>
+							{colMeta.name}
+						</Typography>
+						{loaded && (
+							<Chip
+								label={`${items.length} item${items.length !== 1 ? "s" : ""}`}
+								size="small"
+								sx={{
+									fontSize: "0.68rem",
+									fontFamily: ff,
+									fontWeight: 600,
+									backgroundColor: "rgba(0,255,255,0.12)",
+									color: "var(--text-purple)",
+								}}
+							/>
+						)}
+					</Box>
+					<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+						{loading && (
+							<CircularProgress
+								size={18}
+								sx={{ color: "var(--accent-cyan)" }}
+							/>
+						)}
+						<Tooltip title="Edit collection settings">
+							<IconButton
+								size="small"
+								onClick={(e) => {
+									e.stopPropagation();
+									onEditCollection?.(colMeta);
+								}}
+								sx={{
+									backgroundColor: "rgba(0,255,255,0.1)",
+									"&:hover": {
+										backgroundColor: "rgba(0,255,255,0.2)",
+									},
+								}}
+							>
+								<EditIcon
+									sx={{ fontSize: 18, color: "var(--text-purple)" }}
+								/>
+							</IconButton>
+						</Tooltip>
+						<Tooltip title="Add item to this collection">
+							<IconButton
+								size="small"
+								onClick={(e) => {
+									e.stopPropagation();
+									setAddOpen(true);
+								}}
+								sx={{
+									backgroundColor: "rgba(0,255,255,0.1)",
+									"&:hover": {
+										backgroundColor: "rgba(0,255,255,0.2)",
+									},
+								}}
+							>
+								<AddIcon
+									sx={{ fontSize: 18, color: "var(--text-purple)" }}
+								/>
+							</IconButton>
+						</Tooltip>
+						<IconButton
+							size="small"
+							onClick={() => (open ? setOpen(false) : loadItems())}
+						>
+							{open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+						</IconButton>
+					</Box>
+				</Box>
 
-        <Collapse in={open}>
-          <Divider sx={{ borderColor: '#E8D5B0' }} />
-          {items.length === 0 ? (
-            <Box sx={{ px: 3, py: 3, textAlign: 'center' }}>
-              <Typography sx={{ color: '#aaa', fontFamily: ff, fontSize: '0.9rem', mb: 1.5 }}>
-                No items yet — seed this collection or add items manually.
-              </Typography>
-              <Button startIcon={<AddIcon />} onClick={() => setAddOpen(true)}
-                sx={{ fontFamily: ff, fontWeight: 700, textTransform: 'none', fontSize: '0.82rem', backgroundColor: 'var(--text-purple)', color: '#fff', borderRadius: '20px', px: 3, '&:hover': { backgroundColor: 'var(--accent-cyan-hover)' } }}>
-                Add First Item
-              </Button>
-            </Box>
-          ) : (
-            <TableContainer>
-              <Table size="small">
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
-                    {['Image', 'Name', 'Price', 'Colours', 'Status', 'Length', 'Actions'].map((h) => (
-                      <TableCell key={h} sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.75rem', color: '#555', py: 1.2 }}>{h}</TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {items.map((item) => {
-                    const s = STATUS_CONFIG[item.status] || STATUS_CONFIG.closed;
-                    return (
-                      <TableRow key={item.id} sx={{ '&:hover': { backgroundColor: 'rgba(0,255,255,0.04)' } }}>
-                        <TableCell sx={{ py: 1 }}>
-                          {item.images?.[0] ? (
-                            <Box component="img" src={item.images[0]} alt={item.name}
-                              sx={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 1.5, border: '1px solid #E8D5B0' }} />
-                          ) : (
-                            <Box sx={{ width: 44, height: 44, borderRadius: 1.5, border: '1px dashed #E8D5B0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <ImageOutlinedIcon sx={{ fontSize: 18, color: '#ccc' }} />
-                            </Box>
-                          )}
-                        </TableCell>
-                        <TableCell sx={{ fontFamily: ff, fontWeight: 600, fontSize: '0.88rem' }}>{item.name}</TableCell>
-                        <TableCell sx={{ fontFamily: ff, fontSize: '0.85rem' }}>₦{Number(item.price).toLocaleString()}</TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                            {(item.colors || []).slice(0, 3).map((c) => (
-                              <Chip key={c} label={c} size="small" sx={{ fontSize: '0.6rem', height: 18 }} />
-                            ))}
-                            {(item.colors || []).length > 3 && (
-                              <Chip label={`+${item.colors.length - 3}`} size="small" sx={{ fontSize: '0.6rem', height: 18 }} />
-                            )}
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          <Chip label={s.label} size="small"
-                            sx={{ backgroundColor: s.bg, color: s.color, fontWeight: 700, fontSize: '0.65rem', height: 20 }} />
-                        </TableCell>
-                        <TableCell sx={{ fontFamily: ff, fontSize: '0.82rem', color: item.requiresLength ? '#2e7d32' : '#999' }}>
-                          {item.requiresLength ? 'Yes' : 'No'}
-                        </TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', gap: 0.5 }}>
-                            <Tooltip title="Edit item">
-                              <IconButton size="small" onClick={() => setEditItem(item)}
-                                sx={{ color: 'var(--text-purple)', '&:hover': { backgroundColor: 'rgba(0,255,255,0.1)' } }}>
-                                <EditIcon sx={{ fontSize: 16 }} />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Delete item">
-                              <IconButton size="small" onClick={() => setDeleteTarget(item)}
-                                sx={{ color: '#e3242b', '&:hover': { backgroundColor: '#fff0f0' } }}>
-                                <DeleteOutlineIcon sx={{ fontSize: 16 }} />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </Collapse>
-      </Paper>
+				<Collapse in={open}>
+					<Divider sx={{ borderColor: "#E8D5B0" }} />
+					{items.length === 0 ? (
+						<Box sx={{ px: 3, py: 3, textAlign: "center" }}>
+							<Typography
+								sx={{
+									color: "#aaa",
+									fontFamily: ff,
+									fontSize: "0.9rem",
+									mb: 1.5,
+								}}
+							>
+								No items yet — seed this collection or add items
+								manually.
+							</Typography>
+							<Button
+								startIcon={<AddIcon />}
+								onClick={() => setAddOpen(true)}
+								sx={{
+									fontFamily: ff,
+									fontWeight: 700,
+									textTransform: "none",
+									fontSize: "0.82rem",
+									backgroundColor: "var(--text-purple)",
+									color: "#fff",
+									borderRadius: "20px",
+									px: 3,
+									"&:hover": {
+										backgroundColor: "var(--accent-cyan-hover)",
+									},
+								}}
+							>
+								Add First Item
+							</Button>
+						</Box>
+					) : (
+						<TableContainer>
+							<Table size="small">
+								<TableHead>
+									<TableRow sx={{ backgroundColor: "#f9f9f9" }}>
+										{[
+											"Image",
+											"Name",
+											"Price",
+											"Colours",
+											"Status",
+											"Length",
+											"Actions",
+										].map((h) => (
+											<TableCell
+												key={h}
+												sx={{
+													fontFamily: ff,
+													fontWeight: 700,
+													fontSize: "0.75rem",
+													color: "#555",
+													py: 1.2,
+												}}
+											>
+												{h}
+											</TableCell>
+										))}
+									</TableRow>
+								</TableHead>
+								<TableBody>
+									{items.map((item) => {
+										const s =
+											STATUS_CONFIG[item.status] ||
+											STATUS_CONFIG.closed;
+										return (
+											<TableRow
+												key={item.id}
+												sx={{
+													"&:hover": {
+														backgroundColor:
+															"rgba(0,255,255,0.04)",
+													},
+												}}
+											>
+												<TableCell sx={{ py: 1 }}>
+													{item.images?.[0] ? (
+														<Box
+															component="img"
+															src={item.images[0]}
+															alt={item.name}
+															sx={{
+																width: 44,
+																height: 44,
+																objectFit: "cover",
+																borderRadius: 1.5,
+																border: "1px solid #E8D5B0",
+															}}
+														/>
+													) : (
+														<Box
+															sx={{
+																width: 44,
+																height: 44,
+																borderRadius: 1.5,
+																border: "1px dashed #E8D5B0",
+																display: "flex",
+																alignItems: "center",
+																justifyContent: "center",
+															}}
+														>
+															<ImageOutlinedIcon
+																sx={{
+																	fontSize: 18,
+																	color: "#ccc",
+																}}
+															/>
+														</Box>
+													)}
+												</TableCell>
+												<TableCell
+													sx={{
+														fontFamily: ff,
+														fontWeight: 600,
+														fontSize: "0.88rem",
+													}}
+												>
+													{item.name}
+												</TableCell>
+												<TableCell
+													sx={{
+														fontFamily: ff,
+														fontSize: "0.85rem",
+													}}
+												>
+													₦{Number(item.price).toLocaleString()}
+												</TableCell>
+												<TableCell>
+													<Box
+														sx={{
+															display: "flex",
+															gap: 0.5,
+															flexWrap: "wrap",
+														}}
+													>
+														{(item.colors || [])
+															.slice(0, 3)
+															.map((c) => (
+																<Chip
+																	key={c}
+																	label={c}
+																	size="small"
+																	sx={{
+																		fontSize: "0.6rem",
+																		height: 18,
+																	}}
+																/>
+															))}
+														{(item.colors || []).length > 3 && (
+															<Chip
+																label={`+${item.colors.length - 3}`}
+																size="small"
+																sx={{
+																	fontSize: "0.6rem",
+																	height: 18,
+																}}
+															/>
+														)}
+													</Box>
+												</TableCell>
+												<TableCell>
+													<Chip
+														label={s.label}
+														size="small"
+														sx={{
+															backgroundColor: s.bg,
+															color: s.color,
+															fontWeight: 700,
+															fontSize: "0.65rem",
+															height: 20,
+														}}
+													/>
+												</TableCell>
+												<TableCell
+													sx={{
+														fontFamily: ff,
+														fontSize: "0.82rem",
+														color: item.requiresLength
+															? "#2e7d32"
+															: "#999",
+													}}
+												>
+													{item.requiresLength ? "Yes" : "No"}
+												</TableCell>
+												<TableCell>
+													<Box sx={{ display: "flex", gap: 0.5 }}>
+														<Tooltip title="Edit item">
+															<IconButton
+																size="small"
+																onClick={() =>
+																	setEditItem(item)
+																}
+																sx={{
+																	color: "var(--text-purple)",
+																	"&:hover": {
+																		backgroundColor:
+																			"rgba(0,255,255,0.1)",
+																	},
+																}}
+															>
+																<EditIcon
+																	sx={{ fontSize: 16 }}
+																/>
+															</IconButton>
+														</Tooltip>
+														<Tooltip title="Delete item">
+															<IconButton
+																size="small"
+																onClick={() =>
+																	setDeleteTarget(item)
+																}
+																sx={{
+																	color: "#e3242b",
+																	"&:hover": {
+																		backgroundColor:
+																			"#fff0f0",
+																	},
+																}}
+															>
+																<DeleteOutlineIcon
+																	sx={{ fontSize: 16 }}
+																/>
+															</IconButton>
+														</Tooltip>
+													</Box>
+												</TableCell>
+											</TableRow>
+										);
+									})}
+								</TableBody>
+							</Table>
+						</TableContainer>
+					)}
+				</Collapse>
+			</Paper>
 
-      <ItemDialog
-        open={addOpen || !!editItem}
-        onClose={() => { setAddOpen(false); setEditItem(null); }}
-        onSaved={handleSaved}
-        collectionId={colMeta.id}
-        item={editItem}
-      />
+			<ItemDialog
+				open={addOpen || !!editItem}
+				onClose={() => {
+					setAddOpen(false);
+					setEditItem(null);
+				}}
+				onSaved={handleSaved}
+				collectionId={colMeta.id}
+				item={editItem}
+			/>
 
-      {deleteTarget && (
-        <DeleteDialog
-          open={!!deleteTarget}
-          item={deleteTarget}
-          onClose={() => setDeleteTarget(null)}
-          onDeleted={handleDeleted}
-        />
-      )}
-    </>
-  );
+			{deleteTarget && (
+				<DeleteDialog
+					open={!!deleteTarget}
+					item={deleteTarget}
+					onClose={() => setDeleteTarget(null)}
+					onDeleted={handleDeleted}
+				/>
+			)}
+		</>
+	);
 }
 
 
 
 // ── Main section ──────────────────────────────────────────────
 
-const ALL_COLLECTIONS = [
-  { id: 'female-footwear', name: 'Female Handmade Footwear' },
-  { id: 'male-footwear',   name: 'Male Handmade Footwear' },
-  { id: 'heirloom',        name: 'Heirloom Collection' },
-  { id: 'bags-belts',      name: 'Handmade Bags & Belts' },
-];
-
 export default function CollectionsSection() {
+  const [collections, setCollections] = useState([]);
+  const [collectionsLoading, setCollectionsLoading] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
+  const [collectionEdit, setCollectionEdit] = useState(null);
   const [snackOpen, setSnackOpen] = useState(false);
   const [snackMsg, setSnackMsg] = useState('');
+
+  const loadCollections = useCallback(async () => {
+		setCollectionsLoading(true);
+		try {
+			const data = await fetchCollections();
+			setCollections(data);
+		} catch (err) {
+			console.error("Collections load error:", err);
+			setCollections([]);
+		} finally {
+			setCollectionsLoading(false);
+		}
+  }, []);
+
+  useEffect(() => {
+		loadCollections();
+  }, [loadCollections]);
 
   const handleAction = (msg) => {
     setSnackMsg(msg);
     setSnackOpen(true);
   };
 
+  const handleCollectionSaved = (msg) => {
+		handleAction(msg);
+		loadCollections();
+  };
+
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1.6rem', color: 'var(--text-purple)' }}>
-          Collections
-        </Typography>
-        <Typography sx={{ fontFamily: ff, fontSize: '0.88rem', color: '#777', mt: 0.3 }}>
-          Expand any collection to view, add, edit, or remove items.
-        </Typography>
-      </Box>
+		<Box>
+			<Box
+				sx={{
+					mb: 3,
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "space-between",
+					gap: 2,
+				}}
+			>
+				<Box>
+					<Typography
+						sx={{
+							fontFamily: ff,
+							fontWeight: 700,
+							fontSize: "1.6rem",
+							color: "var(--text-purple)",
+						}}
+					>
+						Collections
+					</Typography>
+					<Typography
+						sx={{
+							fontFamily: ff,
+							fontSize: "0.88rem",
+							color: "#777",
+							mt: 0.3,
+						}}
+					>
+						Expand any collection to view, add, edit, or remove items.
+					</Typography>
+				</Box>
+				<Button
+					startIcon={<AddIcon />}
+					onClick={() => setAddOpen(true)}
+					sx={{
+						fontFamily: ff,
+						textTransform: "none",
+						backgroundColor: "var(--text-purple)",
+						color: "#fff",
+						borderRadius: "999px",
+						px: 3,
+						"&:hover": { backgroundColor: "var(--accent-cyan-hover)" },
+					}}
+				>
+					Add Collection
+				</Button>
+			</Box>
 
-      {/* Live editable collection rows */}
-      <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1rem', color: 'var(--text-main)', mb: 2 }}>
-        Live Collection Data
-      </Typography>
-      {ALL_COLLECTIONS.map((c) => (
-        <CollectionRow key={c.id} colMeta={c} onAction={handleAction} />
-      ))}
+			{/* Live editable collection rows */}
+			<Typography
+				sx={{
+					fontFamily: ff,
+					fontWeight: 700,
+					fontSize: "1rem",
+					color: "var(--text-main)",
+					mb: 2,
+				}}
+			>
+				Live Collection Data
+			</Typography>
 
-      <Snackbar open={snackOpen} autoHideDuration={4000} onClose={() => setSnackOpen(false)}
-        message={snackMsg} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />
-    </Box>
+			{collectionsLoading ? (
+				<Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+					<CircularProgress sx={{ color: "var(--accent-cyan)" }} />
+				</Box>
+			) : collections.length === 0 ? (
+				<Box
+					sx={{
+						px: 3,
+						py: 4,
+						border: "1px dashed #E8D5B0",
+						borderRadius: 3,
+						textAlign: "center",
+					}}
+				>
+					<Typography
+						sx={{
+							fontFamily: ff,
+							fontSize: "0.95rem",
+							color: "#555",
+							mb: 1.5,
+						}}
+					>
+						No collections found. Add your first collection to begin
+						managing catalog items.
+					</Typography>
+					<Button
+						startIcon={<AddIcon />}
+						onClick={() => setAddOpen(true)}
+						sx={{
+							fontFamily: ff,
+							fontWeight: 700,
+							textTransform: "none",
+							backgroundColor: "var(--text-purple)",
+							color: "#fff",
+							borderRadius: "20px",
+							px: 3,
+							"&:hover": { backgroundColor: "var(--accent-cyan-hover)" },
+						}}
+					>
+						Add Collection
+					</Button>
+				</Box>
+			) : (
+				collections.map((c) => (
+					<CollectionRow
+						key={c.id}
+						colMeta={c}
+						onAction={handleAction}
+						onEditCollection={(collection) => {
+							setCollectionEdit(collection);
+							setAddOpen(true);
+						}}
+					/>
+				))
+			)}
+
+			<CollectionDialog
+				open={addOpen || !!collectionEdit}
+				collection={collectionEdit}
+				onClose={() => {
+					setAddOpen(false);
+					setCollectionEdit(null);
+				}}
+				onSaved={(msg) => {
+					setCollectionEdit(null);
+					handleCollectionSaved(msg);
+				}}
+			/>
+
+			<Snackbar
+				open={snackOpen}
+				autoHideDuration={4000}
+				onClose={() => setSnackOpen(false)}
+				message={snackMsg}
+				anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+			/>
+		</Box>
   );
 }
+

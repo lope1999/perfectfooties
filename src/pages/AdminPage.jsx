@@ -12,6 +12,7 @@ import BlogPostsSection from '../components/admin/BlogPostsSection';
 import GallerySection from '../components/admin/GallerySection';
 import LoyaltySection from '../components/admin/LoyaltySection';
 import CollectionsSection from '../components/admin/CollectionsSection';
+import ReviewsSection from "../components/admin/ReviewsSection";
 import AnnouncementsSection from '../components/admin/AnnouncementsSection';
 import ProductionTrackerSection from '../components/admin/ProductionTrackerSection';
 import NewsletterSection from '../components/admin/NewsletterSection';
@@ -77,58 +78,66 @@ export default function AdminPage() {
 
   const renderSection = () => {
     switch (section) {
-      case 'dashboard':
-        return (
-          <DashboardSection
-            orders={orders}
-            pressOnCategories={[]}
-            retailCategories={[]}
-            customerCount={users.length}
-            loading={loading}
-            onNavigate={setSection}
-          />
-        );
-      case 'orders':
-        return <OrdersSection orders={orders} loading={loading} onRefresh={loadData} />;
-      case 'production':
-        return <ProductionTrackerSection />;
-      case 'collections':
-        return <CollectionsSection />;
-      case 'customers':
-        return <CustomersSection users={users} loading={loading} />;
-      case 'blog':
-        return (
-          <BlogPostsSection
-            blogPosts={blogPosts}
-            loading={loading}
-            onRefresh={loadData}
-          />
-        );
-      case 'giftcards':
-        return (
-          <GiftCardsSection
-            giftCards={giftCards}
-            loading={loading}
-            onRefresh={loadData}
-          />
-        );
-      case 'gallery':
-        return (
-          <GallerySection
-            galleryImages={galleryImages}
-            loading={loading}
-            onRefresh={loadData}
-          />
-        );
-      case 'loyalty':
-        return <LoyaltySection loading={loading} />;
-      case 'announcements':
-        return <AnnouncementsSection />;
-      case 'subscribers':
-        return <NewsletterSection />;
-      default:
-        return null;
-    }
+			case "dashboard":
+				return (
+					<DashboardSection
+						orders={orders}
+						pressOnCategories={[]}
+						retailCategories={[]}
+						customerCount={users.length}
+						loading={loading}
+						onNavigate={setSection}
+					/>
+				);
+			case "orders":
+				return (
+					<OrdersSection
+						orders={orders}
+						loading={loading}
+						onRefresh={loadData}
+					/>
+				);
+			case "production":
+				return <ProductionTrackerSection />;
+			case "collections":
+				return <CollectionsSection />;
+			case "reviews":
+				return <ReviewsSection />;
+			case "customers":
+				return <CustomersSection users={users} loading={loading} />;
+			case "blog":
+				return (
+					<BlogPostsSection
+						blogPosts={blogPosts}
+						loading={loading}
+						onRefresh={loadData}
+					/>
+				);
+			case "giftcards":
+				return (
+					<GiftCardsSection
+						giftCards={giftCards}
+						loading={loading}
+						onRefresh={loadData}
+					/>
+				);
+			case "gallery":
+				return (
+					<GallerySection
+						galleryImages={galleryImages}
+						loading={loading}
+						onRefresh={loadData}
+					/>
+				);
+			case "loyalty":
+				return <LoyaltySection loading={loading} />;
+			case "announcements":
+				return <AnnouncementsSection />;
+			case "subscribers":
+				return <NewsletterSection />;
+			default:
+				return null;
+		}
   };
 
   return (

@@ -33,17 +33,22 @@ const SIDEBAR_WIDTH = 250;
 const SIDEBAR_COLLAPSED_WIDTH = 68;
 
 const sections = [
-  { key: 'dashboard',        label: 'Dashboard',            icon: <DashboardIcon /> },
-  { key: 'orders',           label: 'Orders',                icon: <ShoppingCartIcon /> },
-  { key: 'production',       label: 'Production Queue',      icon: <PrecisionManufacturingIcon /> },
-  { key: 'customers',        label: 'Customers',             icon: <PeopleIcon /> },
-  { key: 'collections',      label: 'Collections',            icon: <CollectionsIcon /> },
-  { key: 'loyalty',          label: 'Loyalty & Referrals',   icon: <EmojiEventsIcon /> },
-  { key: 'blog',             label: 'Blog Posts',            icon: <ArticleIcon /> },
-  { key: 'giftcards',        label: 'Gift Cards',            icon: <CardGiftcardIcon /> },
-  { key: 'gallery',          label: 'Gallery',               icon: <PhotoLibraryIcon /> },
-  { key: 'announcements',    label: 'Announcements',         icon: <CampaignIcon /> },
-  { key: 'subscribers',      label: 'Newsletter',            icon: <MailOutlineIcon /> },
+	{ key: "dashboard", label: "Dashboard", icon: <DashboardIcon /> },
+	{ key: "orders", label: "Orders", icon: <ShoppingCartIcon /> },
+	{
+		key: "production",
+		label: "Production Queue",
+		icon: <PrecisionManufacturingIcon />,
+	},
+	{ key: "customers", label: "Customers", icon: <PeopleIcon /> },
+	{ key: "collections", label: "Collections", icon: <CollectionsIcon /> },
+	{ key: "reviews", label: "Reviews", icon: <AutoAwesomeIcon /> },
+	{ key: "loyalty", label: "Loyalty & Referrals", icon: <EmojiEventsIcon /> },
+	{ key: "blog", label: "Blog Posts", icon: <ArticleIcon /> },
+	{ key: "giftcards", label: "Gift Cards", icon: <CardGiftcardIcon /> },
+	{ key: "gallery", label: "Gallery", icon: <PhotoLibraryIcon /> },
+	{ key: "announcements", label: "Announcements", icon: <CampaignIcon /> },
+	{ key: "subscribers", label: "Newsletter", icon: <MailOutlineIcon /> },
 ];
 
 export default function AdminSidebar({ active, onSelect, mobileOpen, onMobileClose, collapsed, onToggleCollapse }) {
