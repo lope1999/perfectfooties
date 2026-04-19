@@ -62,7 +62,7 @@ const HOME_COLLECTIONS = [
 	{
 		id: "male-footwear",
 		name: "Male Handmade Footwear",
-		coverImage: "/images/products/male-low-slides-1.jpeg",
+		coverImage: "images/products/maleshoe-1.jpeg",
 		description:
 			"Handcrafted leather footwear for men, built with precision, pride and durability finish.",
 	},
@@ -486,7 +486,10 @@ export default function HomePage() {
 			</Box>
 
 			{/* Contact / Hours / Location Section */}
-			<Box id="contact-section" sx={{ py: 8, backgroundColor: "#FFF8F0" }}>
+			<Box
+				id="contact-section"
+				sx={{ py: 8, backgroundColor: "var(--bg-soft)" }}
+			>
 				<Container maxWidth="lg">
 					<Grid
 						container
@@ -538,7 +541,9 @@ export default function HomePage() {
 										<EmailIcon
 											sx={{ fontSize: 18, color: "#e3242b" }}
 										/>
-										<Typography>perfectfooties@gmail.com</Typography>
+										<Typography sx={{ color: "var(--text-main)" }}>
+											perfectfooties@gmail.com
+										</Typography>
 									</Box>
 								</Box>
 							</ScrollReveal>
@@ -561,7 +566,9 @@ export default function HomePage() {
 									>
 										Business Hours
 									</Typography>
-									<Typography>Open 24 Hours, 7 Days a Week</Typography>
+									<Typography sx={{ color: "var(--text-main)" }}>
+										Open 24 Hours, 7 Days a Week
+									</Typography>
 								</Box>
 							</ScrollReveal>
 						</Grid>
@@ -583,8 +590,12 @@ export default function HomePage() {
 									>
 										Location
 									</Typography>
-									<Typography>Lagos State</Typography>
-									<Typography>Nigeria</Typography>
+									<Typography sx={{ color: "var(--text-main)" }}>
+										Lagos State
+									</Typography>
+									<Typography sx={{ color: "var(--text-main)" }}>
+										Nigeria
+									</Typography>
 								</Box>
 							</ScrollReveal>
 						</Grid>
@@ -593,7 +604,10 @@ export default function HomePage() {
 			</Box>
 
 			{/* FAQ Section */}
-			<Box id="faq-section" sx={{ py: 8, backgroundColor: "#fff" }}>
+			<Box
+				id="faq-section"
+				sx={{ py: 8, backgroundColor: "var(--bg-page)" }}
+			>
 				<Container maxWidth="md">
 					<ScrollReveal direction="up">
 						<Box sx={{ textAlign: "center", mb: 5 }}>
@@ -611,7 +625,7 @@ export default function HomePage() {
 							</Typography>
 							<Typography
 								sx={{
-									color: "var(--text-main)",
+									color: "var(--text-muted)",
 									fontSize: "1.05rem",
 									lineHeight: 1.7,
 									maxWidth: 560,
@@ -651,10 +665,12 @@ export default function HomePage() {
 										py: 2.5,
 										cursor: "pointer",
 										backgroundColor:
-											openFaq === index ? "#FFF8F0" : "#fff",
+											openFaq === index
+												? "var(--bg-soft)"
+												: "var(--bg-card)",
 										transition: "background-color 0.3s ease",
 										"&:hover": {
-											backgroundColor: "#FFF8F0",
+											backgroundColor: "var(--bg-soft)",
 										},
 									}}
 								>
@@ -704,7 +720,7 @@ export default function HomePage() {
 											px: 3,
 											pb: 3,
 											pt: 1,
-											backgroundColor: "#FFF8F0",
+											backgroundColor: "var(--bg-soft)",
 										}}
 									>
 										<Typography
