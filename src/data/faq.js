@@ -30,8 +30,8 @@ export const faqData = [
 			"We do not offer refunds once production has begun, as each piece is handcrafted specifically for you. However, if there is a defect or quality issue with your order, contact us within 48 hours of receiving it and we will arrange a repair, replacement, or resolution. Please review your order details carefully before confirming.",
 	},
 	{
-		question: "Do you deliver outside Lagos?",
+		question: "Do you deliver worldwide?",
 		answer:
-			"Yes, we deliver nationwide across Nigeria. Delivery timelines and costs vary by location. Lagos deliveries are typically faster. For orders outside Lagos, we will provide an estimated delivery window at the time of order confirmation. International shipping is available on request — contact us to discuss.",
+			"Yes, you can place orders from anywhere. We deliver across Nigeria — Lagos deliveries are typically faster, and orders outside Lagos are scheduled based on location. We also ship internationally; final international delivery timelines and costs are confirmed via WhatsApp or email after order submission. The ordering process is still open for all locations, and we will follow up with a full shipping quote and delivery plan once details are confirmed.",
 	},
 ];

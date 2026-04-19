@@ -21,20 +21,45 @@ const ff = '"Georgia", serif';
 const MAX_PHOTOS = 5;
 
 function resolveColorName(name) {
-  const trimmed = name.trim();
+  const trimmed = String(name || "").trim();
   if (!trimmed) return null;
+
+  const normalize = (value) => value.toLowerCase().replace(/[^a-z]/g, "");
+  const candidates = [
+		trimmed,
+		trimmed.toLowerCase().replace(/\s+/g, ""),
+		trimmed.toLowerCase().replace(/\s+/g, "-"),
+  ];
+
+  const el = document.createElement("div");
+  el.style.color = "transparent";
+  document.body.appendChild(el);
+
   try {
-    const el = document.createElement('div');
-    el.style.color = 'transparent';
-    document.body.appendChild(el);
-    el.style.color = trimmed;
-    const computed = window.getComputedStyle(el).color;
-    document.body.removeChild(el);
-    if (computed === 'rgba(0, 0, 0, 0)') return null;
-    const m = computed.match(/(\d+),\s*(\d+),\s*(\d+)/);
-    if (!m) return null;
-    return `#${[m[1], m[2], m[3]].map((n) => parseInt(n).toString(16).padStart(2, '0')).join('')}`;
-  } catch { return null; }
+		for (const candidate of candidates) {
+			el.style.color = candidate;
+			const computed = window.getComputedStyle(el).color;
+			if (!computed || computed === "rgba(0, 0, 0, 0)") continue;
+			const m = computed.match(/(\d+),\s*(\d+),\s*(\d+)/);
+			if (!m) continue;
+			return `#${[m[1], m[2], m[3]].map((n) => parseInt(n, 10).toString(16).padStart(2, "0")).join("")}`;
+		}
+
+		const fallback = {
+			lightpink: "#FFB6C1",
+			darkpink: "#C71585",
+			lightgrey: "#D3D3D3",
+			darkgrey: "#A9A9A9",
+			dustypink: "#DAA5B3",
+			babyblue: "#89CFF0",
+		};
+		const key = normalize(trimmed);
+		return fallback[key] || null;
+  } catch {
+		return null;
+  } finally {
+		document.body.removeChild(el);
+  }
 }
 
 const PRODUCT_TYPES = ['Footwear', 'Bag', 'Belt', 'Wallet', 'Accessory', 'Other'];

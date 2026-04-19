@@ -29,6 +29,12 @@ const ff = '"Georgia", serif';
 
 const HERO_IMAGES = [
 	"/images/products/heirloom-regal-12.jpg",
+	"/images/products/heirloom-regal-11.jpg",
+	"images/products/bag1.JPG",
+	"images/products/bag2.JPG",
+	"images/products/maleshoe-1.jpeg",
+	"images/products/bag3.JPG",
+	"/images/products/heirloom-regal-10.jpg",
 	"/images/products/heirloom-regal-5.jpg",
 	"/images/products/heirloom-royal-1.jpg",
 	"/images/products/heirloom-tmt-1.jpg",
@@ -39,6 +45,10 @@ const HERO_IMAGES = [
 	"/images/products/heirloom-royal-5.jpg",
 	"/images/products/heirloom-royal-3.jpg",
 	"/images/products/heirloom-royal-2.jpg",
+	"images/products/heirloom-tmt-4.jpg",
+	"images/products/heirloom-tmt-5.jpg",
+	"images/products/heirloom-tmt-6.jpg",
+	"images/products/heirloom-tmt-2.jpg",
 ];
 
 const HOME_COLLECTIONS = [
@@ -513,7 +523,9 @@ export default function HomePage() {
 										<PhoneIcon
 											sx={{ fontSize: 18, color: "#e3242b" }}
 										/>
-										<Typography>+234 807 363 7911</Typography>
+										<Typography sx={{ color: "var(--text-main)" }}>
+											+234 807 363 7911
+										</Typography>
 									</Box>
 									<Box
 										sx={{
@@ -599,7 +611,7 @@ export default function HomePage() {
 							</Typography>
 							<Typography
 								sx={{
-									color: "var(--text-muted)",
+									color: "var(--text-main)",
 									fontSize: "1.05rem",
 									lineHeight: 1.7,
 									maxWidth: 560,
@@ -697,7 +709,7 @@ export default function HomePage() {
 									>
 										<Typography
 											sx={{
-												color: "var(--text-muted)",
+												color: "var(--text-main)",
 												fontSize: "0.95rem",
 												lineHeight: 1.8,
 											}}
