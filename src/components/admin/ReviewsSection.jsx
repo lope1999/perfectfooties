@@ -200,169 +200,236 @@ function ReviewDialog({ open, onClose, onSaved, review, collections, productsByC
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-purple)' }}>
-        {isEdit ? 'Edit Review' : 'Add Review'}
-      </DialogTitle>
-      <DialogContent sx={{ display: 'grid', gap: 2, pt: 1 }}>
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr 1fr' }}>
-          <TextField
-            label="Customer Name"
-            value={form.name}
-            onChange={setField('name')}
-            size="small"
-            fullWidth
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            label="Occupation / Role"
-            value={form.occupation}
-            onChange={setField('occupation')}
-            size="small"
-            fullWidth
-            InputLabelProps={{ shrink: true }}
-          />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr 1fr' }}>
-          <TextField
-            label="Email (optional)"
-            value={form.email}
-            onChange={setField('email')}
-            size="small"
-            fullWidth
-          />
-          <FormControl size="small" fullWidth>
-            <InputLabel>Collection</InputLabel>
-            <Select
-              value={form.collectionId}
-              label="Collection"
-              onChange={handleCollectionChange}
-            >
-              <MenuItem value="">None</MenuItem>
-              {collections.map((collection) => (
-                <MenuItem key={collection.id} value={collection.id}>
-                  {collection.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr 1fr' }}>
-          <FormControl size="small" fullWidth>
-            <InputLabel>Product</InputLabel>
-            <Select
-              value={form.productId}
-              label="Product"
-              onChange={(event) => selectProduct(event.target.value)}
-            >
-              <MenuItem value="">None</MenuItem>
-              {form.collectionId ? (
-                selectedCollectionItems.map((item) => (
-                  <MenuItem key={item.id} value={item.id}>
-                    {item.name}
-                  </MenuItem>
-                ))
-              ) : (
-                collections.flatMap((collection) => [
-                  <MenuItem key={`heading-${collection.id}`} disabled sx={{ fontWeight: '700', opacity: 1 }}>
-                    {collection.name}
-                  </MenuItem>,
-                  ...(productsByCollection[collection.id] || []).map((item) => (
-                    <MenuItem key={item.id} value={item.id} sx={{ pl: 4 }}>
-                      {item.name}
-                    </MenuItem>
-                  )),
-                ])
-              )}
-            </Select>
-          </FormControl>
-          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr 1fr' }}>
-            <TextField
-              label="Review title / summary"
-              value={form.service}
-              onChange={setField('service')}
-              size="small"
-              fullWidth
-            />
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography sx={{ fontFamily: ff, fontSize: '0.95rem' }}>Rating</Typography>
-              <Rating
-                name="review-rating"
-                value={Number(form.rating)}
-                onChange={(event, value) => setForm((prev) => ({ ...prev, rating: value || 0 }))}
-              />
-            </Box>
-          </Box>
-        </Box>
-        <TextField
-          label="Review text"
-          value={form.testimonial}
-          onChange={setField('testimonial')}
-          size="small"
-          multiline
-          rows={4}
-          fullWidth
-        />
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-          <Button
-            component="label"
-            startIcon={<PhotoCameraIcon />}
-            size="small"
-          >
-            Upload photos
-            <input hidden accept="image/*" multiple type="file" onChange={handlePhotoChange} />
-          </Button>
-          <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-            {form.photoURLs.length + photoFiles.length}/3 photos
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          {form.photoURLs.map((url, index) => (
-            <Avatar
-              key={`existing-${index}`}
-              src={url}
-              variant="rounded"
-              sx={{ width: 80, height: 80, border: '1px solid #E8D5B0' }}
-            />
-          ))}
-          {photoPreviews.map((src, index) => (
-            <Avatar
-              key={`preview-${index}`}
-              src={src}
-              variant="rounded"
-              sx={{ width: 80, height: 80, border: '1px dashed #ccc' }}
-            />
-          ))}
-        </Box>
-        <FormControlLabel
-          control={<Switch checked={form.published} onChange={setField('published')} />}
-          label="Published"
-        />
-        {error && <Alert severity="error">{error}</Alert>}
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button onClick={onClose} sx={{ fontFamily: ff, color: '#888', textTransform: 'none' }}>
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSave}
-          disabled={loading}
-          startIcon={loading ? <CircularProgress size={14} sx={{ color: '#fff' }} /> : <AddIcon />}
-          sx={{
-            fontFamily: ff,
-            fontWeight: 700,
-            textTransform: 'none',
-            backgroundColor: 'var(--text-purple)',
-            color: '#fff',
-            borderRadius: '20px',
-            px: 3,
-            '&:hover': { backgroundColor: 'var(--accent-cyan-hover)' },
-          }}
-        >
-          {isEdit ? 'Save Changes' : 'Add Review'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+		<Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+			<DialogTitle
+				sx={{
+					fontFamily: ff,
+					fontWeight: 700,
+					color: "var(--text-purple)",
+				}}
+			>
+				{isEdit ? "Edit Review" : "Add Review"}
+			</DialogTitle>
+			<DialogContent sx={{ display: "grid", gap: 2, pt: 1 }}>
+				<Box
+					sx={{ display: "grid", gap: 2, gridTemplateColumns: "1fr 1fr" }}
+				>
+					<TextField
+						variant="outlined"
+						label="Customer Name"
+						value={form.name}
+						onChange={setField("name")}
+						size="small"
+						fullWidth
+						InputLabelProps={{
+							shrink: true,
+							sx: { backgroundColor: "var(--bg-card)", px: 0.5 },
+						}}
+					/>
+					<TextField
+						variant="outlined"
+						label="Occupation / Role"
+						value={form.occupation}
+						onChange={setField("occupation")}
+						size="small"
+						fullWidth
+						InputLabelProps={{
+							shrink: true,
+							sx: { backgroundColor: "var(--bg-card)", px: 0.5 },
+						}}
+					/>
+				</Box>
+				<Box
+					sx={{ display: "grid", gap: 2, gridTemplateColumns: "1fr 1fr" }}
+				>
+					<TextField
+						label="Email (optional)"
+						value={form.email}
+						onChange={setField("email")}
+						size="small"
+						fullWidth
+					/>
+					<FormControl size="small" fullWidth>
+						<InputLabel>Collection</InputLabel>
+						<Select
+							value={form.collectionId}
+							label="Collection"
+							onChange={handleCollectionChange}
+						>
+							<MenuItem value="">None</MenuItem>
+							{collections.map((collection) => (
+								<MenuItem key={collection.id} value={collection.id}>
+									{collection.name}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Box>
+				<Box
+					sx={{ display: "grid", gap: 2, gridTemplateColumns: "1fr 1fr" }}
+				>
+					<FormControl size="small" fullWidth>
+						<InputLabel>Product</InputLabel>
+						<Select
+							value={form.productId}
+							label="Product"
+							onChange={(event) => selectProduct(event.target.value)}
+						>
+							<MenuItem value="">None</MenuItem>
+							{form.collectionId
+								? selectedCollectionItems.map((item) => (
+										<MenuItem key={item.id} value={item.id}>
+											{item.name}
+										</MenuItem>
+									))
+								: collections.flatMap((collection) => [
+										<MenuItem
+											key={`heading-${collection.id}`}
+											disabled
+											sx={{ fontWeight: "700", opacity: 1 }}
+										>
+											{collection.name}
+										</MenuItem>,
+										...(
+											productsByCollection[collection.id] || []
+										).map((item) => (
+											<MenuItem
+												key={item.id}
+												value={item.id}
+												sx={{ pl: 4 }}
+											>
+												{item.name}
+											</MenuItem>
+										)),
+									])}
+						</Select>
+					</FormControl>
+					<Box
+						sx={{
+							display: "grid",
+							gap: 2,
+							gridTemplateColumns: "1fr 1fr",
+						}}
+					>
+						<TextField
+							label="Review title / summary"
+							value={form.service}
+							onChange={setField("service")}
+							size="small"
+							fullWidth
+						/>
+						<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+							<Typography sx={{ fontFamily: ff, fontSize: "0.95rem" }}>
+								Rating
+							</Typography>
+							<Rating
+								name="review-rating"
+								value={Number(form.rating)}
+								onChange={(event, value) =>
+									setForm((prev) => ({ ...prev, rating: value || 0 }))
+								}
+							/>
+						</Box>
+					</Box>
+				</Box>
+				<TextField
+					label="Review text"
+					value={form.testimonial}
+					onChange={setField("testimonial")}
+					size="small"
+					multiline
+					rows={4}
+					fullWidth
+				/>
+				<Box
+					sx={{
+						display: "flex",
+						flexWrap: "wrap",
+						gap: 1,
+						alignItems: "center",
+					}}
+				>
+					<Button
+						component="label"
+						startIcon={<PhotoCameraIcon />}
+						size="small"
+					>
+						Upload photos
+						<input
+							hidden
+							accept="image/*"
+							multiple
+							type="file"
+							onChange={handlePhotoChange}
+						/>
+					</Button>
+					<Typography
+						sx={{ color: "var(--text-muted)", fontSize: "0.85rem" }}
+					>
+						{form.photoURLs.length + photoFiles.length}/3 photos
+					</Typography>
+				</Box>
+				<Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+					{form.photoURLs.map((url, index) => (
+						<Avatar
+							key={`existing-${index}`}
+							src={url}
+							variant="rounded"
+							sx={{ width: 80, height: 80, border: "1px solid #E8D5B0" }}
+						/>
+					))}
+					{photoPreviews.map((src, index) => (
+						<Avatar
+							key={`preview-${index}`}
+							src={src}
+							variant="rounded"
+							sx={{ width: 80, height: 80, border: "1px dashed #ccc" }}
+						/>
+					))}
+				</Box>
+				<FormControlLabel
+					control={
+						<Switch
+							checked={form.published}
+							onChange={setField("published")}
+						/>
+					}
+					label="Published"
+				/>
+				{error && <Alert severity="error">{error}</Alert>}
+			</DialogContent>
+			<DialogActions sx={{ px: 3, pb: 2.5 }}>
+				<Button
+					onClick={onClose}
+					sx={{ fontFamily: ff, color: "#888", textTransform: "none" }}
+				>
+					Cancel
+				</Button>
+				<Button
+					onClick={handleSave}
+					disabled={loading}
+					startIcon={
+						loading ? (
+							<CircularProgress size={14} sx={{ color: "#fff" }} />
+						) : (
+							<AddIcon />
+						)
+					}
+					sx={{
+						fontFamily: ff,
+						fontWeight: 700,
+						textTransform: "none",
+						backgroundColor: "var(--text-purple)",
+						color: "#fff",
+						borderRadius: "20px",
+						px: 3,
+						"&:hover": { backgroundColor: "var(--accent-cyan-hover)" },
+					}}
+				>
+					{isEdit ? "Save Changes" : "Add Review"}
+				</Button>
+			</DialogActions>
+		</Dialog>
   );
 }
 
