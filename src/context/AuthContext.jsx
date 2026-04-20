@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
   const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
 
   const signUpWithEmail = async (email, password, displayName) => {
-		const userCredential = await createUserWithEmailAndPassword(
+    const userCredential = await createUserWithEmailAndPassword(
 			auth,
 			email,
 			password,
@@ -74,11 +74,11 @@ export function AuthProvider({ children }) {
   };
 
   const signInWithEmail = async (email, password) => {
-		return signInWithEmailAndPassword(auth, email, password);
+    return signInWithEmailAndPassword(auth, email, password);
   };
 
   const resetPassword = async (email) => {
-		return sendPasswordResetEmail(auth, email);
+    return sendPasswordResetEmail(auth, email);
   };
 
   const signOut = () => firebaseSignOut(auth);

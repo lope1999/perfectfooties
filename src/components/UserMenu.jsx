@@ -18,9 +18,11 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from "../context/AuthContext";
+import { useNotifications } from "../context/NotificationContext";
 
 export default function UserMenu() {
   const { user, signOut, isAdmin } = useAuth();
+  const { showToast } = useNotifications();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -48,10 +50,8 @@ export default function UserMenu() {
   return (
     <>
       <Tooltip title={user ? 'Account' : 'Sign In'} arrow>
-        <IconButton onClick={handleClick} disabled={signingIn} sx={{ color: '#e3242b', ml: 0.5 }}>
-          {signingIn ? (
-            <CircularProgress size={24} sx={{ color: '#e3242b' }} />
-          ) : user ? (
+        <IconButton onClick={handleClick} sx={{ color: '#e3242b', ml: 0.5 }}>
+          {user ? (
             <Avatar
               src={user.photoURL}
               alt={user.displayName}

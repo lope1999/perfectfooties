@@ -30,26 +30,31 @@ export default function StatusChangeToast() {
     : <LocalShippingIcon fontSize="small" />;
 
   return (
-    <Snackbar
-      open={Boolean(currentToast)}
-      autoHideDuration={4000}
-      onClose={dismissToast}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      sx={{ mb: { xs: 8, md: 2 } }}
-    >
-      <Alert
-        onClose={dismissToast}
-        severity={severity}
-        icon={icon}
-        sx={{
-          fontFamily,
-          fontSize: '0.85rem',
-          '& .MuiAlert-message': { fontFamily },
-        }}
-      >
-        {currentToast.title && <><strong>{currentToast.title}</strong><br /></>}
-        {currentToast.message}
-      </Alert>
-    </Snackbar>
+		<Snackbar
+			open={Boolean(currentToast)}
+			autoHideDuration={10000}
+			onClose={dismissToast}
+			anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+			sx={{ mb: { xs: 8, md: 2 } }}
+		>
+			<Alert
+				onClose={dismissToast}
+				severity={severity}
+				icon={icon}
+				sx={{
+					fontFamily,
+					fontSize: "0.85rem",
+					"& .MuiAlert-message": { fontFamily },
+				}}
+			>
+				{currentToast.title && (
+					<>
+						<strong>{currentToast.title}</strong>
+						<br />
+					</>
+				)}
+				{currentToast.message}
+			</Alert>
+		</Snackbar>
   );
 }
