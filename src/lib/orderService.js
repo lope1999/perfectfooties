@@ -31,14 +31,16 @@ export async function saveOrder(uid, data) {
 
   const ref = collection(db, 'users', uid, 'orders');
   return addDoc(ref, {
-    ...data,
-    customerName,
-    total,
-    items,
-    uid,
-    status: 'pending',
-    createdAt: serverTimestamp(),
-    statusHistory: [{ status: 'pending', at: new Date().toISOString() }],
+		...data,
+		customerName,
+		total,
+		items,
+		uid,
+		status: data.status || "pending",
+		createdAt: serverTimestamp(),
+		statusHistory: [
+			{ status: data.status || "pending", at: new Date().toISOString() },
+		],
   });
 }
 

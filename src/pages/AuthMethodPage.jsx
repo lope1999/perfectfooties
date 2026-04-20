@@ -58,130 +58,136 @@ export default function AuthMethodPage() {
   };
 
   return (
-    <Box
-      sx={{
-        pt: { xs: 12, md: 16 },
-        pb: 10,
-        minHeight: '100vh',
-        backgroundColor: '#FFF8F0',
-      }}
-    >
-      <Container maxWidth="sm">
-        <Typography
-          variant="h4"
-          sx={{
-            fontFamily: '"Georgia", serif',
-            fontWeight: 700,
-            mb: 1,
-            textAlign: 'center',
-            color: 'var(--text-main)',
-          }}
-        >
-          How would you like to sign in?
-        </Typography>
-        <Typography
-          sx={{
-            color: 'var(--text-muted)',
-            textAlign: 'center',
-            mb: 4,
-            lineHeight: 1.6,
-          }}
-        >
-          Choose your preferred sign-in method to access your PerfectFooties account.
-        </Typography>
+		<Box
+			sx={{
+				pt: { xs: 12, md: 16 },
+				pb: 10,
+				minHeight: "100vh",
+				backgroundColor: "#FFF8F0",
+			}}
+		>
+			<Container maxWidth="sm">
+				<Typography
+					variant="h4"
+					sx={{
+						fontFamily: '"Georgia", serif',
+						fontWeight: 700,
+						mb: 1,
+						textAlign: "center",
+						color: "var(--text-main)",
+					}}
+				>
+					How would you like to Log in?
+				</Typography>
+				<Typography
+					sx={{
+						color: "var(--text-muted)",
+						textAlign: "center",
+						mb: 4,
+						lineHeight: 1.6,
+					}}
+				>
+					Choose your preferred sign-in method to access your
+					PerfectFooties account.
+				</Typography>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {/* Google Sign-In */}
-          <MethodButton onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
-            {isGoogleLoading ? (
-              <CircularProgress size={32} sx={{ color: '#e3242b' }} />
-            ) : (
-              <>
-                <GoogleIcon sx={{ fontSize: 48, color: '#1f2937' }} />
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontFamily: '"Georgia", serif',
-                    fontWeight: 600,
-                    color: 'var(--text-main)',
-                  }}
-                >
-                  Continue with Google
-                </Typography>
-                <Typography
-                  sx={{
-                    fontSize: '0.875rem',
-                    color: 'var(--text-muted)',
-                    textAlign: 'center',
-                  }}
-                >
-                  Fast and secure login with your Google account
-                </Typography>
-              </>
-            )}
-          </MethodButton>
+				<Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+					{/* Google Sign-In */}
+					<MethodButton
+						onClick={handleGoogleSignIn}
+						disabled={isGoogleLoading}
+					>
+						{isGoogleLoading ? (
+							<CircularProgress size={32} sx={{ color: "#e3242b" }} />
+						) : (
+							<>
+								<GoogleIcon sx={{ fontSize: 48, color: "#1f2937" }} />
+								<Typography
+									variant="h6"
+									sx={{
+										fontFamily: '"Georgia", serif',
+										fontWeight: 600,
+										color: "var(--text-main)",
+									}}
+								>
+									Continue with Google
+								</Typography>
+								<Typography
+									sx={{
+										fontSize: "0.875rem",
+										color: "var(--text-muted)",
+										textAlign: "center",
+									}}
+								>
+									Fast and secure login with your Google account
+								</Typography>
+							</>
+						)}
+					</MethodButton>
 
-          <Divider sx={{ my: 1 }}>
-            <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              OR
-            </Typography>
-          </Divider>
+					<Divider sx={{ my: 1 }}>
+						<Typography
+							sx={{ color: "var(--text-muted)", fontSize: "0.875rem" }}
+						>
+							OR
+						</Typography>
+					</Divider>
 
-          {/* Email/Password Sign-In */}
-          <MethodButton
-            onClick={() => navigate('/login')}
-            sx={{
-              backgroundColor: '#FFF',
-              border: '2px solid #E8D5B0',
-              '&:hover': {
-                borderColor: '#e3242b',
-              },
-            }}
-          >
-            <EmailIcon sx={{ fontSize: 48, color: '#e3242b' }} />
-            <Typography
-              variant="h6"
-              sx={{
-                fontFamily: '"Georgia", serif',
-                fontWeight: 600,
-                color: 'var(--text-main)',
-              }}
-            >
-              Continue with Email
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: '0.875rem',
-                color: 'var(--text-muted)',
-                textAlign: 'center',
-              }}
-            >
-              Sign in with your email and password
-            </Typography>
-          </MethodButton>
-        </Box>
+					{/* Email/Password Sign-In */}
+					<MethodButton
+						onClick={() => navigate("/login")}
+						sx={{
+							backgroundColor: "#FFF",
+							border: "2px solid #E8D5B0",
+							"&:hover": {
+								borderColor: "#e3242b",
+							},
+						}}
+					>
+						<EmailIcon sx={{ fontSize: 48, color: "#e3242b" }} />
+						<Typography
+							variant="h6"
+							sx={{
+								fontFamily: '"Georgia", serif',
+								fontWeight: 600,
+								color: "var(--text-main)",
+							}}
+						>
+							Continue with Email
+						</Typography>
+						<Typography
+							sx={{
+								fontSize: "0.875rem",
+								color: "var(--text-muted)",
+								textAlign: "center",
+							}}
+						>
+							Sign in with your email and password
+						</Typography>
+					</MethodButton>
+				</Box>
 
-        {/* Don't have account? Sign up */}
-        <Box sx={{ textAlign: 'center', mt: 6 }}>
-          <Typography sx={{ color: 'var(--text-muted)', mb: 1 }}>
-            Don't have an account?
-          </Typography>
-          <Button
-            onClick={() => navigate('/signup')}
-            sx={{
-              color: '#e3242b',
-              fontWeight: 600,
-              textTransform: 'none',
-              fontSize: '1rem',
-              '&:hover': {
-                backgroundColor: 'rgba(227, 36, 43, 0.08)',
-              },
-            }}
-          >
-            Sign up here
-          </Button>
-        </Box>
-      </Container>
-    </Box>
+				{/* Don't have account? Sign up */}
+				<Box sx={{ textAlign: "center", mt: 6 }}>
+					<Typography sx={{ color: "var(--text-muted)", mb: 1 }}>
+						Don't have an account?
+					</Typography>
+					<Button
+						onClick={() => navigate("/signup")}
+						sx={{
+							color: "#e3242b",
+							fontWeight: 600,
+							textTransform: "none",
+							fontSize: "1rem",
+							"&:hover": {
+								backgroundColor: "rgba(227, 36, 43, 0.08)",
+							},
+						}}
+					>
+						Sign up here
+					</Button>
+				</Box>
+			</Container>
+		</Box>
   );
 }
