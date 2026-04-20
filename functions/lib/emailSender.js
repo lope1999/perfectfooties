@@ -410,6 +410,41 @@ async function sendSubscriberWelcomeEmail({ token, email, name }) {
   return sendMail({ token, to: email, toName: displayName || '', subject: 'Welcome to PerfectFooties — Thanks for subscribing!', html, text });
 }
 
+// ── Template: Email Verification ─────────────────────────────────────────────
+async function sendEmailVerificationEmail({ token, email, customerName, verificationLink }) {
+  const html = baseHtml(`
+    <p style="font-family:Georgia,serif;font-size:20px;font-weight:bold;color:#1a1a1a;margin:0 0 12px">Verify your email, ${customerName || 'there'}!</p>
+    <p style="font-family:Arial,sans-serif;font-size:15px;color:#444;line-height:1.7;margin:0 0 20px">
+      Thanks for creating a PerfectFooties account. Click the button below to verify your email address and activate your account.
+    </p>
+    ${ctaBtn('Verify My Email', verificationLink)}
+    <p style="font-family:Arial,sans-serif;font-size:13px;color:#888;line-height:1.6;margin:20px 0 0;text-align:center">
+      This link expires in 24 hours. If you didn't create an account, you can safely ignore this email.
+    </p>
+    ${note('If the button above doesn\'t work, copy and paste this link into your browser:<br/><span style="word-break:break-all;color:#e3242b">' + verificationLink + '</span>')}
+  `, "You're receiving this because you created an account on PerfectFooties.");
+
+  const text = [
+    `Verify your PerfectFooties account`,
+    '',
+    `Hi ${customerName || 'there'},`,
+    '',
+    `Thanks for signing up! Click the link below to verify your email address:`,
+    '',
+    verificationLink,
+    '',
+    'This link expires in 24 hours.',
+    '',
+    '— PerfectFooties Team',
+  ].join('\n');
+
+  return sendMail({
+    token, to: email, toName: customerName || '',
+    subject: 'Verify your PerfectFooties account',
+    html, text,
+  });
+}
+
 module.exports = {
 	sendOrderConfirmationEmail,
 	sendProductionEmail,
@@ -418,4 +453,5 @@ module.exports = {
 	sendWelcomeEmail,
 	sendSubscriberWelcomeEmail,
 	sendNewsletterEmail,
+	sendEmailVerificationEmail,
 };

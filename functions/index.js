@@ -9,6 +9,7 @@ const {
 } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { getAuth } = require("firebase-admin/auth");
 const { initializeApp } = require("firebase-admin/app");
 const { logger } = require("firebase-functions");
 const crypto = require("crypto");
@@ -21,6 +22,7 @@ const {
 	sendWelcomeEmail,
 	sendSubscriberWelcomeEmail,
 	sendNewsletterEmail,
+	sendEmailVerificationEmail,
 } = require("./lib/emailSender");
 
 initializeApp();
@@ -189,6 +191,38 @@ exports.verifyPaystackDeposit = onCall(
 
 		logger.info(`Deposit verified for order ${orderId}`);
 		return { verified: true };
+	},
+);
+
+// ── Send Verification Email via Mailtrap ──────────────────────────────────────
+exports.sendVerificationEmail = onCall(
+	{ secrets: [MAILTRAP_TOKEN] },
+	async (request) => {
+		if (!request.auth) {
+			throw new HttpsError("unauthenticated", "Must be signed in");
+		}
+
+		const token = MAILTRAP_TOKEN.value();
+		if (!token) throw new HttpsError("internal", "Mailtrap token not configured");
+
+		const uid = request.auth.uid;
+		const userRecord = await getAuth().getUser(uid);
+
+		if (userRecord.emailVerified) {
+			return { sent: false, reason: "already_verified" };
+		}
+
+		const verificationLink = await getAuth().generateEmailVerificationLink(userRecord.email);
+
+		await sendEmailVerificationEmail({
+			token,
+			email: userRecord.email,
+			customerName: userRecord.displayName || "",
+			verificationLink,
+		});
+
+		logger.info(`Verification email sent to ${userRecord.email}`);
+		return { sent: true };
 	},
 );
 

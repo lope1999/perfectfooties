@@ -244,7 +244,7 @@ function CollectionDialog({ open, onClose, onSaved, collection }) {
 					label="Cover Image"
 					value={form.coverImage}
 					onChange={(url) => setForm((f) => ({ ...f, coverImage: url }))}
-					folder="collections"
+					folder="collections/covers"
 				/>
 				<Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
 					<TextField

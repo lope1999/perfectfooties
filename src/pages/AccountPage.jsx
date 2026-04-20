@@ -48,6 +48,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ReplayIcon from "@mui/icons-material/Replay";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -56,6 +57,8 @@ import CelebrationIcon from "@mui/icons-material/Celebration";
 import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
 import RedeemIcon from "@mui/icons-material/Redeem";
 import LockIcon from "@mui/icons-material/Lock";
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../lib/firebase';
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
@@ -134,7 +137,7 @@ const statBtnSx = {
 };
 
 export default function AccountPage() {
-	const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth();
+	const { user, loading: authLoading, signInWithGoogle, signOut, updatePhotoURL } = useAuth();
 	const { wishlist, removeFromWishlist } = useWishlist();
 	const { addProduct } = useCart();
 	const { showToast } = useNotifications();
@@ -167,6 +170,25 @@ export default function AccountPage() {
 	const [redeemAmount, setRedeemAmount] = useState(REDEMPTION_UNIT);
 	const [redeemLoading, setRedeemLoading] = useState(false);
 	const [redeemSuccess, setRedeemSuccess] = useState(false);
+
+	// Profile photo upload
+	const [photoUploading, setPhotoUploading] = useState(false);
+
+	const handlePhotoUpload = async (file) => {
+		if (!file || !user) return;
+		setPhotoUploading(true);
+		try {
+			const path = `profile-photos/${user.uid}/${Date.now()}.${file.name.split('.').pop() || 'jpg'}`;
+			const fileRef = storageRef(storage, path);
+			await uploadBytes(fileRef, file);
+			const url = await getDownloadURL(fileRef);
+			await updatePhotoURL(url);
+		} catch (err) {
+			console.error('Profile photo upload failed:', err);
+		} finally {
+			setPhotoUploading(false);
+		}
+	};
 
 	// Profile UI state
 	const [editOpen, setEditOpen] = useState(false);
@@ -544,22 +566,41 @@ export default function AccountPage() {
 					<Box>
 						{/* Avatar + Identity */}
 						<Box sx={{ textAlign: "center", mb: 3 }}>
-							<Box
-								sx={{
-									position: "relative",
-									display: "inline-block",
-									mb: 2,
-								}}
-							>
+							<Box sx={{ position: "relative", display: "inline-block", mb: 2 }}>
 								<Avatar
 									src={user.photoURL}
 									alt={user.displayName}
-									sx={{
-										width: 90,
-										height: 90,
-										border: "3px solid #e3242b",
-									}}
+									sx={{ width: 90, height: 90, border: "3px solid #e3242b" }}
 								/>
+								<Tooltip title="Upload profile photo">
+									<IconButton
+										component="label"
+										disabled={photoUploading}
+										sx={{
+											position: "absolute", bottom: 0, right: 0,
+											width: 28, height: 28,
+											backgroundColor: "#e3242b",
+											border: "2px solid #fff",
+											"&:hover": { backgroundColor: "#b81b21" },
+											"&.Mui-disabled": { backgroundColor: "#ccc" },
+										}}
+									>
+										{photoUploading
+											? <CircularProgress size={12} sx={{ color: "#fff" }} />
+											: <CameraAltIcon sx={{ fontSize: 14, color: "#fff" }} />
+										}
+										<input
+											type="file"
+											accept="image/*"
+											hidden
+											onChange={(e) => {
+												const f = e.target.files?.[0];
+												if (f) handlePhotoUpload(f);
+												e.target.value = '';
+											}}
+										/>
+									</IconButton>
+								</Tooltip>
 							</Box>
 							<Typography
 								sx={{

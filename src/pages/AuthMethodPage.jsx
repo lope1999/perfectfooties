@@ -135,7 +135,7 @@ export default function AuthMethodPage() {
 
 					{/* Email/Password Sign-In */}
 					<MethodButton
-						onClick={() => navigate("/login")}
+						onClick={() => navigate("/login", { state: { from: location.state?.from } })}
 						sx={{
 							backgroundColor: "#FFF",
 							border: "2px solid #E8D5B0",

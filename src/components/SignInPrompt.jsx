@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -6,29 +5,17 @@ import {
   DialogActions,
   Button,
   Typography,
-  CircularProgress,
 } from '@mui/material';
 import LoginIcon from '@mui/icons-material/Login';
-import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function SignInPrompt({ open, onClose }) {
-  const { signInWithGoogle } = useAuth();
-  const { showToast } = useNotifications();
-  const [signingIn, setSigningIn] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSignIn = async () => {
-    setSigningIn(true);
-    try {
-      const result = await signInWithGoogle();
-      onClose();
-      const name = result?.user?.displayName?.split(' ')[0] || 'back';
-      showToast(`Welcome ${name}! You're now signed in.`, 'success');
-    } catch {
-      // user closed popup
-    } finally {
-      setSigningIn(false);
-    }
+  const handleGoToSignIn = () => {
+    onClose();
+    navigate('/auth-method', { state: { from: location.pathname } });
   };
 
   return (
@@ -55,14 +42,13 @@ export default function SignInPrompt({ open, onClose }) {
       </DialogTitle>
       <DialogContent>
         <Typography sx={{ color: 'var(--text-muted)', mt: 1, lineHeight: 1.7, fontSize: '0.95rem' }}>
-          Please sign in to continue with your order. This helps us track your appointments, save your preferences, and provide a better experience.
+          Please sign in to continue with your order. This helps us track your orders, save your preferences, and provide a better experience.
         </Typography>
       </DialogContent>
       <DialogActions sx={{ justifyContent: 'center', pb: 3, flexDirection: 'column', gap: 1 }}>
         <Button
-          onClick={handleSignIn}
-          disabled={signingIn}
-          startIcon={signingIn ? <CircularProgress size={18} sx={{ color: 'inherit' }} /> : <LoginIcon />}
+          onClick={handleGoToSignIn}
+          startIcon={<LoginIcon />}
           sx={{
             backgroundColor: '#e3242b',
             color: '#fff',
@@ -75,7 +61,7 @@ export default function SignInPrompt({ open, onClose }) {
             '&:hover': { backgroundColor: '#b81b21' },
           }}
         >
-          {signingIn ? 'Signing In\u2026' : 'Sign In with Google'}
+          Sign In
         </Button>
         <Button
           onClick={onClose}

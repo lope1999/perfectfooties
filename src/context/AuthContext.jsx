@@ -8,6 +8,7 @@ import {
 	sendPasswordResetEmail,
 	updateProfile,
 } from "firebase/auth";
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../lib/firebase';
 
@@ -62,15 +63,25 @@ export function AuthProvider({ children }) {
   const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
 
   const signUpWithEmail = async (email, password, displayName) => {
-    const userCredential = await createUserWithEmailAndPassword(
-			auth,
-			email,
-			password,
-		);
-		if (displayName) {
-			await updateProfile(userCredential.user, { displayName });
-		}
-		return userCredential;
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    if (displayName) {
+      await updateProfile(userCredential.user, { displayName });
+    }
+    // Send via Mailtrap so it arrives from noreply@perfectfooties.com
+    const functions = getFunctions();
+    await httpsCallable(functions, 'sendVerificationEmail')().catch(() => {});
+    return userCredential;
+  };
+
+  const resendVerificationEmail = async () => {
+    const functions = getFunctions();
+    return httpsCallable(functions, 'sendVerificationEmail')();
+  };
+
+  const updatePhotoURL = async (photoURL) => {
+    await updateProfile(auth.currentUser, { photoURL });
+    await updateDoc(doc(db, 'users', auth.currentUser.uid), { photoURL });
+    setUser({ ...auth.currentUser });
   };
 
   const signInWithEmail = async (email, password) => {
@@ -94,6 +105,8 @@ export function AuthProvider({ children }) {
 				signUpWithEmail,
 				signInWithEmail,
 				resetPassword,
+				resendVerificationEmail,
+				updatePhotoURL,
 				signOut,
 				isAdmin,
 			}}

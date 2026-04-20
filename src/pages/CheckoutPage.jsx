@@ -34,7 +34,7 @@ import { redeemGiftCard } from '../lib/giftCardService';
 import { saveShippingDetails, fetchShippingDetails } from '../lib/shippingService';
 import { validateReferralCode, applyReferral, getLoyaltyData, redeemLoyaltyPoints, REFERRAL_DISCOUNT, REDEMPTION_UNIT, REDEMPTION_VALUE, getPendingLoyaltyReward, clearPendingLoyaltyReward } from '../lib/loyaltyService';
 import { nigerianStates } from '../data/nigerianStates';
-import { COUNTRIES } from '../data/countries';
+import { COUNTRIES, COUNTRY_PHONE_CODES } from '../data/countries';
 import SignInPrompt from '../components/SignInPrompt';
 
 function formatNaira(amount) {
@@ -186,10 +186,11 @@ export default function CheckoutPage() {
   const isLagos = isDomestic && form.state === 'Lagos';
   const shippingCost = isDomestic ? (isLagos ? 3000 : 4000) : 0;
   const grandTotal = finalTotal + shippingCost;
+  const phonePrefix = COUNTRY_PHONE_CODES[form.country] || '+';
   const isValidPhone = (p) => {
-    const c = p.replace(/[\s\-+()\u00A0]/g, '');
-    if (isDomestic) return /^(0\d{10}|234\d{10})$/.test(c);
-    return c.length >= 7;
+    const digits = p.replace(/[\s\-+()\u00A0]/g, '');
+    if (isDomestic) return /^(0\d{10}|234\d{10})$/.test(digits);
+    return digits.length >= 6;
   };
 
   const isFormValid = isDomestic
@@ -646,16 +647,18 @@ export default function CheckoutPage() {
               value={form.phone}
               onChange={handleChange('phone')}
               size="small"
-              placeholder={isDomestic ? 'e.g. 08012345678' : 'e.g. +44 7700 900123'}
+              placeholder={isDomestic ? '08012345678' : '700 000 0000'}
               error={form.phone.length > 0 && !isValidPhone(form.phone)}
-              helperText={form.phone.length > 0 && !isValidPhone(form.phone) ? (isDomestic ? 'Enter a valid Nigerian number (08012345678 or 234...)' : 'Enter a valid phone number') : ''}
-              InputProps={isDomestic ? {
+              helperText={form.phone.length > 0 && !isValidPhone(form.phone) ? 'Enter a valid phone number' : ''}
+              InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600, mr: 0.5 }}>+234</Typography>
+                    <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600, mr: 0.5 }}>
+                      {phonePrefix}
+                    </Typography>
                   </InputAdornment>
                 ),
-              } : undefined}
+              }}
               sx={{ mb: 2, ...textFieldSx }}
             />
 
