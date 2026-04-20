@@ -142,7 +142,7 @@ export default function Navbar() {
 							src="/images/logo.png"
 							alt="PerfectFooties"
 							sx={{
-								height: { xs: 45, md: 65 },
+								height: { xs: 45, md: 60 },
 								width: "auto",
 								objectFit: "contain",
 								display: "block",
