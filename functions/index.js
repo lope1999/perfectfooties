@@ -19,6 +19,7 @@ const {
 	sendShippedEmail,
 	sendDeliveredEmail,
 	sendWelcomeEmail,
+	sendSubscriberWelcomeEmail,
 	sendNewsletterEmail,
 } = require("./lib/emailSender");
 

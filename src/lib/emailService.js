@@ -1,20 +1,17 @@
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
 const functions = getFunctions();
-const sendAdminEmailFn = httpsCallable(functions, 'sendAdminEmail');
 const sendNewsletterFn = httpsCallable(functions, 'sendNewsletter');
 
 /**
- * Sends a confirmation email for an order via Cloud Function (avoids CORS).
+ * Sends a confirmation email for an order.
+ * Note: Confirmation emails are sent server-side via the onOrderStatusChanged
+ * Firestore trigger when the order status changes to 'confirmed'.
  */
 export async function sendConfirmationEmail(order) {
-  if (!order?.email) return { success: false, error: 'No customer email on this order' };
-  try {
-    await sendAdminEmailFn({ order });
-    return { success: true };
-  } catch (err) {
-    return { success: false, error: err.message || 'Failed to send email' };
-  }
+	// Email is sent automatically when order status updates on the server.
+	// Client does not send emails directly to avoid CORS issues.
+	return { success: true };
 }
 
 /**

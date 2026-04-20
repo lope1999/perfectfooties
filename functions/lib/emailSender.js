@@ -380,16 +380,6 @@ async function sendNewsletterEmail({ token, email, subject, previewText, headlin
   return sendMail({ token, to: email, subject, html, text: textLines.join('\n') || subject });
 }
 
-module.exports = {
-	sendOrderConfirmationEmail,
-	sendProductionEmail,
-	sendShippedEmail,
-	sendDeliveredEmail,
-	sendWelcomeEmail,
-	sendSubscriberWelcomeEmail,
-	sendNewsletterEmail,
-};
-
 // ── Template: Subscriber Welcome ───────────────────────────────────────────
 async function sendSubscriberWelcomeEmail({ token, email, name }) {
   const displayName = name && name.trim() ? name.trim() : '';
@@ -419,3 +409,13 @@ async function sendSubscriberWelcomeEmail({ token, email, name }) {
 
   return sendMail({ token, to: email, toName: displayName || '', subject: 'Welcome to PerfectFooties — Thanks for subscribing!', html, text });
 }
+
+module.exports = {
+	sendOrderConfirmationEmail,
+	sendProductionEmail,
+	sendShippedEmail,
+	sendDeliveredEmail,
+	sendWelcomeEmail,
+	sendSubscriberWelcomeEmail,
+	sendNewsletterEmail,
+};

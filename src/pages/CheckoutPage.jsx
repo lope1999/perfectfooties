@@ -197,255 +197,327 @@ export default function CheckoutPage() {
     : form.name.trim() && isValidPhone(form.phone) && form.address.trim() && form.city.trim() && form.province.trim() && form.postalCode.trim();
 
   const handleCompleteOrder = async (paymentReference, shipping) => {
-    setPaymentModalOpen(false);
-    setSubmitting(true);
+		setSubmitting(true);
 
-    // Build WhatsApp message synchronously BEFORE any awaits — browsers block
-    // window.open() when called after async operations break the user-gesture chain
-    const lines = [];
-    lines.push('--- SHIPPING DETAILS ---');
-    lines.push(`Name: ${shipping.name}`);
-    lines.push(`Phone: ${shipping.phone}`);
-    lines.push(`Country: ${shipping.country}`);
-    lines.push(`Address: ${shipping.address}`);
-    if (shipping.shippingZone === 'domestic') {
-      lines.push(`State: ${shipping.state}`);
-      lines.push(`LGA: ${shipping.lga}`);
-    } else {
-      lines.push(`City: ${shipping.city}`);
-      lines.push(`State/Province: ${shipping.province}`);
-      lines.push(`Postal Code: ${shipping.postalCode}`);
-      lines.push(`[INTERNATIONAL ORDER — Shipping cost TBD via WhatsApp]`);
-    }
-    lines.push('');
+		// Build WhatsApp message synchronously BEFORE any awaits — browsers block
+		// window.open() when called after async operations break the user-gesture chain
+		const lines = [];
+		lines.push("--- SHIPPING DETAILS ---");
+		lines.push(`Name: ${shipping.name}`);
+		lines.push(`Phone: ${shipping.phone}`);
+		lines.push(`Country: ${shipping.country}`);
+		lines.push(`Address: ${shipping.address}`);
+		if (shipping.shippingZone === "domestic") {
+			lines.push(`State: ${shipping.state}`);
+			lines.push(`LGA: ${shipping.lga}`);
+		} else {
+			lines.push(`City: ${shipping.city}`);
+			lines.push(`State/Province: ${shipping.province}`);
+			lines.push(`Postal Code: ${shipping.postalCode}`);
+			lines.push(`[INTERNATIONAL ORDER — Shipping cost TBD via WhatsApp]`);
+		}
+		lines.push("");
 
-    if (leatherGoods.length > 0) {
-      lines.push('--- LEATHER GOODS ORDER ---');
-      leatherGoods.forEach((g, i) => {
-        let detail = `${i + 1}. ${g.name} x${g.quantity} \u2014 ${formatNaira(g.price * g.quantity)}`;
-        if (g.selectedColor) detail += `\n   Colour: ${g.selectedColor}`;
-        if (g.euSize) detail += ` | EU Size: ${g.euSize}`;
-        if (g.footLength) detail += ` | Foot Length: ${g.footLength}cm`;
-        if (g.collectionName) detail += `\n   Collection: ${g.collectionName}`;
-        if (g.selectedImageIndex) detail += `\n   Selected Design: Image ${g.selectedImageIndex}`;
-        if (g.orderNotes) detail += `\n   Notes: ${g.orderNotes}`;
-        lines.push(detail);
-      });
-      lines.push('');
-    }
+		if (leatherGoods.length > 0) {
+			lines.push("--- LEATHER GOODS ORDER ---");
+			leatherGoods.forEach((g, i) => {
+				let detail = `${i + 1}. ${g.name} x${g.quantity} \u2014 ${formatNaira(g.price * g.quantity)}`;
+				if (g.selectedColor) detail += `\n   Colour: ${g.selectedColor}`;
+				if (g.euSize) detail += ` | EU Size: ${g.euSize}`;
+				if (g.footLength) detail += ` | Foot Length: ${g.footLength}cm`;
+				if (g.collectionName)
+					detail += `\n   Collection: ${g.collectionName}`;
+				if (g.selectedImageIndex)
+					detail += `\n   Selected Design: Image ${g.selectedImageIndex}`;
+				if (g.orderNotes) detail += `\n   Notes: ${g.orderNotes}`;
+				lines.push(detail);
+			});
+			lines.push("");
+		}
 
-    if (products.length > 0) {
-      lines.push('--- NAIL CARE PRODUCTS ---');
-      products.forEach((p, i) => {
-        lines.push(`${i + 1}. ${p.name} x${p.quantity} \u2014 ${formatNaira(p.price * p.quantity)}`);
-      });
-      lines.push('');
-    }
+		if (products.length > 0) {
+			lines.push("--- NAIL CARE PRODUCTS ---");
+			products.forEach((p, i) => {
+				lines.push(
+					`${i + 1}. ${p.name} x${p.quantity} \u2014 ${formatNaira(p.price * p.quantity)}`,
+				);
+			});
+			lines.push("");
+		}
 
-    if (pressOns.length > 0) {
-      lines.push('--- PRESS-ON ORDERS ---');
-      pressOns.forEach((p, i) => {
-        let detail = `${i + 1}. ${p.name} \u2014 ${formatNaira(p.price)}`;
-        if (p.customerName) detail += `\n   Name: ${p.customerName}`;
-        if (p.type) detail += `\n   Type: ${p.type}`;
-        detail += `\n   Shape: ${p.nailShape || 'N/A'}`;
-        detail += `\n   Quantity: ${p.quantity} set(s)`;
-        if (p.nailBedSize) detail += `\n   Nail Bed Size: ${p.nailBedSize}`;
-        if (p.presetSize) detail += `\n   Preset Size: ${p.presetSize}`;
-        if (p.selectedLength) detail += `\n   Length: ${p.selectedLength}`;
-        if (p.setIncludes?.length > 0) detail += `\n   Set Includes: ${p.setIncludes.join(', ')}`;
-        if (p.inspirationTags?.length > 0) detail += `\n   Inspiration: ${p.inspirationTags.join(', ')}`;
-        if (p.nailNotes) detail += `\n   Notes: ${p.nailNotes}`;
-        if (p.specialRequest) detail += `\n   [!] SPECIAL REQUEST — Made to Order (production: 10–14 days)`;
-        if (p.orderingForOthers && p.otherPeople?.length > 0) {
-          p.otherPeople.forEach((o) => {
-            detail += `\n   Also for: ${o.name || 'N/A'} \u2014 Shape: ${o.nailShape || 'Same'} \u2014 Nail Bed: ${o.nailBedSize || 'N/A'}`;
-          });
-        }
-        lines.push(detail);
-      });
-      lines.push('');
-    }
+		if (pressOns.length > 0) {
+			lines.push("--- PRESS-ON ORDERS ---");
+			pressOns.forEach((p, i) => {
+				let detail = `${i + 1}. ${p.name} \u2014 ${formatNaira(p.price)}`;
+				if (p.customerName) detail += `\n   Name: ${p.customerName}`;
+				if (p.type) detail += `\n   Type: ${p.type}`;
+				detail += `\n   Shape: ${p.nailShape || "N/A"}`;
+				detail += `\n   Quantity: ${p.quantity} set(s)`;
+				if (p.nailBedSize) detail += `\n   Nail Bed Size: ${p.nailBedSize}`;
+				if (p.presetSize) detail += `\n   Preset Size: ${p.presetSize}`;
+				if (p.selectedLength) detail += `\n   Length: ${p.selectedLength}`;
+				if (p.setIncludes?.length > 0)
+					detail += `\n   Set Includes: ${p.setIncludes.join(", ")}`;
+				if (p.inspirationTags?.length > 0)
+					detail += `\n   Inspiration: ${p.inspirationTags.join(", ")}`;
+				if (p.nailNotes) detail += `\n   Notes: ${p.nailNotes}`;
+				if (p.specialRequest)
+					detail += `\n   [!] SPECIAL REQUEST — Made to Order (production: 10–14 days)`;
+				if (p.orderingForOthers && p.otherPeople?.length > 0) {
+					p.otherPeople.forEach((o) => {
+						detail += `\n   Also for: ${o.name || "N/A"} \u2014 Shape: ${o.nailShape || "Same"} \u2014 Nail Bed: ${o.nailBedSize || "N/A"}`;
+					});
+				}
+				lines.push(detail);
+			});
+			lines.push("");
+		}
 
-    let totalLine = `Estimated Total: ${formatNaira(subtotal)}`;
-    if (appliedGiftCard && giftCardDiscount > 0) {
-      totalLine += `\nGift Card Applied: ${appliedGiftCard.code} \u2014 Discount: ${formatNaira(giftCardDiscount)}`;
-    }
-    if (referralValid && referralDiscount > 0) {
-      totalLine += `\nReferral Code Applied: ${pendingReferralCode} \u2014 Discount: ${formatNaira(referralDiscount)}`;
-    }
-    if (loyaltyUnits > 0 && loyaltyDiscount > 0) {
-      totalLine += `\nLoyalty Points Applied: ${loyaltyUnits * REDEMPTION_UNIT} pts \u2014 Discount: ${formatNaira(loyaltyDiscount)}`;
-    }
-    if (tierPerkDiscount > 0) {
-      totalLine += `\nStar Client Perk (5% off press-ons): -${formatNaira(tierPerkDiscount)}`;
-    }
-    if (giftCardDiscount > 0 || referralDiscount > 0 || loyaltyDiscount > 0 || tierPerkDiscount > 0) {
-      totalLine += `\nAmount Due: ${formatNaira(finalTotal)}`;
-    }
-    if (isDomestic && shippingCost > 0) {
-      totalLine += `\nShipping (Fez Delivery${isLagos ? ' — Lagos' : ' — Outside Lagos'}): ${formatNaira(shippingCost)}`;
-      totalLine += `\nGrand Total: ${formatNaira(grandTotal)}`;
-    } else if (!isDomestic) {
-      totalLine += `\nShipping: To be quoted via WhatsApp (international)`;
-    }
+		let totalLine = `Estimated Total: ${formatNaira(subtotal)}`;
+		if (appliedGiftCard && giftCardDiscount > 0) {
+			totalLine += `\nGift Card Applied: ${appliedGiftCard.code} \u2014 Discount: ${formatNaira(giftCardDiscount)}`;
+		}
+		if (referralValid && referralDiscount > 0) {
+			totalLine += `\nReferral Code Applied: ${pendingReferralCode} \u2014 Discount: ${formatNaira(referralDiscount)}`;
+		}
+		if (loyaltyUnits > 0 && loyaltyDiscount > 0) {
+			totalLine += `\nLoyalty Points Applied: ${loyaltyUnits * REDEMPTION_UNIT} pts \u2014 Discount: ${formatNaira(loyaltyDiscount)}`;
+		}
+		if (tierPerkDiscount > 0) {
+			totalLine += `\nStar Client Perk (5% off press-ons): -${formatNaira(tierPerkDiscount)}`;
+		}
+		if (
+			giftCardDiscount > 0 ||
+			referralDiscount > 0 ||
+			loyaltyDiscount > 0 ||
+			tierPerkDiscount > 0
+		) {
+			totalLine += `\nAmount Due: ${formatNaira(finalTotal)}`;
+		}
+		if (isDomestic && shippingCost > 0) {
+			totalLine += `\nShipping (Fez Delivery${isLagos ? " — Lagos" : " — Outside Lagos"}): ${formatNaira(shippingCost)}`;
+			totalLine += `\nGrand Total: ${formatNaira(grandTotal)}`;
+		} else if (!isDomestic) {
+			totalLine += `\nShipping: To be quoted via WhatsApp (international)`;
+		}
 
-    const message = `Hi! I\u2019d like to place an order.\n\n${lines.join('\n')}\n${totalLine}\n\nPlease confirm availability and payment details. Thank you!`;
-    const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
-    if (!paymentReference && leatherGoods.length === 0) window.open(waUrl, '_blank');
+		const message = `Hi! I\u2019d like to place an order.\n\n${lines.join("\n")}\n${totalLine}\n\nPlease confirm availability and payment details. Thank you!`;
+		const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
+		if (!paymentReference && leatherGoods.length === 0)
+			window.open(waUrl, "_blank");
 
-    // Background async operations (save shipping, decrement stock, save order, redeem gift card)
-    saveShippingDetails(user.uid, shipping).catch(() => {});
+		// Background async operations (save shipping, decrement stock, save order, redeem gift card)
+		saveShippingDetails(user.uid, shipping).catch(() => {});
 
-    // Decrement stock for retail products and ready-made press-ons
-    try {
-      const stockItems = [];
-      products.forEach((p) => {
-        if (p.categoryId && p.stock !== undefined) {
-          stockItems.push({ collection: 'retailCategories', categoryId: p.categoryId, productId: p.productId, quantity: p.quantity });
-        }
-      });
-      pressOns.forEach((p) => {
-        if (p.readyMade && !p.specialRequest && p.categoryId && p.stock !== undefined) {
-          stockItems.push({ collection: 'productCategories', categoryId: p.categoryId, productId: p.productId, quantity: Number(p.quantity) || 1 });
-        }
-      });
-      if (stockItems.length > 0) await decrementStockBatch(stockItems);
-    } catch (err) {
-      console.error('Stock decrement failed:', err);
-    }
+		// Decrement stock for retail products and ready-made press-ons
+		try {
+			const stockItems = [];
+			products.forEach((p) => {
+				if (p.categoryId && p.stock !== undefined) {
+					stockItems.push({
+						collection: "retailCategories",
+						categoryId: p.categoryId,
+						productId: p.productId,
+						quantity: p.quantity,
+					});
+				}
+			});
+			pressOns.forEach((p) => {
+				if (
+					p.readyMade &&
+					!p.specialRequest &&
+					p.categoryId &&
+					p.stock !== undefined
+				) {
+					stockItems.push({
+						collection: "productCategories",
+						categoryId: p.categoryId,
+						productId: p.productId,
+						quantity: Number(p.quantity) || 1,
+					});
+				}
+			});
+			if (stockItems.length > 0) await decrementStockBatch(stockItems);
+		} catch (err) {
+			console.error("Stock decrement failed:", err);
+		}
 
-    // Determine order type
-    const hasProducts = products.length > 0;
-    const hasPressOns = pressOns.length > 0;
-    const hasLeatherGoods = leatherGoods.length > 0;
-    const orderType =
-      hasLeatherGoods && !hasProducts && !hasPressOns ? 'leather' :
-      hasPressOns && !hasProducts ? 'pressOn' :
-      hasProducts && !hasPressOns ? 'retail' : 'mixed';
+		// Determine order type
+		const hasProducts = products.length > 0;
+		const hasPressOns = pressOns.length > 0;
+		const hasLeatherGoods = leatherGoods.length > 0;
+		const orderType =
+			hasLeatherGoods && !hasProducts && !hasPressOns
+				? "leather"
+				: hasPressOns && !hasProducts
+					? "pressOn"
+					: hasProducts && !hasPressOns
+						? "retail"
+						: "mixed";
 
-    // Save order to Firestore
-    let orderId = null;
-    try {
-      const allItems = [
-        ...leatherGoods.map((g) => ({
-          kind: 'leather',
-          name: g.name,
-          price: g.price,
-          quantity: g.quantity,
-          selectedColor: g.selectedColor,
-          ...(g.euSize && { euSize: g.euSize }),
-          ...(g.footLength && { footLength: g.footLength }),
-          ...(g.selectedImage && { selectedImage: g.selectedImage }),
-          ...(g.selectedImageIndex && { selectedImageIndex: g.selectedImageIndex }),
-          ...(g.orderNotes && { orderNotes: g.orderNotes }),
-          collectionId: g.collectionId,
-          collectionName: g.collectionName,
-        })),
-        ...products.map((p) => ({ kind: 'retail', name: p.name, price: p.price, quantity: p.quantity })),
-        ...pressOns.map((p) => ({
-          kind: 'pressOn', name: p.name, price: p.price, quantity: p.quantity || 1,
-          ...(p.nailShape && { nailShape: p.nailShape }),
-          ...(p.nailBedSize && { nailBedSize: p.nailBedSize }),
-          ...(p.presetSize && { presetSize: p.presetSize }),
-          ...(p.selectedLength && { selectedLength: p.selectedLength }),
-          ...(p.setIncludes?.length > 0 && { setIncludes: p.setIncludes }),
-          ...(p.inspirationTags?.length > 0 && { inspirationTags: p.inspirationTags }),
-          ...(p.nailNotes && { nailNotes: p.nailNotes }),
-          ...(p.specialRequest && { specialRequest: true }),
-          ...(p.orderingForOthers && p.otherPeople?.length > 0 && { otherPeople: p.otherPeople }),
-        })),
-      ];
-      const orderData = {
-        type: orderType,
-        total: grandTotal,
-        subtotal: finalTotal,
-        shippingCost,
-        customerName: shipping.name,
-        email: user.email || '',
-        items: allItems,
-        shipping,
-        shippingZone: shipping.shippingZone || 'domestic',
-      };
-      if (paymentReference) {
-        orderData.paymentReference = paymentReference;
-      }
-      if (appliedGiftCard) {
-        orderData.giftCardCode = appliedGiftCard.code;
-        orderData.giftCardDiscount = giftCardDiscount;
-      }
-      if (referralValid && referralDiscount > 0) {
-        orderData.referralCode = pendingReferralCode;
-        orderData.referralDiscount = referralDiscount;
-      }
-      if (loyaltyUnits > 0) {
-        orderData.loyaltyPointsUsed = loyaltyUnits * REDEMPTION_UNIT;
-        orderData.loyaltyDiscount = loyaltyDiscount;
-      }
-      const docRef = await saveOrder(user.uid, orderData);
-      orderId = docRef?.id || null;
-    } catch {
-      // continue even if order save fails
-    }
+		// Save order to Firestore
+		let orderId = null;
+		try {
+			const allItems = [
+				...leatherGoods.map((g) => ({
+					kind: "leather",
+					name: g.name,
+					price: g.price,
+					quantity: g.quantity,
+					selectedColor: g.selectedColor,
+					...(g.euSize && { euSize: g.euSize }),
+					...(g.footLength && { footLength: g.footLength }),
+					...(g.selectedImage && { selectedImage: g.selectedImage }),
+					...(g.selectedImageIndex && {
+						selectedImageIndex: g.selectedImageIndex,
+					}),
+					...(g.orderNotes && { orderNotes: g.orderNotes }),
+					collectionId: g.collectionId,
+					collectionName: g.collectionName,
+				})),
+				...products.map((p) => ({
+					kind: "retail",
+					name: p.name,
+					price: p.price,
+					quantity: p.quantity,
+				})),
+				...pressOns.map((p) => ({
+					kind: "pressOn",
+					name: p.name,
+					price: p.price,
+					quantity: p.quantity || 1,
+					...(p.nailShape && { nailShape: p.nailShape }),
+					...(p.nailBedSize && { nailBedSize: p.nailBedSize }),
+					...(p.presetSize && { presetSize: p.presetSize }),
+					...(p.selectedLength && { selectedLength: p.selectedLength }),
+					...(p.setIncludes?.length > 0 && { setIncludes: p.setIncludes }),
+					...(p.inspirationTags?.length > 0 && {
+						inspirationTags: p.inspirationTags,
+					}),
+					...(p.nailNotes && { nailNotes: p.nailNotes }),
+					...(p.specialRequest && { specialRequest: true }),
+					...(p.orderingForOthers &&
+						p.otherPeople?.length > 0 && { otherPeople: p.otherPeople }),
+				})),
+			];
+			const orderData = {
+				type: orderType,
+				total: grandTotal,
+				subtotal: finalTotal,
+				shippingCost,
+				customerName: shipping.name,
+				email: user.email || "",
+				items: allItems,
+				shipping,
+				shippingZone: shipping.shippingZone || "domestic",
+			};
+			if (paymentReference) {
+				orderData.paymentReference = paymentReference;
+			}
+			if (appliedGiftCard) {
+				orderData.giftCardCode = appliedGiftCard.code;
+				orderData.giftCardDiscount = giftCardDiscount;
+			}
+			if (referralValid && referralDiscount > 0) {
+				orderData.referralCode = pendingReferralCode;
+				orderData.referralDiscount = referralDiscount;
+			}
+			if (loyaltyUnits > 0) {
+				orderData.loyaltyPointsUsed = loyaltyUnits * REDEMPTION_UNIT;
+				orderData.loyaltyDiscount = loyaltyDiscount;
+			}
+			const docRef = await saveOrder(user.uid, orderData);
+			orderId = docRef?.id || null;
+		} catch {
+			// continue even if order save fails
+		}
 
-    // Deduct redeemed loyalty points
-    if (loyaltyUnits > 0) {
-      redeemLoyaltyPoints(user.uid, loyaltyUnits * REDEMPTION_UNIT).catch(() => {});
-      clearPendingLoyaltyReward();
-    }
+		// Deduct redeemed loyalty points
+		if (loyaltyUnits > 0) {
+			redeemLoyaltyPoints(user.uid, loyaltyUnits * REDEMPTION_UNIT).catch(
+				() => {},
+			);
+			clearPendingLoyaltyReward();
+		}
 
-    // Redeem gift card if applied
-    if (appliedGiftCard && giftCardDiscount > 0) {
-      try {
-        await redeemGiftCard(appliedGiftCard.code, giftCardDiscount, orderId);
-      } catch (err) {
-        console.error('Gift card redemption failed:', err);
-      }
-    }
+		// Redeem gift card if applied
+		if (appliedGiftCard && giftCardDiscount > 0) {
+			try {
+				await redeemGiftCard(
+					appliedGiftCard.code,
+					giftCardDiscount,
+					orderId,
+				);
+			} catch (err) {
+				console.error("Gift card redemption failed:", err);
+			}
+		}
 
-    // Apply referral: award referrer points and track usage
-    if (referralValid && pendingReferralCode) {
-      applyReferral(pendingReferralCode, user.uid).catch(() => {});
-      sessionStorage.removeItem('pendingReferralCode');
-    }
+		// Apply referral: award referrer points and track usage
+		if (referralValid && pendingReferralCode) {
+			applyReferral(pendingReferralCode, user.uid).catch(() => {});
+			sessionStorage.removeItem("pendingReferralCode");
+		}
 
-    setSubmitting(false);
-    showToast('Order placed successfully! Check your email for confirmation.', 'success');
-    clearCart();
-    navigate('/thank-you', {
-      state: {
-        type: orderType,
-        customerName: shipping.name,
-        email: user?.email || '',
-        shipping,
-        orderId,
-        whatsappUrl: waUrl,
-        paymentReference: paymentReference || null,
-        items: [
-          ...leatherGoods.map((g) => ({
-            kind: 'leather',
-            name: g.name,
-            price: g.price * g.quantity,
-            quantity: g.quantity,
-            selectedColor: g.selectedColor,
-            euSize: g.euSize,
-            footLength: g.footLength,
-            selectedImage: g.selectedImage,
-            selectedImageIndex: g.selectedImageIndex,
-            orderNotes: g.orderNotes,
-            collectionId: g.collectionId,
-          })),
-          ...products.map((p) => ({ kind: 'retail', name: p.name, price: p.price * (p.quantity || 1), quantity: p.quantity })),
-          ...pressOns.map((p) => ({ kind: 'press-on', name: p.name, price: p.price * (p.quantity || 1), nailShape: p.nailShape, quantity: p.quantity || 1, selectedLength: p.selectedLength, setIncludes: p.setIncludes, inspirationTags: p.inspirationTags, nailNotes: p.nailNotes, specialRequest: p.specialRequest || false })),
-        ],
-        total: leatherGoods.reduce((s, g) => s + g.price * g.quantity, 0) + products.reduce((s, i) => s + i.price * (i.quantity || 1), 0) + pressOns.reduce((s, i) => s + i.price * (i.quantity || 1), 0),
-        finalTotal: grandTotal,
-        giftCardDiscount,
-        referralDiscount,
-        loyaltyDiscount,
-        shippingCost,
-      },
-    });
+		setSubmitting(false);
+		showToast(
+			"Order placed successfully! Check your email for confirmation.",
+			"success",
+		);
+		clearCart();
+		navigate("/thank-you", {
+			state: {
+				type: orderType,
+				customerName: shipping.name,
+				email: user?.email || "",
+				shipping,
+				orderId,
+				whatsappUrl: waUrl,
+				paymentReference: paymentReference || null,
+				items: [
+					...leatherGoods.map((g) => ({
+						kind: "leather",
+						name: g.name,
+						price: g.price * g.quantity,
+						quantity: g.quantity,
+						selectedColor: g.selectedColor,
+						euSize: g.euSize,
+						footLength: g.footLength,
+						selectedImage: g.selectedImage,
+						selectedImageIndex: g.selectedImageIndex,
+						orderNotes: g.orderNotes,
+						collectionId: g.collectionId,
+					})),
+					...products.map((p) => ({
+						kind: "retail",
+						name: p.name,
+						price: p.price * (p.quantity || 1),
+						quantity: p.quantity,
+					})),
+					...pressOns.map((p) => ({
+						kind: "press-on",
+						name: p.name,
+						price: p.price * (p.quantity || 1),
+						nailShape: p.nailShape,
+						quantity: p.quantity || 1,
+						selectedLength: p.selectedLength,
+						setIncludes: p.setIncludes,
+						inspirationTags: p.inspirationTags,
+						nailNotes: p.nailNotes,
+						specialRequest: p.specialRequest || false,
+					})),
+				],
+				total:
+					leatherGoods.reduce((s, g) => s + g.price * g.quantity, 0) +
+					products.reduce((s, i) => s + i.price * (i.quantity || 1), 0) +
+					pressOns.reduce((s, i) => s + i.price * (i.quantity || 1), 0),
+				finalTotal: grandTotal,
+				giftCardDiscount,
+				referralDiscount,
+				loyaltyDiscount,
+				shippingCost,
+			},
+		});
   };
 
   const payWithPaystackFull = (shipping) => {
