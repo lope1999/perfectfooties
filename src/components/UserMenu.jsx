@@ -17,26 +17,18 @@ import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from "../context/AuthContext";
 
 export default function UserMenu() {
-  const { user, signInWithGoogle, signOut, isAdmin } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [signingIn, setSigningIn] = useState(false);
 
   const handleClick = async (e) => {
     if (user) {
       setAnchorEl(e.currentTarget);
     } else {
-      setSigningIn(true);
-      try {
-        await signInWithGoogle();
-      } catch {
-        // user closed popup
-      } finally {
-        setSigningIn(false);
-      }
+      navigate("/auth-method");
     }
   };
 
@@ -49,7 +41,8 @@ export default function UserMenu() {
 
   const handleSignOut = () => {
     handleClose();
-    signOut();
+    showToast("You've been signed out. See you soon!", "info");
+		setTimeout(() => signOut(), 300);
   };
 
   return (

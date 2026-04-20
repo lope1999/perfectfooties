@@ -27,6 +27,7 @@ import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
 import { useAuth } from "../context/AuthContext";
 import { useThemeMode } from "../context/ThemeContext";
+import { useNotifications } from "../context/NotificationContext";
 
 const navLinkSx = (isActive) => ({
   color: isActive ? '#e3242b' : 'var(--text-main)',
@@ -73,7 +74,7 @@ const navItems = [
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, signInWithGoogle, signOut, isAdmin } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const { mode, toggleMode } = useThemeMode();
   const [hovered, setHovered] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -354,7 +355,11 @@ export default function Navbar() {
 							<ListItemButton
 								onClick={() => {
 									setDrawerOpen(false);
-									signOut();
+									showToast(
+										"You've been signed out. See you soon!",
+										"info",
+									);
+									setTimeout(() => signOut(), 300);
 								}}
 								sx={{
 									py: 1,
@@ -377,7 +382,7 @@ export default function Navbar() {
 						<ListItemButton
 							onClick={() => {
 								setDrawerOpen(false);
-								signInWithGoogle().catch(() => {});
+								navigate("/auth-method");
 							}}
 							sx={{
 								py: 1.5,

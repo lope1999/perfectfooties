@@ -26,6 +26,10 @@ import CollectionPage from './pages/CollectionPage';
 import ItemDetailPage from './pages/ItemDetailPage';
 import CustomOrderPage from './pages/CustomOrderPage';
 import OrderDetailPage from './pages/OrderDetailPage';
+import AuthMethodPage from "./pages/AuthMethodPage";
+import LoginPage from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
+import PasswordResetPage from "./pages/PasswordResetPage";
 
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 
@@ -56,7 +60,14 @@ function App() {
 					<Route path="/" element={<HomePage />} />
 					<Route path="/cart" element={<CartPage />} />
 					<Route path="/checkout" element={<CheckoutPage />} />
-					<Route path="/account" element={<AccountPage />} />
+					<Route path="/account" element={<AccountPage />} />{" "}
+					<Route path="/auth-method" element={<AuthMethodPage />} />
+					<Route path="/login" element={<LoginPage />} />
+					<Route path="/signup" element={<SignUpPage />} />
+					<Route
+						path="/password-reset"
+						element={<PasswordResetPage />}
+					/>{" "}
 					<Route path="/our-story" element={<OurStoryPage />} />
 					<Route path="/blog" element={<BlogPage />} />
 					<Route path="/testimonials" element={<TestimonialsPage />} />

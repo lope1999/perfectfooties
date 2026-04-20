@@ -423,6 +423,15 @@ export default function AccountPage() {
 		setTimeout(() => signOut(), 300);
 	};
 
+	const handleAccountSignIn = () => {
+		navigate("/auth-method");
+	};
+
+	const handleAccountPageSignOut = () => {
+		showToast("You've been signed out. See you soon!", "info");
+		setTimeout(() => signOut(), 300);
+	};
+
 	if (authLoading) {
 		return (
 			<Box sx={{ pt: 16, textAlign: "center" }}>
@@ -451,12 +460,14 @@ export default function AccountPage() {
 					>
 						Sign in to your account
 					</Typography>
-					<Typography sx={{ color: "var(--text-muted)", mb: 4, lineHeight: 1.7 }}>
+					<Typography
+						sx={{ color: "var(--text-muted)", mb: 4, lineHeight: 1.7 }}
+					>
 						Sign in with Google to view your order history, track
 						deliveries, and manage your profile.
 					</Typography>
 					<Button
-						onClick={() => signInWithGoogle().catch(() => {})}
+						onClick={handleAccountSignIn}
 						sx={{
 							backgroundColor: "#e3242b",
 							color: "#fff",

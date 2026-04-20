@@ -1,5 +1,13 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
+import {
+	onAuthStateChanged,
+	signInWithPopup,
+	signOut as firebaseSignOut,
+	createUserWithEmailAndPassword,
+	signInWithEmailAndPassword,
+	sendPasswordResetEmail,
+	updateProfile,
+} from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../lib/firebase';
 
@@ -53,14 +61,45 @@ export function AuthProvider({ children }) {
 
   const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
 
+  const signUpWithEmail = async (email, password, displayName) => {
+		const userCredential = await createUserWithEmailAndPassword(
+			auth,
+			email,
+			password,
+		);
+		if (displayName) {
+			await updateProfile(userCredential.user, { displayName });
+		}
+		return userCredential;
+  };
+
+  const signInWithEmail = async (email, password) => {
+		return signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const resetPassword = async (email) => {
+		return sendPasswordResetEmail(auth, email);
+  };
+
   const signOut = () => firebaseSignOut(auth);
 
   const isAdmin = ADMIN_EMAILS.has(user?.email);
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut, isAdmin }}>
-      {children}
-    </AuthContext.Provider>
+		<AuthContext.Provider
+			value={{
+				user,
+				loading,
+				signInWithGoogle,
+				signUpWithEmail,
+				signInWithEmail,
+				resetPassword,
+				signOut,
+				isAdmin,
+			}}
+		>
+			{children}
+		</AuthContext.Provider>
   );
 }
 
