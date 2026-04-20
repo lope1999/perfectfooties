@@ -402,7 +402,7 @@ export default function CheckoutPage() {
 			];
 			const orderData = {
 				type: orderType,
-				status: "confirmed",
+				status: "pending",
 				total: grandTotal,
 				subtotal: finalTotal,
 				shippingCost,
@@ -429,8 +429,9 @@ export default function CheckoutPage() {
 			}
 			const docRef = await saveOrder(user.uid, orderData);
 			orderId = docRef?.id || null;
-		} catch {
-			// continue even if order save fails
+		} catch (err) {
+			console.error("Order save failed:", err);
+			showToast("Order failed to save. Please contact support.", "error");
 		}
 
 		// Deduct redeemed loyalty points

@@ -20,6 +20,9 @@ import { updateBookedSlotStatus } from './bookedSlotsService';
 export async function saveOrder(uid, data) {
   requireString(uid, 'uid');
   validateOrderType(data.type);
+  if (data.status) {
+		validateOrderStatus(data.status, "order");
+  }
   const customerName = sanitizeString(data.customerName, 200);
   const total = validateNumber(data.total, { min: 0, label: 'total' });
 
