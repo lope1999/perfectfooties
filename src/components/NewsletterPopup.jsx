@@ -107,58 +107,126 @@ export default function NewsletterPopup() {
   };
 
   return (
-    <>
-      <Dialog open={open} onClose={() => close(true)} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box component="img" src="/images/logo.png" alt="PerfectFooties" sx={{ width: 54, height: 57, objectFit: 'contain' }} />
-              <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700 }}>PerfectFooties</Typography>
-            </Box>
-            <IconButton onClick={() => close(true)}><CloseIcon /></IconButton>
-          </DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', gap: 3, alignItems: 'center', flexWrap: 'wrap' }}>
-            <Box component="img" src="/images/logo.png" alt="PerfectFooties logo" sx={{ width: 200, height: 200, objectFit: 'contain', borderRadius: 1, display: { xs: 'none', md: 'block' } }} />
-            <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontFamily: '\"Georgia\", serif', fontSize: '1.25rem', fontWeight: 700, mb: 1 }}>Be the first to meet new solemates, sign up for early matches!</Typography>
-              <Typography sx={{ color: 'var(--text-muted)', mb: 2 }}>
-                Join our list for first access to handcrafted footwear, bags, and belts — plus exclusive deals and curated styling tips.
-              </Typography>
+		<>
+			<Dialog
+				open={open}
+				onClose={() => close(true)}
+				maxWidth="md"
+				fullWidth
+			>
+				<DialogTitle
+					sx={{
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "space-between",
+					}}
+				>
+					<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+						<Box
+							component="img"
+							src="/images/logo.png"
+							alt="PerfectFooties"
+							sx={{ width: 54, height: 57, objectFit: "contain" }}
+						/>
+						<Typography
+							sx={{ fontFamily: '"Georgia", serif', fontWeight: 700 }}
+						>
+							PerfectFooties
+						</Typography>
+					</Box>
+					<IconButton onClick={() => close(true)}>
+						<CloseIcon />
+					</IconButton>
+				</DialogTitle>
+				<DialogContent>
+					<Box
+						sx={{
+							display: "flex",
+							gap: 3,
+							alignItems: "center",
+							flexWrap: "wrap",
+						}}
+					>
+						<Box
+							component="img"
+							src="/images/logo.png"
+							alt="PerfectFooties logo"
+							sx={{
+								width: 200,
+								height: 200,
+								objectFit: "contain",
+								borderRadius: 1,
+								display: { xs: "none", md: "block" },
+							}}
+						/>
+						<Box sx={{ flex: 1 }}>
+							<Typography
+								sx={{
+									fontFamily: '\"Georgia\", serif',
+									fontSize: "1.25rem",
+									fontWeight: 700,
+									mb: 1,
+								}}
+							>
+								Your next favourite handmade bag or slide is coming…
+							</Typography>
+							<Typography sx={{ color: "var(--text-muted)", mb: 2 }}>
+								Be the first to know. Get early access to new drops,
+								exclusive deals, and styling tips you’ll actually use.
+							</Typography>
 
-              <TextField
-                placeholder="Your name (optional)"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                fullWidth
-                size="small"
-                sx={{ mb: 1 }}
-                onKeyDown={(e) => e.key === 'Enter' && handleSubscribe()}
-              />
+							<TextField
+								placeholder="Your name (optional)"
+								value={name}
+								onChange={(e) => setName(e.target.value)}
+								fullWidth
+								size="small"
+								sx={{ mb: 1 }}
+								onKeyDown={(e) =>
+									e.key === "Enter" && handleSubscribe()
+								}
+							/>
 
-              <TextField
-                placeholder="Your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                fullWidth
-                size="small"
-                sx={{ mb: 2 }}
-                onKeyDown={(e) => e.key === 'Enter' && handleSubscribe()}
-              />
+							<TextField
+								placeholder="Your email address"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								fullWidth
+								size="small"
+								sx={{ mb: 2 }}
+								onKeyDown={(e) =>
+									e.key === "Enter" && handleSubscribe()
+								}
+							/>
 
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button variant="contained" onClick={handleSubscribe} disabled={status === 'loading'} sx={{ backgroundColor: 'var(--text-purple)' }}>
-                  {status === 'loading' ? 'Saving…' : 'Sign Up'}
-                </Button>
-                <Button onClick={() => close(true)}>Maybe later</Button>
-              </Box>
-            </Box>
-          </Box>
-        </DialogContent>
-      </Dialog>
+							<Box sx={{ display: "flex", gap: 1 }}>
+								<Button
+									variant="contained"
+									onClick={handleSubscribe}
+									disabled={status === "loading"}
+									sx={{ backgroundColor: "var(--text-purple)" }}
+								>
+									{status === "loading" ? "Saving…" : "Sign Up"}
+								</Button>
+								<Button onClick={() => close(true)}>Maybe later</Button>
+							</Box>
+						</Box>
+					</Box>
+				</DialogContent>
+			</Dialog>
 
-      <Snackbar open={snack.open} autoHideDuration={3000} onClose={() => setSnack((s) => ({ ...s, open: false }))}>
-        <Alert severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))}>{snack.message}</Alert>
-      </Snackbar>
-    </>
+			<Snackbar
+				open={snack.open}
+				autoHideDuration={3000}
+				onClose={() => setSnack((s) => ({ ...s, open: false }))}
+			>
+				<Alert
+					severity={snack.severity}
+					onClose={() => setSnack((s) => ({ ...s, open: false }))}
+				>
+					{snack.message}
+				</Alert>
+			</Snackbar>
+		</>
   );
 }

@@ -120,6 +120,7 @@ export default function Navbar() {
 								: "#FFF8F0"
 							: "transparent",
 					transition: "background-color 0.4s ease",
+					overflow: "visible",
 					zIndex: 1200,
 				}}
 			>
@@ -131,6 +132,7 @@ export default function Navbar() {
 							alignItems: "center",
 							cursor: "pointer",
 							gap: 1,
+							overflow: "visible",
 						}}
 						onClick={() => navigate("/")}
 					>
@@ -139,10 +141,15 @@ export default function Navbar() {
 							src="/images/logo.png"
 							alt="PerfectFooties"
 							sx={{
-								height: { xs: 60, md: 80 },
+								height: { xs: 45, md: 65 },
 								width: "auto",
 								objectFit: "contain",
 								display: "block",
+								// visually enlarge on large screens without increasing toolbar height
+								transform: { md: "scale(2.5)" },
+								transformOrigin: "left center",
+								// allow the image to overflow the toolbar area
+								WebkitTransform: { md: "scale(2.5)" },
 							}}
 						/>
 						<Typography
@@ -154,20 +161,10 @@ export default function Navbar() {
 								lineHeight: 1,
 								letterSpacing: "0.02em",
 								userSelect: "none",
+								display: { xs: "inline", md: "none" },
 							}}
 						>
-							<Box
-								component="span"
-								sx={{ display: { xs: "inline", md: "none" } }}
-							>
-								PF
-							</Box>
-							<Box
-								component="span"
-								sx={{ display: { xs: "none", md: "inline" } }}
-							>
-								PerfectFooties
-							</Box>
+							<Box component="span">PF</Box>
 						</Typography>
 					</Box>
 
