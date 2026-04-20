@@ -402,6 +402,7 @@ export default function CheckoutPage() {
 			];
 			const orderData = {
 				type: orderType,
+				status: "confirmed",
 				total: grandTotal,
 				subtotal: finalTotal,
 				shippingCost,

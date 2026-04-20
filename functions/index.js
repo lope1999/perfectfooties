@@ -403,3 +403,35 @@ exports.onSubscriberCreated = onDocumentCreated(
 		}
 	}
 );
+
+// ── Trigger: Order created with confirmed status — send confirmation email ───
+exports.onOrderCreated = onDocumentCreated(
+	{ document: 'users/{uid}/orders/{orderId}', secrets: [MAILTRAP_TOKEN] },
+	async (event) => {
+		const data = event.data?.data();
+		if (!data || data.status !== 'confirmed' || !data.email) return;
+
+		const token = MAILTRAP_TOKEN.value();
+		if (!token) return;
+
+		try {
+			const orderId = event.params?.orderId;
+			const customerName = data.customerName || 'Customer';
+			const items = data.items || [];
+			const total = data.finalTotal ?? data.total ?? 0;
+
+			await sendOrderConfirmationEmail({
+				token,
+				email: data.email,
+				customerName,
+				orderId,
+				items,
+				total,
+				shipping: data.shipping || null,
+			});
+			logger.info(`Order confirmation email sent to ${data.email} for order ${orderId}`);
+		} catch (err) {
+			logger.error('Failed to send order confirmation email on create:', err);
+		}
+	}
+);
