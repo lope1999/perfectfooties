@@ -147,47 +147,83 @@ function SectionHeader({ title, icon, onViewAll }) {
 
 
 function LowStockCard({ product }) {
-  const { name, stock, categoryName } = product;
+	const { name, stock, categoryName, color } = product;
   const severe = stock <= 2;
   const maxStock = 5;
   const progress = (stock / maxStock) * 100;
 
   return (
-    <Paper sx={{ p: 2, mb: 1.5, borderRadius: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-        <Typography sx={{ fontFamily, fontWeight: 600, fontSize: '0.9rem', minWidth: 0 }} noWrap>
-          {name}
-        </Typography>
-        <Chip
-          label={`${stock} left`}
-          size="small"
-          sx={{
-            fontFamily,
-            fontSize: '0.75rem',
-            bgcolor: severe ? '#ffebee' : '#fff3e0',
-            color: severe ? '#d32f2f' : '#e65100',
-            fontWeight: 600,
-            flexShrink: 0,
-            ml: 1,
-          }}
-        />
-      </Box>
-      <LinearProgress
-        variant="determinate"
-        value={progress}
-        sx={{
-          height: 6,
-          borderRadius: 3,
-          bgcolor: severe ? '#ffcdd2' : '#ffe0b2',
-          '& .MuiLinearProgress-bar': {
-            bgcolor: severe ? '#d32f2f' : '#e65100',
-            borderRadius: 3,
-          },
-          mb: 0.5,
-        }}
-      />
-      <Typography sx={{ fontFamily, fontSize: '0.75rem', color: '#999' }}>{categoryName}</Typography>
-    </Paper>
+		<Paper sx={{ p: 2, mb: 1.5, borderRadius: 2 }}>
+			<Box
+				sx={{
+					display: "flex",
+					justifyContent: "space-between",
+					alignItems: "center",
+					mb: 1,
+				}}
+			>
+				<Typography
+					sx={{
+						fontFamily,
+						fontWeight: 600,
+						fontSize: "0.9rem",
+						minWidth: 0,
+					}}
+					noWrap
+				>
+					{name}
+				</Typography>
+				<Chip
+					label={`${stock} left`}
+					size="small"
+					sx={{
+						fontFamily,
+						fontSize: "0.75rem",
+						bgcolor: severe ? "#ffebee" : "#fff3e0",
+						color: severe ? "#d32f2f" : "#e65100",
+						fontWeight: 600,
+						flexShrink: 0,
+						ml: 1,
+					}}
+				/>
+			</Box>
+			<LinearProgress
+				variant="determinate"
+				value={progress}
+				sx={{
+					height: 6,
+					borderRadius: 3,
+					bgcolor: severe ? "#ffcdd2" : "#ffe0b2",
+					"& .MuiLinearProgress-bar": {
+						bgcolor: severe ? "#d32f2f" : "#e65100",
+						borderRadius: 3,
+					},
+					mb: 0.5,
+				}}
+			/>
+			<Typography sx={{ fontFamily, fontSize: "0.75rem", color: "#999" }}>
+				{categoryName}
+				{color ? ` · ${color}` : ""}
+			</Typography>
+			<Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
+				<Button
+					size="small"
+					onClick={() =>
+						window.dispatchEvent(
+							new CustomEvent("admin:navigate", {
+								detail: {
+									section: "collections",
+									productId: product.productId,
+								},
+							}),
+						)
+					}
+					sx={{ fontSize: "0.72rem", textTransform: "none" }}
+				>
+					Manage
+				</Button>
+			</Box>
+		</Paper>
   );
 }
 

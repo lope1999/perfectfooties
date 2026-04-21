@@ -24,60 +24,72 @@ import { seedAndFetchBlogPosts } from '../lib/blogService';
 import { blogPosts as staticBlogPosts } from '../data/blog';
 
 export default function AdminPage() {
-  const [section, setSection] = useState('dashboard');
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
-  const [orders, setOrders] = useState([]);
-  const [giftCards, setGiftCards] = useState([]);
-  const [blogPosts, setBlogPosts] = useState([]);
-  const [galleryImages, setGalleryImages] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [shopProducts, setShopProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+	const [section, setSection] = useState("dashboard");
+	const [mobileOpen, setMobileOpen] = useState(false);
+	const [collapsed, setCollapsed] = useState(false);
+	const [orders, setOrders] = useState([]);
+	const [giftCards, setGiftCards] = useState([]);
+	const [blogPosts, setBlogPosts] = useState([]);
+	const [galleryImages, setGalleryImages] = useState([]);
+	const [users, setUsers] = useState([]);
+	const [shopProducts, setShopProducts] = useState([]);
+	const [loading, setLoading] = useState(true);
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [o, gc, uf, bp, gi, sp] = await Promise.allSettled([
-        fetchAllOrders(),
-        fetchAllGiftCards(),
-        fetchAllUsers(),
-        seedAndFetchBlogPosts(staticBlogPosts),
-        fetchGalleryImages(),
-        fetchProducts(),
-      ]);
+	const loadData = useCallback(async () => {
+		setLoading(true);
+		try {
+			const [o, gc, uf, bp, gi, sp] = await Promise.allSettled([
+				fetchAllOrders(),
+				fetchAllGiftCards(),
+				fetchAllUsers(),
+				seedAndFetchBlogPosts(staticBlogPosts),
+				fetchGalleryImages(),
+				fetchProducts(),
+			]);
 
-      if (o.status === 'fulfilled') {
-        setOrders(o.value);
-      } else {
-        console.error('Orders load error:', o.reason);
-        setOrders([]);
-      }
+			if (o.status === "fulfilled") {
+				setOrders(o.value);
+			} else {
+				console.error("Orders load error:", o.reason);
+				setOrders([]);
+			}
 
-      setGiftCards(gc.status === 'fulfilled' ? gc.value : []);
-      setBlogPosts(bp.status === 'fulfilled' ? bp.value : staticBlogPosts);
-      setGalleryImages(gi.status === 'fulfilled' ? gi.value : []);
+			setGiftCards(gc.status === "fulfilled" ? gc.value : []);
+			setBlogPosts(bp.status === "fulfilled" ? bp.value : staticBlogPosts);
+			setGalleryImages(gi.status === "fulfilled" ? gi.value : []);
 
-      const rawUsers = uf.status === 'fulfilled' ? uf.value : [];
-      const allOrders = o.status === 'fulfilled' ? o.value : [];
-      setUsers(computeUserStats(rawUsers, allOrders));
-      setShopProducts(sp.status === 'fulfilled' ? sp.value : []);
-    } catch (err) {
-      console.error('Admin data load error:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+			const rawUsers = uf.status === "fulfilled" ? uf.value : [];
+			const allOrders = o.status === "fulfilled" ? o.value : [];
+			setUsers(computeUserStats(rawUsers, allOrders));
+			setShopProducts(sp.status === "fulfilled" ? sp.value : []);
+		} catch (err) {
+			console.error("Admin data load error:", err);
+		} finally {
+			setLoading(false);
+		}
+	}, []);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+	useEffect(() => {
+		loadData();
+	}, [loadData]);
 
-  const renderSection = () => {
-    switch (section) {
+	// Listen for lightweight navigation events from dashboard cards (e.g. Manage buttons)
+	useEffect(() => {
+		const handler = (e) => {
+			try {
+				const d = e.detail || {};
+				if (d.section) setSection(d.section);
+			} catch (err) {}
+		};
+		window.addEventListener("admin:navigate", handler);
+		return () => window.removeEventListener("admin:navigate", handler);
+	}, []);
+
+	const renderSection = () => {
+		switch (section) {
 			case "dashboard":
 				return (
 					<DashboardSection
@@ -138,37 +150,49 @@ export default function AdminPage() {
 			default:
 				return null;
 		}
-  };
+	};
 
-  return (
-    <AdminGuard>
-      <Box sx={{ display: 'flex', minHeight: '100vh', minWidth: 'fit-content', backgroundColor: '#f5f5f5' }}>
-        <AdminSidebar
-          active={section}
-          onSelect={setSection}
-          mobileOpen={mobileOpen}
-          onMobileClose={() => setMobileOpen(false)}
-          collapsed={collapsed}
-          onToggleCollapse={() => setCollapsed(c => !c)}
-        />
-        <Box
-          sx={{
-            flex: 1,
-            ml: isMobile ? 0 : `${collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH}px`,
-            p: { xs: 2, md: 3 },
-            pt: { xs: 10, md: 11 },
-            minHeight: '100vh',
-            minWidth: 0,
-          }}
-        >
-          {isMobile && (
-            <IconButton onClick={() => setMobileOpen(true)} sx={{ mb: 1, color: 'var(--text-purple)' }}>
-              <MenuIcon />
-            </IconButton>
-          )}
-          {renderSection()}
-        </Box>
-      </Box>
-    </AdminGuard>
-  );
+	return (
+		<AdminGuard>
+			<Box
+				sx={{
+					display: "flex",
+					minHeight: "100vh",
+					minWidth: "fit-content",
+					backgroundColor: "#f5f5f5",
+				}}
+			>
+				<AdminSidebar
+					active={section}
+					onSelect={setSection}
+					mobileOpen={mobileOpen}
+					onMobileClose={() => setMobileOpen(false)}
+					collapsed={collapsed}
+					onToggleCollapse={() => setCollapsed((c) => !c)}
+				/>
+				<Box
+					sx={{
+						flex: 1,
+						ml: isMobile
+							? 0
+							: `${collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH}px`,
+						p: { xs: 2, md: 3 },
+						pt: { xs: 10, md: 11 },
+						minHeight: "100vh",
+						minWidth: 0,
+					}}
+				>
+					{isMobile && (
+						<IconButton
+							onClick={() => setMobileOpen(true)}
+							sx={{ mb: 1, color: "var(--text-purple)" }}
+						>
+							<MenuIcon />
+						</IconButton>
+					)}
+					{renderSection()}
+				</Box>
+			</Box>
+		</AdminGuard>
+	);
 }

@@ -2691,39 +2691,79 @@ function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
 		<Box
 			onClick={() => onViewDetail(order.id)}
 			sx={{
-				border: '1px solid #E8D5B0',
+				border: "1px solid #E8D5B0",
 				borderRadius: 3,
 				p: 2.5,
 				mb: 2,
-				backgroundColor: isCancelled ? '#fff5f5' : '#fff',
+				backgroundColor: isCancelled ? "#fff5f5" : "#fff",
 				opacity: isCancelled ? 0.85 : 1,
-				transition: 'box-shadow 0.2s, border-color 0.2s',
-				cursor: 'pointer',
-				'&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.1)', borderColor: '#e3242b' },
+				transition: "box-shadow 0.2s, border-color 0.2s",
+				cursor: "pointer",
+				"&:hover": {
+					boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
+					borderColor: "#e3242b",
+				},
 			}}
 		>
 			{/* Header row */}
-			<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+			<Box
+				sx={{
+					display: "flex",
+					justifyContent: "space-between",
+					alignItems: "flex-start",
+					mb: 1.5,
+					flexWrap: "wrap",
+					gap: 1,
+				}}
+			>
 				<Box>
-					<Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1rem', color: '#1a1a1a' }}>
+					<Typography
+						sx={{
+							fontFamily: '"Georgia", serif',
+							fontWeight: 700,
+							fontSize: "1rem",
+							color: "#1a1a1a",
+						}}
+					>
 						Order #{order.id?.slice(-6).toUpperCase()}
 					</Typography>
-					<Typography sx={{ fontSize: '0.78rem', color: '#888', mt: 0.3 }}>
+					<Typography sx={{ fontSize: "0.78rem", color: "#888", mt: 0.3 }}>
 						{order.createdAt?.toDate
-							? order.createdAt.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-							: 'Date unknown'}
+							? order.createdAt
+									.toDate()
+									.toLocaleDateString("en-GB", {
+										day: "numeric",
+										month: "short",
+										year: "numeric",
+									})
+							: "Date unknown"}
 					</Typography>
 				</Box>
-				<Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+				<Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
 					<Chip
 						label={typeLabel}
 						size="small"
-						sx={{ backgroundColor: '#FFF8F0', color: '#c9792e', fontWeight: 600, fontSize: '0.72rem', borderRadius: 2 }}
+						sx={{
+							backgroundColor: "#FFF8F0",
+							color: "#c9792e",
+							fontWeight: 600,
+							fontSize: "0.72rem",
+							borderRadius: 2,
+						}}
 					/>
 					<Chip
-						label={order.status?.charAt(0).toUpperCase() + order.status?.slice(1) || 'Pending'}
+						label={
+							order.status?.charAt(0).toUpperCase() +
+								order.status?.slice(1) || "Pending"
+						}
 						size="small"
-						sx={{ backgroundColor: statusColor + '22', color: statusColor, fontWeight: 700, fontSize: '0.72rem', borderRadius: 2 }}
+						sx={{
+							backgroundColor: statusColor + "22",
+							color: statusColor,
+							fontWeight: 700,
+							fontSize: "0.72rem",
+							borderRadius: 2,
+						}}
 					/>
 				</Box>
 			</Box>
@@ -2732,13 +2772,39 @@ function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
 			{Array.isArray(order.items) && order.items.length > 0 && (
 				<Box sx={{ mb: 1.5 }}>
 					{order.items.map((item, i) => (
-						<Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#555', py: 0.3 }}>
-							<Typography sx={{ fontSize: '0.85rem' }}>
-								{item.name || item.productName || 'Item'}{item.quantity ? ` x${item.quantity}` : ''}
+						<Box
+							key={i}
+							sx={{
+								display: "flex",
+								justifyContent: "space-between",
+								fontSize: "0.85rem",
+								color: "#555",
+								py: 0.3,
+							}}
+						>
+							<Typography sx={{ fontSize: "0.85rem" }}>
+								{item.name || item.productName || "Item"}
+								{item.quantity ? ` x${item.quantity}` : ""}
 							</Typography>
 							{item.price && (
-								<Typography sx={{ fontSize: '0.85rem', fontWeight: 600 }}>
+								<Typography
+									sx={{ fontSize: "0.85rem", fontWeight: 600 }}
+								>
 									{formatNaira(item.price)}
+								</Typography>
+							)}
+							{((item.surcharge || 0) > 0 ||
+								(item.euSize && Number(item.euSize) >= 45)) && (
+								<Typography
+									sx={{ fontSize: "0.78rem", color: "#e3242b" }}
+								>
+									+
+									{formatNaira(
+										item.surcharge ||
+											(Number(item.euSize) >= 45
+												? 2000 * (item.quantity || 1)
+												: 0),
+									)}
 								</Typography>
 							)}
 						</Box>
@@ -2748,9 +2814,21 @@ function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
 
 			{/* Total */}
 			{order.total && (
-				<Box sx={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E8D5B0', pt: 1, mt: 1 }}>
-					<Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>Total</Typography>
-					<Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#e3242b' }}>
+				<Box
+					sx={{
+						display: "flex",
+						justifyContent: "space-between",
+						borderTop: "1px solid #E8D5B0",
+						pt: 1,
+						mt: 1,
+					}}
+				>
+					<Typography sx={{ fontWeight: 600, fontSize: "0.9rem" }}>
+						Total
+					</Typography>
+					<Typography
+						sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#e3242b" }}
+					>
 						{formatNaira(order.total)}
 					</Typography>
 				</Box>
@@ -2760,9 +2838,28 @@ function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
 			{!isCancelled && <OrderProgressTracker status={order.status} />}
 
 			{/* Fez Delivery tracking */}
-			{order.status === 'shipped' && order.trackingLink && (
-				<Box sx={{ mt: 1.5, p: 1.5, borderRadius: 2, background: '#f0faff', border: '1px solid #bae6fd', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
-					<Typography sx={{ fontSize: '0.78rem', color: '#0369a1', fontWeight: 600 }}>
+			{order.status === "shipped" && order.trackingLink && (
+				<Box
+					sx={{
+						mt: 1.5,
+						p: 1.5,
+						borderRadius: 2,
+						background: "#f0faff",
+						border: "1px solid #bae6fd",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "space-between",
+						gap: 1,
+						flexWrap: "wrap",
+					}}
+				>
+					<Typography
+						sx={{
+							fontSize: "0.78rem",
+							color: "#0369a1",
+							fontWeight: 600,
+						}}
+					>
 						Handled by Fez Delivery
 					</Typography>
 					<Button
@@ -2771,7 +2868,12 @@ function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
 						href={order.trackingLink}
 						target="_blank"
 						rel="noopener noreferrer"
-						sx={{ borderRadius: 20, backgroundColor: '#0369a1', fontSize: '0.75rem', '&:hover': { backgroundColor: '#0284c7' } }}
+						sx={{
+							borderRadius: 20,
+							backgroundColor: "#0369a1",
+							fontSize: "0.75rem",
+							"&:hover": { backgroundColor: "#0284c7" },
+						}}
 					>
 						Track My Package
 					</Button>
@@ -2779,13 +2881,31 @@ function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
 			)}
 
 			{/* Action buttons */}
-			<Box sx={{ display: 'flex', gap: 1.5, mt: 2, flexWrap: 'wrap', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
+			<Box
+				sx={{
+					display: "flex",
+					gap: 1.5,
+					mt: 2,
+					flexWrap: "wrap",
+					alignItems: "center",
+				}}
+				onClick={(e) => e.stopPropagation()}
+			>
 				<Button
 					size="small"
 					variant="outlined"
 					onClick={() => onViewDetail(order.id)}
-					endIcon={<span style={{ fontSize: '0.7rem' }}>→</span>}
-					sx={{ borderRadius: 30, borderColor: '#007a7a', color: '#007a7a', fontSize: '0.78rem', '&:hover': { backgroundColor: '#e8fff8', borderColor: '#005f5f' } }}
+					endIcon={<span style={{ fontSize: "0.7rem" }}>→</span>}
+					sx={{
+						borderRadius: 30,
+						borderColor: "#007a7a",
+						color: "#007a7a",
+						fontSize: "0.78rem",
+						"&:hover": {
+							backgroundColor: "#e8fff8",
+							borderColor: "#005f5f",
+						},
+					}}
 				>
 					View Details
 				</Button>
@@ -2795,7 +2915,13 @@ function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
 							size="small"
 							variant="outlined"
 							onClick={() => onEdit(order)}
-							sx={{ borderRadius: 30, borderColor: '#e3242b', color: '#e3242b', fontSize: '0.78rem', '&:hover': { backgroundColor: '#fff0f0' } }}
+							sx={{
+								borderRadius: 30,
+								borderColor: "#e3242b",
+								color: "#e3242b",
+								fontSize: "0.78rem",
+								"&:hover": { backgroundColor: "#fff0f0" },
+							}}
 						>
 							Edit Order
 						</Button>
@@ -2803,7 +2929,13 @@ function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
 							size="small"
 							variant="outlined"
 							onClick={() => onCancel(order)}
-							sx={{ borderRadius: 30, borderColor: '#ef4444', color: '#ef4444', fontSize: '0.78rem', '&:hover': { backgroundColor: '#fff5f5' } }}
+							sx={{
+								borderRadius: 30,
+								borderColor: "#ef4444",
+								color: "#ef4444",
+								fontSize: "0.78rem",
+								"&:hover": { backgroundColor: "#fff5f5" },
+							}}
 						>
 							Cancel Order
 						</Button>
@@ -2814,7 +2946,12 @@ function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
 						size="small"
 						variant="contained"
 						onClick={() => onRate(order)}
-						sx={{ borderRadius: 30, backgroundColor: '#e3242b', fontSize: '0.78rem', '&:hover': { backgroundColor: '#b81b21' } }}
+						sx={{
+							borderRadius: 30,
+							backgroundColor: "#e3242b",
+							fontSize: "0.78rem",
+							"&:hover": { backgroundColor: "#b81b21" },
+						}}
 					>
 						Rate Order
 					</Button>

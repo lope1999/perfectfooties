@@ -14,7 +14,7 @@ import {
 	Alert,
 } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
-import YouTubeIcon from "@mui/icons-material/YouTube";
+import FacebookIcon from "@mui/icons-material/Facebook";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
@@ -452,7 +452,7 @@ export default function Footer() {
 								<InstagramIcon />
 							</IconButton>
 							<IconButton
-								href="https://tiktok.com/@perfectfooties"
+								href="https://www.tiktok.com/@perfect.footies?_r=1&_t=ZS-95ioxsOqw1F"
 								target="_blank"
 								sx={{
 									color: "var(--text-purple)",
@@ -462,14 +462,14 @@ export default function Footer() {
 								<MusicNoteIcon />
 							</IconButton>
 							<IconButton
-								href="https://youtube.com/@perfectfooties"
+								href="https://www.facebook.com/perfect.footies"
 								target="_blank"
 								sx={{
 									color: "var(--text-purple)",
 									"&:hover": { color: "#e3242b" },
 								}}
 							>
-								<YouTubeIcon />
+								<FacebookIcon />
 							</IconButton>
 						</Box>
 						<Typography

@@ -1016,6 +1016,30 @@ export default function ItemDetailPage() {
 										</Typography>
 									)}
 								</FormControl>
+
+								{/* Size surcharge note for large sizes */}
+								{euSize && Number(euSize) >= 45 && (
+									<Box
+										sx={{
+											mt: 1,
+											p: 1.2,
+											borderRadius: 1.5,
+											backgroundColor: "#fff8f0",
+											border: "1px solid #FFE6E0",
+										}}
+									>
+										<Typography
+											sx={{
+												fontSize: "0.85rem",
+												color: "#e3242b",
+												fontWeight: 700,
+											}}
+										>
+											Note: Sizes 45 and above incur a ₦2,000
+											per-unit surcharge.
+										</Typography>
+									</Box>
+								)}
 								<Box sx={{ mt: 1 }}>
 									<Button
 										size="small"
@@ -1114,14 +1138,20 @@ export default function ItemDetailPage() {
 								minRows={3}
 								placeholder="Add any design preference, finish note, or instruction for this order."
 								value={orderNotes}
-								onChange={(e) => setOrderNotes(e.target.value.slice(0, 500))}
+								onChange={(e) =>
+									setOrderNotes(e.target.value.slice(0, 500))
+								}
 								InputProps={{
 									sx: {
 										fontFamily: ff,
 										borderRadius: 2,
 										"& fieldset": { borderColor: "#E8D5B0" },
-										"&:hover fieldset": { borderColor: "var(--accent-cyan)" },
-										"&.Mui-focused fieldset": { borderColor: "var(--accent-cyan)" },
+										"&:hover fieldset": {
+											borderColor: "var(--accent-cyan)",
+										},
+										"&.Mui-focused fieldset": {
+											borderColor: "var(--accent-cyan)",
+										},
 									},
 								}}
 							/>
@@ -1398,142 +1428,198 @@ export default function ItemDetailPage() {
 					</Grid>
 				</Grid>
 
-        <Box sx={{ mt: 8, mb: 6 }}>
-          <Typography
-            sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1.6rem', mb: 2 }}
-          >
-            Customer reviews
-          </Typography>
+				<Box sx={{ mt: 8, mb: 6 }}>
+					<Typography
+						sx={{
+							fontFamily: ff,
+							fontWeight: 700,
+							fontSize: "1.6rem",
+							mb: 2,
+						}}
+					>
+						Customer reviews
+					</Typography>
 
-          {reviewsLoading ? (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <CircularProgress sx={{ color: 'var(--accent-cyan)' }} />
-            </Box>
-          ) : reviewCount === 0 ? (
-            <Typography sx={{ color: 'var(--text-muted)' }}>
-              No reviews for this item yet. Be the first to leave feedback after purchase.
-            </Typography>
-          ) : (
-            <>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  alignItems: { xs: 'flex-start', sm: 'center' },
-                  justifyContent: 'space-between',
-                  gap: 2,
-                  mb: 3,
-                }}
-              >
-                <Box>
-                  <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1rem' }}>
-                    {reviewCount} review{reviewCount === 1 ? '' : 's'}
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                    <Rating value={averageRating} precision={0.5} readOnly size="small" />
-                    <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                      {averageRating.toFixed(1)} average rating
-                    </Typography>
-                  </Box>
-                </Box>
-                {reviewPhotos.length > 0 && (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {reviewPhotos.map((url, index) => (
-                      <Box
-                        key={index}
-                        component="img"
-                        src={url}
-                        alt={`Customer photo ${index + 1}`}
-                        sx={{
-                          width: 92,
-                          height: 92,
-                          objectFit: 'cover',
-                          borderRadius: 2,
-                          border: '1px solid #E8D5B0',
-                        }}
-                      />
-                    ))}
-                  </Box>
-                )}
-              </Box>
+					{reviewsLoading ? (
+						<Box sx={{ textAlign: "center", py: 4 }}>
+							<CircularProgress sx={{ color: "var(--accent-cyan)" }} />
+						</Box>
+					) : reviewCount === 0 ? (
+						<Typography sx={{ color: "var(--text-muted)" }}>
+							No reviews for this item yet. Be the first to leave
+							feedback after purchase.
+						</Typography>
+					) : (
+						<>
+							<Box
+								sx={{
+									display: "flex",
+									flexDirection: { xs: "column", sm: "row" },
+									alignItems: { xs: "flex-start", sm: "center" },
+									justifyContent: "space-between",
+									gap: 2,
+									mb: 3,
+								}}
+							>
+								<Box>
+									<Typography
+										sx={{
+											fontFamily: ff,
+											fontWeight: 700,
+											fontSize: "1rem",
+										}}
+									>
+										{reviewCount} review{reviewCount === 1 ? "" : "s"}
+									</Typography>
+									<Box
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											gap: 1,
+											mt: 0.5,
+										}}
+									>
+										<Rating
+											value={averageRating}
+											precision={0.5}
+											readOnly
+											size="small"
+										/>
+										<Typography
+											sx={{
+												color: "var(--text-muted)",
+												fontSize: "0.9rem",
+											}}
+										>
+											{averageRating.toFixed(1)} average rating
+										</Typography>
+									</Box>
+								</Box>
+								{reviewPhotos.length > 0 && (
+									<Box
+										sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}
+									>
+										{reviewPhotos.map((url, index) => (
+											<Box
+												key={index}
+												component="img"
+												src={url}
+												alt={`Customer photo ${index + 1}`}
+												sx={{
+													width: 92,
+													height: 92,
+													objectFit: "cover",
+													borderRadius: 2,
+													border: "1px solid #E8D5B0",
+												}}
+											/>
+										))}
+									</Box>
+								)}
+							</Box>
 
-              <Box sx={{ display: 'grid', gap: 3 }}>
-                {reviews.map((review) => (
-                  <Box
-                    key={review.id}
-                    sx={{
-                      p: 3,
-                      borderRadius: 3,
-                      border: '1px solid #E8D5B0',
-                      backgroundColor: '#fff',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        flexWrap: 'wrap',
-                        gap: 1,
-                        mb: 1.5,
-                      }}
-                    >
-                      <Box>
-                        <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem' }}>
-                          {review.name || 'Happy customer'}
-                        </Typography>
-                        {review.createdAt?.toDate && (
-                          <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.8rem', mt: 0.3 }}>
-                            {review.createdAt.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </Typography>
-                        )}
-                      </Box>
-                      <Rating
-                        value={Number(review.rating) || 0}
-                        readOnly
-                        size="small"
-                      />
-                    </Box>
-                    {(review.testimonial || review.review) && (
-                      <Typography
-                        sx={{ color: 'var(--text-muted)', lineHeight: 1.8, whiteSpace: 'pre-line' }}
-                      >
-                        {review.testimonial || review.review}
-                      </Typography>
-                    )}
-                    {review.photoURLs?.length > 0 && (
-                      <Box
-                        sx={{
-                          mt: 2,
-                          display: 'grid',
-                          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                          gap: 2,
-                        }}
-                      >
-                        {review.photoURLs.map((url, index) => (
-                          <Box
-                            key={index}
-                            component="img"
-                            src={url}
-                            alt={`Review photo ${index + 1}`}
-                            sx={{
-                              width: '100%',
-                              height: 160,
-                              objectFit: 'cover',
-                              borderRadius: 2,
-                              border: '1px solid #E8D5B0',
-                            }}
-                          />
-                        ))}
-                      </Box>
-                    )}
-                  </Box>
-                ))}
-              </Box>
-            </>
-          )}
-        </Box>
-        </Container>
-      </Box>
-    );
+							<Box sx={{ display: "grid", gap: 3 }}>
+								{reviews.map((review) => (
+									<Box
+										key={review.id}
+										sx={{
+											p: 3,
+											borderRadius: 3,
+											border: "1px solid #E8D5B0",
+											backgroundColor: "#fff",
+										}}
+									>
+										<Box
+											sx={{
+												display: "flex",
+												justifyContent: "space-between",
+												alignItems: "flex-start",
+												flexWrap: "wrap",
+												gap: 1,
+												mb: 1.5,
+											}}
+										>
+											<Box>
+												<Typography
+													sx={{
+														fontFamily: ff,
+														fontWeight: 700,
+														fontSize: "0.95rem",
+													}}
+												>
+													{review.name || "Happy customer"}
+												</Typography>
+												{review.createdAt?.toDate && (
+													<Typography
+														sx={{
+															color: "var(--text-muted)",
+															fontSize: "0.8rem",
+															mt: 0.3,
+														}}
+													>
+														{review.createdAt
+															.toDate()
+															.toLocaleDateString("en-GB", {
+																day: "numeric",
+																month: "short",
+																year: "numeric",
+															})}
+													</Typography>
+												)}
+											</Box>
+											<Rating
+												value={Number(review.rating) || 0}
+												readOnly
+												size="small"
+											/>
+										</Box>
+										{(review.testimonial || review.review) && (
+											<Typography
+												sx={{
+													color: "var(--text-muted)",
+													lineHeight: 1.8,
+													whiteSpace: "pre-line",
+												}}
+											>
+												{review.testimonial || review.review}
+											</Typography>
+										)}
+										{review.photoURLs?.length > 0 && (
+											<Box
+												sx={{
+													mt: 2,
+													display: "grid",
+													gridTemplateColumns: {
+														xs: "1fr",
+														sm: "1fr 1fr",
+													},
+													gap: 2,
+												}}
+											>
+												{review.photoURLs.map((url, index) => (
+													<Box
+														key={index}
+														component="img"
+														src={url}
+														alt={`Review photo ${index + 1}`}
+														sx={{
+															width: "100%",
+															height: 160,
+															objectFit: "cover",
+															borderRadius: 2,
+															border: "1px solid #E8D5B0",
+														}}
+													/>
+												))}
+											</Box>
+										)}
+									</Box>
+								))}
+							</Box>
+						</>
+					)}
+				</Box>
+			</Container>
+		</Box>
+  );
 }

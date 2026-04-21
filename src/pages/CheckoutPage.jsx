@@ -375,6 +375,8 @@ export default function CheckoutPage() {
 					...(g.orderNotes && { orderNotes: g.orderNotes }),
 					collectionId: g.collectionId,
 					collectionName: g.collectionName,
+					surcharge:
+						Number(g.euSize) >= 45 ? 2000 * Number(g.quantity || 0) : 0,
 				})),
 				...products.map((p) => ({
 					kind: "retail",
@@ -490,6 +492,10 @@ export default function CheckoutPage() {
 						selectedImageIndex: g.selectedImageIndex,
 						orderNotes: g.orderNotes,
 						collectionId: g.collectionId,
+						surcharge:
+							Number(g.euSize) >= 45
+								? 2000 * Number(g.quantity || 0)
+								: 0,
 					})),
 					...products.map((p) => ({
 						kind: "retail",
@@ -511,7 +517,15 @@ export default function CheckoutPage() {
 					})),
 				],
 				total:
-					leatherGoods.reduce((s, g) => s + g.price * g.quantity, 0) +
+					leatherGoods.reduce(
+						(s, g) =>
+							s +
+							g.price * g.quantity +
+							(Number(g.euSize) >= 45
+								? 2000 * Number(g.quantity || 0)
+								: 0),
+						0,
+					) +
 					products.reduce((s, i) => s + i.price * (i.quantity || 1), 0) +
 					pressOns.reduce((s, i) => s + i.price * (i.quantity || 1), 0),
 				finalTotal: grandTotal,
@@ -561,376 +575,1033 @@ export default function CheckoutPage() {
   if (!hasDeliverables) return null;
 
   return (
-    <Box sx={{ pt: { xs: 10, md: 12 }, pb: { xs: 16, md: 10 }, minHeight: '100vh', backgroundColor: '#FFF8F0' }}>
-      <Container maxWidth="lg">
-        {/* Header */}
-        <Typography
-          variant="h3"
-          sx={{
-            fontFamily: '"Georgia", serif',
-            fontWeight: 700,
-            color: 'var(--text-main)',
-            mb: 5,
-            textAlign: 'center',
-            fontSize: { xs: '1.8rem', sm: '2.4rem', md: '3rem' },
-          }}
-        >
-          Checkout
-        </Typography>
+		<Box
+			sx={{
+				pt: { xs: 10, md: 12 },
+				pb: { xs: 16, md: 10 },
+				minHeight: "100vh",
+				backgroundColor: "#FFF8F0",
+			}}
+		>
+			<Container maxWidth="lg">
+				{/* Header */}
+				<Typography
+					variant="h3"
+					sx={{
+						fontFamily: '"Georgia", serif',
+						fontWeight: 700,
+						color: "var(--text-main)",
+						mb: 5,
+						textAlign: "center",
+						fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" },
+					}}
+				>
+					Checkout
+				</Typography>
 
-        <Grid container spacing={4} alignItems="flex-start">
-          {/* ── Shipping Form ── */}
-          <Grid item xs={12} md={7}>
-            <Typography
-              sx={{
-                fontFamily: '"Georgia", serif',
-                fontWeight: 700,
-                color: 'var(--text-purple)',
-                mb: 2.5,
-                fontSize: '1.15rem',
-              }}
-            >
-              Shipping Details
-            </Typography>
+				<Grid container spacing={4} alignItems="flex-start">
+					{/* ── Shipping Form ── */}
+					<Grid item xs={12} md={7}>
+						<Typography
+							sx={{
+								fontFamily: '"Georgia", serif',
+								fontWeight: 700,
+								color: "var(--text-purple)",
+								mb: 2.5,
+								fontSize: "1.15rem",
+							}}
+						>
+							Shipping Details
+						</Typography>
 
-            {/* Country */}
-            <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-              <InputLabel sx={{ '&.Mui-focused': { color: '#e3242b' } }}>Country *</InputLabel>
-              <Select
-                value={form.country}
-                onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value, state: '', lga: '', city: '', province: '', postalCode: '' }))}
-                label="Country *"
-                sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E8D5B0' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#e3242b' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#e3242b' } }}
-              >
-                {COUNTRIES.map((c) => <MenuItem key={c} value={c}>{c}</MenuItem>)}
-              </Select>
-            </FormControl>
+						{/* Country */}
+						<FormControl fullWidth size="small" sx={{ mb: 2 }}>
+							<InputLabel sx={{ "&.Mui-focused": { color: "#e3242b" } }}>
+								Country *
+							</InputLabel>
+							<Select
+								value={form.country}
+								onChange={(e) =>
+									setForm((prev) => ({
+										...prev,
+										country: e.target.value,
+										state: "",
+										lga: "",
+										city: "",
+										province: "",
+										postalCode: "",
+									}))
+								}
+								label="Country *"
+								sx={{
+									borderRadius: 2,
+									"& .MuiOutlinedInput-notchedOutline": {
+										borderColor: "#E8D5B0",
+									},
+									"&:hover .MuiOutlinedInput-notchedOutline": {
+										borderColor: "#e3242b",
+									},
+									"&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+										borderColor: "#e3242b",
+									},
+								}}
+							>
+								{COUNTRIES.map((c) => (
+									<MenuItem key={c} value={c}>
+										{c}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
 
-            {/* Fez Delivery card */}
-            {isDomestic && (
-              <Box sx={{ mb: 2, p: 2, borderRadius: 2, background: 'linear-gradient(135deg,#fff8f0,#fff)', border: '1px solid #E8D5B0', display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                <LocalShippingOutlinedIcon sx={{ color: '#e3242b', fontSize: 20, flexShrink: 0, mt: 0.2 }} />
-                <Box>
-                  <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-main)', mb: 0.3 }}>
-                    Shipped via{' '}
-                    <a href="https://fezdelivery.co" target="_blank" rel="noopener noreferrer" style={{ color: '#e3242b', textDecoration: 'none' }}>Fez Delivery</a>
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                    {isLagos ? 'Lagos delivery — ₦3,000' : 'Outside Lagos delivery — ₦4,000'}
-                  </Typography>
-                </Box>
-              </Box>
-            )}
+						{/* Fez Delivery card */}
+						{isDomestic && (
+							<Box
+								sx={{
+									mb: 2,
+									p: 2,
+									borderRadius: 2,
+									background: "linear-gradient(135deg,#fff8f0,#fff)",
+									border: "1px solid #E8D5B0",
+									display: "flex",
+									alignItems: "flex-start",
+									gap: 1.5,
+								}}
+							>
+								<LocalShippingOutlinedIcon
+									sx={{
+										color: "#e3242b",
+										fontSize: 20,
+										flexShrink: 0,
+										mt: 0.2,
+									}}
+								/>
+								<Box>
+									<Typography
+										sx={{
+											fontWeight: 700,
+											fontSize: "0.88rem",
+											color: "var(--text-main)",
+											mb: 0.3,
+										}}
+									>
+										Shipped via{" "}
+										<a
+											href="https://fezdelivery.co"
+											target="_blank"
+											rel="noopener noreferrer"
+											style={{
+												color: "#e3242b",
+												textDecoration: "none",
+											}}
+										>
+											Fez Delivery
+										</a>
+									</Typography>
+									<Typography
+										sx={{
+											fontSize: "0.8rem",
+											color: "var(--text-muted)",
+											lineHeight: 1.5,
+										}}
+									>
+										{isLagos
+											? "Lagos delivery — ₦3,000"
+											: "Outside Lagos delivery — ₦4,000"}
+									</Typography>
+								</Box>
+							</Box>
+						)}
 
-            {/* International shipping notice */}
-            {!isDomestic && (
-              <Box sx={{ mb: 2, p: 2, backgroundColor: 'rgba(0,255,255,0.06)', borderRadius: 2, border: '1px solid rgba(0,255,255,0.25)', display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                <LocalShippingOutlinedIcon sx={{ color: 'var(--accent-cyan)', fontSize: 20, flexShrink: 0, mt: 0.2 }} />
-                <Box>
-                  <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.88rem', lineHeight: 1.6 }}>
-                    <strong style={{ color: 'var(--text-main)' }}>International order</strong> — shipping cost will be quoted and confirmed via WhatsApp before production begins.
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.78rem', color: 'var(--text-muted)', mt: 0.5, lineHeight: 1.6 }}>
-                    <strong style={{ color: 'var(--text-main)' }}>Ghana & Zone 2:</strong> ~₦22,500 (0.5kg–2kg, 2–3 business days)<br/>
-                    <strong style={{ color: 'var(--text-main)' }}>South Africa, Kenya, Rwanda & Zone 5:</strong> from ₦66,000 (express)<br/>
-                    Other rates: UK ₦8,500/kg · US ₦15,000/kg · Canada ₦13,500/kg · Europe ₦12,500/kg · Sweden/France/Italy/Netherlands ₦77,000 flat (≤2kg)
-                  </Typography>
-                </Box>
-              </Box>
-            )}
+						{/* International shipping notice */}
+						{!isDomestic && (
+							<Box
+								sx={{
+									mb: 2,
+									p: 2,
+									backgroundColor: "rgba(0,255,255,0.06)",
+									borderRadius: 2,
+									border: "1px solid rgba(0,255,255,0.25)",
+									display: "flex",
+									alignItems: "flex-start",
+									gap: 1.5,
+								}}
+							>
+								<LocalShippingOutlinedIcon
+									sx={{
+										color: "var(--accent-cyan)",
+										fontSize: 20,
+										flexShrink: 0,
+										mt: 0.2,
+									}}
+								/>
+								<Box>
+									<Typography
+										sx={{
+											color: "var(--text-muted)",
+											fontSize: "0.88rem",
+											lineHeight: 1.6,
+										}}
+									>
+										<strong style={{ color: "var(--text-main)" }}>
+											International order
+										</strong>{" "}
+										— shipping cost will be quoted and confirmed via
+										WhatsApp before production begins.
+									</Typography>
+									<Typography
+										sx={{
+											fontSize: "0.78rem",
+											color: "var(--text-muted)",
+											mt: 0.5,
+											lineHeight: 1.6,
+										}}
+									>
+										<strong style={{ color: "var(--text-main)" }}>
+											Ghana & Zone 2:
+										</strong>{" "}
+										~₦22,500 (0.5kg–2kg, 2–3 business days)
+										<br />
+										<strong style={{ color: "var(--text-main)" }}>
+											South Africa, Kenya, Rwanda & Zone 5:
+										</strong>{" "}
+										from ₦66,000 (express)
+										<br />
+										Other rates: UK ₦8,500/kg · US ₦15,000/kg · Canada
+										₦13,500/kg · Europe ₦12,500/kg ·
+										Sweden/France/Italy/Netherlands ₦77,000 flat
+										(≤2kg)
+									</Typography>
+								</Box>
+							</Box>
+						)}
 
-            <TextField fullWidth label="Full Name *" value={form.name} onChange={handleChange('name')} size="small" sx={{ mb: 2, ...textFieldSx }} />
+						<TextField
+							fullWidth
+							label="Full Name *"
+							value={form.name}
+							onChange={handleChange("name")}
+							size="small"
+							sx={{ mb: 2, ...textFieldSx }}
+						/>
 
-            <TextField
-              fullWidth
-              label="Phone Number *"
-              value={form.phone}
-              onChange={handleChange('phone')}
-              size="small"
-              placeholder={isDomestic ? '08012345678' : '700 000 0000'}
-              error={form.phone.length > 0 && !isValidPhone(form.phone)}
-              helperText={form.phone.length > 0 && !isValidPhone(form.phone) ? 'Enter a valid phone number' : ''}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600, mr: 0.5 }}>
-                      {phonePrefix}
-                    </Typography>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ mb: 2, ...textFieldSx }}
-            />
+						<TextField
+							fullWidth
+							label="Phone Number *"
+							value={form.phone}
+							onChange={handleChange("phone")}
+							size="small"
+							placeholder={isDomestic ? "08012345678" : "700 000 0000"}
+							error={form.phone.length > 0 && !isValidPhone(form.phone)}
+							helperText={
+								form.phone.length > 0 && !isValidPhone(form.phone)
+									? "Enter a valid phone number"
+									: ""
+							}
+							InputProps={{
+								startAdornment: (
+									<InputAdornment position="start">
+										<Typography
+											sx={{
+												fontSize: "0.85rem",
+												color: "var(--text-muted)",
+												fontWeight: 600,
+												mr: 0.5,
+											}}
+										>
+											{phonePrefix}
+										</Typography>
+									</InputAdornment>
+								),
+							}}
+							sx={{ mb: 2, ...textFieldSx }}
+						/>
 
-            <TextField
-              fullWidth
-              label="Street Address *"
-              value={form.address}
-              onChange={handleChange('address')}
-              multiline
-              rows={2}
-              placeholder={isDomestic ? 'House number, street, nearest landmark' : 'House number and street name'}
-              sx={{ mb: 2, ...textFieldSx }}
-            />
+						<TextField
+							fullWidth
+							label="Street Address *"
+							value={form.address}
+							onChange={handleChange("address")}
+							multiline
+							rows={2}
+							placeholder={
+								isDomestic
+									? "House number, street, nearest landmark"
+									: "House number and street name"
+							}
+							sx={{ mb: 2, ...textFieldSx }}
+						/>
 
-            {isDomestic ? (
-              <>
-                <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-                  <InputLabel sx={{ '&.Mui-focused': { color: '#e3242b' } }}>State *</InputLabel>
-                  <Select
-                    value={form.state}
-                    onChange={handleChange('state')}
-                    label="State *"
-                    sx={{ borderRadius: 2, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E8D5B0' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#e3242b' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#e3242b' } }}
-                  >
-                    {nigerianStates.map((s) => <MenuItem key={s} value={s}>{s}</MenuItem>)}
-                  </Select>
-                </FormControl>
-                <TextField fullWidth label="LGA (Local Government Area) *" value={form.lga} onChange={handleChange('lga')} size="small" sx={{ mb: 2, ...textFieldSx }} />
-              </>
-            ) : (
-              <>
-                <TextField fullWidth label="City *" value={form.city} onChange={handleChange('city')} size="small" sx={{ mb: 2, ...textFieldSx }} />
-                <TextField fullWidth label="State / Province *" value={form.province} onChange={handleChange('province')} size="small" sx={{ mb: 2, ...textFieldSx }} />
-                <TextField fullWidth label="Postal / ZIP Code *" value={form.postalCode} onChange={handleChange('postalCode')} size="small" sx={{ mb: 2, ...textFieldSx }} />
-              </>
-            )}
-          </Grid>
+						{isDomestic ? (
+							<>
+								<FormControl fullWidth size="small" sx={{ mb: 2 }}>
+									<InputLabel
+										sx={{ "&.Mui-focused": { color: "#e3242b" } }}
+									>
+										State *
+									</InputLabel>
+									<Select
+										value={form.state}
+										onChange={handleChange("state")}
+										label="State *"
+										sx={{
+											borderRadius: 2,
+											"& .MuiOutlinedInput-notchedOutline": {
+												borderColor: "#E8D5B0",
+											},
+											"&:hover .MuiOutlinedInput-notchedOutline": {
+												borderColor: "#e3242b",
+											},
+											"&.Mui-focused .MuiOutlinedInput-notchedOutline":
+												{ borderColor: "#e3242b" },
+										}}
+									>
+										{nigerianStates.map((s) => (
+											<MenuItem key={s} value={s}>
+												{s}
+											</MenuItem>
+										))}
+									</Select>
+								</FormControl>
+								<TextField
+									fullWidth
+									label="LGA (Local Government Area) *"
+									value={form.lga}
+									onChange={handleChange("lga")}
+									size="small"
+									sx={{ mb: 2, ...textFieldSx }}
+								/>
+							</>
+						) : (
+							<>
+								<TextField
+									fullWidth
+									label="City *"
+									value={form.city}
+									onChange={handleChange("city")}
+									size="small"
+									sx={{ mb: 2, ...textFieldSx }}
+								/>
+								<TextField
+									fullWidth
+									label="State / Province *"
+									value={form.province}
+									onChange={handleChange("province")}
+									size="small"
+									sx={{ mb: 2, ...textFieldSx }}
+								/>
+								<TextField
+									fullWidth
+									label="Postal / ZIP Code *"
+									value={form.postalCode}
+									onChange={handleChange("postalCode")}
+									size="small"
+									sx={{ mb: 2, ...textFieldSx }}
+								/>
+							</>
+						)}
+					</Grid>
 
-          {/* ── Order Summary ── */}
-          <Grid item xs={12} md={5}>
-            <Box
-              sx={{
-                backgroundColor: '#fff',
-                borderRadius: 3,
-                border: '1px solid #E8D5B0',
-                p: 3,
-                position: { md: 'sticky' },
-                top: { md: 90 },
-              }}
-            >
-              <Typography
-                sx={{
-                  fontFamily: '"Georgia", serif',
-                  fontWeight: 700,
-                  color: 'var(--text-purple)',
-                  fontSize: '1.1rem',
-                  mb: 2,
-                }}
-              >
-                Order Summary
-              </Typography>
+					{/* ── Order Summary ── */}
+					<Grid item xs={12} md={5}>
+						<Box
+							sx={{
+								backgroundColor: "#fff",
+								borderRadius: 3,
+								border: "1px solid #E8D5B0",
+								p: 3,
+								position: { md: "sticky" },
+								top: { md: 90 },
+							}}
+						>
+							<Typography
+								sx={{
+									fontFamily: '"Georgia", serif',
+									fontWeight: 700,
+									color: "var(--text-purple)",
+									fontSize: "1.1rem",
+									mb: 2,
+								}}
+							>
+								Order Summary
+							</Typography>
 
-              {leatherGoods.length > 0 && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography sx={{ color: '#aaa', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, mb: 1 }}>
-                    Leather Goods
-                  </Typography>
-                  {leatherGoods.map((g) => (
-                    <Box key={g.cartId} sx={{ mb: 0.8 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography sx={{ fontSize: '0.88rem', color: 'var(--text-muted)', flex: 1, mr: 1 }}>{g.name} &times;{g.quantity}</Typography>
-                        <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#e3242b', whiteSpace: 'nowrap' }}>{formatNaira(g.price * g.quantity)}</Typography>
-                      </Box>
-                      <Typography sx={{ fontSize: '0.75rem', color: '#aaa' }}>
-                        {g.selectedColor}{g.footLength ? ` · ${g.footLength}cm` : ''}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              )}
+							{leatherGoods.length > 0 && (
+								<Box sx={{ mb: 2 }}>
+									<Typography
+										sx={{
+											color: "#aaa",
+											fontSize: "0.72rem",
+											fontWeight: 700,
+											textTransform: "uppercase",
+											letterSpacing: 0.8,
+											mb: 1,
+										}}
+									>
+										Leather Goods
+									</Typography>
+									{leatherGoods.map((g) => (
+										<Box key={g.cartId} sx={{ mb: 0.8 }}>
+											<Box
+												sx={{
+													display: "flex",
+													justifyContent: "space-between",
+												}}
+											>
+												<Typography
+													sx={{
+														fontSize: "0.88rem",
+														color: "var(--text-muted)",
+														flex: 1,
+														mr: 1,
+													}}
+												>
+													{g.name} &times;{g.quantity}
+												</Typography>
+												<Typography
+													sx={{
+														fontSize: "0.88rem",
+														fontWeight: 600,
+														color: "#e3242b",
+														whiteSpace: "nowrap",
+													}}
+												>
+													{formatNaira(g.price * g.quantity)}
+												</Typography>
+											</Box>
+											{(() => {
+												const eu = Number(g.euSize);
+												const surcharge =
+													eu && eu >= 45
+														? 2000 * Number(g.quantity || 0)
+														: 0;
+												return (
+													<Typography
+														sx={{
+															fontSize: "0.75rem",
+															color: "#aaa",
+														}}
+													>
+														{g.selectedColor}
+														{g.footLength
+															? ` · ${g.footLength}cm`
+															: ""}
+														{surcharge > 0
+															? ` · Size surcharge: ${formatNaira(surcharge)}`
+															: ""}
+													</Typography>
+												);
+											})()}
+										</Box>
+									))}
+								</Box>
+							)}
 
+							<Divider sx={{ borderColor: "#E8D5B0", my: 2 }} />
 
-              <Divider sx={{ borderColor: '#E8D5B0', my: 2 }} />
+							{/* Referral code input */}
+							<Box sx={{ mb: 1.5 }}>
+								<Box
+									onClick={() => setShowRefField((v) => !v)}
+									sx={{
+										display: "flex",
+										alignItems: "center",
+										gap: 1,
+										cursor: "pointer",
+										mb: showRefField ? 1 : 0,
+									}}
+								>
+									<LocalOfferIcon
+										sx={{
+											fontSize: 15,
+											color: referralValid ? "#2e7d32" : "#e3242b",
+										}}
+									/>
+									<Typography
+										sx={{
+											fontSize: "0.82rem",
+											fontWeight: 600,
+											color: referralValid ? "#2e7d32" : "#e3242b",
+											fontFamily: '"Georgia", serif',
+										}}
+									>
+										{referralValid
+											? "\u20a6500 off applied!"
+											: "Have a referral code?"}
+									</Typography>
+								</Box>
+								<Collapse in={showRefField}>
+									<Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
+										<TextField
+											size="small"
+											placeholder="e.g. FOOTIES-ABC123"
+											value={pendingReferralCode}
+											onChange={(e) => {
+												setPendingReferralCode(
+													e.target.value.toUpperCase(),
+												);
+												setReferralValid(false);
+												setReferralMsg("");
+											}}
+											sx={{
+												flex: 1,
+												"& .MuiOutlinedInput-root": {
+													borderRadius: 2,
+													"& fieldset": { borderColor: "#E8D5B0" },
+													"&.Mui-focused fieldset": {
+														borderColor: "#e3242b",
+													},
+												},
+											}}
+											inputProps={{
+												style: {
+													fontFamily: "monospace",
+													fontSize: "0.82rem",
+												},
+											}}
+										/>
+										<Button
+											onClick={handleApplyReferral}
+											disabled={
+												!pendingReferralCode.trim() ||
+												referralChecking
+											}
+											sx={{
+												backgroundColor: "#e3242b",
+												color: "#fff",
+												borderRadius: 2,
+												px: 2,
+												fontFamily: '"Georgia", serif',
+												fontWeight: 600,
+												fontSize: "0.78rem",
+												whiteSpace: "nowrap",
+												"&:hover": { backgroundColor: "#b81b21" },
+												"&.Mui-disabled": {
+													backgroundColor: "#E8D5B0",
+													color: "#fff",
+												},
+											}}
+										>
+											{referralChecking ? (
+												<CircularProgress
+													size={14}
+													sx={{ color: "#fff" }}
+												/>
+											) : (
+												"Apply"
+											)}
+										</Button>
+									</Box>
+									{referralMsg && (
+										<Typography
+											sx={{
+												fontSize: "0.75rem",
+												color: referralValid
+													? "#2e7d32"
+													: "#d32f2f",
+												mt: 0.3,
+											}}
+										>
+											{referralMsg}
+										</Typography>
+									)}
+								</Collapse>
+							</Box>
 
-              {/* Referral code input */}
-              <Box sx={{ mb: 1.5 }}>
-                <Box onClick={() => setShowRefField((v) => !v)} sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', mb: showRefField ? 1 : 0 }}>
-                  <LocalOfferIcon sx={{ fontSize: 15, color: referralValid ? '#2e7d32' : '#e3242b' }} />
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: referralValid ? '#2e7d32' : '#e3242b', fontFamily: '"Georgia", serif' }}>
-                    {referralValid ? '\u20a6500 off applied!' : 'Have a referral code?'}
-                  </Typography>
-                </Box>
-                <Collapse in={showRefField}>
-                  <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
-                    <TextField size="small" placeholder="e.g. FOOTIES-ABC123" value={pendingReferralCode}
-                      onChange={(e) => { setPendingReferralCode(e.target.value.toUpperCase()); setReferralValid(false); setReferralMsg(''); }}
-                      sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 2, '& fieldset': { borderColor: '#E8D5B0' }, '&.Mui-focused fieldset': { borderColor: '#e3242b' } } }}
-                      inputProps={{ style: { fontFamily: 'monospace', fontSize: '0.82rem' } }}
-                    />
-                    <Button onClick={handleApplyReferral} disabled={!pendingReferralCode.trim() || referralChecking}
-                      sx={{ backgroundColor: '#e3242b', color: '#fff', borderRadius: 2, px: 2, fontFamily: '"Georgia", serif', fontWeight: 600, fontSize: '0.78rem', whiteSpace: 'nowrap', '&:hover': { backgroundColor: '#b81b21' }, '&.Mui-disabled': { backgroundColor: '#E8D5B0', color: '#fff' } }}>
-                      {referralChecking ? <CircularProgress size={14} sx={{ color: '#fff' }} /> : 'Apply'}
-                    </Button>
-                  </Box>
-                  {referralMsg && <Typography sx={{ fontSize: '0.75rem', color: referralValid ? '#2e7d32' : '#d32f2f', mt: 0.3 }}>{referralMsg}</Typography>}
-                </Collapse>
-              </Box>
+							<Box
+								sx={{
+									display: "flex",
+									justifyContent: "space-between",
+									mb: 0.5,
+								}}
+							>
+								<Typography
+									sx={{
+										color: "var(--text-muted)",
+										fontSize: "0.9rem",
+									}}
+								>
+									Subtotal
+								</Typography>
+								<Typography
+									sx={{ fontWeight: 600, fontSize: "0.9rem" }}
+								>
+									{formatNaira(subtotal)}
+								</Typography>
+							</Box>
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Subtotal</Typography>
-                <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{formatNaira(subtotal)}</Typography>
-              </Box>
+							{giftCardDiscount > 0 && (
+								<Box
+									sx={{
+										display: "flex",
+										justifyContent: "space-between",
+										mb: 0.5,
+									}}
+								>
+									<Typography
+										sx={{ color: "#2e7d32", fontSize: "0.9rem" }}
+									>
+										Gift card ({appliedGiftCard.code})
+									</Typography>
+									<Typography
+										sx={{
+											color: "#2e7d32",
+											fontWeight: 600,
+											fontSize: "0.9rem",
+										}}
+									>
+										-{formatNaira(giftCardDiscount)}
+									</Typography>
+								</Box>
+							)}
 
-              {giftCardDiscount > 0 && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                  <Typography sx={{ color: '#2e7d32', fontSize: '0.9rem' }}>
-                    Gift card ({appliedGiftCard.code})
-                  </Typography>
-                  <Typography sx={{ color: '#2e7d32', fontWeight: 600, fontSize: '0.9rem' }}>
-                    -{formatNaira(giftCardDiscount)}
-                  </Typography>
-                </Box>
-              )}
+							{referralDiscount > 0 && (
+								<Box
+									sx={{
+										display: "flex",
+										justifyContent: "space-between",
+										mb: 0.5,
+									}}
+								>
+									<Typography
+										sx={{ color: "#2e7d32", fontSize: "0.9rem" }}
+									>
+										Referral ({pendingReferralCode})
+									</Typography>
+									<Typography
+										sx={{
+											color: "#2e7d32",
+											fontWeight: 600,
+											fontSize: "0.9rem",
+										}}
+									>
+										-{formatNaira(referralDiscount)}
+									</Typography>
+								</Box>
+							)}
 
-              {referralDiscount > 0 && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                  <Typography sx={{ color: '#2e7d32', fontSize: '0.9rem' }}>Referral ({pendingReferralCode})</Typography>
-                  <Typography sx={{ color: '#2e7d32', fontWeight: 600, fontSize: '0.9rem' }}>-{formatNaira(referralDiscount)}</Typography>
-                </Box>
-              )}
+							{/* Loyalty Points */}
+							{maxLoyaltyUnits > 0 && (
+								<Box
+									sx={{
+										my: 1.5,
+										p: 1.5,
+										borderRadius: 2,
+										backgroundColor: "#FFF8E1",
+										border: "1px solid #FFD54F",
+									}}
+								>
+									{/* Pending loyalty reward banner */}
+									{pendingReward && loyaltyUnits === 0 && (
+										<Box
+											sx={{
+												mb: 1.5,
+												p: 1.2,
+												borderRadius: 2,
+												background:
+													"linear-gradient(135deg, #FFF8E1, #FFF3E0)",
+												border: "1.5px solid #FFD54F",
+												display: "flex",
+												alignItems: "center",
+												justifyContent: "space-between",
+												gap: 1,
+											}}
+										>
+											<Box>
+												<Typography
+													sx={{
+														fontWeight: 700,
+														fontSize: "0.82rem",
+														color: "#B8860B",
+														display: "flex",
+														alignItems: "center",
+														gap: 0.5,
+													}}
+												>
+													<CardGiftcardIcon
+														sx={{ fontSize: "0.95rem" }}
+													/>{" "}
+													₦{pendingReward.naira.toLocaleString()}{" "}
+													loyalty reward ready
+												</Typography>
+												<Typography
+													sx={{
+														fontSize: "0.72rem",
+														color: "#888",
+													}}
+												>
+													{pendingReward.pts} pts saved — tap Apply
+													to use
+												</Typography>
+											</Box>
+											<Button
+												size="small"
+												onClick={() => {
+													const u = Math.min(
+														pendingReward.units,
+														maxLoyaltyUnits,
+													);
+													setLoyaltyUnits(u);
+													showToast(
+														`Loyalty reward applied! ₦${(u * REDEMPTION_VALUE).toLocaleString()} off your order.`,
+														"success",
+													);
+												}}
+												sx={{
+													border: "1.5px solid #e3242b",
+													borderRadius: "20px",
+													color: "#e3242b",
+													px: 2,
+													py: 0.4,
+													fontSize: "0.78rem",
+													fontWeight: 700,
+													textTransform: "none",
+													"&:hover": {
+														backgroundColor: "#e3242b",
+														color: "#fff",
+													},
+												}}
+											>
+												Apply
+											</Button>
+										</Box>
+									)}
+									<Box
+										sx={{
+											display: "flex",
+											justifyContent: "space-between",
+											alignItems: "center",
+											mb: 1,
+										}}
+									>
+										<Typography
+											sx={{
+												fontSize: "0.82rem",
+												fontWeight: 700,
+												color: "#B8860B",
+												display: "flex",
+												alignItems: "center",
+												gap: 0.5,
+											}}
+										>
+											<EmojiEventsIcon sx={{ fontSize: "1rem" }} />{" "}
+											Loyalty Points
+										</Typography>
+										<Typography
+											sx={{ fontSize: "0.72rem", color: "#888" }}
+										>
+											{loyaltyBalance} pts available
+										</Typography>
+									</Box>
+									<Box
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											gap: 1,
+										}}
+									>
+										<IconButton
+											size="small"
+											onClick={() =>
+												setLoyaltyUnits((u) => Math.max(0, u - 1))
+											}
+											disabled={loyaltyUnits === 0}
+											sx={{
+												border: "1px solid #FFD54F",
+												color: "#B8860B",
+												p: 0.3,
+											}}
+										>
+											<RemoveIcon sx={{ fontSize: 16 }} />
+										</IconButton>
+										<Typography
+											sx={{
+												flex: 1,
+												textAlign: "center",
+												fontSize: "0.8rem",
+												fontWeight: 600,
+												color:
+													loyaltyUnits > 0 ? "#B8860B" : "#aaa",
+											}}
+										>
+											{loyaltyUnits === 0
+												? "Not applied"
+												: `${loyaltyUnits * REDEMPTION_UNIT} pts → -${formatNaira(loyaltyDiscount)}`}
+										</Typography>
+										<IconButton
+											size="small"
+											onClick={() =>
+												setLoyaltyUnits((u) =>
+													Math.min(maxLoyaltyUnits, u + 1),
+												)
+											}
+											disabled={loyaltyUnits >= maxLoyaltyUnits}
+											sx={{
+												border: "1px solid #FFD54F",
+												color: "#B8860B",
+												p: 0.3,
+											}}
+										>
+											<AddIcon sx={{ fontSize: 16 }} />
+										</IconButton>
+									</Box>
+								</Box>
+							)}
+							{loyaltyDiscount > 0 && (
+								<Box
+									sx={{
+										display: "flex",
+										justifyContent: "space-between",
+										mb: 0.5,
+									}}
+								>
+									<Typography
+										sx={{ color: "#B8860B", fontSize: "0.9rem" }}
+									>
+										Loyalty ({loyaltyUnits * REDEMPTION_UNIT} pts)
+									</Typography>
+									<Typography
+										sx={{
+											color: "#B8860B",
+											fontWeight: 600,
+											fontSize: "0.9rem",
+										}}
+									>
+										-{formatNaira(loyaltyDiscount)}
+									</Typography>
+								</Box>
+							)}
 
-              {/* Loyalty Points */}
-              {maxLoyaltyUnits > 0 && (
-                <Box sx={{ my: 1.5, p: 1.5, borderRadius: 2, backgroundColor: '#FFF8E1', border: '1px solid #FFD54F' }}>
-                  {/* Pending loyalty reward banner */}
-                  {pendingReward && loyaltyUnits === 0 && (
-                    <Box sx={{ mb: 1.5, p: 1.2, borderRadius: 2, background: 'linear-gradient(135deg, #FFF8E1, #FFF3E0)', border: '1.5px solid #FFD54F', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                      <Box>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#B8860B', display: 'flex', alignItems: 'center', gap: 0.5 }}><CardGiftcardIcon sx={{ fontSize: '0.95rem' }} /> ₦{pendingReward.naira.toLocaleString()} loyalty reward ready</Typography>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>{pendingReward.pts} pts saved — tap Apply to use</Typography>
-                      </Box>
-                      <Button size="small" onClick={() => { const u = Math.min(pendingReward.units, maxLoyaltyUnits); setLoyaltyUnits(u); showToast(`Loyalty reward applied! ₦${(u * REDEMPTION_VALUE).toLocaleString()} off your order.`, 'success'); }} sx={{ border: '1.5px solid #e3242b', borderRadius: '20px', color: '#e3242b', px: 2, py: 0.4, fontSize: '0.78rem', fontWeight: 700, textTransform: 'none', '&:hover': { backgroundColor: '#e3242b', color: '#fff' } }}>Apply</Button>
-                    </Box>
-                  )}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#B8860B', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <EmojiEventsIcon sx={{ fontSize: '1rem' }} /> Loyalty Points
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.72rem', color: '#888' }}>
-                      {loyaltyBalance} pts available
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <IconButton
-                      size="small"
-                      onClick={() => setLoyaltyUnits((u) => Math.max(0, u - 1))}
-                      disabled={loyaltyUnits === 0}
-                      sx={{ border: '1px solid #FFD54F', color: '#B8860B', p: 0.3 }}
-                    >
-                      <RemoveIcon sx={{ fontSize: 16 }} />
-                    </IconButton>
-                    <Typography sx={{ flex: 1, textAlign: 'center', fontSize: '0.8rem', fontWeight: 600, color: loyaltyUnits > 0 ? '#B8860B' : '#aaa' }}>
-                      {loyaltyUnits === 0 ? 'Not applied' : `${loyaltyUnits * REDEMPTION_UNIT} pts → -${formatNaira(loyaltyDiscount)}`}
-                    </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={() => setLoyaltyUnits((u) => Math.min(maxLoyaltyUnits, u + 1))}
-                      disabled={loyaltyUnits >= maxLoyaltyUnits}
-                      sx={{ border: '1px solid #FFD54F', color: '#B8860B', p: 0.3 }}
-                    >
-                      <AddIcon sx={{ fontSize: 16 }} />
-                    </IconButton>
-                  </Box>
-                </Box>
-              )}
-              {loyaltyDiscount > 0 && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                  <Typography sx={{ color: '#B8860B', fontSize: '0.9rem' }}>
-                    Loyalty ({loyaltyUnits * REDEMPTION_UNIT} pts)
-                  </Typography>
-                  <Typography sx={{ color: '#B8860B', fontWeight: 600, fontSize: '0.9rem' }}>
-                    -{formatNaira(loyaltyDiscount)}
-                  </Typography>
-                </Box>
-              )}
+							{tierPerkDiscount > 0 && (
+								<Box
+									sx={{
+										display: "flex",
+										justifyContent: "space-between",
+										mb: 0.5,
+										p: 1,
+										borderRadius: 2,
+										backgroundColor: "#FFFDE7",
+										border: "1px solid #FFD54F",
+									}}
+								>
+									<Typography
+										sx={{
+											color: "#B8860B",
+											fontSize: "0.82rem",
+											fontWeight: 600,
+											display: "flex",
+											alignItems: "center",
+											gap: 0.5,
+										}}
+									>
+										<StarIcon sx={{ fontSize: "0.95rem" }} /> Star
+										Client — 5% off
+									</Typography>
+									<Typography
+										sx={{
+											color: "#B8860B",
+											fontWeight: 700,
+											fontSize: "0.82rem",
+										}}
+									>
+										-{formatNaira(tierPerkDiscount)}
+									</Typography>
+								</Box>
+							)}
 
-              {tierPerkDiscount > 0 && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, p: 1, borderRadius: 2, backgroundColor: '#FFFDE7', border: '1px solid #FFD54F' }}>
-                  <Typography sx={{ color: '#B8860B', fontSize: '0.82rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <StarIcon sx={{ fontSize: '0.95rem' }} /> Star Client — 5% off
-                  </Typography>
-                  <Typography sx={{ color: '#B8860B', fontWeight: 700, fontSize: '0.82rem' }}>
-                    -{formatNaira(tierPerkDiscount)}
-                  </Typography>
-                </Box>
-              )}
+							{isDomestic && (
+								<Box
+									sx={{
+										display: "flex",
+										justifyContent: "space-between",
+										mb: 0.5,
+									}}
+								>
+									<Typography
+										sx={{
+											color: "var(--text-muted)",
+											fontSize: "0.9rem",
+											display: "flex",
+											alignItems: "center",
+											gap: 0.5,
+										}}
+									>
+										<LocalShippingOutlinedIcon
+											sx={{ fontSize: 14 }}
+										/>{" "}
+										Shipping (Fez)
+									</Typography>
+									<Typography
+										sx={{ fontWeight: 600, fontSize: "0.9rem" }}
+									>
+										{formatNaira(shippingCost)}
+									</Typography>
+								</Box>
+							)}
+							{!isDomestic && (
+								<Box
+									sx={{
+										display: "flex",
+										justifyContent: "space-between",
+										mb: 0.5,
+									}}
+								>
+									<Typography
+										sx={{
+											color: "var(--text-muted)",
+											fontSize: "0.9rem",
+										}}
+									>
+										Shipping (intl.)
+									</Typography>
+									<Typography
+										sx={{
+											fontWeight: 600,
+											fontSize: "0.85rem",
+											color: "var(--accent-cyan)",
+										}}
+									>
+										TBD
+									</Typography>
+								</Box>
+							)}
 
-              {isDomestic && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                  <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <LocalShippingOutlinedIcon sx={{ fontSize: 14 }} /> Shipping (Fez)
-                  </Typography>
-                  <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{formatNaira(shippingCost)}</Typography>
-                </Box>
-              )}
-              {!isDomestic && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                  <Typography sx={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Shipping (intl.)</Typography>
-                  <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--accent-cyan)' }}>TBD</Typography>
-                </Box>
-              )}
+							<Box
+								sx={{
+									display: "flex",
+									justifyContent: "space-between",
+									mt: 1.5,
+								}}
+							>
+								<Typography
+									sx={{
+										fontFamily: '"Georgia", serif',
+										fontWeight: 700,
+										fontSize: "1.05rem",
+									}}
+								>
+									Total
+								</Typography>
+								<Typography
+									sx={{
+										fontFamily: '"Georgia", serif',
+										fontWeight: 700,
+										fontSize: "1.05rem",
+										color: "#e3242b",
+									}}
+								>
+									{formatNaira(grandTotal)}
+								</Typography>
+							</Box>
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5 }}>
-                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.05rem' }}>
-                  Total
-                </Typography>
-                <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, fontSize: '1.05rem', color: '#e3242b' }}>
-                  {formatNaira(grandTotal)}
-                </Typography>
-              </Box>
+							{/* Estimated delivery (leather goods only) */}
+							{leatherGoods.length > 0 &&
+								(() => {
+									const earliest = addBusinessDays(new Date(), 10);
+									const latest = addBusinessDays(new Date(), 14);
+									return (
+										<Box
+											sx={{
+												mt: 2,
+												p: 1.5,
+												borderRadius: 2,
+												backgroundColor: "rgba(0,255,255,0.06)",
+												border: "1px solid rgba(0,255,255,0.2)",
+												display: "flex",
+												alignItems: "flex-start",
+												gap: 1,
+											}}
+										>
+											<LocalShippingOutlinedIcon
+												sx={{
+													fontSize: 16,
+													color: "#007a7a",
+													flexShrink: 0,
+													mt: 0.2,
+												}}
+											/>
+											<Box>
+												<Typography
+													sx={{
+														fontSize: "0.78rem",
+														fontWeight: 700,
+														color: "var(--text-main)",
+													}}
+												>
+													Estimated Dispatch
+												</Typography>
+												<Typography
+													sx={{
+														fontSize: "0.75rem",
+														color: "var(--text-muted)",
+														lineHeight: 1.6,
+													}}
+												>
+													Production: 10–14 days + shipping: 2–5
+													days (local) after confirmation.
+													<br />
+													{isDomestic ? (
+														<>
+															Delivered via{" "}
+															<strong>Fez Delivery</strong>{" "}
+															approx.{" "}
+															<strong>
+																{formatDeliveryDate(earliest)} –{" "}
+																{formatDeliveryDate(latest)}
+															</strong>
+															.
+														</>
+													) : (
+														<strong style={{ color: "#e3242b" }}>
+															International shipping cost will be
+															confirmed via WhatsApp.
+														</strong>
+													)}
+												</Typography>
+											</Box>
+										</Box>
+									);
+								})()}
+						</Box>
+					</Grid>
+				</Grid>
 
-              {/* Estimated delivery (leather goods only) */}
-              {leatherGoods.length > 0 && (() => {
-                const earliest = addBusinessDays(new Date(), 10);
-                const latest = addBusinessDays(new Date(), 14);
-                return (
-                  <Box sx={{ mt: 2, p: 1.5, borderRadius: 2, backgroundColor: 'rgba(0,255,255,0.06)', border: '1px solid rgba(0,255,255,0.2)', display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                    <LocalShippingOutlinedIcon sx={{ fontSize: 16, color: '#007a7a', flexShrink: 0, mt: 0.2 }} />
-                    <Box>
-                      <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)' }}>Estimated Dispatch</Typography>
-                      <Typography sx={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                        Production: 10–14 days + shipping: 2–5 days (local) after confirmation.<br />
-                        {isDomestic
-                          ? <>Delivered via <strong>Fez Delivery</strong> approx. <strong>{formatDeliveryDate(earliest)} – {formatDeliveryDate(latest)}</strong>.</>
-                          : <strong style={{ color: '#e3242b' }}>International shipping cost will be confirmed via WhatsApp.</strong>
-                        }
-                      </Typography>
-                    </Box>
-                  </Box>
-                );
-              })()}
-            </Box>
-          </Grid>
-        </Grid>
+				{/* Submit */}
+				<Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
+					<Button
+						onClick={handleSubmit}
+						disabled={!isFormValid || submitting}
+						sx={{
+							backgroundColor: "#e3242b",
+							color: "#fff",
+							borderRadius: "30px",
+							px: 6,
+							py: 1.5,
+							fontFamily: '"Georgia", serif',
+							fontWeight: 600,
+							fontSize: "1rem",
+							"&:hover": { backgroundColor: "#b81b21" },
+							"&.Mui-disabled": {
+								backgroundColor: "#E8D5B0",
+								color: "#fff",
+							},
+						}}
+					>
+						{submitting ? (
+							<CircularProgress size={22} sx={{ color: "#fff" }} />
+						) : leatherGoods.length > 0 ? (
+							"Pay & Confirm Order"
+						) : (
+							"Place Order via WhatsApp"
+						)}
+					</Button>
+				</Box>
+			</Container>
 
-        {/* Submit */}
-        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-          <Button
-            onClick={handleSubmit}
-            disabled={!isFormValid || submitting}
-            sx={{
-              backgroundColor: '#e3242b',
-              color: '#fff',
-              borderRadius: '30px',
-              px: 6,
-              py: 1.5,
-              fontFamily: '"Georgia", serif',
-              fontWeight: 600,
-              fontSize: '1rem',
-              '&:hover': { backgroundColor: '#b81b21' },
-              '&.Mui-disabled': { backgroundColor: '#E8D5B0', color: '#fff' },
-            }}
-          >
-            {submitting
-              ? <CircularProgress size={22} sx={{ color: '#fff' }} />
-              : leatherGoods.length > 0 ? 'Pay & Confirm Order' : 'Place Order via WhatsApp'}
-          </Button>
-        </Box>
-      </Container>
-
-
-      <SignInPrompt open={signInPromptOpen} onClose={() => setSignInPromptOpen(false)} />
-    </Box>
+			<SignInPrompt
+				open={signInPromptOpen}
+				onClose={() => setSignInPromptOpen(false)}
+			/>
+		</Box>
   );
 }

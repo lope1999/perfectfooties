@@ -282,11 +282,43 @@ export function computeDashboardStats(orders) {
 export function findLowStockProducts(categories, threshold = 5) {
   const low = [];
   for (const cat of categories) {
-    for (const p of cat.products || []) {
-      if (p.stock !== undefined && p.stock <= threshold) {
-        low.push({ ...p, categoryName: cat.title || cat.id });
-      }
-    }
+		for (const p of cat.products || []) {
+			// 1) If product has per-colour stock, add an entry per colour that is at-or-below threshold
+			if (p.colorStock && typeof p.colorStock === "object") {
+				for (const [color, qty] of Object.entries(p.colorStock)) {
+					if (qty !== undefined && qty <= threshold) {
+						low.push({
+							...p,
+							productId: p.id,
+							stock: qty,
+							color,
+							name: `${p.name} — ${color}`,
+							categoryName: cat.title || cat.id,
+						});
+					}
+				}
+			}
+
+			// 2) Also consider a top-level stock field (legacy / aggregated)
+			if (p.stock !== undefined && p.stock <= threshold) {
+				low.push({
+					...p,
+					productId: p.id,
+					stock: p.stock,
+					categoryName: cat.title || cat.id,
+				});
+			}
+		}
   }
-  return low;
+
+  // Remove duplicates (same product+color) and return list
+  const seen = new Set();
+  const deduped = [];
+  for (const e of low) {
+		const key = `${e.productId || ""}::${e.color || ""}`;
+		if (seen.has(key)) continue;
+		seen.add(key);
+		deduped.push(e);
+  }
+  return deduped;
 }

@@ -286,7 +286,7 @@ export default function ShopPage() {
 												display: "flex",
 												alignItems: "center",
 												gap: 0.5,
-												color: "var(--accent-cyan)",
+												color: "#007c7c",
 												fontFamily: ff,
 												fontWeight: 700,
 												fontSize: "0.9rem",

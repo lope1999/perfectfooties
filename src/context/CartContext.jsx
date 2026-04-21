@@ -215,32 +215,54 @@ export function CartProvider({ children }) {
 
   const getCartTotal = () => {
     const { products, pressOns, leatherGoods } = state.items;
-    const productTotal = products.reduce((sum, p) => sum + p.price * p.quantity, 0);
-    const pressOnTotal = pressOns.reduce((sum, p) => sum + p.price * (p.quantity || 1), 0);
-    const leatherTotal = leatherGoods.reduce((sum, g) => sum + g.price * g.quantity, 0);
-    return productTotal + pressOnTotal + leatherTotal;
+		const productTotal = products.reduce(
+			(sum, p) => sum + p.price * p.quantity,
+			0,
+		);
+		const pressOnTotal = pressOns.reduce(
+			(sum, p) => sum + p.price * (p.quantity || 1),
+			0,
+		);
+		// Apply surcharge of ₦2,000 per unit for footwear sizes 45 and above
+		const leatherTotal = leatherGoods.reduce((sum, g) => {
+			const base = Number(g.price || 0) * Number(g.quantity || 0);
+			const eu = Number(g.euSize);
+			const surcharge = eu && eu >= 45 ? 2000 * Number(g.quantity || 0) : 0;
+			return sum + base + surcharge;
+		}, 0);
+		return productTotal + pressOnTotal + leatherTotal;
+  };
+
+  const getCartSurcharge = () => {
+		const { leatherGoods } = state.items;
+		return leatherGoods.reduce((sum, g) => {
+			const eu = Number(g.euSize);
+			const surcharge = eu && eu >= 45 ? 2000 * Number(g.quantity || 0) : 0;
+			return sum + surcharge;
+		}, 0);
   };
 
   return (
-    <CartContext.Provider
-      value={{
-        cart: state,
-        addProduct,
-        removeProduct,
-        updateProductQty,
-        addLeatherGood,
-        removeLeatherGood,
-        updateLeatherGoodQty,
-        addPressOn,
-        removePressOn,
-        setCustomerName,
-        clearCart,
-        getCartCount,
-        getCartTotal,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+		<CartContext.Provider
+			value={{
+				cart: state,
+				addProduct,
+				removeProduct,
+				updateProductQty,
+				addLeatherGood,
+				removeLeatherGood,
+				updateLeatherGoodQty,
+				addPressOn,
+				removePressOn,
+				setCustomerName,
+				clearCart,
+				getCartCount,
+				getCartTotal,
+				getCartSurcharge,
+			}}
+		>
+			{children}
+		</CartContext.Provider>
   );
 }
 

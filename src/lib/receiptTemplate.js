@@ -118,16 +118,21 @@ export function generateReceiptHtml({
   const statusLabels = { pending: 'Pending', confirmed: 'Confirmed', production: 'In Production', shipped: 'Shipped', shipping: 'Shipped', received: 'Delivered', delivered: 'Delivered', cancelled: 'Cancelled' };
   const statusLabel = statusLabels[status] || status;
 
-  const itemRows = items.map((i) => `
+  const itemRows = items
+		.map(
+			(i) => `
     <tr>
       <td>
-        <div class="item-name">${i.serviceName || i.name || 'Item'}</div>
-        ${i.selectedColor ? `<div class="item-detail">Colour: ${i.selectedColor}${i.footLength ? ` · Length: ${i.footLength}cm` : ''}</div>` : ''}
-        ${(i.quantity || 1) > 1 ? `<div class="item-detail">Qty: ${i.quantity}</div>` : ''}
-        ${i.specialRequest ? `<div class="item-detail" style="color:#B8860B;">Made to order</div>` : ''}
+        <div class="item-name">${i.serviceName || i.name || "Item"}</div>
+        ${i.selectedColor ? `<div class="item-detail">Colour: ${i.selectedColor}${i.footLength ? ` · Length: ${i.footLength}cm` : ""}</div>` : ""}
+        ${(i.quantity || 1) > 1 ? `<div class="item-detail">Qty: ${i.quantity}</div>` : ""}
+        ${i.specialRequest ? `<div class="item-detail" style="color:#B8860B;">Made to order</div>` : ""}
+        ${i.surcharge && i.surcharge > 0 ? `<div class="item-detail" style="color:${RED}; font-weight:700;">Size surcharge: ${fmt(i.surcharge)}</div>` : ""}
       </td>
       <td class="item-price">${fmt(i.price)}</td>
-    </tr>`).join('');
+    </tr>`,
+		)
+		.join("");
 
   const discountRows = [
     giftCardDiscount > 0 && `<div class="total-row discount"><span class="label">Gift Card Discount</span><span>-${fmt(giftCardDiscount)}</span></div>`,
@@ -139,9 +144,10 @@ export function generateReceiptHtml({
     ? `<div class="total-row even"><span class="label">Shipping${shipping.label ? ` (${shipping.label})` : ''}</span><span>${fmt(shippingFee)}</span></div>`
     : '';
 
-  const extraRow = extraCharge > 0
-    ? `<div class="total-row"><span class="label">Extra Charge</span><span>${fmt(extraCharge)}</span></div>`
-    : '';
+  const extraRow =
+		extraCharge > 0
+			? `<div class="total-row"><span class="label">Size surcharge</span><span>${fmt(extraCharge)}</span></div>`
+			: "";
 
   const addrLine = [shipping.address, shipping.lga, shipping.city, shipping.state, shipping.country && shipping.country !== 'Nigeria' ? shipping.country : ''].filter(Boolean).join(', ');
 
