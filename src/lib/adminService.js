@@ -1,19 +1,21 @@
 import {
-  collectionGroup,
-  collection,
-  doc,
-  addDoc,
-  getDocs,
-  getDoc,
-  updateDoc,
-  deleteDoc,
-  setDoc,
-  query,
-  runTransaction,
-  serverTimestamp,
-  arrayUnion,
-  Timestamp,
-} from 'firebase/firestore';
+	collectionGroup,
+	collection,
+	doc,
+	addDoc,
+	getDocs,
+	getDoc,
+	updateDoc,
+	deleteDoc,
+	setDoc,
+	query,
+	runTransaction,
+	serverTimestamp,
+	arrayUnion,
+	Timestamp,
+	onSnapshot,
+	orderBy,
+} from "firebase/firestore";
 import { db } from './firebase';
 import {
   validateCollectionName,
@@ -39,6 +41,32 @@ export async function fetchAllOrders() {
     return bTime - aTime;
   });
   return orders;
+}
+
+export function subscribeToAllOrders(onUpdate, onError) {
+	const q = query(collectionGroup(db, "orders"), orderBy("createdAt", "desc"));
+	return onSnapshot(
+		q,
+		(snapshot) => {
+			const orders = snapshot.docs.map((d) => {
+				const parentPath = d.ref.parent.parent?.path || "";
+				const uid = parentPath.startsWith("users/")
+					? parentPath.split("/")[1]
+					: d.data().uid || null;
+				return { id: d.id, uid, ...d.data() };
+			});
+			if (typeof onUpdate === "function") {
+				onUpdate(orders);
+			}
+		},
+		(error) => {
+			if (typeof onError === "function") {
+				onError(error);
+			} else {
+				console.error("Admin orders snapshot error:", error);
+			}
+		},
+	);
 }
 
 export async function createAdminOrder(data) {
@@ -267,11 +295,14 @@ export async function updateCustomerPerks(uid, perks) {
 const REVENUE_STATUSES = ['confirmed', 'received', 'completed'];
 const PRODUCTION_QUEUE_STATUSES = new Set(['confirmed', 'production', 'in-progress']);
 
+const getOrderValue = (order) =>
+	(order.total ?? order.finalTotal ?? 0) + (order.extraCharge || 0);
+
 export function computeDashboardStats(orders) {
   const total = orders.length;
   const revenue = orders
-    .filter((o) => REVENUE_STATUSES.includes(o.status))
-    .reduce((sum, o) => sum + (o.total || 0) + (o.extraCharge || 0), 0);
+		.filter((o) => REVENUE_STATUSES.includes(o.status))
+		.reduce((sum, o) => sum + getOrderValue(o), 0);
   const pending = orders.filter((o) => o.status === 'pending').length;
   const confirmed = orders.filter((o) => o.status === 'confirmed').length;
   const production = orders.filter((o) => PRODUCTION_QUEUE_STATUSES.has(o.status)).length;

@@ -19,7 +19,8 @@
       "Read(//tmp/**)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(grep -E \"\\\\.js$|\\\\.json$\")"
+      "Bash(grep -E \"\\\\.js$|\\\\.json$\")",
+      "Bash(grep -E \"\\\\.\\(jsx|js\\)$\")"
     ]
   }
 }

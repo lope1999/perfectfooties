@@ -25,7 +25,10 @@ import {
 	updateItem,
 	deleteItem,
 } from "../../lib/collectionService";
+import { Timestamp } from 'firebase/firestore';
+import { getActivePromo, applyPromoToPrice, formatPromoLabel } from '../../lib/promoUtils';
 import ImageUploadField from './ImageUploadField';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 
 const ff = '"Georgia", serif';
 
@@ -46,9 +49,22 @@ const EMPTY_FORM = {
   images: [''],
   careGuide: '',
   colorStock: {},
+  promoEnabled: false,
+  promoLabel: '',
+  promoDescription: '',
+  promoDiscountType: 'percentage',
+  promoDiscountValue: '',
+  promoStartDate: '',
+  promoEndDate: '',
 };
 
 function itemToForm(item) {
+  const p = item.promo || {};
+  const toDateStr = (ts) => {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toISOString().split('T')[0];
+  };
   return {
     name: item.name || '',
     description: item.description || '',
@@ -59,6 +75,13 @@ function itemToForm(item) {
     images: item.images?.length > 0 ? [...item.images, ''] : [''],
     careGuide: item.careGuide || '',
     colorStock: item.colorStock || {},
+    promoEnabled: p.enabled || false,
+    promoLabel: p.label || '',
+    promoDescription: p.description || '',
+    promoDiscountType: p.discountType || 'percentage',
+    promoDiscountValue: p.discountValue != null ? String(p.discountValue) : '',
+    promoStartDate: toDateStr(p.startDate),
+    promoEndDate: toDateStr(p.endDate),
   };
 }
 
@@ -73,6 +96,19 @@ function formToData(form) {
     images: form.images.map((u) => u.trim()).filter(Boolean),
     careGuide: form.careGuide.trim(),
     colorStock: form.colorStock,
+    promo: {
+      enabled: form.promoEnabled,
+      label: form.promoLabel.trim(),
+      description: form.promoDescription.trim(),
+      discountType: form.promoDiscountType,
+      discountValue: Number(form.promoDiscountValue) || 0,
+      startDate: form.promoStartDate
+        ? Timestamp.fromDate(new Date(form.promoStartDate))
+        : null,
+      endDate: form.promoEndDate
+        ? Timestamp.fromDate(new Date(form.promoEndDate + 'T23:59:59'))
+        : null,
+    },
   };
 }
 
@@ -83,6 +119,13 @@ const EMPTY_COLLECTION_FORM = {
 	coverImage: "",
 	order: 99,
 	active: true,
+	promoEnabled: false,
+	promoLabel: "",
+	promoDescription: "",
+	promoDiscountType: "percentage",
+	promoDiscountValue: "",
+	promoStartDate: "",
+	promoEndDate: "",
 };
 
 function slugify(value) {
@@ -102,18 +145,31 @@ function CollectionDialog({ open, onClose, onSaved, collection }) {
 
 	useEffect(() => {
 		if (open) {
-			setForm(
-				collection
-					? {
-							id: collection.id || "",
-							name: collection.name || "",
-							description: collection.description || "",
-							coverImage: collection.coverImage || "",
-							order: collection.order != null ? collection.order : 99,
-							active: collection.active !== false,
-						}
-					: EMPTY_COLLECTION_FORM,
-			);
+			if (collection) {
+				const p = collection.promo || {};
+				const toDateStr = (ts) => {
+					if (!ts) return "";
+					const d = ts.toDate ? ts.toDate() : new Date(ts);
+					return d.toISOString().split("T")[0];
+				};
+				setForm({
+					id: collection.id || "",
+					name: collection.name || "",
+					description: collection.description || "",
+					coverImage: collection.coverImage || "",
+					order: collection.order != null ? collection.order : 99,
+					active: collection.active !== false,
+					promoEnabled: p.enabled || false,
+					promoLabel: p.label || "",
+					promoDescription: p.description || "",
+					promoDiscountType: p.discountType || "percentage",
+					promoDiscountValue: p.discountValue != null ? String(p.discountValue) : "",
+					promoStartDate: toDateStr(p.startDate),
+					promoEndDate: toDateStr(p.endDate),
+				});
+			} else {
+				setForm(EMPTY_COLLECTION_FORM);
+			}
 			setError("");
 			setSaving(false);
 		}
@@ -153,6 +209,19 @@ function CollectionDialog({ open, onClose, onSaved, collection }) {
 				coverImage: form.coverImage,
 				order: Number(form.order) || 99,
 				active: form.active,
+				promo: {
+					enabled: form.promoEnabled,
+					label: form.promoLabel.trim(),
+					description: form.promoDescription.trim(),
+					discountType: form.promoDiscountType,
+					discountValue: Number(form.promoDiscountValue) || 0,
+					startDate: form.promoStartDate
+						? Timestamp.fromDate(new Date(form.promoStartDate))
+						: null,
+					endDate: form.promoEndDate
+						? Timestamp.fromDate(new Date(form.promoEndDate + "T23:59:59"))
+						: null,
+				},
 			};
 
 			if (isEdit) {
@@ -276,11 +345,103 @@ function CollectionDialog({ open, onClose, onSaved, collection }) {
 						}
 						label={
 							<Typography sx={{ fontFamily: ff, fontSize: "0.88rem" }}>
-								Active
+								Active (visible on shop)
 							</Typography>
 						}
 					/>
 				</Box>
+
+				{/* Promotion Section */}
+				<Divider sx={{ my: 0.5 }} />
+				<FormControlLabel
+					control={
+						<Switch
+							checked={form.promoEnabled}
+							onChange={(e) => setForm((f) => ({ ...f, promoEnabled: e.target.checked }))}
+							sx={{
+								"& .MuiSwitch-switchBase.Mui-checked": { color: "#e3242b" },
+								"& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#e3242b" },
+							}}
+						/>
+					}
+					label={
+						<Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+							<LocalOfferIcon sx={{ fontSize: 16, color: form.promoEnabled ? "#e3242b" : "#999" }} />
+							<Typography sx={{ fontFamily: ff, fontSize: "0.88rem", color: form.promoEnabled ? "#e3242b" : "inherit", fontWeight: form.promoEnabled ? 700 : 400 }}>
+								Promotion Active
+							</Typography>
+						</Box>
+					}
+				/>
+				<Collapse in={form.promoEnabled}>
+					<Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mt: 1, pl: 1, borderLeft: "3px solid rgba(227,36,43,0.3)", ml: 0.5 }}>
+						<TextField
+							label="Promo Label"
+							placeholder='e.g. "Easter Promo"'
+							value={form.promoLabel}
+							onChange={(e) => setForm((f) => ({ ...f, promoLabel: e.target.value }))}
+							size="small"
+							fullWidth
+							sx={{ "& .MuiOutlinedInput-root.Mui-focused fieldset": { borderColor: "#e3242b" } }}
+						/>
+						<TextField
+							label="Promo Description"
+							placeholder='e.g. "20% off all handmade footwear this Easter"'
+							value={form.promoDescription}
+							onChange={(e) => setForm((f) => ({ ...f, promoDescription: e.target.value }))}
+							size="small"
+							fullWidth
+							multiline
+							rows={2}
+							sx={{ "& .MuiOutlinedInput-root.Mui-focused fieldset": { borderColor: "#e3242b" } }}
+						/>
+						<Box sx={{ display: "flex", gap: 1.5 }}>
+							<FormControl size="small" sx={{ minWidth: 140 }}>
+								<InputLabel>Discount Type</InputLabel>
+								<Select
+									label="Discount Type"
+									value={form.promoDiscountType}
+									onChange={(e) => setForm((f) => ({ ...f, promoDiscountType: e.target.value }))}
+								>
+									<MenuItem value="percentage">Percentage (%)</MenuItem>
+									<MenuItem value="fixed">Fixed Amount (₦)</MenuItem>
+								</Select>
+							</FormControl>
+							<TextField
+								label={form.promoDiscountType === "percentage" ? "Discount %" : "Discount ₦"}
+								value={form.promoDiscountValue}
+								onChange={(e) => setForm((f) => ({ ...f, promoDiscountValue: e.target.value.replace(/[^0-9.]/g, "") }))}
+								type="number"
+								size="small"
+								sx={{ flex: 1, "& .MuiOutlinedInput-root.Mui-focused fieldset": { borderColor: "#e3242b" } }}
+								inputProps={{ min: 0 }}
+							/>
+						</Box>
+						<Box sx={{ display: "flex", gap: 1.5 }}>
+							<TextField
+								label="Start Date"
+								type="date"
+								value={form.promoStartDate}
+								onChange={(e) => setForm((f) => ({ ...f, promoStartDate: e.target.value }))}
+								size="small"
+								fullWidth
+								InputLabelProps={{ shrink: true }}
+								sx={{ "& .MuiOutlinedInput-root.Mui-focused fieldset": { borderColor: "#e3242b" } }}
+							/>
+							<TextField
+								label="End Date"
+								type="date"
+								value={form.promoEndDate}
+								onChange={(e) => setForm((f) => ({ ...f, promoEndDate: e.target.value }))}
+								size="small"
+								fullWidth
+								InputLabelProps={{ shrink: true }}
+								sx={{ "& .MuiOutlinedInput-root.Mui-focused fieldset": { borderColor: "#e3242b" } }}
+							/>
+						</Box>
+					</Box>
+				</Collapse>
+
 				{error && (
 					<Alert severity="error" sx={{ py: 0.5, fontSize: "0.82rem" }}>
 						{error}
@@ -471,6 +632,97 @@ function ItemDialog({ open, onClose, onSaved, collectionId, item }) {
           </Box>
         )}
 
+        {/* Item-level Promotion */}
+        <Divider />
+        <FormControlLabel
+          control={
+            <Switch
+              checked={form.promoEnabled}
+              onChange={(e) => setForm((f) => ({ ...f, promoEnabled: e.target.checked }))}
+              sx={{
+                '& .MuiSwitch-switchBase.Mui-checked': { color: '#e3242b' },
+                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#e3242b' },
+              }}
+            />
+          }
+          label={
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <LocalOfferIcon sx={{ fontSize: 16, color: form.promoEnabled ? '#e3242b' : '#999' }} />
+              <Typography sx={{ fontFamily: ff, fontSize: '0.88rem', color: form.promoEnabled ? '#e3242b' : 'inherit', fontWeight: form.promoEnabled ? 700 : 400 }}>
+                Item Promotion
+              </Typography>
+            </Box>
+          }
+        />
+        <Collapse in={form.promoEnabled}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pl: 1, borderLeft: '3px solid rgba(227,36,43,0.3)', ml: 0.5 }}>
+            <TextField
+              label="Promo Label"
+              placeholder='e.g. "Launch Promo"'
+              value={form.promoLabel}
+              onChange={(e) => setForm((f) => ({ ...f, promoLabel: e.target.value }))}
+              size="small"
+              fullWidth
+              sx={{ '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: '#e3242b' } }}
+            />
+            <TextField
+              label="Promo Description (optional)"
+              placeholder='e.g. "10% off for launch week"'
+              value={form.promoDescription}
+              onChange={(e) => setForm((f) => ({ ...f, promoDescription: e.target.value }))}
+              size="small"
+              fullWidth
+              multiline
+              rows={2}
+              sx={{ '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: '#e3242b' } }}
+            />
+            <Box sx={{ display: 'flex', gap: 1.5 }}>
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel>Discount Type</InputLabel>
+                <Select
+                  label="Discount Type"
+                  value={form.promoDiscountType}
+                  onChange={(e) => setForm((f) => ({ ...f, promoDiscountType: e.target.value }))}
+                >
+                  <MenuItem value="percentage">Percentage (%)</MenuItem>
+                  <MenuItem value="fixed">Fixed Amount (₦)</MenuItem>
+                </Select>
+              </FormControl>
+              <TextField
+                label={form.promoDiscountType === 'percentage' ? 'Discount %' : 'Discount ₦'}
+                value={form.promoDiscountValue}
+                onChange={(e) => setForm((f) => ({ ...f, promoDiscountValue: e.target.value.replace(/[^0-9.]/g, '') }))}
+                type="number"
+                size="small"
+                sx={{ flex: 1, '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: '#e3242b' } }}
+                inputProps={{ min: 0 }}
+              />
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1.5 }}>
+              <TextField
+                label="Start Date"
+                type="date"
+                value={form.promoStartDate}
+                onChange={(e) => setForm((f) => ({ ...f, promoStartDate: e.target.value }))}
+                size="small"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                sx={{ '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: '#e3242b' } }}
+              />
+              <TextField
+                label="End Date"
+                type="date"
+                value={form.promoEndDate}
+                onChange={(e) => setForm((f) => ({ ...f, promoEndDate: e.target.value }))}
+                size="small"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                sx={{ '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: '#e3242b' } }}
+              />
+            </Box>
+          </Box>
+        </Collapse>
+
         {error && <Alert severity="error" sx={{ py: 0.5, fontSize: '0.82rem' }}>{error}</Alert>}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
@@ -627,6 +879,25 @@ function CollectionRow({ colMeta, onAction, onEditCollection }) {
 								}}
 							/>
 						)}
+						{(() => {
+							const activePromo = getActivePromo(colMeta);
+							if (!activePromo) return null;
+							return (
+								<Chip
+									icon={<LocalOfferIcon sx={{ fontSize: "12px !important" }} />}
+									label={`${activePromo.label} · ${formatPromoLabel(activePromo)}`}
+									size="small"
+									sx={{
+										fontSize: "0.65rem",
+										fontFamily: ff,
+										fontWeight: 700,
+										backgroundColor: "rgba(227,36,43,0.1)",
+										color: "#e3242b",
+										border: "1px solid rgba(227,36,43,0.3)",
+									}}
+								/>
+							);
+						})()}
 					</Box>
 					<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
 						{loading && (
@@ -803,7 +1074,21 @@ function CollectionRow({ colMeta, onAction, onEditCollection }) {
 														fontSize: "0.88rem",
 													}}
 												>
-													{item.name}
+													<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+														{item.name}
+														{(() => {
+															const ip = getActivePromo(item);
+															if (!ip) return null;
+															return (
+																<Chip
+																	icon={<LocalOfferIcon sx={{ fontSize: '10px !important' }} />}
+																	label={formatPromoLabel(ip)}
+																	size="small"
+																	sx={{ fontSize: '0.6rem', height: 16, backgroundColor: 'rgba(227,36,43,0.1)', color: '#e3242b', fontWeight: 700, border: '1px solid rgba(227,36,43,0.3)' }}
+																/>
+															);
+														})()}
+													</Box>
 												</TableCell>
 												<TableCell
 													sx={{
@@ -811,7 +1096,21 @@ function CollectionRow({ colMeta, onAction, onEditCollection }) {
 														fontSize: "0.85rem",
 													}}
 												>
-													₦{Number(item.price).toLocaleString()}
+													{(() => {
+														const ip = getActivePromo(item);
+														if (!ip) return `₦${Number(item.price).toLocaleString()}`;
+														const discounted = applyPromoToPrice(item.price, ip);
+														return (
+															<Box>
+																<Typography sx={{ fontFamily: ff, fontSize: '0.75rem', color: '#999', textDecoration: 'line-through', lineHeight: 1.2 }}>
+																	₦{Number(item.price).toLocaleString()}
+																</Typography>
+																<Typography sx={{ fontFamily: ff, fontSize: '0.85rem', color: '#e3242b', fontWeight: 700 }}>
+																	₦{Number(discounted).toLocaleString()}
+																</Typography>
+															</Box>
+														);
+													})()}
 												</TableCell>
 												<TableCell>
 													<Box

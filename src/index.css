@@ -29,17 +29,17 @@
   --accent-cyan-dark: #00cccc;
   --accent-cyan-hover: #009999;
 
-  --bg-page:     #0a0000;
-  --bg-soft:     #1a0505;
-  --bg-soft2:    #1f0808;
-  --bg-soft3:    #150303;
-  --bg-muted:    #0e0202;
-  --bg-card:     #120404;
+  --bg-page:     #0C0605;   /* Deep leather black/brown */
+  --bg-soft:     #170B08;   /* Dark chocolate background */
+  --bg-soft2:    #21120B;   /* Deep leather brown */
+  --bg-soft3:    #120805;
+  --bg-muted:    #0A0504;
+  --bg-card:     #170B08;
 
-  --text-main:   #f5f0f0;
-  --text-muted:  #c09898;
-  --text-dim:    #8a6060;
-  --text-purple: #00cccc;
+  --text-main:   #FDF8F0;   /* High-contrast Cream for names and headers */
+  --text-muted:  #C9A84C;   /* Brass/Gold for descriptions and details */
+  --text-dim:    #A38A75;   /* Readable tan for less critical text */
+  --text-purple: #C9A84C;
 }
 
 body {
@@ -49,6 +49,14 @@ body {
   background-color: var(--bg-page);
   color: var(--text-main);
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Ensure text and buttons are fully opaque in dark mode to fix visibility issues */
+[data-theme="dark"] .MuiButton-root,
+[data-theme="dark"] .MuiTypography-root,
+[data-theme="dark"] nav a,
+[data-theme="dark"] a {
+  opacity: 1 !important;
 }
 
 html {

@@ -49,7 +49,12 @@ export default function CartPage() {
   const { user } = useAuth();
   const { showToast } = useNotifications();
   const [checkoutLoading] = useState(false);
-  const [appliedGiftCard, setAppliedGiftCard] = useState(null);
+  const [appliedGiftCard, setAppliedGiftCard] = useState(() => {
+    try {
+      const s = sessionStorage.getItem('appliedGiftCard');
+      return s ? JSON.parse(s) : null;
+    } catch { return null; }
+  });
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const [showRefField, setShowRefField] = useState(false);
   const [refCodeInput, setRefCodeInput] = useState('');
@@ -773,8 +778,14 @@ export default function CartPage() {
 						{/* Gift Card Redeem Input */}
 						<GiftCardRedeemInput
 							appliedCard={appliedGiftCard}
-							onApplied={setAppliedGiftCard}
-							onRemoved={() => setAppliedGiftCard(null)}
+							onApplied={(card) => {
+								setAppliedGiftCard(card);
+								try { sessionStorage.setItem('appliedGiftCard', JSON.stringify(card)); } catch {}
+							}}
+							onRemoved={() => {
+								setAppliedGiftCard(null);
+								sessionStorage.removeItem('appliedGiftCard');
+							}}
 						/>
 					</>
 				)}

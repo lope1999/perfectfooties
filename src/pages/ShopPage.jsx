@@ -7,8 +7,10 @@ import {
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import ScrollReveal from '../components/ScrollReveal';
 import { fetchCollections } from '../lib/collectionService';
+import { getActivePromo, formatPromoLabel } from '../lib/promoUtils';
 
 const ff = '"Georgia", serif';
 
@@ -281,6 +283,26 @@ export default function ShopPage() {
 												{col.description}
 											</Typography>
 										)}
+										{(() => {
+											const promo = getActivePromo(col);
+											if (!promo) return null;
+											return (
+												<Chip
+													icon={<LocalOfferIcon sx={{ fontSize: "14px !important", color: "#fff !important" }} />}
+													label={`${promo.label} — ${formatPromoLabel(promo)}`}
+													size="small"
+													sx={{
+														mb: 1.5,
+														backgroundColor: "#e3242b",
+														color: "#fff",
+														fontFamily: ff,
+														fontWeight: 700,
+														fontSize: "0.7rem",
+														borderRadius: "4px",
+													}}
+												/>
+											);
+										})()}
 										<Box
 											sx={{
 												display: "flex",

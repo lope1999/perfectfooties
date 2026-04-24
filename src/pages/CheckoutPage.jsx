@@ -223,6 +223,10 @@ export default function CheckoutPage() {
 			lines.push("--- LEATHER GOODS ORDER ---");
 			leatherGoods.forEach((g, i) => {
 				let detail = `${i + 1}. ${g.name} x${g.quantity} \u2014 ${formatNaira(g.price * g.quantity)}`;
+				if (g.originalPrice && g.originalPrice !== g.price) {
+					const saved = (g.originalPrice - g.price) * g.quantity;
+					detail += ` (${g.promoLabel || 'Promo'} \u2014 saved ${formatNaira(saved)})`;
+				}
 				if (g.selectedColor) detail += `\n   Colour: ${g.selectedColor}`;
 				if (g.euSize) detail += ` | EU Size: ${g.euSize}`;
 				if (g.footLength) detail += ` | Foot Length: ${g.footLength}cm`;
@@ -377,6 +381,11 @@ export default function CheckoutPage() {
 					collectionName: g.collectionName,
 					surcharge:
 						Number(g.euSize) >= 45 ? 2000 * Number(g.quantity || 0) : 0,
+					...(g.originalPrice && g.originalPrice !== g.price && {
+						originalPrice: g.originalPrice,
+						promoLabel: g.promoLabel,
+						promoSavings: (g.originalPrice - g.price) * g.quantity,
+					}),
 				})),
 				...products.map((p) => ({
 					kind: "retail",
@@ -453,6 +462,7 @@ export default function CheckoutPage() {
 					giftCardDiscount,
 					orderId,
 				);
+				sessionStorage.removeItem('appliedGiftCard');
 			} catch (err) {
 				console.error("Gift card redemption failed:", err);
 			}

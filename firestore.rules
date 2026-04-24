@@ -65,13 +65,21 @@ service cloud.firestore {
       allow read: if true;
       allow create, delete: if isAdmin();
       // Authenticated users can update (for stock decrement during checkout)
-      allow update: if isAdmin() || request.auth != null;
+      allow update: if isAdmin() || (
+        request.auth != null &&
+        // Restrict non-admins to only updating the stock field
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock'])
+      );
     }
 
     match /retailCategories/{categoryId} {
       allow read: if true;
       allow create, delete: if isAdmin();
-      allow update: if isAdmin() || request.auth != null;
+      allow update: if isAdmin() || (
+        request.auth != null &&
+        // Restrict non-admins to only updating the stock field
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock'])
+      );
     }
 
     // --- Testimonials ---
@@ -136,7 +144,8 @@ service cloud.firestore {
     // --- Booked Slots (public read, authenticated create, owner/admin update, admin delete) ---
     match /bookedSlots/{slotId} {
       allow read: if true;
-      allow create: if request.auth != null;
+      // Ensure users can only create slots where they are the designated owner
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
       allow update: if isAdmin() || (request.auth != null && request.auth.uid == resource.data.uid);
       allow delete: if isAdmin();
     }
@@ -144,7 +153,8 @@ service cloud.firestore {
     // --- Referral Codes (any authenticated user can read to validate; only system/admin writes) ---
     match /referralCodes/{code} {
       allow read: if request.auth != null;
-      allow write: if isAdmin() || request.auth != null;
+      // Prevent general authenticated users from creating or deleting referral codes
+      allow write: if isAdmin();
     }
 
     // --- Referral Uses (authenticated create, admin read) ---
@@ -155,6 +165,11 @@ service cloud.firestore {
 
     // --- Loyalty Adjustments (admin only) ---
     match /loyaltyAdjustments/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // --- Revenue & Analytics (admin only) ---
+    match /revenue/{docId} {
       allow read, write: if isAdmin();
     }
 
@@ -171,7 +186,11 @@ service cloud.firestore {
     match /nicheCollections/{collectionId} {
       allow read: if true;
       allow create, delete: if isAdmin();
-      allow update: if isAdmin() || request.auth != null;
+      allow update: if isAdmin() || (
+        request.auth != null &&
+        // Restrict non-admins to only updating the stock field
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock'])
+      );
     }
 
     // --- Collections (new 4-category structure) ---
@@ -183,7 +202,11 @@ service cloud.firestore {
       match /items/{itemId} {
         allow read: if true;
         allow create, delete: if isAdmin();
-        allow update: if isAdmin() || request.auth != null;
+        allow update: if isAdmin() || (
+          request.auth != null &&
+          // Restrict non-admins to only updating the stock field
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock'])
+        );
       }
     }
 

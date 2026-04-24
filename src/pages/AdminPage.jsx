@@ -16,7 +16,12 @@ import ReviewsSection from "../components/admin/ReviewsSection";
 import AnnouncementsSection from '../components/admin/AnnouncementsSection';
 import ProductionTrackerSection from '../components/admin/ProductionTrackerSection';
 import NewsletterSection from '../components/admin/NewsletterSection';
-import { fetchAllOrders, fetchAllUsers, computeUserStats } from '../lib/adminService';
+import {
+	fetchAllOrders,
+	fetchAllUsers,
+	computeUserStats,
+	subscribeToAllOrders,
+} from "../lib/adminService";
 import { fetchProducts } from '../lib/productService';
 import { fetchGalleryImages } from '../lib/galleryService';
 import { fetchAllGiftCards } from '../lib/giftCardService';
@@ -28,7 +33,7 @@ export default function AdminPage() {
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [orders, setOrders] = useState([]);
-	const [giftCards, setGiftCards] = useState([]);
+	const [rawUsers, setRawUsers] = useState([]);
 	const [blogPosts, setBlogPosts] = useState([]);
 	const [galleryImages, setGalleryImages] = useState([]);
 	const [users, setUsers] = useState([]);
@@ -61,9 +66,8 @@ export default function AdminPage() {
 			setBlogPosts(bp.status === "fulfilled" ? bp.value : staticBlogPosts);
 			setGalleryImages(gi.status === "fulfilled" ? gi.value : []);
 
-			const rawUsers = uf.status === "fulfilled" ? uf.value : [];
-			const allOrders = o.status === "fulfilled" ? o.value : [];
-			setUsers(computeUserStats(rawUsers, allOrders));
+			const fetchedUsers = uf.status === "fulfilled" ? uf.value : [];
+			setRawUsers(fetchedUsers);
 			setShopProducts(sp.status === "fulfilled" ? sp.value : []);
 		} catch (err) {
 			console.error("Admin data load error:", err);
@@ -75,6 +79,17 @@ export default function AdminPage() {
 	useEffect(() => {
 		loadData();
 	}, [loadData]);
+
+	useEffect(() => {
+		const unsubscribe = subscribeToAllOrders(setOrders, (error) =>
+			console.error("Admin orders snapshot error:", error),
+		);
+		return unsubscribe;
+	}, []);
+
+	useEffect(() => {
+		setUsers(computeUserStats(rawUsers, orders));
+	}, [rawUsers, orders]);
 
 	// Listen for lightweight navigation events from dashboard cards (e.g. Manage buttons)
 	useEffect(() => {

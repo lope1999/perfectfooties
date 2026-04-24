@@ -14,6 +14,7 @@ import {
 	IconButton,
 	Tooltip,
 	Rating,
+	Alert,
 } from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -21,10 +22,12 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import HandymanIcon from '@mui/icons-material/Handyman';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import ScrollReveal from '../components/ScrollReveal';
 import { getCollection, fetchItems } from '../lib/collectionService';
 import { fetchTestimonialsByCollectionId } from "../lib/testimonialService";
 import { useWishlist } from '../context/WishlistContext';
+import { getActivePromo, getActiveItemPromo, applyPromoToPrice, formatPromoLabel } from '../lib/promoUtils';
 
 const ff = '"Georgia", serif';
 
@@ -220,6 +223,26 @@ export default function CollectionPage() {
 							borderRadius: 2,
 						}}
 					/>
+					{(() => {
+						const promo = getActivePromo(col);
+						if (!promo) return null;
+						return (
+							<Box sx={{ maxWidth: 560, mx: "auto", mt: 3, px: { xs: 2, sm: 0 } }}>
+								<Alert
+									icon={<LocalOfferIcon fontSize="small" />}
+									severity="error"
+									sx={{
+										fontFamily: ff,
+										borderRadius: 3,
+										"& .MuiAlert-message": { fontFamily: ff },
+									}}
+								>
+									<strong>{promo.label}</strong>
+									{promo.description ? ` — ${promo.description}` : ` — ${formatPromoLabel(promo)} on all items`}
+								</Alert>
+							</Box>
+						);
+					})()}
 				</ScrollReveal>
 			</Box>
 
@@ -618,16 +641,39 @@ export default function CollectionPage() {
 												</Box>
 											)}
 
-											<Typography
-												sx={{
-													fontFamily: ff,
-													fontWeight: 700,
-													fontSize: "1.05rem",
-													color: "var(--text-main)",
-												}}
-											>
-												₦{Number(item.price).toLocaleString()}
-											</Typography>
+											{(() => {
+												const promo = getActiveItemPromo(item, col);
+												const effectivePrice = promo ? applyPromoToPrice(item.price, promo) : item.price;
+												const hasPromo = promo && effectivePrice < item.price;
+												return (
+													<Box>
+														{hasPromo && (
+															<Typography sx={{ fontFamily: ff, fontSize: "0.82rem", color: "var(--text-muted)", textDecoration: "line-through" }}>
+																₦{Number(item.price).toLocaleString()}
+															</Typography>
+														)}
+														<Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
+															<Typography
+																sx={{
+																	fontFamily: ff,
+																	fontWeight: 700,
+																	fontSize: "1.05rem",
+																	color: hasPromo ? "#e3242b" : "var(--text-main)",
+																}}
+															>
+																₦{Number(effectivePrice).toLocaleString()}
+															</Typography>
+															{hasPromo && (
+																<Chip
+																	label={formatPromoLabel(promo)}
+																	size="small"
+																	sx={{ fontSize: "0.6rem", height: 18, backgroundColor: "rgba(227,36,43,0.1)", color: "#e3242b", fontWeight: 700 }}
+																/>
+															)}
+														</Box>
+													</Box>
+												);
+											})()}
 
 											<Button
 												fullWidth

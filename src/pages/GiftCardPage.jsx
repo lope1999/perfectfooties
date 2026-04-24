@@ -23,7 +23,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import SearchIcon from '@mui/icons-material/Search';
 import ScrollReveal from '../components/ScrollReveal';
 import { useAuth } from '../context/AuthContext';
-import { createGiftCard, lookupGiftCard, validateCardForRedemption } from '../lib/giftCardService';
+import { createGiftCard, lookupGiftCard, validateCardForRedemption, activateGiftCard } from '../lib/giftCardService';
 
 const giftCardTypes = [
 	{
@@ -102,6 +102,7 @@ export default function GiftCardPage() {
   const [successOpen, setSuccessOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [generatedCode, setGeneratedCode] = useState('');
+  const [pendingCard, setPendingCard] = useState(null);
 
   // Balance checker state
   const [balanceCode, setBalanceCode] = useState('');
@@ -118,7 +119,7 @@ export default function GiftCardPage() {
     setSubmitting(true);
     try {
       const senderName = formData.senderName.trim();
-      const { code } = await createGiftCard({
+      const { id, code } = await createGiftCard({
         type: selectedType.id,
         giftedTo: formData.giftedTo.trim(),
         amount: Number(formData.amount),
@@ -126,9 +127,9 @@ export default function GiftCardPage() {
           ? { uid: user.uid, name: senderName || user.displayName || '', email: user.email || '' }
           : { uid: null, name: senderName || 'Guest', email: '' },
       });
-      setGeneratedCode(code);
+      setPendingCard({ id, code });
       setModalOpen(false);
-      setSuccessOpen(true);
+      triggerPaystackPayment({ id, code });
     } catch (err) {
       console.error('Gift card creation error:', err);
     } finally {
@@ -136,17 +137,47 @@ export default function GiftCardPage() {
     }
   };
 
-  const handleCompleteOrder = () => {
-    setSuccessOpen(false);
+  const triggerPaystackPayment = ({ id, code }) => {
+    const pk = import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY || '';
+    if (!pk || !window.PaystackPop) {
+      alert('Payment unavailable. Please refresh and try again.');
+      return;
+    }
+    window.PaystackPop.setup({
+      key: pk,
+      email: user?.email || 'customer@perfectfooties.com',
+      amount: Number(formData.amount) * 100,
+      currency: 'NGN',
+      ref: `GC-${Date.now()}`,
+      metadata: { giftCardCode: code, giftedTo: formData.giftedTo },
+      callback: (response) => handlePaymentSuccess({ id, code }, response.reference),
+      onClose: () => {},
+    }).openIframe();
+  };
+
+  const handlePaymentSuccess = async ({ id, code }, _paystackRef) => {
+    try {
+      await activateGiftCard(id);
+      setGeneratedCode(code);
+      setSuccessOpen(true);
+      if (selectedType?.id === 'electronic') {
+        sendDeliveryWhatsApp(code);
+      }
+    } catch (err) {
+      console.error('Gift card activation error:', err);
+    }
+  };
+
+  const sendDeliveryWhatsApp = (code) => {
     const typeLabel = selectedType?.id === 'electronic' ? 'E-Gift Card (Digital)' : 'Physical Gift Card';
     const personalMsg = formData.message.trim();
-		const senderLabel = formData.senderName.trim() || 'Guest';
-		const message = `Hi! I'd like to purchase a PerfectFooties Gift Card.\n\nFrom: ${senderLabel}\nType: ${typeLabel}\nGifted To: ${formData.giftedTo}\nAmount: ${formatNaira(formData.amount)}\nGift Card Code: ${generatedCode}\nValidity: 1 year from purchase date${personalMsg ? `\nPersonal Message: "${personalMsg}"` : ""}\n\nPlease confirm and process this gift card order. Thank you!`;
+    const senderLabel = formData.senderName.trim() || 'Guest';
+    const message = `Hi! A PerfectFooties Gift Card has been purchased and paid for.\n\nFrom: ${senderLabel}\nType: ${typeLabel}\nGifted To: ${formData.giftedTo}\nAmount: ${formatNaira(formData.amount)}\nGift Card Code: ${code}\nValidity: 1 year from activation${personalMsg ? `\nPersonal Message: "${personalMsg}"` : ""}\n\nPlease deliver this gift card to the recipient. Thank you!`;
     const encoded = encodeURIComponent(message);
     window.open(
-			`https://api.whatsapp.com/send?phone=2348073637911&text=${encoded}`,
-			"_blank",
-		);
+      `https://api.whatsapp.com/send?phone=2348073637911&text=${encoded}`,
+      '_blank',
+    );
   };
 
   const handleBalanceCheck = async () => {
@@ -954,7 +985,7 @@ export default function GiftCardPage() {
 						variant="h5"
 						sx={{ fontFamily: '"Georgia", serif', fontWeight: 700 }}
 					>
-						Gift Card Order Placed!
+						Payment Successful!
 					</Typography>
 				</DialogTitle>
 				<DialogContent>
@@ -992,13 +1023,14 @@ export default function GiftCardPage() {
 						</Box>
 					)}
 					<Typography sx={{ color: "var(--text-muted)", mt: 1, lineHeight: 1.7 }}>
-						We will navigate you to WhatsApp to confirm your gift card
-						order, payment, and delivery details.
+						{selectedType?.id === 'electronic'
+							? 'Your gift card is now active. We have notified our team on WhatsApp to deliver it to the recipient.'
+							: 'Your gift card is now active. Our team will reach out to arrange physical delivery.'}
 					</Typography>
 				</DialogContent>
 				<DialogActions sx={{ justifyContent: "center", pb: 3 }}>
 					<Button
-						onClick={handleCompleteOrder}
+						onClick={() => setSuccessOpen(false)}
 						sx={{
 							backgroundColor: "#e3242b",
 							color: "#fff",
@@ -1013,7 +1045,7 @@ export default function GiftCardPage() {
 							},
 						}}
 					>
-						Complete Order
+						Done
 					</Button>
 				</DialogActions>
 			</Dialog>

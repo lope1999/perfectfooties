@@ -27,6 +27,7 @@ import { getCollection, getItem } from '../lib/collectionService';
 import { fetchTestimonialsByProductId } from '../lib/testimonialService';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { getActiveItemPromo, applyPromoToPrice, formatPromoLabel } from '../lib/promoUtils';
 
 const ff = '"Georgia", serif';
 
@@ -307,20 +308,28 @@ export default function ItemDetailPage() {
     return Object.keys(e).length === 0;
   };
 
-  const buildCartItem = () => ({
-    itemId: item.id,
-    name: item.name,
-    collectionId,
-    collectionName: col?.name,
-    price: item.price,
-    image: images[activeImg] || images[0] || '',
-    selectedImage: images[activeImg] || images[0] || '',
-    selectedImageIndex: images[activeImg] ? activeImg + 1 : 1,
-    selectedColor: activeColor,
-    euSize: requiresLength ? euSize : null,
-    orderNotes: orderNotes.trim(),
-    quantity,
-  });
+  const buildCartItem = () => {
+    const promo = getActiveItemPromo(item, col);
+    const effectivePrice = promo ? applyPromoToPrice(item.price, promo) : item.price;
+    return {
+      itemId: item.id,
+      name: item.name,
+      collectionId,
+      collectionName: col?.name,
+      price: effectivePrice,
+      ...(promo && effectivePrice < item.price && {
+        originalPrice: item.price,
+        promoLabel: promo.label,
+      }),
+      image: images[activeImg] || images[0] || '',
+      selectedImage: images[activeImg] || images[0] || '',
+      selectedImageIndex: images[activeImg] ? activeImg + 1 : 1,
+      selectedColor: activeColor,
+      euSize: requiresLength ? euSize : null,
+      orderNotes: orderNotes.trim(),
+      quantity,
+    };
+  };
 
   const handleOrder = () => {
     if (!validate()) return;
@@ -569,17 +578,39 @@ export default function ItemDetailPage() {
 							{item.name}
 						</Typography>
 
-						<Typography
-							sx={{
-								color: "var(--text-purple)",
-								fontFamily: ff,
-								fontWeight: 700,
-								fontSize: "1.4rem",
-								mb: 1,
-							}}
-						>
-							₦{Number(item.price).toLocaleString()}
-						</Typography>
+						{(() => {
+							const promo = getActiveItemPromo(item, col);
+							const effectivePrice = promo ? applyPromoToPrice(item.price, promo) : item.price;
+							const hasPromo = promo && effectivePrice < item.price;
+							return (
+								<Box sx={{ mb: 1 }}>
+									{hasPromo && (
+										<Typography sx={{ fontFamily: ff, fontSize: "0.95rem", color: "var(--text-muted)", textDecoration: "line-through" }}>
+											₦{Number(item.price).toLocaleString()}
+										</Typography>
+									)}
+									<Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+										<Typography
+											sx={{
+												color: hasPromo ? "#e3242b" : "var(--text-purple)",
+												fontFamily: ff,
+												fontWeight: 700,
+												fontSize: "1.4rem",
+											}}
+										>
+											₦{Number(effectivePrice).toLocaleString()}
+										</Typography>
+										{hasPromo && (
+											<Chip
+												label={`${promo.label} · ${formatPromoLabel(promo)}`}
+												size="small"
+												sx={{ fontSize: "0.7rem", height: 20, backgroundColor: "rgba(227,36,43,0.1)", color: "#e3242b", fontWeight: 700 }}
+											/>
+										)}
+									</Box>
+								</Box>
+							);
+						})()}
 
 						<Box
 							sx={{
@@ -1362,7 +1393,7 @@ export default function ItemDetailPage() {
 									}}
 								>
 									{item.status === "open"
-										? `Order Now — ₦${(item.price * quantity).toLocaleString()}`
+										? `Order Now — ₦${(applyPromoToPrice(item.price, getActiveItemPromo(item, col)) * quantity).toLocaleString()}`
 										: item.status === "upcoming"
 											? "Coming Soon"
 											: "Sold Out"}
