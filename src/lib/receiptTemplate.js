@@ -151,7 +151,17 @@ export function generateReceiptHtml({
 
   const addrLine = [shipping.address, shipping.lga, shipping.city, shipping.state, shipping.country && shipping.country !== 'Nigeria' ? shipping.country : ''].filter(Boolean).join(', ');
 
-  const addressSection = addrLine ? `
+  const addressSection = shipping.shippingZone === 'pickup'
+    ? `<div class="section">
+        <div class="section-title">Collection Method</div>
+        <div class="address-box">
+          <div class="address-name" style="color:#2e7d32;">&#x1F3EA; PICKUP — In-store collection</div>
+          ${shipping.name ? `<div class="address-detail">Contact: ${shipping.name}</div>` : ''}
+          ${shipping.phone ? `<div class="address-detail">Phone: ${shipping.phone}</div>` : ''}
+          <div class="address-detail" style="color:#888;font-size:11px;">No delivery fee — customer collecting in store.</div>
+        </div>
+      </div>`
+    : addrLine ? `
     <div class="section">
       <div class="section-title">Delivery Address</div>
       <div class="address-box">

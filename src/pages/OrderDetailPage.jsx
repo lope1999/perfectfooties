@@ -7,6 +7,7 @@ import {
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import DownloadIcon from '@mui/icons-material/Download';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import StoreIcon from '@mui/icons-material/Store';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { doc, getDoc } from 'firebase/firestore';
@@ -667,45 +668,68 @@ export default function OrderDetailPage() {
 								mb: 1.5,
 							}}
 						>
-							Delivery Details
+							{order.shipping.shippingZone === 'pickup' ? 'Collection Details' : 'Delivery Details'}
 						</Typography>
-						{[
-							["Name", order.shipping.name],
-							["Phone", order.shipping.phone],
-							["Address", order.shipping.address],
-							["LGA", order.shipping.lga],
-							["State", order.shipping.state],
-							...(order.shipping.country &&
-							order.shipping.country !== "Nigeria"
-								? [["Country", order.shipping.country]]
-								: []),
-						]
-							.filter(([, v]) => v)
-							.map(([label, value]) => (
-								<Box
-									key={label}
-									sx={{ display: "flex", gap: 1.5, mb: 0.8 }}
-								>
-									<Typography
-										sx={{
-											fontSize: "0.8rem",
-											color: "#888",
-											minWidth: 60,
-										}}
+						{order.shipping.shippingZone === 'pickup' ? (
+							<Box>
+								<Chip
+									icon={<StoreIcon sx={{ fontSize: '16px !important' }} />}
+									label="Pickup / In-Store Collection"
+									size="small"
+									sx={{ backgroundColor: '#e8f5e9', color: '#2e7d32', fontWeight: 700, mb: 1.5 }}
+								/>
+								{[
+									["Contact", order.shipping.name],
+									["Phone", order.shipping.phone],
+								].filter(([, v]) => v).map(([label, value]) => (
+									<Box key={label} sx={{ display: "flex", gap: 1.5, mb: 0.8 }}>
+										<Typography sx={{ fontSize: "0.8rem", color: "#888", minWidth: 60 }}>{label}</Typography>
+										<Typography sx={{ fontSize: "0.8rem", color: "var(--text-main)", fontWeight: 500 }}>{value}</Typography>
+									</Box>
+								))}
+								<Typography sx={{ fontSize: '0.78rem', color: '#888', mt: 1 }}>
+									No delivery — customer collecting in store.
+								</Typography>
+							</Box>
+						) : (
+							[
+								["Name", order.shipping.name],
+								["Phone", order.shipping.phone],
+								["Address", order.shipping.address],
+								["LGA", order.shipping.lga],
+								["State", order.shipping.state],
+								...(order.shipping.country &&
+								order.shipping.country !== "Nigeria"
+									? [["Country", order.shipping.country]]
+									: []),
+							]
+								.filter(([, v]) => v)
+								.map(([label, value]) => (
+									<Box
+										key={label}
+										sx={{ display: "flex", gap: 1.5, mb: 0.8 }}
 									>
-										{label}
-									</Typography>
-									<Typography
-										sx={{
-											fontSize: "0.8rem",
-											color: "var(--text-main)",
-											fontWeight: 500,
-										}}
-									>
-										{value}
-									</Typography>
-								</Box>
-							))}
+										<Typography
+											sx={{
+												fontSize: "0.8rem",
+												color: "#888",
+												minWidth: 60,
+											}}
+										>
+											{label}
+										</Typography>
+										<Typography
+											sx={{
+												fontSize: "0.8rem",
+												color: "var(--text-main)",
+												fontWeight: 500,
+											}}
+										>
+											{value}
+										</Typography>
+									</Box>
+								))
+						)}
 					</Box>
 				)}
 

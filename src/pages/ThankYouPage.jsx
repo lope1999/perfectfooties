@@ -5,6 +5,7 @@ import {
   CircularProgress, Snackbar, Alert,
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import StoreIcon from '@mui/icons-material/Store';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import LinkIcon from '@mui/icons-material/Link';
@@ -330,6 +331,19 @@ export default function ThankYouPage() {
 					</Box>
 
 					<Box sx={{ px: 2.5, py: 2 }}>
+						{state.shipping?.shippingZone === 'pickup' && (
+							<Box sx={{ mb: 1.5 }}>
+								<Chip
+									icon={<StoreIcon sx={{ fontSize: '15px !important' }} />}
+									label="Pickup Order — No delivery fee"
+									size="small"
+									sx={{ backgroundColor: '#e8f5e9', color: '#2e7d32', fontWeight: 700, mb: 0.5 }}
+								/>
+								<Typography sx={{ fontSize: '0.78rem', color: '#888', mb: 1 }}>
+									We'll contact you on WhatsApp when your order is ready for collection in Lagos.
+								</Typography>
+							</Box>
+						)}
 						{items.length > 0 ? (
 							<Box sx={{ mb: 1.5 }}>
 								{items.map((item, idx) => (

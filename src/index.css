@@ -11,14 +11,14 @@
   --accent-cyan-dark: #007a7a;   /* readable on white-text backgrounds */
   --accent-cyan-hover: #005a5a;  /* hover state for dark cyan elements */
 
-  --bg-page:     #ffffff;
-  --bg-soft:     #FFF8F0;
-  --bg-soft2:    #FFE8E8;
-  --bg-soft3:    #FFF0E6;
-  --bg-muted:    #FAFAFA;
-  --bg-card:     #ffffff;
+  --bg-page:     #FFFFFF;
+  --bg-soft:     #FDF8F0;
+  --bg-soft2:    #F7EFE2;
+  --bg-soft3:    #F0E6D2;
+  --bg-muted:    #F9F9F7;
+  --bg-card:     #FFFFFF;
 
-  --text-main:   #1A1A1A;
+  --text-main:   #000000;
   --text-muted:  #6B5B45;
   --text-dim:    #888888;
   --text-purple: #007a7a;
@@ -26,19 +26,20 @@
 
 [data-theme="dark"] {
   --accent-cyan:  #00ffff;
-  --accent-cyan-dark: #00cccc;
+  --accent-cyan-dark: #008B8B;
   --accent-cyan-hover: #009999;
 
-  --bg-page:     #0C0605;   /* Deep leather black/brown */
-  --bg-soft:     #170B08;   /* Dark chocolate background */
-  --bg-soft2:    #21120B;   /* Deep leather brown */
-  --bg-soft3:    #120805;
-  --bg-muted:    #0A0504;
-  --bg-card:     #170B08;
+  /* Background is now a rich Tan/Beige instead of White or Black */
+  --bg-page:     #E8D5B0;   
+  --bg-soft:     #DBC19D;   
+  --bg-soft2:    #CEAF8B;   
+  --bg-soft3:    #C19D79;
+  --bg-muted:    #B48B67;
+  --bg-card:     #E1CDB0;
 
-  --text-main:   #FDF8F0;   /* High-contrast Cream for names and headers */
-  --text-muted:  #C9A84C;   /* Brass/Gold for descriptions and details */
-  --text-dim:    #A38A75;   /* Readable tan for less critical text */
+  --text-main:   #000000;   /* Solid Black */
+  --text-muted:  #000000;   /* Solid Black for high-contrast details */
+  --text-dim:    #1A1A1A;   /* Near black for tertiary info */
   --text-purple: #C9A84C;
 }
 
@@ -51,11 +52,10 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Ensure text and buttons are fully opaque in dark mode to fix visibility issues */
-[data-theme="dark"] .MuiButton-root,
+/* Remove transparency filters often applied by MUI in Dark Mode for visibility */
 [data-theme="dark"] .MuiTypography-root,
-[data-theme="dark"] nav a,
-[data-theme="dark"] a {
+[data-theme="dark"] .MuiButton-root,
+[data-theme="dark"] .MuiSvgIcon-root {
   opacity: 1 !important;
 }
 

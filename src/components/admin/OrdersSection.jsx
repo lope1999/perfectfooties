@@ -287,6 +287,125 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
   const printShippingLabel = (o) => {
     const date = o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
     const sh = o.shipping || {};
+
+    if (sh.shippingZone === 'pickup') {
+      const logoUrl = `${window.location.origin}/images/logo.png`;
+      const itemRows = (o.items || []).map((item, i) => `
+        <tr>
+          <td>${i + 1}. ${item.name || 'Item'}</td>
+          <td style="text-align:center;">${item.quantity || 1}</td>
+          <td style="text-align:right;">${item.selectedColor || item.colour || '—'}</td>
+          <td style="text-align:right;font-weight:700;">₦${(item.price || 0).toLocaleString()}</td>
+        </tr>`).join('');
+      const win = window.open('', '_blank', 'width=640,height=800');
+      win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Pickup Order — ${o.id}</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: Georgia, serif; color: #1a1a1a; background: #f0ebe0; padding: 28px 20px; }
+    .page { max-width: 560px; margin: 0 auto; background: #fff; border: 2px solid #e8d5b0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,122,122,0.12); }
+    .header { background: linear-gradient(135deg, #005f5f, #007a7a, #009494); padding: 22px 24px; text-align: center; }
+    .logo { width: 110px; height: 110px; object-fit: contain; border-radius: 50%; background: rgba(255,255,255,0.15); padding: 8px; display: block; margin: 0 auto 10px; }
+    .brand { font-size: 20px; font-weight: 800; letter-spacing: 2px; color: #fff; }
+    .brand-sub { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 3px; }
+    .doc-badge { display: inline-block; color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 2px; padding: 4px 14px; border-radius: 20px; margin-top: 10px; border: 1.5px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); }
+    .accent-bar { height: 4px; background: linear-gradient(90deg, #2e7d32, #007a7a, #2e7d32); }
+    .body { padding: 20px 22px; }
+    .section { margin-bottom: 18px; }
+    .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #007a7a; border-left: 3px solid #007a7a; padding-left: 8px; margin-bottom: 10px; }
+    .pickup-box { background: #e8f5e9; border: 2px solid #2e7d32; border-radius: 8px; padding: 18px 20px; text-align: center; }
+    .pickup-icon { font-size: 40px; margin-bottom: 8px; }
+    .pickup-title { font-size: 22px; font-weight: 800; color: #2e7d32; letter-spacing: 1px; margin-bottom: 6px; }
+    .pickup-sub { font-size: 13px; color: #555; }
+    .contact-box { background: #f9f5ee; border: 1.5px solid #e8d5b0; border-left: 4px solid #2e7d32; border-radius: 0 8px 8px 0; padding: 14px 16px; font-size: 14px; line-height: 2; }
+    .contact-name { font-size: 16px; font-weight: 800; color: #1a1a1a; }
+    .contact-detail { color: #555; font-size: 13px; }
+    .meta-table { width: 100%; border-collapse: collapse; font-size: 12px; border: 1.5px solid #e8d5b0; border-radius: 8px; overflow: hidden; }
+    .meta-table td { padding: 6px 12px; }
+    .meta-table tr:nth-child(even) { background: #f9f5ee; }
+    .meta-table .key { color: #888; width: 36%; }
+    .meta-table .val { font-weight: 600; }
+    .items-wrap { border: 1.5px solid #e8d5b0; border-radius: 8px; overflow: hidden; }
+    .items-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .items-table thead tr { background: linear-gradient(135deg, #005f5f, #007a7a); }
+    .items-table thead td { color: #fff; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; padding: 8px 10px; }
+    .items-table tbody tr { border-bottom: 1px solid #f0e8d8; }
+    .items-table tbody tr:last-child { border-bottom: none; }
+    .items-table tbody tr:nth-child(even) { background: #fdfaf5; }
+    .items-table tbody td { padding: 8px 10px; vertical-align: top; }
+    .total-bar { background: linear-gradient(135deg, #005f5f, #007a7a); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; font-size: 15px; font-weight: 800; border-radius: 8px; margin-top: 14px; }
+    .footer { background: #f9f5ee; border-top: 2px solid #e8d5b0; padding: 14px 22px; text-align: center; font-size: 11px; color: #999; }
+    @media print { body { background: #fff; padding: 0; } .page { border: none; border-radius: 0; box-shadow: none; max-width: 100%; } }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <img src="${logoUrl}" alt="Perfect Footies" class="logo"/>
+    <div class="brand">PERFECT FOOTIES</div>
+    <div class="brand-sub">perfectfooties.com &nbsp;·&nbsp; Lagos State</div>
+    <div class="doc-badge">PICKUP ORDER</div>
+  </div>
+  <div class="accent-bar"></div>
+
+  <div class="body">
+    <div class="section">
+      <div class="pickup-box">
+        <div class="pickup-icon">&#x1F3EA;</div>
+        <div class="pickup-title">IN-STORE COLLECTION</div>
+        <div class="pickup-sub">Customer will collect this order in store — no delivery required</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Customer Contact</div>
+      <div class="contact-box">
+        <div class="contact-name">${sh.name || o.customerName || '—'}</div>
+        ${sh.phone || o.phone ? `<div class="contact-detail">${sh.phone || o.phone}</div>` : ''}
+        ${o.email ? `<div class="contact-detail">${o.email}</div>` : ''}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Order Reference</div>
+      <table class="meta-table">
+        <tr><td class="key">Order ID</td><td class="val">${o.id}</td></tr>
+        <tr><td class="key">Date</td><td class="val">${date}</td></tr>
+        <tr><td class="key">Type</td><td class="val">${o.type || '—'}</td></tr>
+        <tr><td class="key">Status</td><td class="val">${o.status || '—'}</td></tr>
+        <tr><td class="key">Shipping</td><td class="val" style="color:#2e7d32;font-weight:700;">PICKUP — No delivery fee</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Items</div>
+      <div class="items-wrap">
+        <table class="items-table">
+          <thead><tr>
+            <td>Item</td><td style="text-align:center;">Qty</td><td style="text-align:right;">Colour</td><td style="text-align:right;">Price</td>
+          </tr></thead>
+          <tbody>${itemRows}</tbody>
+        </table>
+      </div>
+      <div class="total-bar">
+        <span>Total</span>
+        <span>₦${((o.total || 0) + (o.extraCharge || 0)).toLocaleString()}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">Pickup order &nbsp;·&nbsp; Handcrafted leather goods &nbsp;·&nbsp; Perfect Footies</div>
+</div>
+<script>window.onload = function(){ window.print(); }</script>
+</body>
+</html>`);
+      win.document.close();
+      return;
+    }
+
     const addrParts = [sh.address, sh.lga, sh.city, sh.state, sh.country && sh.country !== 'Nigeria' ? sh.country : ''].filter(Boolean);
     const itemRows = (o.items || []).map((item, i) => `
       <tr>

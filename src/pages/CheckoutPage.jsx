@@ -1,23 +1,27 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Box,
-  Typography,
-  Container,
-  Grid,
-  TextField,
-  Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  CircularProgress,
-  Divider,
-  IconButton,
-  Collapse,
-  InputAdornment,
-} from '@mui/material';
+	Box,
+	Typography,
+	Container,
+	Grid,
+	TextField,
+	Button,
+	FormControl,
+	InputLabel,
+	Select,
+	MenuItem,
+	CircularProgress,
+	Divider,
+	IconButton,
+	Collapse,
+	InputAdornment,
+	Alert,
+	Chip,
+} from "@mui/material";
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import StoreIcon from "@mui/icons-material/Store";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -101,90 +105,138 @@ export default function CheckoutPage() {
 
   const hasDeliverables = products.length > 0 || pressOns.length > 0 || leatherGoods.length > 0;
 
-  const [form, setForm] = useState({ country: 'Nigeria', name: '', phone: '', address: '', state: '', lga: '', city: '', province: '', postalCode: '' });
+  const [shippingMethod, setShippingMethod] = useState("delivery"); // 'delivery' | 'pickup'
+  const [form, setForm] = useState({
+		country: "Nigeria",
+		name: "",
+		phone: "",
+		address: "",
+		state: "",
+		lga: "",
+		city: "",
+		province: "",
+		postalCode: "",
+  });
   const [submitting, setSubmitting] = useState(false);
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const [pendingShipping, setPendingShipping] = useState(null);
 
   // Fetch loyalty balance and review count for logged-in user
   useEffect(() => {
-    if (!user) return;
-    getLoyaltyData(user.uid).then((d) => { const pts = d.loyaltyPoints || 0; setLoyaltyBalance(pts); if (!location.state?.presetLoyaltyUnits) { const pr = getPendingLoyaltyReward(); if (pr && pr.units > 0) setLoyaltyUnits(Math.min(pr.units, Math.floor(pts / REDEMPTION_UNIT))); } }).catch(() => {});
+		if (!user) return;
+		getLoyaltyData(user.uid)
+			.then((d) => {
+				const pts = d.loyaltyPoints || 0;
+				setLoyaltyBalance(pts);
+				if (!location.state?.presetLoyaltyUnits) {
+					const pr = getPendingLoyaltyReward();
+					if (pr && pr.units > 0)
+						setLoyaltyUnits(
+							Math.min(pr.units, Math.floor(pts / REDEMPTION_UNIT)),
+						);
+				}
+			})
+			.catch(() => {});
   }, [user]);
 
   // Validate referral code on mount
   useEffect(() => {
-    const code = location.state?.referralCode || sessionStorage.getItem('pendingReferralCode');
-    if (!code || !user) return;
-    setShowRefField(true);
-    validateReferralCode(code).then((referrerUid) => {
-      const valid = !!referrerUid && referrerUid !== user?.uid;
-      setReferralValid(valid);
-      setReferralMsg(valid ? '\u20a6500 off applied!' : '');
-    }).catch(() => {});
+		const code =
+			location.state?.referralCode ||
+			sessionStorage.getItem("pendingReferralCode");
+		if (!code || !user) return;
+		setShowRefField(true);
+		validateReferralCode(code)
+			.then((referrerUid) => {
+				const valid = !!referrerUid && referrerUid !== user?.uid;
+				setReferralValid(valid);
+				setReferralMsg(valid ? "\u20a6500 off applied!" : "");
+			})
+			.catch(() => {});
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleApplyReferral = async () => {
-    if (!pendingReferralCode.trim()) return;
-    setReferralChecking(true);
-    setReferralMsg('');
-    try {
-      const referrerUid = await validateReferralCode(pendingReferralCode.trim());
-      if (!referrerUid) {
-        setReferralValid(false);
-        setReferralMsg('Invalid code.');
-        showToast('Invalid referral code. Please check and try again.', 'error');
-      } else if (referrerUid === user?.uid) {
-        setReferralValid(false);
-        setReferralMsg("You can't use your own referral code.");
-        showToast("You can't apply your own referral code.", 'warning');
-      } else {
-        setReferralValid(true);
-        setReferralMsg('\u20a6500 off applied!');
-        showToast('Referral code applied! ₦500 discount added to your order.', 'success');
-      }
-    } catch {
-      setReferralValid(false);
-      setReferralMsg('Could not verify code.');
-      showToast('Could not verify referral code. Please try again.', 'error');
-    }
-    setReferralChecking(false);
+		if (!pendingReferralCode.trim()) return;
+		setReferralChecking(true);
+		setReferralMsg("");
+		try {
+			const referrerUid = await validateReferralCode(
+				pendingReferralCode.trim(),
+			);
+			if (!referrerUid) {
+				setReferralValid(false);
+				setReferralMsg("Invalid code.");
+				showToast(
+					"Invalid referral code. Please check and try again.",
+					"error",
+				);
+			} else if (referrerUid === user?.uid) {
+				setReferralValid(false);
+				setReferralMsg("You can't use your own referral code.");
+				showToast("You can't apply your own referral code.", "warning");
+			} else {
+				setReferralValid(true);
+				setReferralMsg("\u20a6500 off applied!");
+				showToast(
+					"Referral code applied! ₦500 discount added to your order.",
+					"success",
+				);
+			}
+		} catch {
+			setReferralValid(false);
+			setReferralMsg("Could not verify code.");
+			showToast(
+				"Could not verify referral code. Please try again.",
+				"error",
+			);
+		}
+		setReferralChecking(false);
   };
 
   // Redirect if no deliverable items in cart
   useEffect(() => {
-    if (!hasDeliverables) navigate('/cart', { replace: true });
+		if (!hasDeliverables) navigate("/cart", { replace: true });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pre-fill name from auth, then overwrite with saved shipping details if available
   useEffect(() => {
-    if (!user) return;
-    setForm((prev) => ({ ...prev, name: prev.name || user.displayName || '' }));
-    fetchShippingDetails(user.uid)
-      .then((saved) => {
-        if (saved) {
-          setForm({
-            country: saved.country || 'Nigeria',
-            name: saved.name || user.displayName || '',
-            phone: saved.phone || '',
-            address: saved.address || '',
-            state: saved.state || '',
-            lga: saved.lga || '',
-            city: saved.city || '',
-            province: saved.province || '',
-            postalCode: saved.postalCode || '',
-          });
-        }
-      })
-      .catch(() => {});
+		if (!user) return;
+		setForm((prev) => ({
+			...prev,
+			name: prev.name || user.displayName || "",
+		}));
+		fetchShippingDetails(user.uid)
+			.then((saved) => {
+				if (saved) {
+					setForm({
+						country: saved.country || "Nigeria",
+						name: saved.name || user.displayName || "",
+						phone: saved.phone || "",
+						address: saved.address || "",
+						state: saved.state || "",
+						lga: saved.lga || "",
+						city: saved.city || "",
+						province: saved.province || "",
+						postalCode: saved.postalCode || "",
+					});
+				}
+			})
+			.catch(() => {});
   }, [user]);
 
   const handleChange = (field) => (e) =>
-    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+		setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
-  const isDomestic = form.country === 'Nigeria';
-  const isLagos = isDomestic && form.state === 'Lagos';
-  const shippingCost = isDomestic ? (isLagos ? 3000 : 4000) : 0;
+  const isDomestic = form.country === "Nigeria";
+  const isLagos = isDomestic && form.state === "Lagos";
+  const shippingCost =
+		shippingMethod === "pickup"
+			? 0
+			: isDomestic
+				? isLagos
+					? 3000
+					: 4000
+				: 0;
   const grandTotal = finalTotal + shippingCost;
   const phonePrefix = COUNTRY_PHONE_CODES[form.country] || '+';
   const isValidPhone = (p) => {
@@ -193,9 +245,21 @@ export default function CheckoutPage() {
     return digits.length >= 6;
   };
 
-  const isFormValid = isDomestic
-    ? form.name.trim() && isValidPhone(form.phone) && form.address.trim() && form.state && form.lga.trim()
-    : form.name.trim() && isValidPhone(form.phone) && form.address.trim() && form.city.trim() && form.province.trim() && form.postalCode.trim();
+  const isFormValid =
+		shippingMethod === "pickup"
+			? form.name.trim() && isValidPhone(form.phone)
+			: isDomestic
+				? form.name.trim() &&
+					isValidPhone(form.phone) &&
+					form.address.trim() &&
+					form.state &&
+					form.lga.trim()
+				: form.name.trim() &&
+					isValidPhone(form.phone) &&
+					form.address.trim() &&
+					form.city.trim() &&
+					form.province.trim() &&
+					form.postalCode.trim();
 
   const handleCompleteOrder = async (paymentReference, shipping) => {
 		setSubmitting(true);
@@ -203,19 +267,29 @@ export default function CheckoutPage() {
 		// Build WhatsApp message synchronously BEFORE any awaits — browsers block
 		// window.open() when called after async operations break the user-gesture chain
 		const lines = [];
-		lines.push("--- SHIPPING DETAILS ---");
-		lines.push(`Name: ${shipping.name}`);
-		lines.push(`Phone: ${shipping.phone}`);
-		lines.push(`Country: ${shipping.country}`);
-		lines.push(`Address: ${shipping.address}`);
-		if (shipping.shippingZone === "domestic") {
-			lines.push(`State: ${shipping.state}`);
-			lines.push(`LGA: ${shipping.lga}`);
+		if (shipping.shippingZone === "pickup") {
+			lines.push("--- COLLECTION / PICKUP ---");
+			lines.push(`Contact: ${shipping.name}`);
+			lines.push(`Phone: ${shipping.phone}`);
+			lines.push("Method: PICKUP — Customer will collect in store");
+			lines.push("No delivery fee applies.");
 		} else {
-			lines.push(`City: ${shipping.city}`);
-			lines.push(`State/Province: ${shipping.province}`);
-			lines.push(`Postal Code: ${shipping.postalCode}`);
-			lines.push(`[INTERNATIONAL ORDER — Shipping cost TBD via WhatsApp]`);
+			lines.push("--- SHIPPING DETAILS ---");
+			lines.push(`Name: ${shipping.name}`);
+			lines.push(`Phone: ${shipping.phone}`);
+			lines.push(`Country: ${shipping.country}`);
+			lines.push(`Address: ${shipping.address}`);
+			if (shipping.shippingZone === "domestic") {
+				lines.push(`State: ${shipping.state}`);
+				lines.push(`LGA: ${shipping.lga}`);
+			} else {
+				lines.push(`City: ${shipping.city}`);
+				lines.push(`State/Province: ${shipping.province}`);
+				lines.push(`Postal Code: ${shipping.postalCode}`);
+				lines.push(
+					`[INTERNATIONAL ORDER — Shipping cost TBD via WhatsApp]`,
+				);
+			}
 		}
 		lines.push("");
 
@@ -299,7 +373,10 @@ export default function CheckoutPage() {
 		) {
 			totalLine += `\nAmount Due: ${formatNaira(finalTotal)}`;
 		}
-		if (isDomestic && shippingCost > 0) {
+		if (shipping.shippingZone === "pickup") {
+			totalLine += `\nShipping: Pickup (No delivery fee)`;
+			totalLine += `\nTotal: ${formatNaira(grandTotal)}`;
+		} else if (isDomestic && shippingCost > 0) {
 			totalLine += `\nShipping (Fez Delivery${isLagos ? " — Lagos" : " — Outside Lagos"}): ${formatNaira(shippingCost)}`;
 			totalLine += `\nGrand Total: ${formatNaira(grandTotal)}`;
 		} else if (!isDomestic) {
@@ -569,9 +646,33 @@ export default function CheckoutPage() {
     if (!user) { setSignInPromptOpen(true); return; }
     if (!isFormValid) return;
 
-    const shipping = isDomestic
-      ? { country: 'Nigeria', name: form.name.trim(), phone: form.phone.trim(), address: form.address.trim(), state: form.state, lga: form.lga.trim(), shippingZone: 'domestic' }
-      : { country: form.country, name: form.name.trim(), phone: form.phone.trim(), address: form.address.trim(), city: form.city.trim(), province: form.province.trim(), postalCode: form.postalCode.trim(), shippingZone: 'international' };
+    const shipping =
+			shippingMethod === "pickup"
+				? {
+						shippingZone: "pickup",
+						name: form.name.trim(),
+						phone: form.phone.trim(),
+					}
+				: isDomestic
+					? {
+							country: "Nigeria",
+							name: form.name.trim(),
+							phone: form.phone.trim(),
+							address: form.address.trim(),
+							state: form.state,
+							lga: form.lga.trim(),
+							shippingZone: "domestic",
+						}
+					: {
+							country: form.country,
+							name: form.name.trim(),
+							phone: form.phone.trim(),
+							address: form.address.trim(),
+							city: form.city.trim(),
+							province: form.province.trim(),
+							postalCode: form.postalCode.trim(),
+							shippingZone: "international",
+						};
 
     if (leatherGoods.length > 0) {
       setPendingShipping(shipping);
@@ -617,299 +718,463 @@ export default function CheckoutPage() {
 								fontFamily: '"Georgia", serif',
 								fontWeight: 700,
 								color: "var(--text-purple)",
-								mb: 2.5,
+								mb: 2,
 								fontSize: "1.15rem",
 							}}
 						>
 							Shipping Details
 						</Typography>
 
-						{/* Country */}
-						<FormControl fullWidth size="small" sx={{ mb: 2 }}>
-							<InputLabel sx={{ "&.Mui-focused": { color: "#e3242b" } }}>
-								Country *
-							</InputLabel>
-							<Select
-								value={form.country}
-								onChange={(e) =>
-									setForm((prev) => ({
-										...prev,
-										country: e.target.value,
-										state: "",
-										lga: "",
-										city: "",
-										province: "",
-										postalCode: "",
-									}))
-								}
-								label="Country *"
-								sx={{
-									borderRadius: 2,
-									"& .MuiOutlinedInput-notchedOutline": {
-										borderColor: "#E8D5B0",
-									},
-									"&:hover .MuiOutlinedInput-notchedOutline": {
-										borderColor: "#e3242b",
-									},
-									"&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-										borderColor: "#e3242b",
-									},
-								}}
-							>
-								{COUNTRIES.map((c) => (
-									<MenuItem key={c} value={c}>
-										{c}
-									</MenuItem>
-								))}
-							</Select>
-						</FormControl>
-
-						{/* Fez Delivery card */}
-						{isDomestic && (
-							<Box
-								sx={{
-									mb: 2,
-									p: 2,
-									borderRadius: 2,
-									background: "linear-gradient(135deg,#fff8f0,#fff)",
-									border: "1px solid #E8D5B0",
-									display: "flex",
-									alignItems: "flex-start",
-									gap: 1.5,
-								}}
-							>
-								<LocalShippingOutlinedIcon
-									sx={{
-										color: "#e3242b",
-										fontSize: 20,
-										flexShrink: 0,
-										mt: 0.2,
-									}}
-								/>
-								<Box>
-									<Typography
-										sx={{
-											fontWeight: 700,
-											fontSize: "0.88rem",
-											color: "var(--text-main)",
-											mb: 0.3,
-										}}
-									>
-										Shipped via{" "}
-										<a
-											href="https://fezdelivery.co"
-											target="_blank"
-											rel="noopener noreferrer"
-											style={{
-												color: "#e3242b",
-												textDecoration: "none",
-											}}
-										>
-											Fez Delivery
-										</a>
-									</Typography>
-									<Typography
-										sx={{
-											fontSize: "0.8rem",
-											color: "var(--text-muted)",
-											lineHeight: 1.5,
-										}}
-									>
-										{isLagos
-											? "Lagos delivery — ₦3,000"
-											: "Outside Lagos delivery — ₦4,000"}
-									</Typography>
-								</Box>
-							</Box>
-						)}
-
-						{/* International shipping notice */}
-						{!isDomestic && (
-							<Box
-								sx={{
-									mb: 2,
-									p: 2,
-									backgroundColor: "rgba(0,255,255,0.06)",
-									borderRadius: 2,
-									border: "1px solid rgba(0,255,255,0.25)",
-									display: "flex",
-									alignItems: "flex-start",
-									gap: 1.5,
-								}}
-							>
-								<LocalShippingOutlinedIcon
-									sx={{
-										color: "var(--accent-cyan)",
-										fontSize: 20,
-										flexShrink: 0,
-										mt: 0.2,
-									}}
-								/>
-								<Box>
-									<Typography
-										sx={{
-											color: "var(--text-muted)",
-											fontSize: "0.88rem",
-											lineHeight: 1.6,
-										}}
-									>
-										<strong style={{ color: "var(--text-main)" }}>
-											International order
-										</strong>{" "}
-										— shipping cost will be quoted and confirmed via
-										WhatsApp before production begins.
-									</Typography>
-									<Typography
-										sx={{
-											fontSize: "0.78rem",
-											color: "var(--text-muted)",
-											mt: 0.5,
-											lineHeight: 1.6,
-										}}
-									>
-										<strong style={{ color: "var(--text-main)" }}>
-											Ghana & Zone 2:
-										</strong>{" "}
-										~₦22,500 (0.5kg–2kg, 2–3 business days)
-										<br />
-										<strong style={{ color: "var(--text-main)" }}>
-											South Africa, Kenya, Rwanda & Zone 5:
-										</strong>{" "}
-										from ₦66,000 (express)
-										<br />
-										Other rates: UK ₦8,500/kg · US ₦15,000/kg · Canada
-										₦13,500/kg · Europe ₦12,500/kg ·
-										Sweden/France/Italy/Netherlands ₦77,000 flat
-										(≤2kg)
-									</Typography>
-								</Box>
-							</Box>
-						)}
-
-						<TextField
-							fullWidth
-							label="Full Name *"
-							value={form.name}
-							onChange={handleChange("name")}
-							size="small"
-							sx={{ mb: 2, ...textFieldSx }}
-						/>
-
-						<TextField
-							fullWidth
-							label="Phone Number *"
-							value={form.phone}
-							onChange={handleChange("phone")}
-							size="small"
-							placeholder={isDomestic ? "08012345678" : "700 000 0000"}
-							error={form.phone.length > 0 && !isValidPhone(form.phone)}
-							helperText={
-								form.phone.length > 0 && !isValidPhone(form.phone)
-									? "Enter a valid phone number"
-									: ""
-							}
-							InputProps={{
-								startAdornment: (
-									<InputAdornment position="start">
-										<Typography
+						{/* Shipping method selector */}
+						<Grid container spacing={1.5} sx={{ mb: 2.5 }}>
+							{[
+								{
+									value: "delivery",
+									icon: (
+										<LocalShippingOutlinedIcon
 											sx={{
-												fontSize: "0.85rem",
-												color: "var(--text-muted)",
-												fontWeight: 600,
-												mr: 0.5,
+												fontSize: 22,
+												color:
+													shippingMethod === "delivery"
+														? "#e3242b"
+														: "#888",
 											}}
-										>
-											{phonePrefix}
-										</Typography>
-									</InputAdornment>
-								),
-							}}
-							sx={{ mb: 2, ...textFieldSx }}
-						/>
-
-						<TextField
-							fullWidth
-							label="Street Address *"
-							value={form.address}
-							onChange={handleChange("address")}
-							multiline
-							rows={2}
-							placeholder={
-								isDomestic
-									? "House number, street, nearest landmark"
-									: "House number and street name"
-							}
-							sx={{ mb: 2, ...textFieldSx }}
-						/>
-
-						{isDomestic ? (
-							<>
-								<FormControl fullWidth size="small" sx={{ mb: 2 }}>
-									<InputLabel
-										sx={{ "&.Mui-focused": { color: "#e3242b" } }}
-									>
-										State *
-									</InputLabel>
-									<Select
-										value={form.state}
-										onChange={handleChange("state")}
-										label="State *"
+										/>
+									),
+									label: "Deliver to me",
+									sub: isDomestic
+										? isLagos
+											? "₦3,000"
+											: "₦4,000"
+										: "Cost TBD",
+								},
+								{
+									value: "pickup",
+									icon: (
+										<StoreIcon
+											sx={{
+												fontSize: 22,
+												color:
+													shippingMethod === "pickup"
+														? "#e3242b"
+														: "#888",
+											}}
+										/>
+									),
+									label: "Pick up in store",
+									sub: "FREE — No delivery fee",
+								},
+							].map((opt) => (
+								<Grid item xs={6} key={opt.value}>
+									<Box
+										onClick={() => setShippingMethod(opt.value)}
 										sx={{
+											p: 1.5,
 											borderRadius: 2,
-											"& .MuiOutlinedInput-notchedOutline": {
-												borderColor: "#E8D5B0",
-											},
-											"&:hover .MuiOutlinedInput-notchedOutline": {
+											cursor: "pointer",
+											border: `2px solid ${shippingMethod === opt.value ? "#e3242b" : "#E8D5B0"}`,
+											backgroundColor:
+												shippingMethod === opt.value
+													? "rgba(227,36,43,0.04)"
+													: "#fff",
+											transition: "all 0.2s ease",
+											display: "flex",
+											alignItems: "flex-start",
+											gap: 1,
+											userSelect: "none",
+										}}
+									>
+										{opt.icon}
+										<Box sx={{ flex: 1 }}>
+											<Typography
+												sx={{
+													fontFamily: '"Georgia", serif',
+													fontWeight: 700,
+													fontSize: "0.88rem",
+													color:
+														shippingMethod === opt.value
+															? "#e3242b"
+															: "var(--text-main)",
+													lineHeight: 1.2,
+												}}
+											>
+												{opt.label}
+											</Typography>
+											<Typography
+												sx={{
+													fontSize: "0.75rem",
+													color:
+														shippingMethod === opt.value &&
+														opt.value === "pickup"
+															? "#2e7d32"
+															: "#888",
+													mt: 0.3,
+													fontWeight:
+														opt.value === "pickup" ? 600 : 400,
+												}}
+											>
+												{opt.sub}
+											</Typography>
+										</Box>
+										{shippingMethod === opt.value && (
+											<CheckCircleIcon
+												sx={{
+													fontSize: 16,
+													color: "#e3242b",
+													mt: 0.2,
+													flexShrink: 0,
+												}}
+											/>
+										)}
+									</Box>
+								</Grid>
+							))}
+						</Grid>
+
+						{/* Pickup info + contact */}
+						<Collapse in={shippingMethod === "pickup"}>
+							<Alert
+								icon={<StoreIcon fontSize="small" />}
+								severity="success"
+								sx={{
+									borderRadius: 2,
+									mb: 2.5,
+									fontFamily: '"Georgia", serif',
+									"& .MuiAlert-message": {
+										fontFamily: '"Georgia", serif',
+									},
+								}}
+							>
+								<strong>Pickup location:</strong> Gbagada, Lagos State,
+								Nigeria
+								<br />
+								We'll contact you on WhatsApp when your order is ready
+								for collection. No delivery fee applies.
+							</Alert>
+							<TextField
+								fullWidth
+								label="Full Name *"
+								value={form.name}
+								onChange={handleChange("name")}
+								size="small"
+								sx={{ mb: 2, ...textFieldSx }}
+							/>
+							<TextField
+								fullWidth
+								label="Phone Number *"
+								value={form.phone}
+								onChange={handleChange("phone")}
+								size="small"
+								placeholder="08012345678"
+								error={
+									form.phone.length > 0 && !isValidPhone(form.phone)
+								}
+								helperText={
+									form.phone.length > 0 && !isValidPhone(form.phone)
+										? "Enter a valid phone number"
+										: ""
+								}
+								sx={{ mb: 2, ...textFieldSx }}
+							/>
+						</Collapse>
+
+						{/* Country */}
+						<Collapse in={shippingMethod === "delivery"}>
+							<FormControl fullWidth size="small" sx={{ mb: 2 }}>
+								<InputLabel
+									sx={{ "&.Mui-focused": { color: "#e3242b" } }}
+								>
+									Country *
+								</InputLabel>
+								<Select
+									value={form.country}
+									onChange={(e) =>
+										setForm((prev) => ({
+											...prev,
+											country: e.target.value,
+											state: "",
+											lga: "",
+											city: "",
+											province: "",
+											postalCode: "",
+										}))
+									}
+									label="Country *"
+									sx={{
+										borderRadius: 2,
+										"& .MuiOutlinedInput-notchedOutline": {
+											borderColor: "#E8D5B0",
+										},
+										"&:hover .MuiOutlinedInput-notchedOutline": {
+											borderColor: "#e3242b",
+										},
+										"&.Mui-focused .MuiOutlinedInput-notchedOutline":
+											{
 												borderColor: "#e3242b",
 											},
-											"&.Mui-focused .MuiOutlinedInput-notchedOutline":
-												{ borderColor: "#e3242b" },
+									}}
+								>
+									{COUNTRIES.map((c) => (
+										<MenuItem key={c} value={c}>
+											{c}
+										</MenuItem>
+									))}
+								</Select>
+							</FormControl>
+
+							{/* Fez Delivery card */}
+							{isDomestic && (
+								<Box
+									sx={{
+										mb: 2,
+										p: 2,
+										borderRadius: 2,
+										background:
+											"linear-gradient(135deg,#fff8f0,#fff)",
+										border: "1px solid #E8D5B0",
+										display: "flex",
+										alignItems: "flex-start",
+										gap: 1.5,
+									}}
+								>
+									<LocalShippingOutlinedIcon
+										sx={{
+											color: "#e3242b",
+											fontSize: 20,
+											flexShrink: 0,
+											mt: 0.2,
 										}}
-									>
-										{nigerianStates.map((s) => (
-											<MenuItem key={s} value={s}>
-												{s}
-											</MenuItem>
-										))}
-									</Select>
-								</FormControl>
-								<TextField
-									fullWidth
-									label="LGA (Local Government Area) *"
-									value={form.lga}
-									onChange={handleChange("lga")}
-									size="small"
-									sx={{ mb: 2, ...textFieldSx }}
-								/>
-							</>
-						) : (
-							<>
-								<TextField
-									fullWidth
-									label="City *"
-									value={form.city}
-									onChange={handleChange("city")}
-									size="small"
-									sx={{ mb: 2, ...textFieldSx }}
-								/>
-								<TextField
-									fullWidth
-									label="State / Province *"
-									value={form.province}
-									onChange={handleChange("province")}
-									size="small"
-									sx={{ mb: 2, ...textFieldSx }}
-								/>
-								<TextField
-									fullWidth
-									label="Postal / ZIP Code *"
-									value={form.postalCode}
-									onChange={handleChange("postalCode")}
-									size="small"
-									sx={{ mb: 2, ...textFieldSx }}
-								/>
-							</>
-						)}
+									/>
+									<Box>
+										<Typography
+											sx={{
+												fontWeight: 700,
+												fontSize: "0.88rem",
+												color: "var(--text-main)",
+												mb: 0.3,
+											}}
+										>
+											Shipped via{" "}
+											<a
+												href="https://fezdelivery.co"
+												target="_blank"
+												rel="noopener noreferrer"
+												style={{
+													color: "#e3242b",
+													textDecoration: "none",
+												}}
+											>
+												Fez Delivery
+											</a>
+										</Typography>
+										<Typography
+											sx={{
+												fontSize: "0.8rem",
+												color: "var(--text-muted)",
+												lineHeight: 1.5,
+											}}
+										>
+											{isLagos
+												? "Lagos delivery — ₦3,000"
+												: "Outside Lagos delivery — ₦4,000"}
+										</Typography>
+									</Box>
+								</Box>
+							)}
+
+							{/* International shipping notice */}
+							{!isDomestic && (
+								<Box
+									sx={{
+										mb: 2,
+										p: 2,
+										backgroundColor: "rgba(0,255,255,0.06)",
+										borderRadius: 2,
+										border: "1px solid rgba(0,255,255,0.25)",
+										display: "flex",
+										alignItems: "flex-start",
+										gap: 1.5,
+									}}
+								>
+									<LocalShippingOutlinedIcon
+										sx={{
+											color: "var(--accent-cyan)",
+											fontSize: 20,
+											flexShrink: 0,
+											mt: 0.2,
+										}}
+									/>
+									<Box>
+										<Typography
+											sx={{
+												color: "var(--text-muted)",
+												fontSize: "0.88rem",
+												lineHeight: 1.6,
+											}}
+										>
+											<strong style={{ color: "var(--text-main)" }}>
+												International order
+											</strong>{" "}
+											— shipping cost will be quoted and confirmed
+											via WhatsApp before production begins.
+										</Typography>
+										<Typography
+											sx={{
+												fontSize: "0.78rem",
+												color: "var(--text-muted)",
+												mt: 0.5,
+												lineHeight: 1.6,
+											}}
+										>
+											<strong style={{ color: "var(--text-main)" }}>
+												Ghana & Zone 2:
+											</strong>{" "}
+											~₦22,500 (0.5kg–2kg, 2–3 business days)
+											<br />
+											<strong style={{ color: "var(--text-main)" }}>
+												South Africa, Kenya, Rwanda & Zone 5:
+											</strong>{" "}
+											from ₦66,000 (express)
+											<br />
+											Other rates: UK ₦8,500/kg · US ₦15,000/kg ·
+											Canada ₦13,500/kg · Europe ₦12,500/kg ·
+											Sweden/France/Italy/Netherlands ₦77,000 flat
+											(≤2kg)
+										</Typography>
+									</Box>
+								</Box>
+							)}
+
+							<TextField
+								fullWidth
+								label="Full Name *"
+								value={form.name}
+								onChange={handleChange("name")}
+								size="small"
+								sx={{ mb: 2, ...textFieldSx }}
+							/>
+
+							<TextField
+								fullWidth
+								label="Phone Number *"
+								value={form.phone}
+								onChange={handleChange("phone")}
+								size="small"
+								placeholder={
+									isDomestic ? "08012345678" : "700 000 0000"
+								}
+								error={
+									form.phone.length > 0 && !isValidPhone(form.phone)
+								}
+								helperText={
+									form.phone.length > 0 && !isValidPhone(form.phone)
+										? "Enter a valid phone number"
+										: ""
+								}
+								InputProps={{
+									startAdornment: (
+										<InputAdornment position="start">
+											<Typography
+												sx={{
+													fontSize: "0.85rem",
+													color: "var(--text-muted)",
+													fontWeight: 600,
+													mr: 0.5,
+												}}
+											>
+												{phonePrefix}
+											</Typography>
+										</InputAdornment>
+									),
+								}}
+								sx={{ mb: 2, ...textFieldSx }}
+							/>
+
+							<TextField
+								fullWidth
+								label="Street Address *"
+								value={form.address}
+								onChange={handleChange("address")}
+								multiline
+								rows={2}
+								placeholder={
+									isDomestic
+										? "House number, street, nearest landmark"
+										: "House number and street name"
+								}
+								sx={{ mb: 2, ...textFieldSx }}
+							/>
+
+							{isDomestic ? (
+								<>
+									<FormControl fullWidth size="small" sx={{ mb: 2 }}>
+										<InputLabel
+											sx={{ "&.Mui-focused": { color: "#e3242b" } }}
+										>
+											State *
+										</InputLabel>
+										<Select
+											value={form.state}
+											onChange={handleChange("state")}
+											label="State *"
+											sx={{
+												borderRadius: 2,
+												"& .MuiOutlinedInput-notchedOutline": {
+													borderColor: "#E8D5B0",
+												},
+												"&:hover .MuiOutlinedInput-notchedOutline":
+													{
+														borderColor: "#e3242b",
+													},
+												"&.Mui-focused .MuiOutlinedInput-notchedOutline":
+													{ borderColor: "#e3242b" },
+											}}
+										>
+											{nigerianStates.map((s) => (
+												<MenuItem key={s} value={s}>
+													{s}
+												</MenuItem>
+											))}
+										</Select>
+									</FormControl>
+									<TextField
+										fullWidth
+										label="LGA (Local Government Area) *"
+										value={form.lga}
+										onChange={handleChange("lga")}
+										size="small"
+										sx={{ mb: 2, ...textFieldSx }}
+									/>
+								</>
+							) : (
+								<>
+									<TextField
+										fullWidth
+										label="City *"
+										value={form.city}
+										onChange={handleChange("city")}
+										size="small"
+										sx={{ mb: 2, ...textFieldSx }}
+									/>
+									<TextField
+										fullWidth
+										label="State / Province *"
+										value={form.province}
+										onChange={handleChange("province")}
+										size="small"
+										sx={{ mb: 2, ...textFieldSx }}
+									/>
+									<TextField
+										fullWidth
+										label="Postal / ZIP Code *"
+										value={form.postalCode}
+										onChange={handleChange("postalCode")}
+										size="small"
+										sx={{ mb: 2, ...textFieldSx }}
+									/>
+								</>
+							)}
+						</Collapse>
 					</Grid>
 
 					{/* ── Order Summary ── */}
@@ -1419,7 +1684,37 @@ export default function CheckoutPage() {
 								</Box>
 							)}
 
-							{isDomestic && (
+							{shippingMethod === "pickup" ? (
+								<Box
+									sx={{
+										display: "flex",
+										justifyContent: "space-between",
+										mb: 0.5,
+									}}
+								>
+									<Typography
+										sx={{
+											color: "var(--text-muted)",
+											fontSize: "0.9rem",
+											display: "flex",
+											alignItems: "center",
+											gap: 0.5,
+										}}
+									>
+										<StoreIcon sx={{ fontSize: 14 }} /> Pickup (in
+										store)
+									</Typography>
+									<Typography
+										sx={{
+											fontWeight: 700,
+											fontSize: "0.9rem",
+											color: "#2e7d32",
+										}}
+									>
+										FREE
+									</Typography>
+								</Box>
+							) : isDomestic ? (
 								<Box
 									sx={{
 										display: "flex",
@@ -1447,8 +1742,7 @@ export default function CheckoutPage() {
 										{formatNaira(shippingCost)}
 									</Typography>
 								</Box>
-							)}
-							{!isDomestic && (
+							) : (
 								<Box
 									sx={{
 										display: "flex",
