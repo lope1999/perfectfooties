@@ -49,7 +49,7 @@ export async function fetchAllOrders() {
 }
 
 export function subscribeToAllOrders(onUpdate, onError) {
-	const q = query(collectionGroup(db, "orders"), orderBy("createdAt", "desc"));
+	const q = collectionGroup(db, "orders");
 	return onSnapshot(
 		q,
 		(snapshot) => {
@@ -59,6 +59,11 @@ export function subscribeToAllOrders(onUpdate, onError) {
 					? parentPath.split("/")[1]
 					: d.data().uid || null;
 				return { id: d.id, uid, ...d.data() };
+			});
+			orders.sort((a, b) => {
+				const aTime = a.createdAt?.toDate?.() || new Date(0);
+				const bTime = b.createdAt?.toDate?.() || new Date(0);
+				return bTime - aTime;
 			});
 			if (typeof onUpdate === "function") {
 				onUpdate(orders);
