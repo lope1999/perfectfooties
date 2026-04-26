@@ -60,7 +60,7 @@ export default function CollectionPage() {
 				setCol(colData);
 				setItems(itemData);
 				setReviews(
-					reviewData.filter((review) => review.published !== false),
+					reviewData.filter((review) => review.published !== false && !review.productId),
 				);
 			})
 			.catch(console.error)

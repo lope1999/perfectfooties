@@ -24,7 +24,7 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { getCollection, getItem } from '../lib/collectionService';
-import { fetchTestimonialsByProductId } from '../lib/testimonialService';
+import { fetchTestimonialsByProductId, fetchTestimonialsByCollectionId } from '../lib/testimonialService';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { getActiveItemPromo, applyPromoToPrice, formatPromoLabel } from '../lib/promoUtils';
@@ -252,13 +252,26 @@ export default function ItemDetailPage() {
     if (!item) return;
 
     const productId = item.id || itemId;
+    const itemName = item.name || '';
     let active = true;
     setReviewsLoading(true);
 
-    fetchTestimonialsByProductId(productId)
-      .then((items) => {
+    Promise.all([
+      fetchTestimonialsByProductId(productId),
+      collectionId ? fetchTestimonialsByCollectionId(collectionId) : Promise.resolve([]),
+    ])
+      .then(([byProduct, byCollection]) => {
         if (!active) return;
-        setReviews(items.filter((review) => review.published !== false));
+        const seen = new Set(byProduct.map((r) => r.id));
+        // Include collection-scoped reviews that either match this productId or match by name with no productId
+        const fallback = byCollection.filter(
+          (r) => !seen.has(r.id) && (
+            r.productId === productId ||
+            (!r.productId && itemName && (r.productName === itemName || r.service === itemName))
+          )
+        );
+        const combined = [...byProduct, ...fallback];
+        setReviews(combined.filter((review) => review.published !== false));
       })
       .catch(() => {
         if (!active) return;

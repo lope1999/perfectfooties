@@ -113,10 +113,9 @@ export async function fetchTestimonials() {
 export async function fetchTestimonialsByProductId(productId) {
   if (!productId) return [];
   const ref = collection(db, COLLECTION);
-  const snap = await getDocs(
-    query(ref, where('productId', '==', productId), orderBy('createdAt', 'desc'))
-  );
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const snap = await getDocs(query(ref, where('productId', '==', productId)));
+  const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  return docs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 }
 
 export async function hasReviewedOrder(orderId) {

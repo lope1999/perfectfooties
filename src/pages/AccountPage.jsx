@@ -2505,10 +2505,16 @@ function RateDialog({ open, onClose, order, userName, uid, userEmail, onSubmitte
 				}
 			}
 			const firstItem = order?.items?.[0];
+			const resolvedProductId = firstItem?.productId || firstItem?.id || '';
+			const resolvedProductName = firstItem?.name || firstItem?.serviceName || '';
 			const payload = {
 				orderId: order?.id || '',
 				uid: uid || '',
-				productId: firstItem?.productId || firstItem?.id || '',
+				productId: resolvedProductId,
+				...(firstItem?.collectionId && { collectionId: firstItem.collectionId }),
+				...(firstItem?.collectionName && { collectionName: firstItem.collectionName }),
+				...(resolvedProductName && { productName: resolvedProductName }),
+				service: resolvedProductName || firstItem?.collectionName || '',
 				rating,
 				testimonial: comment,
 				name: reviewerName.trim(),
