@@ -102,6 +102,9 @@ export function generateReceiptHtml({
   giftCardDiscount = 0,
   referralDiscount = 0,
   loyaltyDiscount = 0,
+  tierDiscount = 0,
+  tierLabel = '',
+  tierPerkText = '',
   shipping = {},
   shippingFee = 0,
   extraCharge = 0,
@@ -138,6 +141,8 @@ export function generateReceiptHtml({
     giftCardDiscount > 0 && `<div class="total-row discount"><span class="label">Gift Card Discount</span><span>-${fmt(giftCardDiscount)}</span></div>`,
     referralDiscount > 0 && `<div class="total-row discount even"><span class="label">Referral Discount</span><span>-${fmt(referralDiscount)}</span></div>`,
     loyaltyDiscount > 0 && `<div class="total-row discount"><span class="label">Loyalty Points</span><span>-${fmt(loyaltyDiscount)}</span></div>`,
+    tierDiscount > 0 && `<div class="total-row discount even" style="color:#7B6000;"><span class="label">&#9733; ${tierLabel} Loyalty Perk</span><span>-${fmt(tierDiscount)}</span></div>`,
+    tierDiscount > 0 && tierPerkText && `<div class="total-row" style="font-size:0.78em;color:#7B6000;font-style:italic;padding-left:8px;border-bottom:none;"><span>${tierPerkText}</span><span></span></div>`,
   ].filter(Boolean).join('');
 
   const shippingRow = shippingFee > 0

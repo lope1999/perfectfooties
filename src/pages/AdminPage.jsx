@@ -36,6 +36,7 @@ export default function AdminPage() {
 	const [rawUsers, setRawUsers] = useState([]);
 	const [blogPosts, setBlogPosts] = useState([]);
 	const [galleryImages, setGalleryImages] = useState([]);
+	const [giftCards, setGiftCards] = useState([]);
 	const [users, setUsers] = useState([]);
 	const [shopProducts, setShopProducts] = useState([]);
 	const [loading, setLoading] = useState(true);

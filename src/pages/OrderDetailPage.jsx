@@ -8,12 +8,16 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import DownloadIcon from '@mui/icons-material/Download';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import StoreIcon from '@mui/icons-material/Store';
+import StarIcon from '@mui/icons-material/Star';
+import RateReviewIcon from '@mui/icons-material/RateReview';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
 import { generateReceiptHtml, openReceiptWindow } from '../lib/receiptTemplate';
+import { fetchTestimonialByOrderId, fetchTestimonialByEmailAndProduct } from '../lib/testimonialService';
+import { TIERS } from '../lib/loyaltyService';
 
 const ff = '"Georgia", serif';
 
@@ -64,6 +68,9 @@ function printReceipt(order) {
 		giftCardDiscount: order.giftCardDiscount || 0,
 		referralDiscount: order.referralDiscount || 0,
 		loyaltyDiscount: order.loyaltyDiscount || 0,
+		tierDiscount: order.tierDiscount || 0,
+		tierLabel: order.tierLabel || '',
+		tierPerkText: TIERS.find(t => t.key === order.tierKey)?.perk || '',
 		shipping,
 		shippingFee: order.shippingCost || shipping.fee || 0,
 		extraCharge,
@@ -81,16 +88,39 @@ export default function OrderDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [order, setOrder] = useState(null);
+  const [review, setReview] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) { navigate('/account'); return; }
-    getDoc(doc(db, 'users', user.uid, 'orders', orderId))
-      .then((snap) => {
-        if (snap.exists()) setOrder({ id: snap.id, ...snap.data() });
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    
+    const loadOrderData = async () => {
+      try {
+        const orderSnap = await getDoc(doc(db, 'users', user.uid, 'orders', orderId));
+        if (orderSnap.exists()) {
+          const orderData = { id: orderSnap.id, ...orderSnap.data() };
+          setOrder(orderData);
+          
+          // Fetch review if the order is delivered/received
+          if (['received', 'completed', 'delivered'].includes(orderData.status)) {
+            let rev = await fetchTestimonialByOrderId(orderId);
+            if (!rev) {
+              // Fallback for reviews saved before orderId field was added
+              const firstItem = orderData.items?.[0];
+              const productId = firstItem?.productId || firstItem?.id || '';
+              rev = await fetchTestimonialByEmailAndProduct(user.email, productId);
+            }
+            setReview(rev);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading order detail:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadOrderData();
   }, [user, orderId, navigate]);
 
   if (loading) {
@@ -751,6 +781,90 @@ export default function OrderDetailPage() {
 								{order.paymentReference}
 							</span>
 						</Typography>
+					</Box>
+				)}
+
+				{/* Review Details */}
+				{review && (
+					<Box
+						sx={{
+							p: 2.5,
+							border: "1px solid #E8D5B0",
+							borderRadius: 3,
+							backgroundColor: "#fff",
+							mb: 2.5,
+						}}
+					>
+						<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+							<RateReviewIcon sx={{ color: '#e3242b', fontSize: 20 }} />
+							<Typography
+								sx={{
+									fontFamily: ff,
+									fontWeight: 700,
+									fontSize: "0.85rem",
+									color: "#e3242b",
+									textTransform: "uppercase",
+									letterSpacing: 1,
+								}}
+							>
+								Your Review
+							</Typography>
+						</Box>
+						
+						<Box sx={{ display: 'flex', gap: 0.5, mb: 1 }}>
+							{[1, 2, 3, 4, 5].map((s) => (
+								<StarIcon 
+									key={s} 
+									sx={{ 
+										fontSize: 18, 
+										color: s <= review.rating ? '#e3242b' : '#eee' 
+									}} 
+								/>
+							))}
+						</Box>
+						
+						{review.testimonial && (
+							<Typography sx={{ fontSize: '0.9rem', color: '#555', fontStyle: 'italic', mb: 2 }}>
+								"{review.testimonial}"
+							</Typography>
+						)}
+						
+						{review.photoURLs && review.photoURLs.length > 0 && (
+							<Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+								{review.photoURLs.map((url, idx) => (
+									<Box 
+										key={idx}
+										component="img"
+										src={url}
+										sx={{ 
+											width: 60, 
+											height: 60, 
+											borderRadius: 1, 
+											objectFit: 'cover',
+											border: '1px solid #eee'
+										}}
+									/>
+								))}
+							</Box>
+						)}
+
+						<Button
+							fullWidth
+							variant="outlined"
+							onClick={() => navigate('/testimonials')}
+							sx={{
+								borderRadius: "20px",
+								fontFamily: ff,
+								fontWeight: 600,
+								fontSize: "0.8rem",
+								textTransform: "none",
+								color: "#e3242b",
+								borderColor: "#e3242b",
+								"&:hover": { borderColor: "#b81b21", backgroundColor: "#fff5f5" },
+							}}
+						>
+							View All Testimonials
+						</Button>
 					</Box>
 				)}
 

@@ -126,7 +126,7 @@ function SizeSelector({ sizes, selected, onSelect }) {
               border: `2px solid ${selected === size ? '#e3242b' : '#E8D5B0'}`,
               backgroundColor: selected === size ? '#e3242b' : '#fff',
               color: selected === size ? '#fff' : 'var(--text-main)',
-              '&:hover': { borderColor: '#e3242b', backgroundColor: selected === size ? '#b81b21' : '#FFF8F0' },
+              '&:hover': { borderColor: '#e3242b', backgroundColor: selected === size ? '#b81b21' : 'var(--bg-soft)' },
             }}
           />
         ))}
@@ -298,6 +298,7 @@ export default function CategoryPage() {
           name: product.name,
           price: pricePerItem,
           quantity,
+          productId: product.id,
           size: selectedSize || null,
           colour: selectedColour || null,
         }],
@@ -360,7 +361,7 @@ export default function CategoryPage() {
                   component="img"
                   src={images[activeImage]}
                   alt={product.name}
-                  sx={{ width: '100%', maxHeight: 480, objectFit: 'cover', borderRadius: 3, border: '1px solid #E8D5B0', display: 'block' }}
+                  sx={{ width: '100%', maxHeight: 480, objectFit: 'cover', borderRadius: 3, border: '1px solid var(--bg-soft3)', display: 'block' }}
                 />
                 {images.length > 1 && (
                   <Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
@@ -382,7 +383,7 @@ export default function CategoryPage() {
                 )}
               </>
             ) : (
-              <Box sx={{ width: '100%', height: 320, backgroundColor: '#FFF8F0', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E8D5B0' }}>
+              <Box sx={{ width: '100%', height: 320, backgroundColor: 'var(--bg-soft)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--bg-soft3)' }}>
                 <AutoAwesomeIcon sx={{ color: '#E8D5B0', fontSize: 64 }} />
               </Box>
             )}
@@ -423,7 +424,7 @@ export default function CategoryPage() {
             </Box>
 
             {/* Production timeline notice */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, p: 1.5, backgroundColor: '#FFF8F0', borderRadius: 2, border: '1px solid #E8D5B0' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, p: 1.5, backgroundColor: 'var(--bg-soft)', borderRadius: 2, border: '1px solid var(--bg-soft3)' }}>
               <AccessTimeIcon sx={{ color: '#e3242b', fontSize: 18, flexShrink: 0 }} />
               <Typography sx={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
                 <strong>Made to order</strong> — crafted fresh, ready in <strong>10–14 days</strong> after payment confirmation.
@@ -528,7 +529,7 @@ export default function CategoryPage() {
 
                 {/* Multi-item discount */}
                 {product.multiSetDiscount && discountPct > 0 && (
-                  <Box sx={{ mb: 2.5, p: 1.5, backgroundColor: discountApplied ? '#e8f5e9' : '#FFF8F0', borderRadius: 2, border: `1px solid ${discountApplied ? '#a5d6a7' : '#E8D5B0'}`, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ mb: 2.5, p: 1.5, backgroundColor: discountApplied ? '#e8f5e9' : 'var(--bg-soft)', borderRadius: 2, border: `1px solid ${discountApplied ? '#a5d6a7' : '#E8D5B0'}`, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <LocalOfferIcon sx={{ fontSize: 16, color: discountApplied ? '#2e7d32' : '#e3242b', flexShrink: 0 }} />
                     <Typography sx={{ fontSize: '0.82rem', color: discountApplied ? '#2e7d32' : '#e3242b', fontWeight: 600 }}>
                       {discountApplied
@@ -539,7 +540,7 @@ export default function CategoryPage() {
                 )}
 
                 {/* Total */}
-                <Box sx={{ mb: 3, p: 1.5, backgroundColor: '#FFF8F0', borderRadius: 2, border: '1px solid #E8D5B0' }}>
+                <Box sx={{ mb: 3, p: 1.5, backgroundColor: 'var(--bg-soft)', borderRadius: 2, border: '1px solid var(--bg-soft3)' }}>
                   <Typography sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-purple)', fontSize: '1.1rem' }}>
                     Total: {formatNaira(totalPrice)}
                     {quantity > 1 && (

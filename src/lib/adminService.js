@@ -25,6 +25,11 @@ import {
 } from './validate';
 import { awardPointsForOrder } from './loyaltyService';
 
+// ─── Constants ──────────────────────────────────────────
+
+const REVENUE_STATUSES = ['confirmed', 'received', 'completed'];
+const PRODUCTION_QUEUE_STATUSES = new Set(['confirmed', 'production', 'in-progress']);
+
 // ─── Orders ─────────────────────────────────────────────
 
 export async function fetchAllOrders() {
@@ -103,7 +108,7 @@ export async function updateOrderStatus(uid, orderId, status, extra = {}) {
     ...extra,
     statusHistory: arrayUnion({ status, at: new Date().toISOString() }),
   });
-  if (status === 'received') {
+  if (['received', 'delivered', 'completed'].includes(status)) {
     const snap = await getDoc(ref).catch(() => null);
     const orderType = snap?.data()?.type || 'retail';
     awardPointsForOrder(uid, orderId, orderType).catch(() => {});
@@ -261,8 +266,8 @@ export function computeUserStats(users, orders) {
 
   return users.map((u) => {
     const userOrders = ordersByUid[u.uid] || [];
-    const orderCount = userOrders.length;
-    const appointmentCount = 0;
+    const appointmentCount = userOrders.filter(o => o.type === 'service' || o.type === 'appointment').length;
+    const orderCount = userOrders.length - appointmentCount;
     const totalPaid = userOrders
       .filter((o) => REVENUE_STATUSES.includes(o.status))
       .reduce((sum, o) => sum + (o.total || 0) + (o.extraCharge || 0), 0);
@@ -291,9 +296,6 @@ export async function updateCustomerPerks(uid, perks) {
 }
 
 // ─── Stats ──────────────────────────────────────────────
-
-const REVENUE_STATUSES = ['confirmed', 'received', 'completed'];
-const PRODUCTION_QUEUE_STATUSES = new Set(['confirmed', 'production', 'in-progress']);
 
 const getOrderValue = (order) =>
 	(order.total ?? order.finalTotal ?? 0) + (order.extraCharge || 0);

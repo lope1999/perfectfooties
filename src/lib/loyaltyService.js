@@ -18,9 +18,33 @@ export const REDEMPTION_UNIT = 50;       // every 50 pts = ₦500 redeemable
 export const REDEMPTION_VALUE = 500;     // ₦ value per REDEMPTION_UNIT points
 // ── Customer Tiers (based on number of completed orders) ──────
 export const TIERS = [
-  { key: 'fresh',         label: 'Fresh',         minOrders: 0, color: '#78909C', bg: '#ECEFF1', perk: 'Welcome to PerfectFooties — your journey begins here.' },
-  { key: 'star-client',   label: 'Star Client',   minOrders: 2, color: '#007a7a', bg: '#E0F7FA', perk: '5% loyalty discount on all orders + priority production queue.' },
-  { key: 'master-patron', label: 'Master Patron', minOrders: 4, color: '#B8860B', bg: '#FFF8E1', perk: '10% loyalty discount + free custom engraving on every order.' },
+	{
+		key: "fresh",
+		label: "Fresh",
+		minOrders: 0,
+		discount: 0,
+		color: "#78909C",
+		bg: "#ECEFF1",
+		perk: "Welcome to PerfectFooties — your journey begins here.",
+	},
+	{
+		key: "star-client",
+		label: "Star Client",
+		minOrders: 3,
+		discount: 5,
+		color: "#007a7a",
+		bg: "#E0F7FA",
+		perk: "5% loyalty discount on all orders + priority production queue.",
+	},
+	{
+		key: "master-patron",
+		label: "Master Patron",
+		minOrders: 5,
+		discount: 10,
+		color: "#B8860B",
+		bg: "#FFF8E1",
+		perk: "10% loyalty discount + free custom engraving on every order.",
+	},
 ];
 
 export function getCustomerTier(orderCount) {
@@ -92,6 +116,16 @@ export async function awardPointsForOrder(uid, orderId, orderType) {
     updateDoc(orderRef, { loyaltyPointsAwarded: true }),
   ]);
   return points;
+}
+
+// Self-heal: called from AccountPage when computed earned > Firestore recorded earned
+export async function backfillMissingPoints(uid, delta) {
+  if (!uid || delta <= 0) return;
+  const userRef = doc(db, 'users', uid);
+  await updateDoc(userRef, {
+    loyaltyPoints: increment(delta),
+    loyaltyPointsEarned: increment(delta),
+  });
 }
 
 // Admin: manually adjust points (delta can be positive or negative)

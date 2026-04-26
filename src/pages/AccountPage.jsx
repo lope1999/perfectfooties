@@ -66,6 +66,7 @@ import {
 	fetchOrders,
 	updateOrderStatus,
 	updateOrderDetails,
+	markOrderAsRated,
 } from "../lib/orderService";
 import { addCancellationRequest } from "../lib/cancellationService";
 import { useNotifications } from "../context/NotificationContext";
@@ -75,10 +76,15 @@ import {
 	uploadReviewPhoto,
 } from "../lib/testimonialService";
 import {
+	updateUserProfile,
+	fetchUserProfile,
+} from "../lib/userService";
+import {
 	getLoyaltyData,
 	ensureReferralCode,
 	savePendingLoyaltyReward,
 	incrementUserReviewCount,
+	backfillMissingPoints,
 	POINTS_PER_REFERRAL,
 	REDEMPTION_UNIT, REDEMPTION_VALUE,
 	TIERS,
@@ -125,8 +131,8 @@ const statBtnSx = {
 	minWidth: 0,
 	p: 1.5,
 	borderRadius: 2,
-	backgroundColor: "#fff",
-	border: "1px solid #E8D5B0",
+	backgroundColor: "var(--bg-card)",
+	border: "1px solid var(--bg-soft3)",
 	textAlign: "center",
 	cursor: "pointer",
 	transition: "all 0.2s ease",
@@ -164,6 +170,7 @@ export default function AccountPage() {
 
 	// Loyalty & referral state (from Firestore)
 	const [firestorePoints, setFirestorePoints] = useState(null); // null = loading
+	const [firestorePointsRedeemed, setFirestorePointsRedeemed] = useState(0);
 	const [referralUses, setReferralUses] = useState(0);
 	const [myReferralCode, setMyReferralCode] = useState('');
 	const [redeemDialogOpen, setRedeemDialogOpen] = useState(false);
@@ -211,7 +218,7 @@ export default function AccountPage() {
 				setOrders(fetched);
 				const completedIds = fetched
 					.filter(
-						(o) => o.status === "received" || o.status === "completed",
+						(o) => ['received', 'completed', 'delivered'].includes(o.status),
 					)
 					.map((o) => o.id);
 				if (completedIds.length > 0) {
@@ -244,6 +251,7 @@ export default function AccountPage() {
 					loyalty.loyaltyPoints,
 				);
 				setFirestorePoints(loyalty.loyaltyPoints);
+				setFirestorePointsRedeemed(loyalty.loyaltyPointsRedeemed || 0);
 				setMyReferralCode(refData.code);
 				setReferralUses(refData.totalUses);
 			})
@@ -252,6 +260,26 @@ export default function AccountPage() {
 			});
 	}, [user]);
 
+	// Total points earned as computed from order history (source of truth for display)
+	const computedPoints = useMemo(() =>
+		orders.reduce((total, o) => {
+			if (!['received', 'completed', 'delivered'].includes(o.status)) return total;
+			return total + 15;
+		}, 0),
+	[orders]);
+
+	// Backfill Firestore if computed earned > what Firestore has recorded,
+	// so that redemption works correctly for historical orders.
+	useEffect(() => {
+		if (!user || ordersLoading || firestorePoints === null) return;
+		const expectedBalance = Math.max(0, computedPoints - firestorePointsRedeemed);
+		if (expectedBalance <= firestorePoints) return;
+		const delta = expectedBalance - firestorePoints;
+		backfillMissingPoints(user.uid, delta)
+			.then(() => setFirestorePoints(expectedBalance))
+			.catch(() => {});
+	}, [user, ordersLoading, firestorePoints, computedPoints, firestorePointsRedeemed]);
+
 	const handleRedeem = () => {
 		if (!user) return;
 		savePendingLoyaltyReward(redeemAmount);
@@ -259,17 +287,34 @@ export default function AccountPage() {
 		showToast(`Loyalty reward saved! ₦${(redeemAmount * REDEMPTION_VALUE / REDEMPTION_UNIT).toLocaleString()} will apply at checkout.`, "success");
 	};
 
-	// Load saved profile from localStorage
+	// Load saved profile from Firestore (with localStorage fallback)
 	useEffect(() => {
 		if (!user) return;
+		
+		// 1. Try local storage first for instant UI
 		const saved = JSON.parse(
 			localStorage.getItem(`profile_${user.uid}`) || "{}",
 		);
-		setProfile({
-			phone: saved.phone || "",
-			address: saved.address || "",
-			displayName: saved.displayName || user.displayName || "",
-		});
+		if (saved.phone || saved.address) {
+			setProfile({
+				phone: saved.phone || "",
+				address: saved.address || "",
+				displayName: saved.displayName || user.displayName || "",
+			});
+		}
+
+		// 2. Fetch from Firestore for the latest source of truth
+		fetchUserProfile(user.uid).then((fsProfile) => {
+			if (fsProfile) {
+				const merged = {
+					phone: fsProfile.phone || "",
+					address: fsProfile.address || "",
+					displayName: fsProfile.displayName || fsProfile.name || user.displayName || "",
+				};
+				setProfile(merged);
+				localStorage.setItem(`profile_${user.uid}`, JSON.stringify(merged));
+			}
+		}).catch(err => console.error("Error fetching user profile:", err));
 	}, [user]);
 
 	const handleTabChange = (_, newVal) => {
@@ -352,30 +397,19 @@ export default function AccountPage() {
 	};
 
 	const reviewCount = Object.keys(ratedOrders).length;
-	const orderCount = orders.filter((o) => o.status === 'received' || o.status === 'completed').length;
+	const orderCount = orders.filter((o) => ['received', 'completed', 'delivered'].includes(o.status)).length;
 	const giftCardOrders = orders.filter((o) =>
 		o.items?.some((i) =>
 			(i.name || "").toLowerCase().includes("gift card"),
 		),
 	);
 
-	// Loyalty points — from Firestore (null while loading, falls back to order-computed)
-	const computedPoints = orders.reduce((total, o) => {
-		if (!['received', 'completed', 'delivered'].includes(o.status)) return total;
-		return total + 15;
-	}, 0);
-	console.log(
-		"[Loyalty Debug] orders:",
-		orders.map((o) => ({ id: o.id, type: o.type, status: o.status })),
+	// Current balance = earned from orders − redeemed in Firestore.
+	// Math.max ensures we show computedPoints when Firestore is stale (never got awardPointsForOrder calls).
+	const loyaltyPoints = Math.max(
+		firestorePoints ?? 0,
+		computedPoints - firestorePointsRedeemed,
 	);
-	console.log(
-		"[Loyalty Debug] computedPoints (from orders):",
-		computedPoints,
-		"| firestorePoints:",
-		firestorePoints,
-	);
-	const loyaltyPoints =
-		firestorePoints !== null ? firestorePoints : computedPoints;
 	const redeemableNaira =
 		Math.floor(loyaltyPoints / REDEMPTION_UNIT) * REDEMPTION_VALUE;
 	const maxRedeemableUnits = Math.floor(loyaltyPoints / REDEMPTION_UNIT);
@@ -416,28 +450,38 @@ export default function AccountPage() {
 		setEditForm({
 			phone: profile.phone || phoneFromOrders,
 			address: profile.address || "",
-			displayName: profile.displayName,
+			displayName: profile.displayName || user.displayName || "",
 		});
 		setEditOpen(true);
 	};
 
-	const saveEditProfile = () => {
+	const saveEditProfile = async () => {
 		const updated = {
 			...profile,
 			phone: editForm.phone.trim(),
 			address: editForm.address.trim(),
 			displayName: editForm.displayName.trim() || user.displayName,
 		};
+		
 		setProfile(updated);
-		const existing = JSON.parse(
-			localStorage.getItem(`profile_${user.uid}`) || "{}",
-		);
 		localStorage.setItem(
 			`profile_${user.uid}`,
-			JSON.stringify({ ...existing, ...updated }),
+			JSON.stringify(updated),
 		);
+		
+		try {
+			await updateUserProfile(user.uid, {
+				phone: updated.phone,
+				address: updated.address,
+				displayName: updated.displayName
+			});
+			showToast("Profile updated successfully.", "success");
+		} catch (err) {
+			console.error("Error updating profile in Firestore:", err);
+			showToast("Saved locally, but could not sync with server.", "warning");
+		}
+		
 		setEditOpen(false);
-		showToast("Profile updated successfully.", "success");
 	};
 
 	const handleSignOut = () => {
@@ -469,7 +513,7 @@ export default function AccountPage() {
 					pt: { xs: 12, md: 14 },
 					pb: 10,
 					minHeight: "100vh",
-					backgroundColor: "#FFF8F0",
+					backgroundColor: "var(--bg-soft)",
 				}}
 			>
 				<Container maxWidth="sm" sx={{ textAlign: "center" }}>
@@ -515,7 +559,7 @@ export default function AccountPage() {
 				pt: { xs: 10, md: 12 },
 				pb: 10,
 				minHeight: "100vh",
-				backgroundColor: "#FFF8F0",
+				backgroundColor: "var(--bg-soft)",
 			}}
 		>
 			<Container maxWidth="md">
@@ -767,7 +811,7 @@ export default function AccountPage() {
 										mb: 3,
 										p: 2.5,
 										borderRadius: 3,
-										background: `linear-gradient(135deg, ${tier.bg} 0%, #fff 100%)`,
+										background: `linear-gradient(135deg, ${tier.bg} 0%, var(--bg-card) 100%)`,
 										border: `1.5px solid ${meta.border}`,
 									}}
 								>
@@ -924,7 +968,7 @@ export default function AccountPage() {
 							sx={{
 								mb: 3,
 								borderRadius: 3,
-								border: "1.5px solid #E8D5B0",
+								border: "1.5px solid var(--bg-soft3)",
 								overflow: "hidden",
 							}}
 						>
@@ -932,8 +976,8 @@ export default function AccountPage() {
 								sx={{
 									px: 2,
 									py: 1.2,
-									backgroundColor: "#FFF8F0",
-									borderBottom: "1px solid #E8D5B0",
+									backgroundColor: "var(--bg-soft)",
+									borderBottom: "1px solid var(--bg-soft3)",
 								}}
 							>
 								<Typography
@@ -1010,8 +1054,7 @@ export default function AccountPage() {
 								mb: 3,
 								p: 2.5,
 								borderRadius: 3,
-								background:
-									"linear-gradient(135deg, #FFF8E1 0%, #FFF8F0 100%)",
+								backgroundColor: "var(--bg-soft)",
 								border: "1.5px solid #FFD54F",
 							}}
 						>
@@ -1159,7 +1202,7 @@ export default function AccountPage() {
 									}}
 								>
 									<MilitaryTechIcon sx={{ fontSize: '0.9rem', mr: 0.4, verticalAlign: 'middle' }} />
-															<strong>15 pts</strong> per completed order · <strong>50 pts = ₦500 off</strong>
+															<strong>15 pts</strong> per delivered order · <strong>50 pts = ₦500 off</strong>
 								</Typography>
 							</Box>
 						</Box>
@@ -1170,8 +1213,7 @@ export default function AccountPage() {
 								mb: 3,
 								p: 2.5,
 								borderRadius: 3,
-								background:
-									"linear-gradient(135deg, #EDE7F6 0%, #FFF8F0 100%)",
+								backgroundColor: "var(--bg-soft)",
 								border: "1.5px solid #CE93D8",
 							}}
 						>
@@ -1288,7 +1330,7 @@ export default function AccountPage() {
 									gap: 1,
 									p: 1.2,
 									borderRadius: 2,
-									backgroundColor: "#fff",
+									backgroundColor: "var(--bg-card)",
 									border: "1px solid #CE93D8",
 									mb: 1.5,
 								}}
@@ -1424,8 +1466,8 @@ export default function AccountPage() {
 									mb: 3,
 									p: 2.5,
 									borderRadius: 3,
-									backgroundColor: "#fff",
-									border: "1px solid #E8D5B0",
+									backgroundColor: "var(--bg-card)",
+									border: "1px solid var(--bg-soft3)",
 								}}
 							>
 								<Box
@@ -1512,7 +1554,7 @@ export default function AccountPage() {
 
 
 
-					<Divider sx={{ borderColor: "#E8D5B0", mb: 3 }} />
+					<Divider sx={{ borderColor: "var(--bg-soft3)", mb: 3 }} />
 
 						{/* Sign Out */}
 						<Box sx={{ textAlign: "center" }}>
@@ -1646,8 +1688,8 @@ export default function AccountPage() {
 										p: 2,
 										mb: 1.5,
 										borderRadius: 3,
-										border: "1px solid #E8D5B0",
-										backgroundColor: "#fff",
+										border: "1px solid var(--bg-soft3)",
+										backgroundColor: "var(--bg-card)",
 										transition: "box-shadow 0.2s ease",
 										"&:hover": {
 											boxShadow: "0 2px 12px rgba(233,30,140,0.1)",
@@ -2294,109 +2336,21 @@ export default function AccountPage() {
 				<RateDialog
 					open={!!rateDialog}
 					order={rateDialog}
-					userName={user?.displayName || ""}
+					userName={profile.displayName || user?.displayName || ""}
 					uid={user?.uid || ''}
 					userEmail={user?.email || ''}
 					onClose={() => setRateDialog(null)}
 					onSubmitted={(orderId) => {
 						setRatedOrders((prev) => ({ ...prev, [orderId]: true }));
-						setRateDialog(null);
-						if (user?.uid)
-							incrementUserReviewCount(user.uid).catch(() => {});
-						showToast(
-							"Thank you! Your review has been submitted.",
-							"success",
+						// Also update the local orders list so the button changes immediately
+						setOrders((prev) => 
+							prev.map(o => o.id === orderId ? { ...o, rated: true } : o)
 						);
-					}}
-				/>
-
-				{/* ── Edit Profile Dialog ── */}
-				<Dialog
-					open={editOpen}
-					onClose={() => setEditOpen(false)}
-					maxWidth="xs"
-					fullWidth
-					PaperProps={{ sx: { borderRadius: 3 } }}
-				>
-					<DialogTitle sx={{ fontFamily: ff, fontWeight: 700 }}>
-						Edit Profile
-					</DialogTitle>
-					<DialogContent sx={{ pt: "8px !important" }}>
-						<TextField
-							fullWidth
-							label="Display Name"
-							value={editForm.displayName}
-							onChange={(e) =>
-								setEditForm((f) => ({
-									...f,
-									displayName: e.target.value,
-								}))
-							}
-							size="small"
-							sx={inputSx}
-						/>
-						<TextField
-							fullWidth
-							label="Phone Number"
-							value={editForm.phone}
-							onChange={(e) =>
-								setEditForm((f) => ({ ...f, phone: e.target.value }))
-							}
-							size="small"
-							placeholder="+234 xxx xxx xxxx"
-							sx={inputSx}
-						/>
-						<TextField
-							fullWidth
-							label="Address"
-							value={editForm.address}
-							onChange={(e) =>
-								setEditForm((f) => ({ ...f, address: e.target.value }))
-							}
-							size="small"
-							multiline
-							rows={2}
-							placeholder="Your delivery / home address"
-							sx={{ ...inputSx, mb: 0 }}
-						/>
-					</DialogContent>
-					<DialogActions sx={{ px: 3, pb: 3 }}>
-						<Button
-							onClick={() => setEditOpen(false)}
-							sx={{ fontFamily: ff, color: "#777" }}
-						>
-							Cancel
-						</Button>
-						<Button
-							onClick={saveEditProfile}
-							sx={{
-								backgroundColor: "#e3242b",
-								color: "#fff",
-								borderRadius: "20px",
-								px: 3,
-								fontFamily: ff,
-								fontWeight: 600,
-								"&:hover": { backgroundColor: "#b81b21" },
-							}}
-						>
-							Save
-						</Button>
-					</DialogActions>
-				</Dialog>
-
-				{/* ── Rate Dialog ── */}
-				<RateDialog
-					open={!!rateDialog}
-					order={rateDialog}
-					userName={user?.displayName || ""}
-					uid={user?.uid || ''}
-					userEmail={user?.email || ''}
-					onClose={() => setRateDialog(null)}
-					onSubmitted={(orderId) => {
-						setRatedOrders((prev) => ({ ...prev, [orderId]: true }));
 						setRateDialog(null);
-						if (user?.uid)
+						if (user?.uid) {
+							markOrderAsRated(user.uid, orderId).catch(console.error);
 							incrementUserReviewCount(user.uid).catch(() => {});
+						}
 						showToast(
 							"Thank you! Your review has been submitted.",
 							"success",
@@ -2486,6 +2440,8 @@ export default function AccountPage() {
 // ─── Rate Dialog ──────────────────────────────────────────────────────────────
 function RateDialog({ open, onClose, order, userName, uid, userEmail, onSubmitted }) {
 	const [rating, setRating] = React.useState(0);
+	const [reviewerName, setReviewerName] = React.useState('');
+	const [occupation, setOccupation] = React.useState('');
 	const [comment, setComment] = React.useState('');
 	const [photos, setPhotos] = React.useState([]);
 	const [photoPreviews, setPhotoPreviews] = React.useState([]);
@@ -2493,8 +2449,16 @@ function RateDialog({ open, onClose, order, userName, uid, userEmail, onSubmitte
 	const [submitError, setSubmitError] = React.useState('');
 
 	React.useEffect(() => {
-		if (open) { setRating(0); setComment(''); setPhotos([]); setPhotoPreviews([]); setSubmitError(''); }
-	}, [open]);
+		if (open) {
+			setRating(0);
+			setReviewerName(userName || '');
+			setOccupation('');
+			setComment('');
+			setPhotos([]);
+			setPhotoPreviews([]);
+			setSubmitError('');
+		}
+	}, [open, userName]);
 
 	const handlePhotoChange = (e) => {
 		const file = e.target.files?.[0];
@@ -2513,29 +2477,52 @@ function RateDialog({ open, onClose, order, userName, uid, userEmail, onSubmitte
 	};
 
 	const handleSubmit = async () => {
-		if (!rating) return;
+		console.log("[Review Debug] Starting submission:", { rating, reviewerName, comment, photosCount: photos.length });
+		if (!rating) {
+			console.log("[Review Debug] Submission aborted: No rating provided.");
+			return;
+		}
+		if (!reviewerName.trim()) {
+			console.log("[Review Debug] Submission aborted: No reviewer name provided.");
+			setSubmitError('Please provide a name for the review.');
+			return;
+		}
 		setSubmitting(true);
 		setSubmitError('');
 		try {
 			const photoURLs = [];
 			for (const photo of photos) {
 				if (uid) {
-					try { photoURLs.push(await uploadReviewPhoto(uid, photo)); } catch { /* skip */ }
+					try { 
+						console.log("[Review Debug] Uploading photo:", photo.name);
+						const url = await uploadReviewPhoto(uid, photo);
+						console.log("[Review Debug] Photo uploaded successfully:", url);
+						photoURLs.push(url); 
+					} catch (e) { 
+						console.error("[Review Debug] Photo upload failed:", e);
+						/* skip */ 
+					}
 				}
 			}
 			const firstItem = order?.items?.[0];
-			await saveTestimonial({
-				orderId: order?.id,
-				productId: firstItem?.productId || firstItem?.id,
+			const payload = {
+				orderId: order?.id || '',
+				uid: uid || '',
+				productId: firstItem?.productId || firstItem?.id || '',
 				rating,
 				testimonial: comment,
-				name: userName,
+				name: reviewerName.trim(),
+				...(occupation.trim() && { occupation: occupation.trim() }),
 				email: userEmail || '',
 				type: 'purchase',
 				...(photoURLs.length > 0 && { photoURLs }),
-			});
+			};
+			console.log("[Review Debug] Saving testimonial with payload:", payload);
+			await saveTestimonial(payload);
+			console.log("[Review Debug] Testimonial saved successfully!");
 			onSubmitted?.(order?.id);
-		} catch {
+		} catch (err) {
+			console.error("[Review Debug] Error in handleSubmit:", err);
 			setSubmitError('Could not submit review. Please try again.');
 		} finally {
 			setSubmitting(false);
@@ -2557,6 +2544,23 @@ function RateDialog({ open, onClose, order, userName, uid, userEmail, onSubmitte
 						sx={{ color: '#e3242b' }}
 					/>
 					<TextField
+						label="Your Name"
+						value={reviewerName}
+						onChange={(e) => setReviewerName(e.target.value)}
+						fullWidth
+						size="small"
+						sx={{ '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: '#e3242b' } }}
+					/>
+					<TextField
+						label="Occupation / Role (optional)"
+						value={occupation}
+						onChange={(e) => setOccupation(e.target.value)}
+						fullWidth
+						size="small"
+						placeholder="e.g. Fashion Designer, Nurse…"
+						sx={{ '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: '#e3242b' } }}
+					/>
+					<TextField
 						multiline
 						rows={3}
 						label="Your review (optional)"
@@ -2574,11 +2578,11 @@ function RateDialog({ open, onClose, order, userName, uid, userEmail, onSubmitte
 							{photoPreviews.map((src, i) => (
 								<Box key={i} sx={{ position: 'relative' }}>
 									<Box component="img" src={src} alt={`preview ${i + 1}`}
-										sx={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0', display: 'block' }} />
+										sx={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 2, border: '1px solid var(--bg-soft3)', display: 'block' }} />
 									<IconButton
 										size="small"
 										onClick={() => removePhoto(i)}
-										sx={{ position: 'absolute', top: -8, right: -8, backgroundColor: '#fff', border: '1px solid #E8D5B0', p: 0.2, '&:hover': { backgroundColor: '#ffe0e0' } }}
+										sx={{ position: 'absolute', top: -8, right: -8, backgroundColor: 'var(--bg-card)', border: '1px solid var(--bg-soft3)', p: 0.2, '&:hover': { backgroundColor: '#ffe0e0' } }}
 									>
 										<DeleteOutlineIcon sx={{ fontSize: 14, color: '#e3242b' }} />
 									</IconButton>
@@ -2588,7 +2592,7 @@ function RateDialog({ open, onClose, order, userName, uid, userEmail, onSubmitte
 								<Button
 									component="label"
 									size="small"
-									sx={{ border: '1.5px solid #E8D5B0', borderRadius: '20px', fontSize: '0.78rem', textTransform: 'none', color: 'var(--text-muted)', '&:hover': { borderColor: '#e3242b', color: '#e3242b' } }}
+									sx={{ border: '1.5px solid var(--bg-soft3)', borderRadius: '20px', fontSize: '0.78rem', textTransform: 'none', color: 'var(--text-muted)', '&:hover': { borderColor: '#e3242b', color: '#e3242b' } }}
 								>
 									{photos.length === 0 ? 'Add Photo' : 'Add 2nd Photo'}
 									<input type="file" accept="image/*" hidden onChange={handlePhotoChange} />
@@ -2665,7 +2669,7 @@ function OrderProgressTracker({ status }) {
 }
 
 // ─── Order Card ───────────────────────────────────────────────────────────────
-function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
+function OrderCard({ order, rated, onCancel, onEdit, onRate, onViewDetail }) {
 	const isCancelled = order.status === 'cancelled';
 	const isDelivered = ['delivered', 'received', 'completed'].includes(order.status);
 	const isPending   = order.status === 'pending';
@@ -2691,11 +2695,11 @@ function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
 		<Box
 			onClick={() => onViewDetail(order.id)}
 			sx={{
-				border: "1px solid #E8D5B0",
+				border: "1px solid var(--bg-soft3)",
 				borderRadius: 3,
 				p: 2.5,
 				mb: 2,
-				backgroundColor: isCancelled ? "#fff5f5" : "#fff",
+				backgroundColor: isCancelled ? "var(--bg-soft)" : "var(--bg-card)",
 				opacity: isCancelled ? 0.85 : 1,
 				transition: "box-shadow 0.2s, border-color 0.2s",
 				cursor: "pointer",
@@ -2744,7 +2748,7 @@ function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
 						label={typeLabel}
 						size="small"
 						sx={{
-							backgroundColor: "#FFF8F0",
+							backgroundColor: "var(--bg-soft)",
 							color: "#c9792e",
 							fontWeight: 600,
 							fontSize: "0.72rem",
@@ -2818,7 +2822,7 @@ function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
 					sx={{
 						display: "flex",
 						justifyContent: "space-between",
-						borderTop: "1px solid #E8D5B0",
+						borderTop: "1px solid var(--bg-soft3)",
 						pt: 1,
 						mt: 1,
 					}}
@@ -2941,19 +2945,25 @@ function OrderCard({ order, onCancel, onEdit, onRate, onViewDetail }) {
 						</Button>
 					</>
 				)}
-				{isDelivered && !order.rated && (
+				{isDelivered && (
 					<Button
 						size="small"
 						variant="contained"
 						onClick={() => onRate(order)}
+						disabled={rated || order.rated}
 						sx={{
 							borderRadius: 30,
-							backgroundColor: "#e3242b",
+							backgroundColor: (rated || order.rated) ? "#E8D5B0" : "#e3242b",
+							color: "#fff",
 							fontSize: "0.78rem",
-							"&:hover": { backgroundColor: "#b81b21" },
+							"&:hover": { backgroundColor: (rated || order.rated) ? "#E8D5B0" : "#b81b21" },
+							"&.Mui-disabled": {
+								backgroundColor: "#E8D5B0",
+								color: "#fff",
+							}
 						}}
 					>
-						Rate Order
+						{(rated || order.rated) ? "Rated" : "Rate Order"}
 					</Button>
 				)}
 			</Box>

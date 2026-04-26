@@ -43,6 +43,7 @@ import AddIcon from '@mui/icons-material/Add';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { updateOrderStatus, deleteOrder, addOrderNote, createAdminOrder, updateOrder } from '../../lib/adminService';
+import { TIERS } from '../../lib/loyaltyService';
 import { exportOrdersToCSV } from '../../lib/csvExport';
 import { sendConfirmationEmail } from '../../lib/emailService';
 
@@ -899,6 +900,24 @@ export default function OrdersSection({ orders, loading, onRefresh, filterType }
                             )}
                           </Box>
                         )}
+                        {o.tierKey && o.tierKey !== 'fresh' && (() => {
+                          const tierMeta = TIERS.find(t => t.key === o.tierKey);
+                          return (
+                            <Box sx={{ mb: 1.5, p: 1.5, borderRadius: 2, backgroundColor: '#FFFDE7', border: '1px solid #FFD54F' }}>
+                              <Typography sx={{ fontFamily, fontSize: '0.85rem', fontWeight: 700, color: '#B8860B', mb: 0.5 }}>
+                                ★ {o.tierLabel} Loyalty Perk
+                              </Typography>
+                              <Typography sx={{ fontFamily, fontSize: '0.82rem', color: '#B8860B' }}>
+                                Discount: -₦{(o.tierDiscount || 0).toLocaleString()} ({o.tierDiscountPct}% off subtotal)
+                              </Typography>
+                              {tierMeta?.perk && (
+                                <Typography sx={{ fontFamily, fontSize: '0.80rem', color: '#7B6000', mt: 0.5, fontStyle: 'italic' }}>
+                                  Perk: {tierMeta.perk}
+                                </Typography>
+                              )}
+                            </Box>
+                          );
+                        })()}
                         {o.extraCharge > 0 && (
                           <Box sx={{ mb: 1.5, p: 1.5, borderRadius: 2, backgroundColor: '#FFF3E0', border: '1px solid #FFCC02' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>

@@ -29,8 +29,8 @@ export default function MobileBottomNav() {
         right: 0,
         zIndex: 1200,
         height: 64,
-        backgroundColor: '#fff',
-        borderTop: '1px solid #E8D5B0',
+        backgroundColor: 'var(--bg-page)',
+        borderTop: '1px solid var(--bg-soft3)',
         boxShadow: '0 -4px 20px rgba(233,30,140,0.08)',
         alignItems: 'center',
         justifyContent: 'space-around',
@@ -53,7 +53,7 @@ export default function MobileBottomNav() {
               py: 1,
               borderRadius: 2,
               transition: 'all 0.15s',
-              '&:active': { backgroundColor: '#FFF8F0' },
+              '&:active': { backgroundColor: 'var(--bg-soft)' },
             }}
           >
             <Icon sx={{ fontSize: 24, color: active ? '#e3242b' : '#999', transition: 'color 0.15s' }} />

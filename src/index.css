@@ -29,17 +29,16 @@
   --accent-cyan-dark: #008B8B;
   --accent-cyan-hover: #009999;
 
-  /* Background is now a rich Tan/Beige instead of White or Black */
-  --bg-page:     #E8D5B0;   
-  --bg-soft:     #DBC19D;   
-  --bg-soft2:    #CEAF8B;   
-  --bg-soft3:    #C19D79;
-  --bg-muted:    #B48B67;
-  --bg-card:     #E1CDB0;
+  --bg-page:     #121212;
+  --bg-soft:     #1E1E1E;
+  --bg-soft2:    #252525;
+  --bg-soft3:    #2D2D2D;
+  --bg-muted:    #333333;
+  --bg-card:     #1E1E1E;
 
-  --text-main:   #000000;   /* Solid Black */
-  --text-muted:  #000000;   /* Solid Black for high-contrast details */
-  --text-dim:    #1A1A1A;   /* Near black for tertiary info */
+  --text-main:   #F5F5F5;
+  --text-muted:  #CCCCCC;
+  --text-dim:    #AAAAAA;
   --text-purple: #C9A84C;
 }
 

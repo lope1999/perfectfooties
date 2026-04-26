@@ -133,15 +133,30 @@ export default function CustomersSection({ users, loading }) {
       );
     }
     list = [...list].sort((a, b) => {
-      let aVal = a[orderBy] ?? 0;
-      let bVal = b[orderBy] ?? 0;
-      if (orderBy === 'displayName') {
+      let aVal = a[orderBy];
+      let bVal = b[orderBy];
+
+      // Handle Firestore Timestamps or Dates
+      const toMs = (val) => {
+        if (!val) return 0;
+        if (typeof val.toMillis === 'function') return val.toMillis();
+        if (val instanceof Date) return val.getTime();
+        if (typeof val === 'string') return new Date(val).getTime();
+        return val;
+      };
+
+      if (orderBy === 'createdAt' || orderBy === 'lastOrderDate') {
+        aVal = toMs(aVal);
+        bVal = toMs(bVal);
+      } else if (orderBy === 'displayName') {
         aVal = (a.displayName || '').toLowerCase();
         bVal = (b.displayName || '').toLowerCase();
         return orderDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+      } else {
+        aVal = aVal ?? 0;
+        bVal = bVal ?? 0;
       }
-      if (aVal instanceof Date) aVal = aVal.getTime();
-      if (bVal instanceof Date) bVal = bVal.getTime();
+      
       return orderDir === 'asc' ? aVal - bVal : bVal - aVal;
     });
     return list;
@@ -419,8 +434,35 @@ export default function CustomersSection({ users, loading }) {
                             </Typography>
                           </Box>
 
+                          {/* Contact Info (Pf updates) */}
+                          <Box
+                            sx={{
+                              p: 2,
+                              borderRadius: 2,
+                              backgroundColor: '#fff',
+                              border: '1px solid #E8D5B0',
+                              minWidth: 240,
+                              flex: 1,
+                            }}
+                          >
+                            <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '0.85rem', color: '#c9792e', mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <PeopleIcon sx={{ fontSize: '1rem' }} />
+                              Contact Details
+                            </Typography>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.8 }}>
+                              <Box sx={{ display: 'flex', gap: 1 }}>
+                                <Typography sx={{ fontFamily, fontSize: '0.72rem', color: '#999', width: 60 }}>Phone:</Typography>
+                                <Typography sx={{ fontFamily, fontSize: '0.78rem', fontWeight: 600 }}>{u.phone || 'Not provided'}</Typography>
+                              </Box>
+                              <Box sx={{ display: 'flex', gap: 1 }}>
+                                <Typography sx={{ fontFamily, fontSize: '0.72rem', color: '#999', width: 60 }}>Address:</Typography>
+                                <Typography sx={{ fontFamily, fontSize: '0.78rem', whiteSpace: 'pre-wrap' }}>{u.address || 'No address saved'}</Typography>
+                              </Box>
+                            </Box>
+                          </Box>
+
                           {/* Perk toggles */}
-                          <Box sx={{ flex: 1 }}>
+                          <Box sx={{ flex: 1, minWidth: 300 }}>
                             <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-purple)', mb: 1 }}>
                               Activate Perks
                             </Typography>

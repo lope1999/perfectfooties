@@ -32,11 +32,11 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { saveOrder } from '../lib/orderService';
+import { saveOrder, fetchOrders } from '../lib/orderService';
 import { decrementStockBatch } from '../lib/stockService';
 import { redeemGiftCard } from '../lib/giftCardService';
 import { saveShippingDetails, fetchShippingDetails } from '../lib/shippingService';
-import { validateReferralCode, applyReferral, getLoyaltyData, redeemLoyaltyPoints, REFERRAL_DISCOUNT, REDEMPTION_UNIT, REDEMPTION_VALUE, getPendingLoyaltyReward, clearPendingLoyaltyReward } from '../lib/loyaltyService';
+import { validateReferralCode, applyReferral, getLoyaltyData, redeemLoyaltyPoints, getCustomerTier, TIERS, REFERRAL_DISCOUNT, REDEMPTION_UNIT, REDEMPTION_VALUE, getPendingLoyaltyReward, clearPendingLoyaltyReward } from '../lib/loyaltyService';
 import { nigerianStates } from '../data/nigerianStates';
 import { COUNTRIES, COUNTRY_PHONE_CODES } from '../data/countries';
 import SignInPrompt from '../components/SignInPrompt';
@@ -99,7 +99,9 @@ export default function CheckoutPage() {
   const maxLoyaltyUnits = Math.floor(loyaltyBalance / REDEMPTION_UNIT);
   const loyaltyDiscount = Math.min(loyaltyUnits * REDEMPTION_VALUE, subtotal);
 
-  const tierPerkDiscount = 0;
+  const [userTier, setUserTier] = useState(null);
+  const tierDiscountPct = userTier?.discount || 0;
+  const tierPerkDiscount = tierDiscountPct > 0 ? Math.floor(subtotal * tierDiscountPct / 100) : 0;
 
   const finalTotal = Math.max(0, subtotal - giftCardDiscount - referralDiscount - loyaltyDiscount - tierPerkDiscount);
 
@@ -121,11 +123,13 @@ export default function CheckoutPage() {
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const [pendingShipping, setPendingShipping] = useState(null);
 
-  // Fetch loyalty balance and review count for logged-in user
+  // Fetch loyalty balance and user tier for logged-in user
   useEffect(() => {
 		if (!user) return;
-		getLoyaltyData(user.uid)
-			.then((d) => {
+		Promise.all([
+			getLoyaltyData(user.uid),
+			fetchOrders(user.uid),
+		]).then(([d, orders]) => {
 				const pts = d.loyaltyPoints || 0;
 				setLoyaltyBalance(pts);
 				if (!location.state?.presetLoyaltyUnits) {
@@ -135,6 +139,10 @@ export default function CheckoutPage() {
 							Math.min(pr.units, Math.floor(pts / REDEMPTION_UNIT)),
 						);
 				}
+				const completedCount = orders.filter(o =>
+					['received', 'completed', 'delivered'].includes(o.status)
+				).length;
+				setUserTier(getCustomerTier(completedCount));
 			})
 			.catch(() => {});
   }, [user]);
@@ -363,7 +371,7 @@ export default function CheckoutPage() {
 			totalLine += `\nLoyalty Points Applied: ${loyaltyUnits * REDEMPTION_UNIT} pts \u2014 Discount: ${formatNaira(loyaltyDiscount)}`;
 		}
 		if (tierPerkDiscount > 0) {
-			totalLine += `\nStar Client Perk (5% off press-ons): -${formatNaira(tierPerkDiscount)}`;
+			totalLine += `\n${userTier?.label} Perk (${tierDiscountPct}% loyalty discount): -${formatNaira(tierPerkDiscount)}`;
 		}
 		if (
 			giftCardDiscount > 0 ||
@@ -446,6 +454,7 @@ export default function CheckoutPage() {
 					name: g.name,
 					price: g.price,
 					quantity: g.quantity,
+					productId: g.itemId || g.productId, // Ensure we have a productId for reviews
 					selectedColor: g.selectedColor,
 					...(g.euSize && { euSize: g.euSize }),
 					...(g.footLength && { footLength: g.footLength }),
@@ -469,12 +478,14 @@ export default function CheckoutPage() {
 					name: p.name,
 					price: p.price,
 					quantity: p.quantity,
+					productId: p.productId, // Essential for order history reviews
 				})),
 				...pressOns.map((p) => ({
 					kind: "pressOn",
 					name: p.name,
 					price: p.price,
 					quantity: p.quantity || 1,
+					productId: p.productId, // Essential for order history reviews
 					...(p.nailShape && { nailShape: p.nailShape }),
 					...(p.nailBedSize && { nailBedSize: p.nailBedSize }),
 					...(p.presetSize && { presetSize: p.presetSize }),
@@ -515,6 +526,12 @@ export default function CheckoutPage() {
 			if (loyaltyUnits > 0) {
 				orderData.loyaltyPointsUsed = loyaltyUnits * REDEMPTION_UNIT;
 				orderData.loyaltyDiscount = loyaltyDiscount;
+			}
+			if (tierPerkDiscount > 0 && userTier) {
+				orderData.tierKey = userTier.key;
+				orderData.tierLabel = userTier.label;
+				orderData.tierDiscountPct = tierDiscountPct;
+				orderData.tierDiscount = tierPerkDiscount;
 			}
 			const docRef = await saveOrder(user.uid, orderData);
 			orderId = docRef?.id || null;
@@ -619,6 +636,9 @@ export default function CheckoutPage() {
 				giftCardDiscount,
 				referralDiscount,
 				loyaltyDiscount,
+				tierDiscount: tierPerkDiscount,
+				tierLabel: userTier?.label || '',
+				tierPerkText: TIERS.find(t => t.key === userTier?.key)?.perk || '',
 				shippingCost,
 			},
 		});
@@ -691,7 +711,7 @@ export default function CheckoutPage() {
 				pt: { xs: 10, md: 12 },
 				pb: { xs: 16, md: 10 },
 				minHeight: "100vh",
-				backgroundColor: "#FFF8F0",
+				backgroundColor: "var(--bg-soft)",
 			}}
 		>
 			<Container maxWidth="lg">
@@ -1669,8 +1689,8 @@ export default function CheckoutPage() {
 											gap: 0.5,
 										}}
 									>
-										<StarIcon sx={{ fontSize: "0.95rem" }} /> Star
-										Client — 5% off
+										<StarIcon sx={{ fontSize: "0.95rem" }} />
+										{userTier?.label} — {tierDiscountPct}% loyalty discount
 									</Typography>
 									<Typography
 										sx={{

@@ -59,12 +59,19 @@ const HOME_COLLECTIONS = [
 		description:
 			"Signature leather pieces with elevated craftsmanship, timeless form, and heirloom-level finish.",
 	},
+	// {
+	// 	id: "male-footwear",
+	// 	name: "Male Low Slides",
+	// 	coverImage: "images/products/maleshoe-1.jpeg",
+	// 	description:
+	// 		"Handcrafted leather footwear for men, built with precision, pride and durability finish.",
+	// },
 	{
-		id: "male-footwear",
-		name: "Male Handmade Footwear",
+		id: "mules",
+		name: "Mules Collection",
 		coverImage: "images/products/maleshoe-1.jpeg",
 		description:
-			"Handcrafted leather footwear for men, built with precision, pride and durability finish.",
+			"Our Mules are the definition of effortless sophistication. Designed with a backless structure for easy wear, they combine comfort with a polished, modern look.",
 	},
 ];
 

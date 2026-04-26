@@ -9,6 +9,7 @@ import {
 	query,
 	where,
 	orderBy,
+	limit,
 	serverTimestamp,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -122,6 +123,30 @@ export async function hasReviewedOrder(orderId) {
   const ref = collection(db, COLLECTION);
   const snap = await getDocs(query(ref, where('orderId', '==', orderId)));
   return !snap.empty;
+}
+
+export async function fetchTestimonialByOrderId(orderId) {
+  if (!orderId) return null;
+  const ref = collection(db, COLLECTION);
+  const snap = await getDocs(query(ref, where('orderId', '==', orderId), limit(1)));
+  if (snap.empty) return null;
+  return { id: snap.docs[0].id, ...snap.docs[0].data() };
+}
+
+// Fallback for old reviews saved before orderId was added to the payload.
+// Queries by email alone (no composite index needed) and filters client-side by productId.
+export async function fetchTestimonialByEmailAndProduct(email, productId) {
+  if (!email) return null;
+  const ref = collection(db, COLLECTION);
+  const snap = await getDocs(query(ref, where('email', '==', email)));
+  if (snap.empty) return null;
+  const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  // Prefer the one matching the product, otherwise return the most recent
+  const match = productId ? docs.find(d => d.productId === productId) : null;
+  if (match) return match;
+  // Sort by createdAt descending and return the most recent
+  docs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+  return docs[0] || null;
 }
 
 /**

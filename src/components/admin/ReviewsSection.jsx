@@ -135,9 +135,21 @@ function ReviewDialog({ open, onClose, onSaved, review, collections, productsByC
 
   const handlePhotoChange = (event) => {
     const files = Array.from(event.target.files || []);
-    const allowed = files.slice(0, 3 - form.photoURLs.length);
-    setPhotoFiles(allowed);
-    setPhotoPreviews(allowed.map((file) => URL.createObjectURL(file)));
+    const slots = 3 - form.photoURLs.length - photoFiles.length;
+    if (slots <= 0) return;
+    const allowed = files.slice(0, slots);
+    setPhotoFiles((prev) => [...prev, ...allowed]);
+    setPhotoPreviews((prev) => [...prev, ...allowed.map((f) => URL.createObjectURL(f))]);
+    event.target.value = '';
+  };
+
+  const removeNewPhoto = (idx) => {
+    setPhotoFiles((prev) => prev.filter((_, i) => i !== idx));
+    setPhotoPreviews((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeExistingPhoto = (idx) => {
+    setForm((f) => ({ ...f, photoURLs: f.photoURLs.filter((_, i) => i !== idx) }));
   };
 
   const uploadPhotos = async () => {
@@ -215,28 +227,18 @@ function ReviewDialog({ open, onClose, onSaved, review, collections, productsByC
 					sx={{ display: "grid", gap: 2, gridTemplateColumns: "1fr 1fr" }}
 				>
 					<TextField
-						variant="outlined"
 						label="Customer Name"
 						value={form.name}
 						onChange={setField("name")}
 						size="small"
 						fullWidth
-						InputLabelProps={{
-							shrink: true,
-							sx: { backgroundColor: "var(--bg-card)", px: 0.5 },
-						}}
 					/>
 					<TextField
-						variant="outlined"
 						label="Occupation / Role"
 						value={form.occupation}
 						onChange={setField("occupation")}
 						size="small"
 						fullWidth
-						InputLabelProps={{
-							shrink: true,
-							sx: { backgroundColor: "var(--bg-card)", px: 0.5 },
-						}}
 					/>
 				</Box>
 				<Box
@@ -371,20 +373,36 @@ function ReviewDialog({ open, onClose, onSaved, review, collections, productsByC
 				</Box>
 				<Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
 					{form.photoURLs.map((url, index) => (
-						<Avatar
-							key={`existing-${index}`}
-							src={url}
-							variant="rounded"
-							sx={{ width: 80, height: 80, border: "1px solid #E8D5B0" }}
-						/>
+						<Box key={`existing-${index}`} sx={{ position: 'relative' }}>
+							<Avatar
+								src={url}
+								variant="rounded"
+								sx={{ width: 80, height: 80, border: "1px solid #E8D5B0" }}
+							/>
+							<IconButton
+								size="small"
+								onClick={() => removeExistingPhoto(index)}
+								sx={{ position: 'absolute', top: -8, right: -8, backgroundColor: '#e3242b', color: '#fff', width: 20, height: 20, '&:hover': { backgroundColor: '#b71c1c' } }}
+							>
+								<span style={{ fontSize: 12, lineHeight: 1 }}>✕</span>
+							</IconButton>
+						</Box>
 					))}
 					{photoPreviews.map((src, index) => (
-						<Avatar
-							key={`preview-${index}`}
-							src={src}
-							variant="rounded"
-							sx={{ width: 80, height: 80, border: "1px dashed #ccc" }}
-						/>
+						<Box key={`preview-${index}`} sx={{ position: 'relative' }}>
+							<Avatar
+								src={src}
+								variant="rounded"
+								sx={{ width: 80, height: 80, border: "1px dashed #ccc" }}
+							/>
+							<IconButton
+								size="small"
+								onClick={() => removeNewPhoto(index)}
+								sx={{ position: 'absolute', top: -8, right: -8, backgroundColor: '#e3242b', color: '#fff', width: 20, height: 20, '&:hover': { backgroundColor: '#b71c1c' } }}
+							>
+								<span style={{ fontSize: 12, lineHeight: 1 }}>✕</span>
+							</IconButton>
+						</Box>
 					))}
 				</Box>
 				<FormControlLabel

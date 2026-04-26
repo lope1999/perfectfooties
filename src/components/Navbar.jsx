@@ -142,31 +142,17 @@ export default function Navbar() {
 							src="/images/logo.png"
 							alt="PerfectFooties"
 							sx={{
-								height: { xs: 45, md: 60 },
+								height: { xs: 50, md: 60 },
 								width: "auto",
 								objectFit: "contain",
 								display: "block",
-								// visually enlarge on large screens without increasing toolbar height
-								transform: { md: "scale(2.5)" },
+								// visually enlarge without increasing toolbar height
+								transform: { xs: "scale(1.8)", md: "scale(2.5)" },
 								transformOrigin: "left center",
 								// allow the image to overflow the toolbar area
-								WebkitTransform: { md: "scale(2.5)" },
+								WebkitTransform: { xs: "scale(1.8)", md: "scale(2.5)" },
 							}}
 						/>
-						<Typography
-							sx={{
-								fontFamily: '"Dancing Script", "Pacifico", cursive',
-								fontSize: { xs: "1.15rem", md: "1.3rem", lg: "1.5rem" },
-								fontWeight: 700,
-								color: "#e3242b",
-								lineHeight: 1,
-								letterSpacing: "0.02em",
-								userSelect: "none",
-								display: { xs: "inline", md: "none" },
-							}}
-						>
-							<Box component="span">PF</Box>
-						</Typography>
 					</Box>
 
 					{/* Center — Nav Buttons (desktop only) */}
@@ -289,7 +275,7 @@ export default function Navbar() {
 						<CloseIcon />
 					</IconButton>
 				</Box>
-				<Divider sx={{ borderColor: "#E8D5B0" }} />
+				<Divider sx={{ borderColor: "var(--bg-soft3)" }} />
 				{/* Account Section — shown first */}
 				<Box sx={{ px: 2, py: 1.5 }}>
 					{user ? (
@@ -325,7 +311,7 @@ export default function Navbar() {
 										{user.displayName}
 									</Typography>
 									<Typography
-										sx={{ fontSize: "0.75rem", color: "#777" }}
+										sx={{ fontSize: "0.75rem", color: isDark ? "#AAAAAA" : "#777" }}
 									>
 										{user.email}
 									</Typography>
@@ -339,7 +325,7 @@ export default function Navbar() {
 								sx={{
 									py: 1,
 									borderRadius: 1,
-									"&:hover": { backgroundColor: "#FFE8E8" },
+									"&:hover": { backgroundColor: isDark ? "#2A1515" : "#FFE8E8" },
 								}}
 							>
 								<ListItemText
@@ -364,7 +350,7 @@ export default function Navbar() {
 								sx={{
 									py: 1,
 									borderRadius: 1,
-									"&:hover": { backgroundColor: "#FFE8E8" },
+									"&:hover": { backgroundColor: isDark ? "#2A1515" : "#FFE8E8" },
 								}}
 							>
 								<ListItemText
@@ -372,7 +358,7 @@ export default function Navbar() {
 									primaryTypographyProps={{
 										fontFamily: '"Georgia", serif',
 										fontWeight: 600,
-										color: "#999",
+										color: isDark ? "#AAAAAA" : "#999",
 										fontSize: "0.9rem",
 									}}
 								/>
@@ -387,7 +373,7 @@ export default function Navbar() {
 							sx={{
 								py: 1.5,
 								borderRadius: 1,
-								"&:hover": { backgroundColor: "#FFE8E8" },
+								"&:hover": { backgroundColor: isDark ? "#2A1515" : "#FFE8E8" },
 							}}
 						>
 							<PersonOutlineIcon sx={{ color: "#e3242b", mr: 1 }} />
@@ -402,7 +388,7 @@ export default function Navbar() {
 						</ListItemButton>
 					)}
 				</Box>
-				<Divider sx={{ borderColor: "#E8D5B0", my: 1 }} />
+				<Divider sx={{ borderColor: "var(--bg-soft3)", my: 1 }} />
 				{/* Navigation Items */}
 				<List>
 					{navItems.map((item) => (
@@ -411,7 +397,7 @@ export default function Navbar() {
 							onClick={() => handleNavClick(item)}
 							sx={{
 								py: 1.5,
-								"&:hover": { backgroundColor: "#FFE8E8" },
+								"&:hover": { backgroundColor: isDark ? "#2A1515" : "#FFE8E8" },
 							}}
 						>
 							<ListItemText
@@ -431,7 +417,7 @@ export default function Navbar() {
 						}}
 						sx={{
 							py: 1.5,
-							"&:hover": { backgroundColor: "#FFE8E8" },
+							"&:hover": { backgroundColor: isDark ? "#2A1515" : "#FFE8E8" },
 						}}
 					>
 						<ListItemText
@@ -450,7 +436,7 @@ export default function Navbar() {
 						}}
 						sx={{
 							py: 1.5,
-							"&:hover": { backgroundColor: "#FFE8E8" },
+							"&:hover": { backgroundColor: isDark ? "#2A1515" : "#FFE8E8" },
 						}}
 					>
 						<ListItemText
@@ -470,7 +456,7 @@ export default function Navbar() {
 							}}
 							sx={{
 								py: 1.5,
-								"&:hover": { backgroundColor: "#FFE8E8" },
+								"&:hover": { backgroundColor: isDark ? "#2A1515" : "#FFE8E8" },
 							}}
 						>
 							<ListItemText
