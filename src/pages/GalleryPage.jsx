@@ -55,10 +55,11 @@ function GalleryCarousel({ images }) {
                 alt={img.caption || 'Gallery image'}
                 sx={{
                   width: '100%',
-                  height: { xs: 360, sm: 460, md: 540 },
-                  objectFit: 'cover',
+                  maxHeight: { xs: 500, sm: 620, md: 720 },
+                  objectFit: 'contain',
                   borderRadius: 3,
                   display: 'block',
+                  backgroundColor: '#f5f0ea',
                 }}
               />
               {img.caption && (
@@ -97,16 +98,19 @@ function GalleryCarousel({ images }) {
 export default function GalleryPage() {
   const [footwearImages, setFootwearImages] = useState([]);
   const [bagsImages, setBagsImages] = useState([]);
+  const [lifestyleImages, setLifestyleImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       fetchGalleryImages('footwear'),
       fetchGalleryImages('bags'),
+      fetchGalleryImages('lifestyle'),
     ])
-      .then(([footwear, bags]) => {
+      .then(([footwear, bags, lifestyle]) => {
         setFootwearImages(footwear);
         setBagsImages(bags);
+        setLifestyleImages(lifestyle);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -157,8 +161,32 @@ export default function GalleryPage() {
         </ScrollReveal>
       </Box>
 
-      {/* Footwear section */}
+      {/* Lifestyle section */}
       <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#fff' }}>
+        <Container maxWidth="md">
+          <ScrollReveal direction="up">
+            <Typography
+              variant="h4"
+              sx={{
+                fontFamily,
+                fontWeight: 700,
+                textAlign: 'center',
+                color: 'var(--text-purple)',
+                mb: 4,
+                fontSize: { xs: '1.4rem', sm: '1.8rem' },
+              }}
+            >
+              Lifestyle
+            </Typography>
+          </ScrollReveal>
+          <ScrollReveal direction="up" delay={0.15}>
+            <GalleryCarousel images={lifestyleImages} />
+          </ScrollReveal>
+        </Container>
+      </Box>
+
+      {/* Footwear section */}
+      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#FFF8F0' }}>
         <Container maxWidth="md">
           <ScrollReveal direction="up">
             <Typography
@@ -182,7 +210,7 @@ export default function GalleryPage() {
       </Box>
 
       {/* Bags & Accessories section */}
-      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#FFF8F0' }}>
+      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#fff' }}>
         <Container maxWidth="md">
           <ScrollReveal direction="up">
             <Typography

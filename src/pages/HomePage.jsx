@@ -69,7 +69,7 @@ const HOME_COLLECTIONS = [
 	{
 		id: "mules",
 		name: "Mules Collection",
-		coverImage: "images/products/maleshoe-1.jpeg",
+		coverImage: "images/products/muleshome.jpeg",
 		description:
 			"Our Mules are the definition of effortless sophistication. Designed with a backless structure for easy wear, they combine comfort with a polished, modern look.",
 	},
