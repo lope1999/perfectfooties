@@ -13,7 +13,7 @@ import { db } from './firebase';
 
 export const POINTS_PER_ORDER = 15;
 export const POINTS_PER_REFERRAL = 50;   // referrer bonus when their code is used
-export const REFERRAL_DISCOUNT = 1000;   // ₦1,000 off for the person using a referral code
+export const REFERRAL_DISCOUNT = 500;    // ₦500 off for the person using a referral code
 export const REDEMPTION_UNIT = 50;       // every 50 pts = ₦500 redeemable
 export const REDEMPTION_VALUE = 500;     // ₦ value per REDEMPTION_UNIT points
 // ── Customer Tiers (based on number of completed orders) ──────

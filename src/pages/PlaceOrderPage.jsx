@@ -1294,7 +1294,7 @@ export default function PlaceOrderPage() {
 									}}
 								>
 									{referralValid
-										? "₦1,000 off applied at checkout!"
+										? "₦500 off applied at checkout!"
 										: "Have a referral code?"}
 								</Typography>
 							</Box>
@@ -1525,7 +1525,7 @@ export default function PlaceOrderPage() {
 												color: "var(--text-muted)",
 											}}
 										>
-											units × ₦1,000 ={" "}
+											units × ₦500 ={" "}
 											<strong style={{ color: "#B8860B" }}>
 												-₦
 												{(

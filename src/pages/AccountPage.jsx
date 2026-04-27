@@ -415,7 +415,7 @@ export default function AccountPage() {
 	const maxRedeemableUnits = Math.floor(loyaltyPoints / REDEMPTION_UNIT);
 
 	const referralCode = myReferralCode || (user?.uid ? `FOOTIES-${user.uid.slice(0, 8).toUpperCase()}` : '');
-	const referralLink = `${window.location.origin}/?ref=${referralCode}`;
+	const referralLink = `${window.location.origin}/shop?ref=${referralCode}`;
 
 	// Extract phone/address from orders if not saved in profile
 	const phoneFromOrders = useMemo(() => {
@@ -1248,7 +1248,7 @@ export default function AccountPage() {
 											sx={{ fontSize: "0.72rem", color: "#777" }}
 										>
 											Share your code — everyone you refer gets
-											₦1,000 off
+											₦500 off
 										</Typography>
 									</Box>
 								</Box>
@@ -1375,7 +1375,7 @@ export default function AccountPage() {
 								fullWidth
 								onClick={() => {
 									const msg = encodeURIComponent(
-										`Hey! I shop at PerfectFooties for handmade leather goods — they're amazing! Use my code *${referralCode}* to get ₦1,000 off your first order: ${referralLink}`,
+										`Hey! I shop at PerfectFooties for handmade leather goods — they're amazing! Use my code *${referralCode}* to get ₦500 off your first order: ${referralLink}`,
 									);
 									window.open(
 										`https://api.whatsapp.com/send?text=${msg}`,

@@ -115,8 +115,8 @@ export default function CartPage() {
         showToast("You can't apply your own referral code.", 'warning');
       } else {
         setReferralValid(true);
-        setReferralMsg('\u20a61,000 off applied!');
-        showToast('Referral code applied! ₦1,000 discount added.', 'success');
+        setReferralMsg('\u20a6500 off applied!');
+        showToast('Referral code applied! ₦500 discount added.', 'success');
       }
     } catch {
       setReferralValid(false);
