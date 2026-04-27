@@ -27,7 +27,7 @@ import { awardPointsForOrder } from './loyaltyService';
 
 // ─── Constants ──────────────────────────────────────────
 
-const REVENUE_STATUSES = ['confirmed', 'received', 'completed'];
+const REVENUE_STATUSES = ['confirmed', 'received', 'delivered', 'shipped', 'shipping', 'completed'];
 const PRODUCTION_QUEUE_STATUSES = new Set(['confirmed', 'production', 'in-progress']);
 
 // ─── Orders ─────────────────────────────────────────────
