@@ -67,7 +67,7 @@ export default function ShopPage() {
 							sx={{ fontSize: "0.75rem !important" }}
 						/>
 					}
-					onClick={() => navigate("/")}
+					onClick={() => navigate(-1)}
 					sx={{
 						fontFamily: ff,
 						fontWeight: 600,
@@ -82,7 +82,7 @@ export default function ShopPage() {
 						"&:hover": { borderColor: "#e3242b", color: "#e3242b" },
 					}}
 				>
-					Home
+					Back
 				</Button>
 			</Box>
 

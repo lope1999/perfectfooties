@@ -21,7 +21,8 @@
       "Bash(git commit *)",
       "Bash(grep -E \"\\\\.js$|\\\\.json$\")",
       "Bash(grep -E \"\\\\.\\(jsx|js\\)$\")",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(xargs ls *)"
     ]
   }
 }
