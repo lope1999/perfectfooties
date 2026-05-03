@@ -28,7 +28,9 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import PeopleIcon from '@mui/icons-material/People';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
-import { computeDashboardStats, findLowStockProducts } from '../../lib/adminService';
+import { computeDashboardStats, REVENUE_STATUSES, getOrderValue } from '../../lib/adminService';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 
 const fontFamily = '"Georgia", serif';
 
@@ -146,86 +148,6 @@ function SectionHeader({ title, icon, onViewAll }) {
 }
 
 
-function LowStockCard({ product }) {
-	const { name, stock, categoryName, color } = product;
-  const severe = stock <= 2;
-  const maxStock = 5;
-  const progress = (stock / maxStock) * 100;
-
-  return (
-		<Paper sx={{ p: 2, mb: 1.5, borderRadius: 2 }}>
-			<Box
-				sx={{
-					display: "flex",
-					justifyContent: "space-between",
-					alignItems: "center",
-					mb: 1,
-				}}
-			>
-				<Typography
-					sx={{
-						fontFamily,
-						fontWeight: 600,
-						fontSize: "0.9rem",
-						minWidth: 0,
-					}}
-					noWrap
-				>
-					{name}
-				</Typography>
-				<Chip
-					label={`${stock} left`}
-					size="small"
-					sx={{
-						fontFamily,
-						fontSize: "0.75rem",
-						bgcolor: severe ? "#ffebee" : "#fff3e0",
-						color: severe ? "#d32f2f" : "#e65100",
-						fontWeight: 600,
-						flexShrink: 0,
-						ml: 1,
-					}}
-				/>
-			</Box>
-			<LinearProgress
-				variant="determinate"
-				value={progress}
-				sx={{
-					height: 6,
-					borderRadius: 3,
-					bgcolor: severe ? "#ffcdd2" : "#ffe0b2",
-					"& .MuiLinearProgress-bar": {
-						bgcolor: severe ? "#d32f2f" : "#e65100",
-						borderRadius: 3,
-					},
-					mb: 0.5,
-				}}
-			/>
-			<Typography sx={{ fontFamily, fontSize: "0.75rem", color: "#999" }}>
-				{categoryName}
-				{color ? ` · ${color}` : ""}
-			</Typography>
-			<Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
-				<Button
-					size="small"
-					onClick={() =>
-						window.dispatchEvent(
-							new CustomEvent("admin:navigate", {
-								detail: {
-									section: "collections",
-									productId: product.productId,
-								},
-							}),
-						)
-					}
-					sx={{ fontSize: "0.72rem", textTransform: "none" }}
-				>
-					Manage
-				</Button>
-			</Box>
-		</Paper>
-  );
-}
 
 function MiniBarChart({ title, data, color, prefix = '' }) {
   const max = Math.max(...data.map((d) => d.value), 1);
@@ -331,88 +253,102 @@ function QuickActionsPanel({ onNavigate }) {
   );
 }
 
-function LowStockAlertBanner({ items, onNavigate }) {
-  const [dismissed, setDismissed] = useState(false);
-  if (dismissed || items.length === 0) return null;
+
+/* ─── Production Queue Mini ─── */
+
+const PRODUCTION_DAYS = 14;
+const QUEUE_STATUSES = new Set(['confirmed', 'production', 'in-progress']);
+
+function getDaysRemaining(order) {
+  const start = order.depositPaidAt?.toDate?.() || order.createdAt?.toDate?.() || new Date(order.createdAt || Date.now());
+  const deadline = new Date(start);
+  deadline.setDate(deadline.getDate() + PRODUCTION_DAYS);
+  return Math.ceil((deadline - new Date()) / (1000 * 60 * 60 * 24));
+}
+
+function getUrgency(days) {
+  if (days < 0) return 'overdue';
+  if (days <= 2) return 'due-soon';
+  return 'on-track';
+}
+
+const urgencyConfig = {
+  'on-track': { label: 'On Track',  color: '#10b981', bg: '#ecfdf5', border: '#a7f3d0' },
+  'due-soon': { label: 'Due Soon',  color: '#f59e0b', bg: '#fffbeb', border: '#fde68a' },
+  'overdue':  { label: 'Overdue',   color: '#ef4444', bg: '#fff5f5', border: '#fca5a5' },
+};
+
+function ProductionQueueMini({ orders: queueOrders, onNavigate }) {
   return (
-		<Box
-			sx={{
-				mb: 2,
-				p: 2,
-				borderRadius: 2,
-				backgroundColor: "#fff3e0",
-				border: "1.5px solid #fb8c00",
-				display: "flex",
-				alignItems: "flex-start",
-				gap: 1.5,
-			}}
-		>
-			<WarningAmberIcon sx={{ color: "#e65100", mt: 0.3, flexShrink: 0 }} />
-			<Box sx={{ flex: 1, minWidth: 0 }}>
-				<Typography
-					sx={{
-						fontFamily,
-						fontWeight: 700,
-						fontSize: "0.92rem",
-						color: "#e65100",
-						mb: 0.5,
-					}}
-				>
-					Low Stock Alert — {items.length} product
-					{items.length !== 1 ? "s" : ""} running low
-				</Typography>
-				<Typography
-					sx={{
-						fontFamily,
-						fontSize: "0.8rem",
-						color: "var(--text-muted)",
-					}}
-				>
-					{items
-						.slice(0, 3)
-						.map((p) => `${p.name} (${p.stock} left)`)
-						.join(" · ")}
-					{items.length > 3 ? ` · +${items.length - 3} more` : ""}
-				</Typography>
-			</Box>
-			<Box
-				sx={{
-					display: "flex",
-					gap: 1,
-					alignItems: "center",
-					flexShrink: 0,
-				}}
-			>
-				<Button
-					size="small"
-					onClick={() => onNavigate && onNavigate("production")}
-					sx={{
-						fontFamily,
-						textTransform: "none",
-						color: "#e65100",
-						fontWeight: 600,
-						fontSize: "0.78rem",
-						px: 1,
-					}}
-				>
-					Manage
-				</Button>
-				<Button
-					size="small"
-					onClick={() => setDismissed(true)}
-					sx={{
-						fontFamily,
-						textTransform: "none",
-						color: "#999",
-						fontSize: "0.78rem",
-						px: 1,
-						minWidth: 0,
-					}}
-				>
-					Dismiss
-				</Button>
-			</Box>
-		</Box>
+    <Box sx={{ mt: 2 }}>
+      <SectionHeader
+        title="Production Queue"
+        icon={<PrecisionManufacturingIcon sx={{ color: '#e3242b' }} />}
+        onViewAll={onNavigate ? () => onNavigate('production') : undefined}
+      />
+      {queueOrders.length === 0 ? (
+        <Paper sx={{ p: 2.5, borderRadius: 2, textAlign: 'center' }}>
+          <CheckCircleOutlineIcon sx={{ fontSize: 28, color: '#10b981', mb: 0.5 }} />
+          <Typography sx={{ fontFamily, color: '#10b981', fontWeight: 700, fontSize: '0.88rem' }}>
+            Queue is clear
+          </Typography>
+          <Typography sx={{ fontFamily, color: '#999', fontSize: '0.8rem' }}>
+            No confirmed or in-production orders.
+          </Typography>
+        </Paper>
+      ) : (
+        queueOrders.map((order) => {
+          const daysLeft = getDaysRemaining(order);
+          const urgency = getUrgency(daysLeft);
+          const cfg = urgencyConfig[urgency];
+          const progressPct = Math.max(0, Math.min(100, ((PRODUCTION_DAYS - daysLeft) / PRODUCTION_DAYS) * 100));
+          const displayStatus = order.status === 'confirmed' ? 'Confirmed' : 'In Production';
+          const itemName = order.items?.[0]?.name || order.customerName || 'Order';
+          return (
+            <Paper
+              key={order.id}
+              sx={{ mb: 1.5, p: 2, borderRadius: 2, border: `1px solid ${cfg.border}`, backgroundColor: cfg.bg }}
+            >
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 0.75 }}>
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                  <Typography sx={{ fontFamily, fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-main)', lineHeight: 1.2 }}>
+                    {order.customerName || 'Unknown'}
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.72rem', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    #{order.id.slice(0, 8)} · {itemName}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 0.5, ml: 1, flexShrink: 0 }}>
+                  <Chip
+                    label={displayStatus}
+                    size="small"
+                    sx={{ fontSize: '0.68rem', fontWeight: 700, backgroundColor: order.status === 'confirmed' ? '#dbeafe' : '#ede9fe', color: order.status === 'confirmed' ? '#1d4ed8' : '#6d28d9' }}
+                  />
+                  <Chip
+                    label={cfg.label}
+                    size="small"
+                    sx={{ fontSize: '0.68rem', fontWeight: 700, backgroundColor: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}
+                  />
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.4 }}>
+                <Typography sx={{ fontSize: '0.7rem', color: '#666' }}>Production window</Typography>
+                <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: cfg.color }}>
+                  {daysLeft < 0 ? `${Math.abs(daysLeft)}d overdue` : daysLeft === 0 ? 'Due today' : `${daysLeft}d left`}
+                </Typography>
+              </Box>
+              <Tooltip title={`${Math.round(progressPct)}% of 14-day window used`}>
+                <LinearProgress
+                  variant="determinate"
+                  value={progressPct}
+                  sx={{ height: 5, borderRadius: 3, backgroundColor: '#e5e7eb', '& .MuiLinearProgress-bar': { backgroundColor: cfg.color, borderRadius: 3 } }}
+                />
+              </Tooltip>
+            </Paper>
+          );
+        })
+      )}
+    </Box>
   );
 }
 
@@ -430,15 +366,10 @@ const statusColor = {
 
 export default function DashboardSection({
   orders,
-  pressOnCategories,
-  retailCategories,
   customerCount,
   loading,
   onNavigate,
 }) {
-  const getOrderValue = (o) =>
-		(o.total ?? o.finalTotal ?? 0) + (o.extraCharge || 0);
-
   const chartData = useMemo(() => {
     if (!orders.length) return { ordersData: [], revenueData: [], monthlyData: [] };
 
@@ -455,16 +386,14 @@ export default function DashboardSection({
       });
     }
 
-    const REVENUE_STATUSES = ['confirmed', 'received', 'completed'];
     orders.forEach((o) => {
       const created = o.createdAt?.toDate ? o.createdAt.toDate() : null;
       if (!created) return;
       const key = created.toISOString().split('T')[0];
       const day = days.find((d) => d.date === key);
       if (day) {
-        day.orders += 1;
-        if (REVENUE_STATUSES.includes(o.status))
-				day.revenue += getOrderValue(o);
+        if (o.status !== 'cancelled') day.orders += 1;
+        if (REVENUE_STATUSES.includes(o.status)) day.revenue += getOrderValue(o);
       }
     });
 
@@ -486,10 +415,9 @@ export default function DashboardSection({
       if (!created) return;
       const mo = months.find((m) => m.year === created.getFullYear() && m.month === created.getMonth());
       if (mo) {
-			mo.orders += 1;
-			if (REVENUE_STATUSES.includes(o.status))
-				mo.revenue += getOrderValue(o);
-		}
+        if (o.status !== 'cancelled') mo.orders += 1;
+        if (REVENUE_STATUSES.includes(o.status)) mo.revenue += getOrderValue(o);
+      }
     });
 
     return {
@@ -527,9 +455,18 @@ export default function DashboardSection({
 
   const stats = computeDashboardStats(orders);
   const productOrders = orders.filter((o) => o.type !== 'service');
-  const allCategories = [...pressOnCategories, ...retailCategories];
-  const lowStock = findLowStockProducts(allCategories).sort((a, b) => a.stock - b.stock);
   const recentOrders = orders.slice(0, 3);
+
+  const productionQueue = orders
+    .filter((o) => QUEUE_STATUSES.has(o.status))
+    .sort((a, b) => {
+      const urgencyOrder = ['overdue', 'due-soon', 'on-track'];
+      const ua = getUrgency(getDaysRemaining(a));
+      const ub = getUrgency(getDaysRemaining(b));
+      const diff = urgencyOrder.indexOf(ua) - urgencyOrder.indexOf(ub);
+      return diff !== 0 ? diff : getDaysRemaining(a) - getDaysRemaining(b);
+    })
+    .slice(0, 5);
 
   const statCards = [
 		{
@@ -572,10 +509,6 @@ export default function DashboardSection({
   return (
 		<Box>
 			<GreetingBanner />
-			<LowStockAlertBanner
-				items={lowStock.filter((p) => p.stock <= 2)}
-				onNavigate={onNavigate}
-			/>
 
 			{/* Stat Cards */}
 			<Grid container spacing={2} sx={{ mb: 3 }}>
@@ -857,40 +790,10 @@ export default function DashboardSection({
 					</TableContainer>
 				</Grid>
 
-				{/* Right column: Quick Actions + Low Stock */}
+				{/* Right column: Quick Actions + Production Queue */}
 				<Grid item xs={12} md={4}>
 					<QuickActionsPanel onNavigate={onNavigate || (() => {})} />
-
-					<Box sx={{ mt: 2 }}>
-						<SectionHeader
-							title="Low Stock"
-							icon={<WarningAmberIcon sx={{ color: "#e65100" }} />}
-							onViewAll={
-								onNavigate ? () => onNavigate("production") : undefined
-							}
-						/>
-						{lowStock.length > 0 ? (
-							lowStock
-								.slice(0, 5)
-								.map((p, i) => (
-									<LowStockCard key={`${p.name}-${i}`} product={p} />
-								))
-						) : (
-							<Paper
-								sx={{ p: 2.5, borderRadius: 2, textAlign: "center" }}
-							>
-								<Typography
-									sx={{
-										fontFamily,
-										color: "#999",
-										fontSize: "0.9rem",
-									}}
-								>
-									All stock levels are healthy
-								</Typography>
-							</Paper>
-						)}
-					</Box>
+					<ProductionQueueMini orders={productionQueue} onNavigate={onNavigate} />
 				</Grid>
 			</Grid>
 		</Box>
