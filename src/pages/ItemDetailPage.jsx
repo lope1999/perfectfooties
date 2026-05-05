@@ -28,6 +28,8 @@ import { fetchTestimonialsByProductId, fetchTestimonialsByCollectionId } from '.
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { getActiveItemPromo, applyPromoToPrice, formatPromoLabel } from '../lib/promoUtils';
+import ImageLightbox from '../components/ImageLightbox';
+import RatingBreakdown from '../components/RatingBreakdown';
 
 const ff = '"Georgia", serif';
 
@@ -225,6 +227,7 @@ export default function ItemDetailPage() {
   const [careOpen, setCareOpen] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [lightbox, setLightbox] = useState({ open: false, images: [], index: 0 });
 
   const requiresLength =
 		item?.requiresLength === true || col?.requiresLength === true;
@@ -375,6 +378,7 @@ export default function ItemDetailPage() {
   };
 
   return (
+		<>
 		<Box sx={{ pt: 12, pb: { xs: 12, md: 8 } }}>
 			<SizeGuideDialog
 				open={sizeGuideOpen}
@@ -1495,72 +1499,30 @@ export default function ItemDetailPage() {
 						</Typography>
 					) : (
 						<>
-							<Box
-								sx={{
-									display: "flex",
-									flexDirection: { xs: "column", sm: "row" },
-									alignItems: { xs: "flex-start", sm: "center" },
-									justifyContent: "space-between",
-									gap: 2,
-									mb: 3,
-								}}
-							>
-								<Box>
-									<Typography
-										sx={{
-											fontFamily: ff,
-											fontWeight: 700,
-											fontSize: "1rem",
-										}}
-									>
-										{reviewCount} review{reviewCount === 1 ? "" : "s"}
-									</Typography>
-									<Box
-										sx={{
-											display: "flex",
-											alignItems: "center",
-											gap: 1,
-											mt: 0.5,
-										}}
-									>
-										<Rating
-											value={averageRating}
-											precision={0.5}
-											readOnly
-											size="small"
-										/>
-										<Typography
+							<RatingBreakdown reviews={reviews} />
+							{reviewPhotos.length > 0 && (
+								<Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
+									{reviewPhotos.map((url, index) => (
+										<Box
+											key={index}
+											component="img"
+											src={url}
+											alt={`Customer photo ${index + 1}`}
+											onClick={() => setLightbox({ open: true, images: reviewPhotos, index })}
 											sx={{
-												color: "var(--text-muted)",
-												fontSize: "0.9rem",
+												width: 92,
+												height: 92,
+												objectFit: "cover",
+												borderRadius: 2,
+												border: "1px solid #E8D5B0",
+												cursor: 'pointer',
+												transition: 'transform 0.15s',
+												'&:hover': { transform: 'scale(1.04)' },
 											}}
-										>
-											{averageRating.toFixed(1)} average rating
-										</Typography>
-									</Box>
+										/>
+									))}
 								</Box>
-								{reviewPhotos.length > 0 && (
-									<Box
-										sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}
-									>
-										{reviewPhotos.map((url, index) => (
-											<Box
-												key={index}
-												component="img"
-												src={url}
-												alt={`Customer photo ${index + 1}`}
-												sx={{
-													width: 92,
-													height: 92,
-													objectFit: "cover",
-													borderRadius: 2,
-													border: "1px solid #E8D5B0",
-												}}
-											/>
-										))}
-									</Box>
-								)}
-							</Box>
+							)}
 
 							<Box sx={{ display: "grid", gap: 3 }}>
 								{reviews.map((review) => (
@@ -1646,12 +1608,16 @@ export default function ItemDetailPage() {
 														component="img"
 														src={url}
 														alt={`Review photo ${index + 1}`}
+														onClick={() => setLightbox({ open: true, images: review.photoURLs, index })}
 														sx={{
 															width: "100%",
 															height: 160,
 															objectFit: "cover",
 															borderRadius: 2,
 															border: "1px solid #E8D5B0",
+															cursor: 'pointer',
+															transition: 'transform 0.15s',
+															'&:hover': { transform: 'scale(1.02)' },
 														}}
 													/>
 												))}
@@ -1665,5 +1631,12 @@ export default function ItemDetailPage() {
 				</Box>
 			</Container>
 		</Box>
+		<ImageLightbox
+			open={lightbox.open}
+			onClose={() => setLightbox((s) => ({ ...s, open: false }))}
+			images={lightbox.images}
+			initialIndex={lightbox.index}
+		/>
+		</>
   );
 }

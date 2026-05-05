@@ -23,6 +23,7 @@ import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import ScrollReveal from '../components/ScrollReveal';
+import ImageLightbox from '../components/ImageLightbox';
 import ScrollToTopFab from '../components/ScrollToTopFab';
 import { testimonials as staticTestimonials } from '../data/testimonials';
 import { fetchTestimonials } from '../lib/testimonialService';
@@ -127,6 +128,7 @@ const swiperDotStyles = {
 export default function TestimonialsPage() {
 	const [groups, setGroups] = useState(groupByName(staticTestimonials));
 	const [selectedGroup, setSelectedGroup] = useState(null);
+	const [lightbox, setLightbox] = useState({ open: false, images: [], index: 0 });
 
 	useEffect(() => {
 		fetchTestimonials()
@@ -268,7 +270,8 @@ export default function TestimonialsPage() {
 															<Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
 																{featured.reviews[0].photoURLs.map((url, i) => (
 																	<Box key={i} component="img" src={url} alt="Review photo"
-																		sx={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0' }} />
+																		onClick={() => setLightbox({ open: true, images: featured.reviews[0].photoURLs, index: i })}
+																		sx={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0', cursor: 'pointer', transition: 'transform 0.15s', '&:hover': { transform: 'scale(1.04)' } }} />
 																))}
 															</Box>
 														)}
@@ -294,7 +297,8 @@ export default function TestimonialsPage() {
 											<Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
 												{rev.photoURLs.map((url, pi) => (
 													<Box key={pi} component="img" src={url} alt="Review photo"
-														sx={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0' }} />
+														onClick={() => setLightbox({ open: true, images: rev.photoURLs, index: pi })}
+														sx={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0', cursor: 'pointer', transition: 'transform 0.15s', '&:hover': { transform: 'scale(1.04)' } }} />
 												))}
 											</Box>
 										)}
@@ -502,7 +506,8 @@ export default function TestimonialsPage() {
 												<Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
 													{group.reviews[0].photoURLs.map((url, pi) => (
 														<Box key={pi} component="img" src={url} alt="Review photo"
-															sx={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0' }} />
+															onClick={() => setLightbox({ open: true, images: group.reviews[0].photoURLs, index: pi })}
+															sx={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0', cursor: 'pointer', transition: 'transform 0.15s', '&:hover': { transform: 'scale(1.04)' } }} />
 													))}
 												</Box>
 											)}
@@ -556,7 +561,8 @@ export default function TestimonialsPage() {
 											<Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
 												{rev.photoURLs.map((url, pi) => (
 													<Box key={pi} component="img" src={url} alt="Review photo"
-														sx={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0' }} />
+														onClick={() => setLightbox({ open: true, images: rev.photoURLs, index: pi })}
+														sx={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0', cursor: 'pointer', transition: 'transform 0.15s', '&:hover': { transform: 'scale(1.04)' } }} />
 												))}
 											</Box>
 										)}
@@ -599,13 +605,20 @@ export default function TestimonialsPage() {
 			<ReviewDetailModal
 				group={selectedGroup}
 				onClose={() => setSelectedGroup(null)}
+				onOpenLightbox={(images, index) => setLightbox({ open: true, images, index })}
+			/>
+			<ImageLightbox
+				open={lightbox.open}
+				onClose={() => setLightbox((s) => ({ ...s, open: false }))}
+				images={lightbox.images}
+				initialIndex={lightbox.index}
 			/>
 			<ScrollToTopFab />
 		</Box>
 	);
 }
 
-function ReviewDetailModal({ group, onClose }) {
+function ReviewDetailModal({ group, onClose, onOpenLightbox }) {
 	if (!group) return null;
 	const tier = getClientTier(group.reviews.length);
 	return (
@@ -784,6 +797,7 @@ function ReviewDetailModal({ group, onClose }) {
 							<Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
 								{rev.photoURLs.map((url, pi) => (
 									<Box key={pi} component="img" src={url} alt="Review photo"
+										onClick={() => onOpenLightbox(rev.photoURLs, pi)}
 										sx={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 2, border: '1px solid #E8D5B0', cursor: 'pointer' }} />
 								))}
 							</Box>

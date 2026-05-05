@@ -28,6 +28,8 @@ import { getCollection, fetchItems } from '../lib/collectionService';
 import { fetchTestimonialsByCollectionId } from "../lib/testimonialService";
 import { useWishlist } from '../context/WishlistContext';
 import { getActivePromo, getActiveItemPromo, applyPromoToPrice, formatPromoLabel } from '../lib/promoUtils';
+import ImageLightbox from '../components/ImageLightbox';
+import RatingBreakdown from '../components/RatingBreakdown';
 
 const ff = '"Georgia", serif';
 
@@ -45,6 +47,7 @@ export default function CollectionPage() {
   const [items, setItems] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lightbox, setLightbox] = useState({ open: false, images: [], index: 0 });
 
   useEffect(() => {
     let active = true;
@@ -83,6 +86,7 @@ export default function CollectionPage() {
   }
 
   return (
+		<>
 		<Box sx={{ pt: 12, pb: { xs: 12, md: 8 } }}>
 			{/* Breadcrumb */}
 			<Box
@@ -272,68 +276,31 @@ export default function CollectionPage() {
 							{reviews.length} review{reviews.length === 1 ? "" : "s"}{" "}
 							for this collection.
 						</Typography>
-						<Box
-							sx={{
-								display: "flex",
-								alignItems: "center",
-								gap: 2,
-								flexWrap: "wrap",
-							}}
-						>
-							<Rating
-								value={
-									reviews.reduce(
-										(sum, r) => sum + (Number(r.rating) || 0),
-										0,
-									) / reviews.length
-								}
-								readOnly
-							/>
-							<Typography
-								sx={{
-									fontFamily: ff,
-									fontWeight: 700,
-									color: "var(--text-main)",
-								}}
-							>
-								{(
-									reviews.reduce(
-										(sum, r) => sum + (Number(r.rating) || 0),
-										0,
-									) / reviews.length || 0
-								).toFixed(1)}{" "}
-								/ 5
-							</Typography>
-						</Box>
-						{reviews.some(
-							(review) => (review.photoURLs || []).length > 0,
-						) && (
-							<Box
-								sx={{
-									display: "flex",
-									gap: 1,
-									flexWrap: "wrap",
-									mt: 2,
-								}}
-							>
-								{reviews
-									.flatMap((review) => review.photoURLs || [])
-									.slice(0, 4)
-									.map((url, index) => (
+						<RatingBreakdown reviews={reviews} />
+						{reviews.some((review) => (review.photoURLs || []).length > 0) && (
+							<Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
+								{(() => {
+									const allPhotos = reviews.flatMap((r) => r.photoURLs || []);
+									return allPhotos.slice(0, 4).map((url, index) => (
 										<Box
 											key={index}
 											component="img"
 											src={url}
 											alt="Review photo"
+											onClick={() => setLightbox({ open: true, images: allPhotos, index })}
 											sx={{
 												width: 96,
 												height: 96,
 												objectFit: "cover",
 												borderRadius: 2,
 												border: "1px solid #E8D5B0",
+												cursor: 'pointer',
+												transition: 'transform 0.15s',
+												'&:hover': { transform: 'scale(1.04)' },
 											}}
 										/>
-									))}
+									));
+								})()}
 							</Box>
 						)}
 						<Box sx={{ display: "grid", gap: 2, mt: 3 }}>
@@ -416,12 +383,16 @@ export default function CollectionPage() {
 														component="img"
 														src={url}
 														alt={`Review photo ${pi + 1}`}
+														onClick={() => setLightbox({ open: true, images: review.photoURLs, index: pi })}
 														sx={{
 															width: 88,
 															height: 88,
 															objectFit: "cover",
 															borderRadius: 2,
 															border: "1px solid #E8D5B0",
+															cursor: 'pointer',
+															transition: 'transform 0.15s',
+															'&:hover': { transform: 'scale(1.04)' },
 														}}
 													/>
 												))}
@@ -733,5 +704,12 @@ export default function CollectionPage() {
 				</Grid>
 			</Container>
 		</Box>
+		<ImageLightbox
+			open={lightbox.open}
+			onClose={() => setLightbox((s) => ({ ...s, open: false }))}
+			images={lightbox.images}
+			initialIndex={lightbox.index}
+		/>
+		</>
   );
 }
