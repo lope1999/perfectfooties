@@ -137,7 +137,7 @@ export default function CartPage() {
 				pt: { xs: 10, md: 12 },
 				pb: { xs: 22, md: 16 },
 				minHeight: "100vh",
-				backgroundColor: "#FFF8F0",
+				backgroundColor: "var(--bg-page)",
 			}}
 		>
 			<Container maxWidth="md">
@@ -210,7 +210,7 @@ export default function CartPage() {
 											mb: 1.5,
 											borderRadius: 2,
 											border: "1px solid #E8D5B0",
-											backgroundColor: "#fff",
+											backgroundColor: "var(--bg-card)",
 										}}
 									>
 										{/* Thumbnail */}
@@ -420,7 +420,7 @@ export default function CartPage() {
 								mb: 3,
 								p: 3,
 								borderRadius: 3,
-								backgroundColor: "#fff",
+								backgroundColor: "var(--bg-card)",
 								border: "1px solid #E8D5B0",
 							}}
 						>
@@ -831,7 +831,7 @@ export default function CartPage() {
 										overflow: "hidden",
 										cursor: "pointer",
 										flexShrink: 0,
-										backgroundColor: "#fff",
+										backgroundColor: "var(--bg-card)",
 										transition: "all 0.2s",
 										"&:hover": {
 											borderColor: "#e3242b",
@@ -856,7 +856,7 @@ export default function CartPage() {
 											sx={{
 												width: "100%",
 												height: 95,
-												backgroundColor: "#FFF8F0",
+												backgroundColor: "var(--bg-soft)",
 												display: "flex",
 												alignItems: "center",
 												justifyContent: "center",

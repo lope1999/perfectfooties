@@ -46,7 +46,7 @@ export default function CalendarWidget({ selectedDate, onDateChange, selectedTim
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
         <Box onClick={() => canPrev() && prevMonth()} sx={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: canPrev() ? 'pointer' : 'default', color: canPrev() ? '#e3242b' : '#ccc', fontSize: '1.3rem', fontWeight: 700, userSelect: 'none', '&:hover': canPrev() ? { backgroundColor: '#FFF8F0' } : {} }}>‹</Box>
         <Typography sx={{ fontFamily: '"Georgia", serif', fontWeight: 700, color: 'var(--text-purple)', fontSize: '1rem' }}>{CALENDAR_MONTHS[viewMonth]} {viewYear}</Typography>
-        <Box onClick={nextMonth} sx={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer', color: '#e3242b', fontSize: '1.3rem', fontWeight: 700, userSelect: 'none', '&:hover': { backgroundColor: '#FFF8F0' } }}>›</Box>
+        <Box onClick={nextMonth} sx={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer', color: '#e3242b', fontSize: '1.3rem', fontWeight: 700, userSelect: 'none', '&:hover': { backgroundColor: 'var(--bg-soft)' } }}>›</Box>
       </Box>
 
       {/* Day headers */}
@@ -64,7 +64,7 @@ export default function CalendarWidget({ selectedDate, onDateChange, selectedTim
           const selectable = isSelectable(d);
           const weekend = isWeekendDay(d);
           return (
-            <Box key={d} onClick={() => handleDay(d)} sx={{ aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: selectable ? 'pointer' : 'default', backgroundColor: sel ? '#e3242b' : 'transparent', color: sel ? '#fff' : selectable ? '#333' : '#ccc', fontWeight: sel ? 700 : (weekend && selectable) ? 600 : 400, fontSize: '0.85rem', transition: 'all 0.15s', '&:hover': selectable ? { backgroundColor: sel ? '#b81b21' : '#FFF8F0', color: sel ? '#fff' : '#e3242b' } : {} }}>
+            <Box key={d} onClick={() => handleDay(d)} sx={{ aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: selectable ? 'pointer' : 'default', backgroundColor: sel ? '#e3242b' : 'transparent', color: sel ? '#fff' : selectable ? '#333' : '#ccc', fontWeight: sel ? 700 : (weekend && selectable) ? 600 : 400, fontSize: '0.85rem', transition: 'all 0.15s', '&:hover': selectable ? { backgroundColor: sel ? '#b81b21' : 'var(--bg-soft)', color: sel ? '#fff' : '#e3242b' } : {} }}>
               {d}
             </Box>
           );
@@ -99,7 +99,7 @@ export default function CalendarWidget({ selectedDate, onDateChange, selectedTim
                     const booked = bookedSlots.includes(slot);
                     const picked = selectedTime === slot;
                     return (
-                      <Box key={slot} onClick={() => !booked && onTimeChange(slot)} sx={{ px: 2, py: 0.8, borderRadius: '20px', border: picked ? '2px solid #e3242b' : booked ? '1.5px solid #ddd' : '1.5px solid #E8D5B0', backgroundColor: picked ? '#e3242b' : booked ? '#f9f9f9' : '#fff', color: picked ? '#fff' : booked ? '#bbb' : '#333', cursor: booked ? 'not-allowed' : 'pointer', fontSize: '0.82rem', fontWeight: picked ? 700 : 500, textDecoration: booked ? 'line-through' : 'none', transition: 'all 0.15s', userSelect: 'none', '&:hover': !booked ? { borderColor: '#e3242b', color: picked ? '#fff' : '#e3242b' } : {} }}>
+                      <Box key={slot} onClick={() => !booked && onTimeChange(slot)} sx={{ px: 2, py: 0.8, borderRadius: '20px', border: picked ? '2px solid #e3242b' : booked ? '1.5px solid #ddd' : '1.5px solid #E8D5B0', backgroundColor: picked ? '#e3242b' : booked ? 'var(--bg-soft)' : 'var(--bg-card)', color: picked ? '#fff' : booked ? '#bbb' : '#333', cursor: booked ? 'not-allowed' : 'pointer', fontSize: '0.82rem', fontWeight: picked ? 700 : 500, textDecoration: booked ? 'line-through' : 'none', transition: 'all 0.15s', userSelect: 'none', '&:hover': !booked ? { borderColor: '#e3242b', color: picked ? '#fff' : '#e3242b' } : {} }}>
                         {slot}{booked && <Typography component="span" sx={{ fontSize: '0.65rem', color: '#d32f2f', ml: 0.5, fontWeight: 700 }}>●</Typography>}
                       </Box>
                     );

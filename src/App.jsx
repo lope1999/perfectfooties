@@ -30,6 +30,7 @@ import AuthMethodPage from "./pages/AuthMethodPage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import PasswordResetPage from "./pages/PasswordResetPage";
+import ResetPasswordConfirmPage from "./pages/ResetPasswordConfirmPage";
 
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 
@@ -67,7 +68,8 @@ function App() {
 					<Route
 						path="/password-reset"
 						element={<PasswordResetPage />}
-					/>{" "}
+					/>
+					<Route path="/reset-password" element={<ResetPasswordConfirmPage />} />
 					<Route path="/our-story" element={<OurStoryPage />} />
 					<Route path="/blog" element={<BlogPage />} />
 					<Route path="/testimonials" element={<TestimonialsPage />} />

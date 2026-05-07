@@ -40,6 +40,7 @@ import { validateReferralCode, applyReferral, getLoyaltyData, redeemLoyaltyPoint
 import { nigerianStates } from '../data/nigerianStates';
 import { COUNTRIES, COUNTRY_PHONE_CODES } from '../data/countries';
 import SignInPrompt from '../components/SignInPrompt';
+import { useThemeMode } from '../context/ThemeContext';
 
 function formatNaira(amount) {
   return `\u20A6${Number(amount).toLocaleString()}`;
@@ -75,6 +76,8 @@ const textFieldSx = {
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
   const { user } = useAuth();
   const { showToast } = useNotifications();
   const { cart, clearCart, getCartTotal } = useCart();
@@ -796,7 +799,7 @@ export default function CheckoutPage() {
 											backgroundColor:
 												shippingMethod === opt.value
 													? "rgba(227,36,43,0.04)"
-													: "#fff",
+													: "var(--bg-card)",
 											transition: "all 0.2s ease",
 											display: "flex",
 											alignItems: "flex-start",
@@ -949,8 +952,9 @@ export default function CheckoutPage() {
 										mb: 2,
 										p: 2,
 										borderRadius: 2,
-										background:
-											"linear-gradient(135deg,#fff8f0,#fff)",
+										background: isDark
+											? "linear-gradient(135deg,#2a2018,#1e1e1e)"
+											: "linear-gradient(135deg,#fff8f0,#fff)",
 										border: "1px solid #E8D5B0",
 										display: "flex",
 										alignItems: "flex-start",
@@ -1201,7 +1205,7 @@ export default function CheckoutPage() {
 					<Grid item xs={12} md={5}>
 						<Box
 							sx={{
-								backgroundColor: "#fff",
+								backgroundColor: "var(--bg-card)",
 								borderRadius: 3,
 								border: "1px solid #E8D5B0",
 								p: 3,
@@ -1225,7 +1229,7 @@ export default function CheckoutPage() {
 								<Box sx={{ mb: 2 }}>
 									<Typography
 										sx={{
-											color: "#aaa",
+											color: "var(--text-muted)",
 											fontSize: "0.72rem",
 											fontWeight: 700,
 											textTransform: "uppercase",
@@ -1274,7 +1278,7 @@ export default function CheckoutPage() {
 													<Typography
 														sx={{
 															fontSize: "0.75rem",
-															color: "#aaa",
+															color: "var(--text-muted)",
 														}}
 													>
 														{g.selectedColor}
@@ -1482,7 +1486,7 @@ export default function CheckoutPage() {
 										my: 1.5,
 										p: 1.5,
 										borderRadius: 2,
-										backgroundColor: "#FFF8E1",
+										backgroundColor: isDark ? "rgba(255,248,225,0.08)" : "#FFF8E1",
 										border: "1px solid #FFD54F",
 									}}
 								>
@@ -1522,7 +1526,7 @@ export default function CheckoutPage() {
 												<Typography
 													sx={{
 														fontSize: "0.72rem",
-														color: "#888",
+														color: "var(--text-muted)",
 													}}
 												>
 													{pendingReward.pts} pts saved — tap Apply
@@ -1675,7 +1679,7 @@ export default function CheckoutPage() {
 										mb: 0.5,
 										p: 1,
 										borderRadius: 2,
-										backgroundColor: "#FFFDE7",
+										backgroundColor: isDark ? "rgba(255,253,231,0.08)" : "#FFFDE7",
 										border: "1px solid #FFD54F",
 									}}
 								>

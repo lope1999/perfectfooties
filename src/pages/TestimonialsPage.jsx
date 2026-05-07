@@ -27,6 +27,7 @@ import ImageLightbox from '../components/ImageLightbox';
 import ScrollToTopFab from '../components/ScrollToTopFab';
 import { testimonials as staticTestimonials } from '../data/testimonials';
 import { fetchTestimonials } from '../lib/testimonialService';
+import { useThemeMode } from '../context/ThemeContext';
 
 const ff = '"Georgia", serif';
 
@@ -126,6 +127,8 @@ const swiperDotStyles = {
 };
 
 export default function TestimonialsPage() {
+	const { mode } = useThemeMode();
+	const isDark = mode === 'dark';
 	const [groups, setGroups] = useState(groupByName(staticTestimonials));
 	const [selectedGroup, setSelectedGroup] = useState(null);
 	const [lightbox, setLightbox] = useState({ open: false, images: [], index: 0 });
@@ -203,7 +206,7 @@ export default function TestimonialsPage() {
 									sx={{
 										mb: 6, borderRadius: 4, overflow: 'hidden',
 										boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
-										backgroundColor: '#fff', cursor: 'pointer',
+										backgroundColor: 'var(--bg-card)', cursor: 'pointer',
 										display: 'flex', flexDirection: 'column',
 										transition: 'box-shadow 0.3s ease',
 										'& .view-btn': { opacity: 0, transition: 'opacity 0.25s ease' },
@@ -219,7 +222,7 @@ export default function TestimonialsPage() {
 										<Box
 											sx={{
 												width: { xs: '100%', md: '40%' }, flexShrink: 0,
-												backgroundColor: '#FFF8F0',
+												backgroundColor: 'var(--bg-soft)',
 												display: 'flex', flexDirection: 'column',
 												alignItems: 'center', justifyContent: 'center',
 												py: { xs: 4, md: 6 }, px: 3,
@@ -347,7 +350,7 @@ export default function TestimonialsPage() {
 									sx={{
 										borderRadius: 3,
 										overflow: "hidden",
-										backgroundColor: "#fff",
+										backgroundColor: "var(--bg-card)",
 										boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
 										transition:
 											"transform 0.3s ease, box-shadow 0.3s ease",
@@ -372,7 +375,7 @@ export default function TestimonialsPage() {
 										return (
 											<Box
 												sx={{
-													backgroundColor: "#FFF8F0",
+													backgroundColor: "var(--bg-soft)",
 													px: 3,
 													py: 2.5,
 													display: "flex",
@@ -628,12 +631,12 @@ function ReviewDetailModal({ group, onClose, onOpenLightbox }) {
 			maxWidth="sm"
 			fullWidth
 			scroll="paper"
-			PaperProps={{ sx: { borderRadius: 3, overflow: "hidden" } }}
+			PaperProps={{ sx: { borderRadius: 3, overflow: "hidden", backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' } }}
 		>
 			{/* Header */}
 			<Box
 				sx={{
-					background: "linear-gradient(135deg, #FFF8F0 0%, #fff 100%)",
+					background: isDark ? "linear-gradient(135deg, #2a2018 0%, #1e1e1e 100%)" : "linear-gradient(135deg, #FFF8F0 0%, #fff 100%)",
 					px: 3,
 					pt: 3,
 					pb: 2,

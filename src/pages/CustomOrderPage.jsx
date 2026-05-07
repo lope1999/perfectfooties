@@ -238,9 +238,9 @@ export default function CustomOrderPage() {
 
   if (submitted) {
     return (
-      <Box sx={{ pt: 12, pb: 10, minHeight: '100vh', backgroundColor: '#FFF8F0', display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ pt: 12, pb: 10, minHeight: '100vh', backgroundColor: 'var(--bg-page)', display: 'flex', alignItems: 'center' }}>
         <Container maxWidth="sm">
-          <Box sx={{ textAlign: 'center', p: 4, backgroundColor: '#fff', borderRadius: 4, border: '1px solid #E8D5B0' }}>
+          <Box sx={{ textAlign: 'center', p: 4, backgroundColor: 'var(--bg-card)', borderRadius: 4, border: '1px solid #E8D5B0' }}>
             <CheckCircleIcon sx={{ fontSize: 64, color: '#e3242b', mb: 2 }} />
             <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1.8rem', color: '#e3242b', mb: 1 }}>
               Order Submitted!
@@ -271,7 +271,7 @@ export default function CustomOrderPage() {
   }
 
   return (
-    <Box sx={{ pt: 12, pb: { xs: 14, md: 10 }, minHeight: '100vh', backgroundColor: '#FFF8F0' }}>
+    <Box sx={{ pt: 12, pb: { xs: 14, md: 10 }, minHeight: '100vh', backgroundColor: 'var(--bg-page)' }}>
       {/* Back */}
       <Box sx={{ px: { xs: 2, sm: 4 }, mb: 2 }}>
         <Button
@@ -281,7 +281,7 @@ export default function CustomOrderPage() {
             fontFamily: ff, fontWeight: 600, fontSize: '0.85rem',
             color: 'var(--text-muted)', textTransform: 'none',
             px: 1.5, py: 0.6, borderRadius: '20px',
-            border: '1px solid #eee', backgroundColor: '#fff',
+            border: '1px solid #eee', backgroundColor: 'var(--bg-card)',
             '&:hover': { borderColor: '#e3242b', color: '#e3242b' },
           }}
         >
@@ -310,7 +310,7 @@ export default function CustomOrderPage() {
         </Box>
 
         {/* Form card */}
-        <Box sx={{ backgroundColor: '#fff', borderRadius: 4, border: '1px solid #E8D5B0', p: { xs: 2.5, sm: 3.5 } }}>
+        <Box sx={{ backgroundColor: 'var(--bg-card)', borderRadius: 4, border: '1px solid #E8D5B0', p: { xs: 2.5, sm: 3.5 } }}>
 
           {/* Contact info */}
           <Typography sx={{ fontFamily: ff, fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)', mb: 2 }}>

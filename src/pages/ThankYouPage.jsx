@@ -49,12 +49,12 @@ function SuggestedItem({ item, collectionId, navigate }) {
       onClick={() => navigate(`/shop/${collectionId}/${item.id}`)}
       sx={{
         flex: '0 0 160px', width: 160, borderRadius: 2, overflow: 'hidden',
-        border: '1px solid #E8D5B0', backgroundColor: '#fff', cursor: 'pointer',
+        border: '1px solid #E8D5B0', backgroundColor: 'var(--bg-card)', cursor: 'pointer',
         transition: 'box-shadow 0.2s, transform 0.2s',
         '&:hover': { boxShadow: '0 4px 16px rgba(227,36,43,0.18)', transform: 'translateY(-2px)' },
       }}
     >
-      <Box sx={{ height: 110, backgroundColor: '#f5f5f5', overflow: 'hidden' }}>
+      <Box sx={{ height: 110, backgroundColor: 'var(--bg-soft)', overflow: 'hidden' }}>
         {item.images?.[0] ? (
           <Box component="img" src={item.images[0]} alt={item.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (

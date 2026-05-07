@@ -63,7 +63,7 @@ export default function AuthMethodPage() {
 				pt: { xs: 12, md: 16 },
 				pb: 10,
 				minHeight: "100vh",
-				backgroundColor: "#FFF8F0",
+				backgroundColor: "var(--bg-page)",
 			}}
 		>
 			<Container maxWidth="sm">
@@ -137,7 +137,7 @@ export default function AuthMethodPage() {
 					<MethodButton
 						onClick={() => navigate("/login", { state: { from: location.state?.from } })}
 						sx={{
-							backgroundColor: "#FFF",
+							backgroundColor: "var(--bg-card)",
 							border: "2px solid #E8D5B0",
 							"&:hover": {
 								borderColor: "#e3242b",

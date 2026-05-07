@@ -69,7 +69,7 @@ export default function LoginPage() {
         pt: { xs: 12, md: 16 },
         pb: 10,
         minHeight: '100vh',
-        backgroundColor: '#FFF8F0',
+        backgroundColor: 'var(--bg-page)',
       }}
     >
       <Container maxWidth="sm">

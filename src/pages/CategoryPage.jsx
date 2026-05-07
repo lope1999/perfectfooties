@@ -124,7 +124,7 @@ function SizeSelector({ sizes, selected, onSelect }) {
               fontSize: '0.85rem',
               cursor: 'pointer',
               border: `2px solid ${selected === size ? '#e3242b' : '#E8D5B0'}`,
-              backgroundColor: selected === size ? '#e3242b' : '#fff',
+              backgroundColor: selected === size ? '#e3242b' : 'var(--bg-card)',
               color: selected === size ? '#fff' : 'var(--text-main)',
               '&:hover': { borderColor: '#e3242b', backgroundColor: selected === size ? '#b81b21' : 'var(--bg-soft)' },
             }}

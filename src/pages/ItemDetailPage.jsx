@@ -30,6 +30,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { getActiveItemPromo, applyPromoToPrice, formatPromoLabel } from '../lib/promoUtils';
 import ImageLightbox from '../components/ImageLightbox';
 import RatingBreakdown from '../components/RatingBreakdown';
+import { useThemeMode } from '../context/ThemeContext';
 
 const ff = '"Georgia", serif';
 
@@ -133,7 +134,8 @@ function printSizeGuide() {
 
 function SizeGuideDialog({ open, onClose }) {
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth scroll="paper">
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth scroll="paper"
+      PaperProps={{ sx: { backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' } }}>
       <DialogTitle sx={{ fontFamily: ff, fontWeight: 700, fontSize: '1.1rem', borderBottom: '1px solid #E8D5B0' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <StraightenIcon sx={{ color: 'var(--accent-cyan)' }} />
@@ -199,6 +201,8 @@ function SizeGuideDialog({ open, onClose }) {
 export default function ItemDetailPage() {
   const { collectionId, itemId } = useParams();
   const navigate = useNavigate();
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
   const { addLeatherGood } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
@@ -932,7 +936,7 @@ export default function ItemDetailPage() {
 											fontFamily: ff,
 											fontSize: "0.85rem",
 											outline: "none",
-											backgroundColor: "#fff",
+											backgroundColor: "var(--bg-card)",
 										}}
 									/>
 									<Box
@@ -1072,7 +1076,7 @@ export default function ItemDetailPage() {
 											mt: 1,
 											p: 1.2,
 											borderRadius: 1.5,
-											backgroundColor: "#fff8f0",
+											backgroundColor: "var(--bg-soft)",
 											border: "1px solid #FFE6E0",
 										}}
 									>
@@ -1261,7 +1265,7 @@ export default function ItemDetailPage() {
 												px: 1.5,
 												py: 1,
 												borderRadius: 2,
-												backgroundColor: "#f5f5f5",
+												backgroundColor: "var(--bg-soft)",
 												border: "1px solid #ddd",
 											}}
 										>
@@ -1326,7 +1330,7 @@ export default function ItemDetailPage() {
 										px: 2,
 										py: 1.2,
 										cursor: "pointer",
-										backgroundColor: "#FFF8F0",
+										backgroundColor: "var(--bg-soft)",
 										"&:hover": { backgroundColor: "#FFF0E0" },
 									}}
 								>
@@ -1364,7 +1368,7 @@ export default function ItemDetailPage() {
 								</Box>
 								<Collapse in={careOpen}>
 									<Box
-										sx={{ px: 2, py: 1.5, backgroundColor: "#fff" }}
+										sx={{ px: 2, py: 1.5, backgroundColor: "var(--bg-card)" }}
 									>
 										<Typography
 											sx={{
@@ -1532,7 +1536,7 @@ export default function ItemDetailPage() {
 											p: 3,
 											borderRadius: 3,
 											border: "1px solid #E8D5B0",
-											backgroundColor: "#fff",
+											backgroundColor: "var(--bg-card)",
 										}}
 									>
 										<Box

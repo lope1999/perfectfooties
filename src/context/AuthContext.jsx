@@ -6,6 +6,8 @@ import {
 	createUserWithEmailAndPassword,
 	signInWithEmailAndPassword,
 	sendPasswordResetEmail,
+	verifyPasswordResetCode,
+	confirmPasswordReset,
 	updateProfile,
 } from "firebase/auth";
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -92,6 +94,10 @@ export function AuthProvider({ children }) {
     return sendPasswordResetEmail(auth, email);
   };
 
+  const verifyResetCode = (code) => verifyPasswordResetCode(auth, code);
+
+  const applyPasswordReset = (code, newPassword) => confirmPasswordReset(auth, code, newPassword);
+
   const signOut = () => firebaseSignOut(auth);
 
   const isAdmin = ADMIN_EMAILS.has(user?.email);
@@ -105,6 +111,8 @@ export function AuthProvider({ children }) {
 				signUpWithEmail,
 				signInWithEmail,
 				resetPassword,
+				verifyResetCode,
+				applyPasswordReset,
 				resendVerificationEmail,
 				updatePhotoURL,
 				signOut,

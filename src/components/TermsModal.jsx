@@ -16,7 +16,7 @@ export default function TermsModal({ open, onClose }) {
 			maxWidth="md"
 			fullWidth
 			PaperProps={{
-				sx: { borderRadius: 4, maxHeight: "80vh" },
+				sx: { borderRadius: 4, maxHeight: "80vh", backgroundColor: "var(--bg-card)", color: "var(--text-main)" },
 			}}
 		>
 			<DialogTitle sx={{ pb: 1 }}>

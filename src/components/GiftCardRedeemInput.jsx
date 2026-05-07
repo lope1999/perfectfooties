@@ -73,7 +73,7 @@ export default function GiftCardRedeemInput({ onApplied, onRemoved, appliedCard 
         p: 2,
         borderRadius: 2,
         border: '1px solid #E8D5B0',
-        backgroundColor: '#fff',
+        backgroundColor: 'var(--bg-card)',
       }}
     >
       {appliedCard ? (

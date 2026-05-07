@@ -95,7 +95,7 @@ export default function NotificationBell() {
                 fontSize: '0.75rem',
                 color: '#e3242b',
                 textTransform: 'none',
-                '&:hover': { backgroundColor: '#FFF8F0' },
+                '&:hover': { backgroundColor: 'var(--bg-soft)' },
               }}
             >
               Mark all read
@@ -129,7 +129,7 @@ export default function NotificationBell() {
                     sx={{
                       py: 1.5,
                       px: 2,
-                      backgroundColor: isDismissed ? 'transparent' : '#FFF8F0',
+                      backgroundColor: isDismissed ? 'transparent' : 'var(--bg-soft)',
                       opacity: isDismissed ? 0.55 : 1,
                       '&:hover': { backgroundColor: isDismissed ? '#fafafa' : '#FFE8E8' },
                     }}

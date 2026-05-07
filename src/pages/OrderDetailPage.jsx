@@ -18,6 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import { generateReceiptHtml, openReceiptWindow } from '../lib/receiptTemplate';
 import { fetchTestimonialByOrderId, fetchTestimonialByEmailAndProduct } from '../lib/testimonialService';
 import { TIERS } from '../lib/loyaltyService';
+import { useThemeMode } from '../context/ThemeContext';
 
 const ff = '"Georgia", serif';
 
@@ -86,6 +87,8 @@ function printReceipt(order) {
 export default function OrderDetailPage() {
   const { orderId } = useParams();
   const navigate = useNavigate();
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
   const { user } = useAuth();
   const [order, setOrder] = useState(null);
   const [review, setReview] = useState(null);
@@ -258,7 +261,7 @@ export default function OrderDetailPage() {
 						p: 2.5,
 						border: "1px solid #E8D5B0",
 						borderRadius: 3,
-						backgroundColor: "#fff",
+						backgroundColor: "var(--bg-card)",
 						mb: 2.5,
 					}}
 				>
@@ -478,7 +481,7 @@ export default function OrderDetailPage() {
 							p: 2.5,
 							border: "1px solid #E8D5B0",
 							borderRadius: 3,
-							backgroundColor: "#fff",
+							backgroundColor: "var(--bg-card)",
 							mb: 2.5,
 						}}
 					>
@@ -550,7 +553,7 @@ export default function OrderDetailPage() {
 														width: 6,
 														height: 6,
 														borderRadius: "50%",
-														backgroundColor: "#fff",
+														backgroundColor: "var(--bg-card)",
 													}}
 												/>
 											)}
@@ -571,7 +574,7 @@ export default function OrderDetailPage() {
 												<Typography
 													sx={{
 														fontSize: "0.75rem",
-														color: "#aaa",
+														color: "var(--text-muted)",
 														mt: 0.2,
 													}}
 												>
@@ -584,7 +587,7 @@ export default function OrderDetailPage() {
 													<Typography
 														sx={{
 															fontSize: "0.75rem",
-															color: "#aaa",
+															color: "var(--text-muted)",
 															mt: 0.2,
 														}}
 													>
@@ -605,7 +608,7 @@ export default function OrderDetailPage() {
 							p: 2,
 							mb: 2.5,
 							borderRadius: 3,
-							backgroundColor: "#fff5f5",
+							backgroundColor: isDark ? "rgba(255,0,0,0.06)" : "#fff5f5",
 							border: "1px solid #fecaca",
 						}}
 					>
@@ -620,7 +623,7 @@ export default function OrderDetailPage() {
 						</Typography>
 						{historyMap["cancelled"] && (
 							<Typography
-								sx={{ fontSize: "0.78rem", color: "#aaa", mt: 0.3 }}
+								sx={{ fontSize: "0.78rem", color: "var(--text-muted)", mt: 0.3 }}
 							>
 								{fmtTs(historyMap["cancelled"])}
 							</Typography>
@@ -635,7 +638,7 @@ export default function OrderDetailPage() {
 							p: 2,
 							mb: 2.5,
 							borderRadius: 3,
-							backgroundColor: "#f0faff",
+							backgroundColor: isDark ? "rgba(0,186,255,0.06)" : "#f0faff",
 							border: "1px solid #bae6fd",
 							display: "flex",
 							alignItems: "center",
@@ -683,7 +686,7 @@ export default function OrderDetailPage() {
 							p: 2.5,
 							border: "1px solid #E8D5B0",
 							borderRadius: 3,
-							backgroundColor: "#fff",
+							backgroundColor: "var(--bg-card)",
 							mb: 2.5,
 						}}
 					>
@@ -772,10 +775,10 @@ export default function OrderDetailPage() {
 							border: "1px solid #E8D5B0",
 							borderRadius: 2,
 							mb: 2.5,
-							backgroundColor: "#fafafa",
+							backgroundColor: "var(--bg-soft)",
 						}}
 					>
-						<Typography sx={{ fontSize: "0.75rem", color: "#aaa" }}>
+						<Typography sx={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
 							Payment ref:{" "}
 							<span style={{ fontFamily: "monospace", color: "#555" }}>
 								{order.paymentReference}
@@ -791,7 +794,7 @@ export default function OrderDetailPage() {
 							p: 2.5,
 							border: "1px solid #E8D5B0",
 							borderRadius: 3,
-							backgroundColor: "#fff",
+							backgroundColor: "var(--bg-card)",
 							mb: 2.5,
 						}}
 					>

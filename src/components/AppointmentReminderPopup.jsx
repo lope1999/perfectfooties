@@ -11,11 +11,14 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { formatRelativeTime } from '../lib/appointmentDateUtils';
+import { useThemeMode } from '../context/ThemeContext';
 
 const SESSION_KEY = 'perfectfooties-reminder-popup-shown';
 const fontFamily = '"Georgia", serif';
 
 export default function AppointmentReminderPopup() {
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
   const { user } = useAuth();
   const { urgentNotifications, loading } = useNotifications();
   const [open, setOpen] = useState(false);
@@ -40,7 +43,7 @@ export default function AppointmentReminderPopup() {
         sx: {
           borderRadius: 3,
           border: '2px solid #ed6c02',
-          maxWidth: 420,
+          maxWidth: 420, backgroundColor: 'var(--bg-card)', color: 'var(--text-main)',
           mx: 2,
         },
       }}
@@ -51,7 +54,7 @@ export default function AppointmentReminderPopup() {
             width: 64,
             height: 64,
             borderRadius: '50%',
-            backgroundColor: '#FFF3E0',
+            backgroundColor: isDark ? 'rgba(237,108,2,0.12)' : '#FFF3E0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -74,7 +77,7 @@ export default function AppointmentReminderPopup() {
           <Box
             key={n.id}
             sx={{
-              backgroundColor: '#FFF8E1',
+              backgroundColor: isDark ? 'rgba(255,248,225,0.08)' : '#FFF8E1',
               border: '1px solid #FFE0B2',
               borderRadius: 2,
               p: 1.5,

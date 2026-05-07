@@ -132,7 +132,7 @@ export default function Footer() {
 		<>
 			<Box
 				sx={{
-					backgroundColor: "#FFF8F0",
+					backgroundColor: "var(--bg-soft)",
 					borderTop: "1px solid #E8D5B0",
 					py: 6,
 				}}

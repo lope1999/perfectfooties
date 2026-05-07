@@ -68,7 +68,7 @@ export default function ReviewReminderPopup() {
             width: 64,
             height: 64,
             borderRadius: '50%',
-            backgroundColor: '#FFF8F0',
+            backgroundColor: 'var(--bg-card)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

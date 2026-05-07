@@ -257,7 +257,7 @@ export default function CollectionPage() {
 							mb: 6,
 							p: 4,
 							borderRadius: 3,
-							backgroundColor: "#fff",
+							backgroundColor: "var(--bg-card)",
 							border: "1px solid #E8D5B0",
 						}}
 					>
@@ -311,7 +311,7 @@ export default function CollectionPage() {
 										p: 3,
 										borderRadius: 3,
 										border: "1px solid #F0E3CE",
-										backgroundColor: "#FFF8F0",
+										backgroundColor: "var(--bg-page)",
 									}}
 								>
 									<Box
@@ -509,7 +509,7 @@ export default function CollectionPage() {
 															? "#e3242b"
 															: "#aaa",
 														"&:hover": {
-															backgroundColor: "#fff",
+															backgroundColor: "var(--bg-card)",
 															color: "#e3242b",
 														},
 													}}

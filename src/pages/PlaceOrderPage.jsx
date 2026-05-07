@@ -350,7 +350,7 @@ export default function PlaceOrderPage() {
 
   return (
 		<Box sx={{ pt: { xs: 7, md: 8 } }}>
-			<Box sx={{ py: 8, backgroundColor: "#FFF8F0" }}>
+			<Box sx={{ py: 8, backgroundColor: "var(--bg-page)" }}>
 				<Container maxWidth="md">
 					{/* Header */}
 					<ScrollReveal direction="up">
@@ -416,7 +416,7 @@ export default function PlaceOrderPage() {
 							position: "sticky",
 							top: { xs: 56, md: 64 },
 							zIndex: 10,
-							backgroundColor: "#FFF8F0",
+							backgroundColor: "var(--bg-page)",
 							pb: 2,
 							pt: 1,
 							mb: 2,
@@ -1252,7 +1252,7 @@ export default function PlaceOrderPage() {
 								mt: 4,
 								p: 3,
 								borderRadius: 3,
-								backgroundColor: "#fff",
+								backgroundColor: "var(--bg-card)",
 								border: "1px solid #E8D5B0",
 							}}
 						>

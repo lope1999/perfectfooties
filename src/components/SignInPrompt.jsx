@@ -28,6 +28,8 @@ export default function SignInPrompt({ open, onClose }) {
           p: 2,
           textAlign: 'center',
           maxWidth: 400,
+          backgroundColor: 'var(--bg-card)',
+          color: 'var(--text-main)',
         },
       }}
     >

@@ -32,7 +32,7 @@ const ff = '"Georgia", serif';
 function LegalModal({ open, onClose, title, children }) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth scroll="paper"
-      PaperProps={{ sx: { borderRadius: 3, maxHeight: '80vh' } }}>
+      PaperProps={{ sx: { borderRadius: 3, maxHeight: '80vh', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' } }}>
       <DialogTitle sx={{ fontFamily: ff, fontWeight: 700, color: 'var(--text-purple)', pr: 6 }}>
         {title}
         <IconButton onClick={onClose} size="small"
@@ -160,7 +160,7 @@ export default function SignUpPage() {
 
   if (verified) {
     return (
-      <Box sx={{ pt: { xs: 12, md: 16 }, pb: 10, minHeight: '100vh', backgroundColor: '#FFF8F0' }}>
+      <Box sx={{ pt: { xs: 12, md: 16 }, pb: 10, minHeight: '100vh', backgroundColor: 'var(--bg-page)' }}>
         <Container maxWidth="sm">
           <Box sx={{ textAlign: 'center', py: 6 }}>
             <MarkEmailReadIcon sx={{ fontSize: 72, color: '#e3242b', mb: 2 }} />
@@ -202,7 +202,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <Box sx={{ pt: { xs: 12, md: 16 }, pb: 10, minHeight: '100vh', backgroundColor: '#FFF8F0' }}>
+    <Box sx={{ pt: { xs: 12, md: 16 }, pb: 10, minHeight: '100vh', backgroundColor: 'var(--bg-page)' }}>
       <Container maxWidth="sm">
         <Button
           onClick={() => navigate('/auth-method')}
@@ -316,7 +316,7 @@ export default function SignUpPage() {
 
       {/* Terms & Conditions Modal */}
       <LegalModal open={termsOpen} onClose={() => setTermsOpen(false)} title="Terms & Conditions">
-        <Typography sx={{ fontSize: '0.8rem', color: '#aaa', mb: 3 }}>Last updated: April 2026</Typography>
+        <Typography sx={{ fontSize: '0.8rem', color: 'var(--text-muted)', mb: 3 }}>Last updated: April 2026</Typography>
         <Section title="1. Acceptance of Terms">
           By creating an account or placing an order on PerfectFooties, you agree to be bound by these Terms & Conditions. If you do not agree, please do not use our services.
         </Section>
@@ -348,7 +348,7 @@ export default function SignUpPage() {
 
       {/* Privacy Policy Modal */}
       <LegalModal open={privacyOpen} onClose={() => setPrivacyOpen(false)} title="Privacy Policy">
-        <Typography sx={{ fontSize: '0.8rem', color: '#aaa', mb: 3 }}>Last updated: April 2026</Typography>
+        <Typography sx={{ fontSize: '0.8rem', color: 'var(--text-muted)', mb: 3 }}>Last updated: April 2026</Typography>
         <Section title="1. Information We Collect">
           When you create an account or place an order, we collect your name, email address, phone number, and shipping address. We may also collect device and usage data to improve your experience.
         </Section>

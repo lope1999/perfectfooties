@@ -7,6 +7,7 @@ import 'swiper/css/pagination';
 import ScrollReveal from '../components/ScrollReveal';
 import ScrollToTopFab from '../components/ScrollToTopFab';
 import { fetchGalleryImages } from '../lib/galleryService';
+import { useThemeMode } from '../context/ThemeContext';
 
 const fontFamily = '"Georgia", serif';
 
@@ -59,7 +60,7 @@ function GalleryCarousel({ images }) {
                   objectFit: 'contain',
                   borderRadius: 3,
                   display: 'block',
-                  backgroundColor: '#f5f0ea',
+                  backgroundColor: 'var(--bg-soft)',
                 }}
               />
               {img.caption && (
@@ -96,6 +97,8 @@ function GalleryCarousel({ images }) {
 }
 
 export default function GalleryPage() {
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
   const [footwearImages, setFootwearImages] = useState([]);
   const [bagsImages, setBagsImages] = useState([]);
   const [lifestyleImages, setLifestyleImages] = useState([]);
@@ -131,7 +134,7 @@ export default function GalleryPage() {
         sx={{
           py: { xs: 8, md: 10 },
           textAlign: 'center',
-          background: 'linear-gradient(135deg, #FFF8F0 0%, #FFE8E8 100%)',
+          background: isDark ? 'linear-gradient(135deg, #2a2018 0%, #2a1010 100%)' : 'linear-gradient(135deg, #FFF8F0 0%, #FFE8E8 100%)',
         }}
       >
         <ScrollReveal direction="up" duration={0.8}>

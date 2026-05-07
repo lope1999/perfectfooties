@@ -22,7 +22,7 @@ export default function RatingBreakdown({ reviews = [] }) {
         p: { xs: 2, sm: 3 },
         borderRadius: 3,
         border: '1px solid #E8D5B0',
-        backgroundColor: '#FFFBF5',
+        backgroundColor: 'var(--bg-soft)',
         mb: 3,
       }}
     >
@@ -54,7 +54,7 @@ export default function RatingBreakdown({ reviews = [] }) {
                   flex: 1,
                   height: 8,
                   borderRadius: 4,
-                  backgroundColor: '#F0E3CE',
+                  backgroundColor: 'var(--bg-soft)',
                   '& .MuiLinearProgress-bar': {
                     backgroundColor: '#f59e0b',
                     borderRadius: 4,

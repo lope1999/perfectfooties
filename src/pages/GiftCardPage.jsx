@@ -24,6 +24,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ScrollReveal from '../components/ScrollReveal';
 import { useAuth } from '../context/AuthContext';
 import { createGiftCard, lookupGiftCard, validateCardForRedemption, activateGiftCard } from '../lib/giftCardService';
+import { useThemeMode } from '../context/ThemeContext';
 
 const giftCardTypes = [
 	{
@@ -90,6 +91,8 @@ function formatNaira(amount) {
 }
 
 export default function GiftCardPage() {
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
   const { user } = useAuth();
   const [selectedType, setSelectedType] = useState(null);
   const [formData, setFormData] = useState({
@@ -208,7 +211,7 @@ export default function GiftCardPage() {
   return (
 		<Box sx={{ pt: 12, pb: { xs: 14, md: 8 }, minHeight: "100vh" }}>
 			{/* Header */}
-			<Box sx={{ textAlign: "center", py: 6, backgroundColor: "#fff" }}>
+			<Box sx={{ textAlign: "center", py: 6, backgroundColor: "var(--bg-card)" }}>
 				<ScrollReveal direction="up">
 					<CardGiftcardIcon
 						sx={{ fontSize: 50, color: "#e3242b", mb: 1 }}
@@ -243,7 +246,7 @@ export default function GiftCardPage() {
 			</Box>
 
 			{/* Check Gift Card Balance */}
-			<Box sx={{ py: 6, backgroundColor: "#fff" }}>
+			<Box sx={{ py: 6, backgroundColor: "var(--bg-card)" }}>
 				<Container maxWidth="sm">
 					<ScrollReveal direction="up">
 						<Typography
@@ -319,7 +322,7 @@ export default function GiftCardPage() {
 									p: 3,
 									borderRadius: 3,
 									border: "1px solid #E8D5B0",
-									backgroundColor: "#FFF8F0",
+									backgroundColor: "var(--bg-page)",
 									textAlign: "center",
 								}}
 							>
@@ -389,7 +392,7 @@ export default function GiftCardPage() {
 			</Box>
 
 			{/* How It Works */}
-			<Box sx={{ py: 6, backgroundColor: "#FFF8F0" }}>
+			<Box sx={{ py: 6, backgroundColor: "var(--bg-page)" }}>
 				<Container maxWidth="md">
 					<ScrollReveal direction="up">
 						<Typography
@@ -471,7 +474,7 @@ export default function GiftCardPage() {
 			</Box>
 
 			{/* Gift Card Types */}
-			<Box sx={{ py: 8, backgroundColor: "#fff" }}>
+			<Box sx={{ py: 8, backgroundColor: "var(--bg-card)" }}>
 				<Container maxWidth="lg">
 					<ScrollReveal direction="up">
 						<Typography
@@ -678,7 +681,7 @@ export default function GiftCardPage() {
 			</Box>
 
 			{/* What Can They Use It For */}
-			<Box sx={{ py: 6, backgroundColor: "#FFE8E8" }}>
+			<Box sx={{ py: 6, backgroundColor: isDark ? "rgba(255,100,100,0.08)" : "#FFE8E8" }}>
 				<Container maxWidth="md">
 					<ScrollReveal direction="up">
 						<Typography
@@ -711,7 +714,7 @@ export default function GiftCardPage() {
 											alignItems: "center",
 											gap: 1.5,
 											p: 2,
-											backgroundColor: "#fff",
+											backgroundColor: "var(--bg-card)",
 											borderRadius: 2,
 											border: "1px solid #E8D5B0",
 										}}
@@ -894,7 +897,7 @@ export default function GiftCardPage() {
 									sx={{
 										...textFieldSx,
 										"& .MuiOutlinedInput-root.Mui-disabled": {
-											backgroundColor: "#F9F0F3",
+											backgroundColor: isDark ? "rgba(200,100,150,0.08)" : "#F9F0F3",
 											"& fieldset": { borderColor: "#E8D5B0" },
 										},
 									}}
@@ -992,7 +995,7 @@ export default function GiftCardPage() {
 					{generatedCode && (
 						<Box
 							sx={{
-								backgroundColor: "#FFF8F0",
+								backgroundColor: "var(--bg-page)",
 								borderRadius: 2,
 								p: 2,
 								my: 2,

@@ -203,7 +203,7 @@ export default function ShopPage() {
 							fontWeight: 700,
 							fontSize: "0.9rem",
 							textTransform: "none",
-							backgroundColor: "#fff",
+							backgroundColor: "var(--bg-card)",
 							color: "#1a0000",
 							borderRadius: "30px",
 							px: 3,

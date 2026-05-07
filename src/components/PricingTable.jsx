@@ -27,7 +27,7 @@ const rowSx = {
   py: 1.2,
   px: 1.5,
   borderRadius: 1.5,
-  '&:nth-of-type(odd)': { backgroundColor: '#FFF8F0' },
+  '&:nth-of-type(odd)': { backgroundColor: 'var(--bg-soft)' },
 };
 
 const nameSx = {
@@ -118,7 +118,7 @@ export default function PricingTable({ open, onClose }) {
         ))}
 
         {/* NOTE */}
-        <Box sx={{ mt: 3, p: 2, borderRadius: 2, backgroundColor: '#FFF8E1', border: '1px solid #FFD54F' }}>
+        <Box sx={{ mt: 3, p: 2, borderRadius: 2, backgroundColor: 'var(--bg-soft)', border: '1px solid #FFD54F' }}>
           <Typography sx={{ fontSize: '0.82rem', color: '#5D4037', fontWeight: 600, lineHeight: 1.6 }}>
             All pieces are handcrafted to order in full-grain leather. Production takes 10–14 days. Prices may vary for complex custom orders — contact us on WhatsApp for a quote.
           </Typography>

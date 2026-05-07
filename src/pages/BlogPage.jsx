@@ -35,7 +35,7 @@ export default function BlogPage() {
 
   if (loading) {
     return (
-      <Box sx={{ pt: 20, display: 'flex', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#FAFAFA' }}>
+      <Box sx={{ pt: 20, display: 'flex', justifyContent: 'center', minHeight: '100vh', backgroundColor: 'var(--bg-page)' }}>
         <CircularProgress sx={{ color: '#e3242b' }} />
       </Box>
     );
@@ -43,7 +43,7 @@ export default function BlogPage() {
 
   if (blogPosts.length === 0) {
     return (
-      <Box sx={{ pt: 20, textAlign: 'center', minHeight: '100vh', backgroundColor: '#FAFAFA' }}>
+      <Box sx={{ pt: 20, textAlign: 'center', minHeight: '100vh', backgroundColor: 'var(--bg-page)' }}>
         <Typography sx={{ fontFamily: '"Georgia", serif', color: '#777', fontSize: '1.1rem' }}>
           No blog posts yet. Check back soon!
         </Typography>
@@ -52,7 +52,7 @@ export default function BlogPage() {
   }
 
   return (
-    <Box sx={{ pt: 12, pb: 8, minHeight: '100vh', backgroundColor: '#FAFAFA' }}>
+    <Box sx={{ pt: 12, pb: 8, minHeight: '100vh', backgroundColor: 'var(--bg-page)' }}>
       {/* Header */}
       <Box sx={{ textAlign: 'center', py: 6 }}>
         <ScrollReveal direction="up">
@@ -92,7 +92,7 @@ export default function BlogPage() {
               borderRadius: 4,
               overflow: 'hidden',
               boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
-              backgroundColor: '#fff',
+              backgroundColor: 'var(--bg-card)',
               display: 'flex',
               flexDirection: { xs: 'column', md: 'row' },
               cursor: 'pointer',
@@ -180,7 +180,7 @@ export default function BlogPage() {
                   sx={{
                     borderRadius: 3,
                     overflow: 'hidden',
-                    backgroundColor: '#fff',
+                    backgroundColor: 'var(--bg-card)',
                     boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
                     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                     height: '100%',
@@ -311,7 +311,7 @@ export default function BlogPage() {
                   top: 12,
                   right: 12,
                   backgroundColor: 'rgba(255,255,255,0.9)',
-                  '&:hover': { backgroundColor: '#fff' },
+                  '&:hover': { backgroundColor: 'var(--bg-card)' },
                 }}
               >
                 <CloseIcon />
@@ -361,7 +361,7 @@ export default function BlogPage() {
                   mb: 4,
                   flexWrap: 'wrap',
                   p: 2,
-                  backgroundColor: '#FFF8F0',
+                  backgroundColor: 'var(--bg-soft)',
                   borderRadius: 2,
                   border: '1px solid #E8D5B0',
                 }}
